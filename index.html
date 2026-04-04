@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -16,13 +16,11 @@
         input, textarea { width: 100%; padding: 14px; margin: 12px 0; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.8); color: white; box-sizing: border-box; font-family: inherit; }
         button { width: 100%; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; padding: 16px; border-radius: 15px; cursor: pointer; font-weight: 600; margin-top: 15px; transition: 0.4s; }
         
-        /* Navigation Arrows */
         .nav-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
         .nav-arrow { background: rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; font-size: 1.2rem; }
         .nav-arrow:hover:not(.disabled) { background: var(--primary); transform: scale(1.1); }
         .nav-arrow.disabled { opacity: 0.2; cursor: not-allowed; }
 
-        /* Timer Circle */
         .timer-wrapper { display: none; align-items: center; justify-content: center; margin-bottom: 25px; }
         .timer-circle { position: relative; width: 65px; height: 65px; border-radius: 50%; background: conic-gradient(var(--primary) var(--p), #334155 0); display: flex; align-items: center; justify-content: center; }
         .timer-circle::after { content: attr(data-time); position: absolute; width: 55px; height: 55px; background: #1e293b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; }
@@ -30,13 +28,11 @@
         .option { background: rgba(51, 65, 85, 0.5); padding: 16px; margin: 12px 0; border-radius: 15px; cursor: pointer; text-align: left; border: 2px solid transparent; transition: 0.3s; }
         .option.selected { border-color: var(--primary); background: rgba(99, 102, 241, 0.2); }
         
-        /* Star Rating */
         .star-rating { display: flex; justify-content: center; flex-direction: row-reverse; margin: 20px 0; }
         .star-rating input { display: none; }
         .star-rating label { font-size: 2.5rem; color: #334155; cursor: pointer; transition: 0.3s; margin: 0 5px; }
         .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: #f59e0b; }
 
-        /* Review Section Styles */
         .review-item { text-align: left; padding: 15px; border-radius: 15px; background: rgba(15, 23, 42, 0.6); margin-top: 15px; border-left: 5px solid #4b5563; }
         .review-correct { border-left-color: #22c55e; }
         .review-wrong { border-left-color: #ef4444; }
@@ -55,8 +51,7 @@
 
     <div id="instruct-ui" style="display:none;" class="fade-in">
         <h3 style="color:var(--primary); margin-bottom: 5px;">CHAPTER 1</h3>
-        <h2 style="margin-top: 0;">Units & Measurements</h2>
-        <div style="text-align:left; color:#94a3b8; font-size:0.95rem; margin: 25px 0; line-height: 1.8;">
+        <h2 style="margin-top: 0;">Electrostatics</h2> <div style="text-align:left; color:#94a3b8; font-size:0.95rem; margin: 25px 0; line-height: 1.8;">
             <p>⏱️ <b>30 Seconds</b> per question countdown.</p>
             <p>⭐ <b>Rating & Feedback</b> mandatory at end.</p>
             <p>➡️ Use <b>Left/Right Arrows</b> to navigate.</p>
@@ -79,8 +74,6 @@
     <div id="result-ui" style="display:none;" class="fade-in">
         <h2>Test Report</h2>
         <h1 id="final-score" style="color:var(--primary); font-size: 3.5rem; margin: 10px 0;"></h1>
-        
-        <p>Rate your experience:</p>
         <div class="star-rating">
             <input type="radio" id="5-stars" name="rating" value="5"><label for="5-stars">★</label>
             <input type="radio" id="4-stars" name="rating" value="4"><label for="4-stars">★</label>
@@ -90,7 +83,6 @@
         </div>
         <textarea id="feedback-txt" rows="2" placeholder="Your Feedback..."></textarea>
         <button id="syncBtn" onclick="submitToFirebase()">Sync & Exit</button>
-        
         <h3 style="text-align:left; margin-top:35px; border-bottom: 1px solid #334155; padding-bottom:10px;">Question Review</h3>
         <div id="review-list"></div>
     </div>
@@ -179,11 +171,9 @@
         clearInterval(timer);
         document.getElementById('quiz-ui').style.display = 'none';
         document.getElementById('result-ui').style.display = 'block';
-        
         score = 0;
         const reviewList = document.getElementById('review-list');
         reviewList.innerHTML = "";
-
         questions.forEach((q, i) => {
             const isCorrect = userAnswers[i] === q.a;
             if(isCorrect) score++;
@@ -200,16 +190,9 @@
     window.submitToFirebase = async () => {
         const rating = document.querySelector('input[name="rating"]:checked')?.value || "0";
         document.getElementById('syncBtn').innerText = "Syncing...";
-        await addDoc(collection(db, "results"), { 
-            name: localStorage.getItem('user'), 
-            email: localStorage.getItem('mail'), 
-            score, 
-            rating: rating + " Stars", 
-            feedback: document.getElementById('feedback-txt').value || "None", 
-            timestamp: serverTimestamp() 
-        });
+        await addDoc(collection(db, "results"), { name: localStorage.getItem('user'), email: localStorage.getItem('mail'), score, rating: rating + " Stars", feedback: document.getElementById('feedback-txt').value || "None", timestamp: serverTimestamp() });
         location.reload();
     };
 </script>
 </body>
-</html>
+</html> 
