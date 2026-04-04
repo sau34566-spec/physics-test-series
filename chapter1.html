@@ -1,96 +1,14 @@
- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8"><title>Test - Chapter 1</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding-top: 50px; }
-        .container { background: var(--card); padding: 30px; border-radius: 20px; width: 90%; max-width: 550px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        /* TIMER DESIGN */
-        .timer-bg { width: 100%; height: 8px; background: #334155; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
-        #timer-fill { width: 100%; height: 100%; background: var(--primary); transition: width 1s linear; }
-        .option { background: #334155; padding: 15px; margin: 10px 0; border-radius: 12px; cursor: pointer; transition: 0.2s; border: 2px solid transparent; }
-        .option:hover { border-color: var(--primary); background: #475569; }
-        textarea { width: 100%; background: #0f172a; color: white; border: 1px solid #334155; border-radius: 10px; padding: 10px; box-sizing: border-box; }
-        .review-card { padding: 10px; margin-top: 10px; border-radius: 8px; border-left: 4px solid #4b5563; background: #0f172a; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div id="quiz-ui">
-            <div class="timer-bg"><div id="timer-fill"></div></div>
-            <div id="quiz-box"></div>
-        </div>
-
-        <div id="result-ui" style="display:none;">
-            <h2 style="text-align:center;">Result: <span id="score"></span></h2>
-            <div style="background:#334155; padding:15px; border-radius:12px; margin-bottom:20px;">
-                <label>Feedback:</label>
-                <textarea id="feedback" rows="3" placeholder="How was the test?"></textarea>
-                <button onclick="saveAll()" style="width:100%; background:var(--primary); color:white; border:none; padding:12px; border-radius:8px; margin-top:10px; cursor:pointer;">Save & Exit</button>
-            </div>
-            <h3>Review:</h3>
-            <div id="review-box"></div>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-        const firebaseConfig = { apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o", authDomain: "physics-test-series-405c7.firebaseapp.com", projectId: "physics-test-series-405c7", storageBucket: "physics-test-series-405c7.firebasestorage.app", messagingSenderId: "758620061190", appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87" };
-        const db = getFirestore(initializeApp(firebaseConfig));
-
-        const questions = [
-            { q: "Light year is a unit of:", options: ["Time", "Distance", "Intensity", "Velocity"], a: 1 },
-            { q: "Dimensional formula for Pressure:", options: ["ML⁻¹T⁻²", "MLT⁻²", "ML²T⁻²", "ML⁻²T⁻²"], a: 0 },
-            { q: "How many SI base units?", options: ["5", "6", "7", "9"], a: 2 },
-            { q: "Which is NOT energy unit?", options: ["Joule", "Watt-hour", "eV", "Watt"], a: 3 },
-            { q: "Prefix 'pico' is:", options: ["10⁻⁹", "10⁻¹²", "10⁻⁶", "10⁻¹⁵"], a: 1 }
-        ];
-
-        let cur = 0, score = 0, userAns = [], timer, timeLeft = 30;
-
-        function loadQ() {
-            if(cur >= questions.length) return endQuiz();
-            timeLeft = 30;
-            document.getElementById('timer-fill').style.width = "100%";
-            document.getElementById('quiz-box').innerHTML = `
-                <p>Q${cur+1}/${questions.length}</p>
-                <h3>${questions[cur].q}</h3>
-                ${questions[cur].options.map((o, i) => `<div class="option" onclick="next(${i})">${o}</div>`).join('')}
-            `;
-            clearInterval(timer);
-            timer = setInterval(() => {
-                timeLeft--;
-                document.getElementById('timer-fill').style.width = (timeLeft/30*100) + "%";
-                if(timeLeft <= 0) next(-1);
-            }, 1000);
-        }
-
-        window.next = (idx) => {
-            userAns.push(idx);
-            if(idx === questions[cur].a) score++;
-            cur++; loadQ();
-        }
-
-        function endQuiz() {
-            clearInterval(timer);
-            document.getElementById('quiz-ui').style.display = 'none';
-            document.getElementById('result-ui').style.display = 'block';
-            document.getElementById('score').innerText = `${score}/${questions.length}`;
-            questions.forEach((q, i) => {
-                const isCor = userAns[i] === q.a;
-                document.getElementById('review-box').innerHTML += `<div class="review-card" style="border-color:${isCor?'#22c55e':'#ef4444'}"><b>Q${i+1}: ${q.q}</b><br><small>Your: ${userAns[i]==-1?'Timeout':q.options[userAns[i]]} | Correct: ${q.options[q.a]}</small></div>`;
-            });
-        }
-
-        window.saveAll = async () => {
-            const name = localStorage.getItem('currentUser'), email = localStorage.getItem('currentEmail'), fb = document.getElementById('feedback').value;
-            await addDoc(collection(db, "results"), { name, email, score, feedback: fb, timestamp: serverTimestamp() });
-            window.location.href = 'index.html';
-        }
-        loadQ();
-    </script>
-</body>
-</html>
+<div id="question-data" style="display:none;">
+[
+    {"q": "Light year is a unit of:", "options": ["Time", "Distance", "Light intensity", "Velocity"], "a": 1},
+    {"q": "Dimensional formula for Pressure is:", "options": ["ML⁻¹T⁻²", "MLT⁻²", "ML²T⁻²", "ML⁻²T⁻²"], "a": 0},
+    {"q": "How many SI base units are there?", "options": ["5", "6", "7", "9"], "a": 2},
+    {"q": "Which of the following is NOT a unit of energy?", "options": ["Joule", "Watt-hour", "Electron-Volt", "Watt"], "a": 3},
+    {"q": "The prefix 'pico' represents:", "options": ["10⁻⁹", "10⁻¹²", "10⁻⁶", "10⁻¹⁵"], "a": 1},
+    {"q": "Dimensional formula of Planck's constant is same as:", "options": ["Force", "Energy", "Linear Momentum", "Angular Momentum"], "a": 3},
+    {"q": "1 AU (Astronomical Unit) is equal to:", "options": ["1.5x10¹¹ m", "1.5x10⁸ m", "9.46x10¹⁵ m", "3.08x10¹⁶ m"], "a": 0},
+    {"q": "Parsec is the unit of:", "options": ["Time", "Angle", "Distance", "Brightness"], "a": 2},
+    {"q": "Which of the following is dimensionless?", "options": ["Strain", "Stress", "Force", "Work"], "a": 0},
+    {"q": "Solid angle is measured in:", "options": ["Radian", "Steradian", "Degree", "Candela"], "a": 1}
+]
+</div> 
