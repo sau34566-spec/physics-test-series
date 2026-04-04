@@ -8,8 +8,7 @@
         :root { --primary: #6366f1; --bg: #0f172a; --card: rgba(30, 41, 59, 0.7); --text: #f8fafc; }
         body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle at top right, #1e1b4b, #0f172a); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow-x: hidden; }
 
-        /* Animations */
-        .master-box { background: var(--card); backdrop-filter: blur(20px); padding: 40px; border-radius: 30px; width: 90%; max-width: 500px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); text-align: center; animation: float 6s ease-in-out infinite; }
+        .master-box { background: var(--card); backdrop-filter: blur(20px); padding: 40px; border-radius: 30px; width: 90%; max-width: 500px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); text-align: center; animation: float 6s ease-in-out infinite; position: relative; }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         .fade-in { animation: fadeIn 0.5s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -18,20 +17,23 @@
         button { width: 100%; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; padding: 16px; border-radius: 15px; cursor: pointer; font-weight: 600; margin-top: 15px; transition: 0.4s; }
         button:hover { transform: scale(1.02); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4); }
 
-        /* Star Rating CSS */
-        .star-rating { display: flex; justify-content: center; flex-direction: row-reverse; margin: 20px 0; }
-        .star-rating input { display: none; }
-        .star-rating label { font-size: 2.5rem; color: #334155; cursor: pointer; transition: 0.3s; margin: 0 5px; }
-        .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: #f59e0b; transform: scale(1.1); }
+        /* Navigation Arrows */
+        .nav-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+        .nav-arrow { background: rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; font-size: 1.2rem; user-select: none; }
+        .nav-arrow:hover { background: var(--primary); transform: scale(1.1); }
+        .nav-arrow.disabled { opacity: 0.3; cursor: not-allowed; }
 
         /* Timer Circle */
         .timer-wrapper { display: none; align-items: center; justify-content: center; margin-bottom: 25px; }
         .timer-circle { position: relative; width: 65px; height: 65px; border-radius: 50%; background: conic-gradient(var(--primary) var(--p), #334155 0); display: flex; align-items: center; justify-content: center; transition: background 1s linear; }
         .timer-circle::after { content: attr(data-time); position: absolute; width: 55px; height: 55px; background: #1e293b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; }
 
-        .option { background: rgba(51, 65, 85, 0.5); padding: 16px; margin: 12px 0; border-radius: 15px; cursor: pointer; text-align: left; border: 1px solid transparent; transition: 0.3s; }
-        .option:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); transform: translateX(8px); }
-        .review-item { text-align: left; padding: 15px; border-radius: 15px; background: rgba(15, 23, 42, 0.6); margin-top: 15px; border-left: 5px solid #4b5563; }
+        .option { background: rgba(51, 65, 85, 0.5); padding: 16px; margin: 12px 0; border-radius: 15px; cursor: pointer; text-align: left; border: 2px solid transparent; transition: 0.3s; }
+        .option.selected { border-color: var(--primary); background: rgba(99, 102, 241, 0.2); }
+        .star-rating { display: flex; justify-content: center; flex-direction: row-reverse; margin: 20px 0; }
+        .star-rating input { display: none; }
+        .star-rating label { font-size: 2.5rem; color: #334155; cursor: pointer; transition: 0.3s; margin: 0 5px; }
+        .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: #f59e0b; }
     </style>
 </head>
 <body>
@@ -39,18 +41,19 @@
 <div class="master-box" id="main-container">
     <div id="login-ui" class="fade-in">
         <h1>Physics Elite</h1>
-        <input type="text" id="stdName" placeholder="Student Full Name">
+        <input type="text" id="stdName" placeholder="Full Name">
         <input type="email" id="stdEmail" placeholder="Email Address">
         <button onclick="verifyUser()">Verify Identity</button>
         <p id="msg" style="font-size:0.8rem; margin-top:15px;"></p>
     </div>
 
     <div id="instruct-ui" style="display:none;" class="fade-in">
-        <h2 style="color:var(--primary)">Test Protocol</h2>
-        <div style="text-align:left; color:#94a3b8; font-size:0.95rem; margin: 25px 0; line-height: 2.2;">
-            <p>⏱️ <b>30 Seconds</b> per question countdown.</p>
-            <p>⭐ <b>Rating & Feedback</b> is mandatory.</p>
-            <p>❌ <b>No Refresh</b> allowed during session.</p>
+        <h3 style="color:var(--primary); margin-bottom: 5px;">CHAPTER 1</h3>
+        <h2 style="margin-top: 0;">Units & Measurements</h2>
+        <div style="text-align:left; color:#94a3b8; font-size:0.95rem; margin: 20px 0; line-height: 1.8;">
+            <p>⏱️ <b>30 Seconds</b> per question.</p>
+            <p>⭐ <b>Rating</b> is required to sync results.</p>
+            <p>➡️ Use <b>Arrows</b> to skip or go back.</p>
         </div>
         <button onclick="fetchQuestions()">Start Test</button>
     </div>
@@ -60,13 +63,17 @@
             <div class="timer-circle" id="timer-circ" data-time="30" style="--p:100%"></div>
         </div>
         <div id="q-box"></div>
+        
+        <div class="nav-controls">
+            <div class="nav-arrow" id="prevBtn" onclick="changeQuestion(-1)">❮</div>
+            <div id="q-counter" style="font-weight:600; color:var(--primary)"></div>
+            <div class="nav-arrow" id="nextBtn" onclick="changeQuestion(1)">❯</div>
+        </div>
     </div>
 
     <div id="result-ui" style="display:none;" class="fade-in">
-        <h2 style="margin-bottom: 0;">Test Complete!</h2>
+        <h2>Test Report</h2>
         <h1 id="final-score" style="color:var(--primary); font-size: 3.5rem; margin: 10px 0;"></h1>
-        
-        <p style="margin-top:20px; font-weight:600;">Rate your experience:</p>
         <div class="star-rating">
             <input type="radio" id="5-stars" name="rating" value="5"><label for="5-stars">★</label>
             <input type="radio" id="4-stars" name="rating" value="4"><label for="4-stars">★</label>
@@ -74,12 +81,9 @@
             <input type="radio" id="2-stars" name="rating" value="2"><label for="2-stars">★</label>
             <input type="radio" id="1-star" name="rating" value="1"><label for="1-star">★</label>
         </div>
-
-        <textarea id="feedback-txt" rows="3" placeholder="Any suggestions for us?"></textarea>
-        <button id="syncBtn" onclick="submitToFirebase()">Sync Results & Exit</button>
-        
-        <h3 style="text-align:left; margin-top:40px; border-bottom: 1px solid #334155; padding-bottom: 10px;">Review Report</h3>
-        <div id="review-list"></div>
+        <textarea id="feedback-txt" rows="2" placeholder="Feedback..."></textarea>
+        <button id="syncBtn" onclick="submitToFirebase()">Sync & Exit</button>
+        <div id="review-list" style="margin-top:20px;"></div>
     </div>
 </div>
 
@@ -87,28 +91,19 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
     import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
-        authDomain: "physics-test-series-405c7.firebaseapp.com",
-        projectId: "physics-test-series-405c7",
-        storageBucket: "physics-test-series-405c7.firebasestorage.app",
-        messagingSenderId: "758620061190",
-        appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
-    };
-
+    const firebaseConfig = { apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o", authDomain: "physics-test-series-405c7.firebaseapp.com", projectId: "physics-test-series-405c7", storageBucket: "physics-test-series-405c7.firebasestorage.app", messagingSenderId: "758620061190", appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87" };
     const db = getFirestore(initializeApp(firebaseConfig));
+
     let questions = [], currentQ = 0, score = 0, userAnswers = [], timer, timeLeft = 30;
 
     window.verifyUser = async () => {
         const n = document.getElementById('stdName').value;
         const e = document.getElementById('stdEmail').value.toLowerCase();
-        if(!n || !e) return alert("Please fill details");
-
+        if(!n || !e) return alert("Fill details");
         const q = query(collection(db, "results"), where("email", "==", e));
         const snap = await getDocs(q);
-        if(!snap.empty) {
-            document.getElementById('msg').innerHTML = "<span style='color:#ef4444'>Access Denied: Already attempted!</span>";
-        } else {
+        if(!snap.empty) document.getElementById('msg').innerHTML = "<span style='color:red'>Already attempted!</span>";
+        else {
             localStorage.setItem('user', n); localStorage.setItem('mail', e);
             document.getElementById('login-ui').style.display = 'none';
             document.getElementById('instruct-ui').style.display = 'block';
@@ -116,15 +111,12 @@
     };
 
     window.fetchQuestions = async () => {
-        try {
-            const res = await fetch('chapter1.html');
-            const text = await res.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(text, 'text/html');
-            const jsonStr = doc.getElementById('question-data').textContent;
-            questions = JSON.parse(jsonStr);
-            startQuiz();
-        } catch(e) { alert("Data Sync Error!"); }
+        const res = await fetch('chapter1.html');
+        const text = await res.text();
+        const doc = new DOMParser().parseFromString(text, 'text/html');
+        questions = JSON.parse(doc.getElementById('question-data').textContent);
+        userAnswers = new Array(questions.length).fill(-1);
+        startQuiz();
     };
 
     function startQuiz() {
@@ -135,19 +127,35 @@
     }
 
     function renderQuestion() {
-        if(currentQ >= questions.length) return showResults();
-        timeLeft = 30;
-        updateTimerUI();
+        const q = questions[currentQ];
+        document.getElementById('q-counter').innerText = `${currentQ + 1} / ${questions.length}`;
         document.getElementById('q-box').innerHTML = `
-            <p style="color:#6366f1; font-weight:600;">Question ${currentQ+1} of ${questions.length}</p>
-            <h3 style="margin: 15px 0 25px 0;">${questions[currentQ].q}</h3>
-            ${questions[currentQ].options.map((o, i) => `<div class="option" onclick="handleSelect(${i})">${o}</div>`).join('')}
+            <h3>${q.q}</h3>
+            ${q.options.map((o, i) => `<div class="option ${userAnswers[currentQ]===i?'selected':''}" onclick="selectOpt(${i})">${o}</div>`).join('')}
         `;
-        clearInterval(timer);
+        document.getElementById('prevBtn').classList.toggle('disabled', currentQ === 0);
+        resetTimer();
+    }
+
+    window.selectOpt = (idx) => {
+        userAnswers[currentQ] = idx;
+        renderQuestion();
+        setTimeout(() => changeQuestion(1), 300);
+    };
+
+    window.changeQuestion = (step) => {
+        if(step === 1 && currentQ === questions.length - 1) return showResults();
+        if(step === -1 && currentQ === 0) return;
+        currentQ += step;
+        renderQuestion();
+    };
+
+    function resetTimer() {
+        clearInterval(timer); timeLeft = 30;
+        updateTimerUI();
         timer = setInterval(() => {
-            timeLeft--;
-            updateTimerUI();
-            if(timeLeft <= 0) handleSelect(-1);
+            timeLeft--; updateTimerUI();
+            if(timeLeft <= 0) changeQuestion(1);
         }, 1000);
     }
 
@@ -157,48 +165,19 @@
         circ.style.setProperty('--p', (timeLeft / 30 * 100) + '%');
     }
 
-    window.handleSelect = (idx) => {
-        userAnswers.push(idx);
-        if(idx === questions[currentQ].a) score++;
-        currentQ++; renderQuestion();
-    };
-
     function showResults() {
         clearInterval(timer);
         document.getElementById('quiz-ui').style.display = 'none';
         document.getElementById('result-ui').style.display = 'block';
+        score = userAnswers.reduce((acc, ans, i) => acc + (ans === questions[i].a ? 1 : 0), 0);
         document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
-        
-        questions.forEach((q, i) => {
-            const isCorrect = userAnswers[i] === q.a;
-            document.getElementById('review-list').innerHTML += `
-                <div class="review-item" style="border-left-color:${isCorrect?'#22c55e':'#ef4444'}">
-                    <p style="margin:0 0 5px 0; font-weight:600;">${q.q}</p>
-                    <small style="color:${isCorrect?'#22c55e':'#ef4444'}">Your Answer: ${userAnswers[i]==-1?'Timeout':q.options[userAnswers[i]]}</small><br>
-                    <small style="color:#22c55e">Correct: ${q.options[q.a]}</small>
-                </div>`;
-        });
     }
 
     window.submitToFirebase = async () => {
-        const fbText = document.getElementById('feedback-txt').value;
-        const rating = document.querySelector('input[name="rating"]:checked')?.value || "No Rating";
-        const btn = document.getElementById('syncBtn');
-        
-        btn.disabled = true; 
-        btn.innerText = "Syncing Data...";
-
-        await addDoc(collection(db, "results"), {
-            name: localStorage.getItem('user'),
-            email: localStorage.getItem('mail'),
-            score,
-            rating: rating + " Stars",
-            feedback: fbText || "No feedback",
-            timestamp: serverTimestamp()
-        });
-
-        alert("Test report successfully synced!");
-        window.location.reload();
+        const rating = document.querySelector('input[name="rating"]:checked')?.value || "0";
+        document.getElementById('syncBtn').innerText = "Syncing...";
+        await addDoc(collection(db, "results"), { name: localStorage.getItem('user'), email: localStorage.getItem('mail'), score, rating: rating + " Stars", feedback: document.getElementById('feedback-txt').value || "None", timestamp: serverTimestamp() });
+        location.reload();
     };
 </script>
 </body>
