@@ -9,26 +9,42 @@
         :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .quiz-container { background: var(--card); padding: 30px; border-radius: 20px; width: 450px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); position: relative; }
-        
         .q-slide { display: none; animation: fadeIn 0.4s ease; }
         .active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         .option { background: #334155; padding: 12px; margin: 10px 0; border-radius: 10px; cursor: pointer; transition: 0.3s; border: 1px solid transparent; }
         .option:hover { background: #475569; border-color: var(--primary); }
         .progress-bar { height: 5px; background: #334155; margin-bottom: 20px; border-radius: 5px; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: 0.3s; }
+        #loader { display: none; color: var(--primary); margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="quiz-container">
     <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
-    <div id="quiz-box">
-        </div>
+    <div id="quiz-box"></div>
+    <div id="loader">Saving your score...</div>
 </div>
 
-<script>
+<script type="module">
+    // Firebase Integration
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
+        authDomain: "physics-test-series-405c7.firebaseapp.com",
+        projectId: "physics-test-series-405c7",
+        storageBucket: "physics-test-series-405c7.firebasestorage.app",
+        messagingSenderId: "758620061190",
+        appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87",
+        measurementId: "G-Z5QVQMZ082"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
     const questions = [
         { q: "Light year is a unit of:", options: ["Time", "Distance", "Light intensity", "Velocity"], a: 1 },
         { q: "Dimensional formula for Pressure is:", options: ["ML⁻¹T⁻²", "MLT⁻²", "ML²T⁻²", "ML⁻²T⁻²"], a: 0 },
@@ -44,9 +60,8 @@
 
     let currentQ = 0;
     let score = 0;
-    let userAnswers = [];
 
-    function loadQuestion() {
+    window.loadQuestion = function() {
         const quizBox = document.getElementById('quiz-box');
         const qData = questions[currentQ];
         const progress = ((currentQ + 1) / questions.length) * 100;
@@ -63,34 +78,47 @@
         `;
     }
 
-    function handleAnswer(index) {
-        // Record answer
+    window.handleAnswer = function(index) {
         if(index === questions[currentQ].a) score++;
-        userAnswers.push({q: questions[currentQ].q, selected: questions[currentQ].options[index], correct: questions[currentQ].options[questions[currentQ].a]});
-
+        
         if(currentQ < questions.length - 1) {
             currentQ++;
             loadQuestion();
         } else {
-            showResult();
+            submitFinalResult();
         }
     }
 
-    function showResult() {
-        const name = localStorage.getItem('currentUser') || "Student";
-        const email = localStorage.getItem('currentEmail');
-        localStorage.setItem('done_' + email, true); // Lock test for this email
-
-        document.getElementById('quiz-box').innerHTML = `
-            <h2>Test Completed!</h2>
-            <p>Well done, ${name}!</p>
-            <h1 style="color:var(--primary)">${score} / 10</h1>
-            <p>Aapka score save kar liya gaya hai.</p>
-            <button onclick="window.location.href='index.html'" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:8px; width:100%; cursor:pointer;">Go to Feedback</button>
-        `;
+    async function submitFinalResult() {
+        document.getElementById('quiz-box').innerHTML = "<h2>Finishing Test...</h2>";
+        document.getElementById('loader').style.display = "block";
         
-        // Yahan aap apna Score saving logic (Google Sheet) add kar sakte hain
-        console.log("Final Data:", { name, email, score, details: userAnswers });
+        const name = localStorage.getItem('currentUser') || "Unknown";
+        const email = localStorage.getItem('currentEmail') || "No Email";
+
+        try {
+            await addDoc(collection(db, "results"), {
+                name: name,
+                email: email,
+                score: score,
+                total: questions.length,
+                timestamp: serverTimestamp()
+            });
+            
+            localStorage.setItem('done_' + email, "true");
+            
+            document.getElementById('loader').style.display = "none";
+            document.getElementById('quiz-box').innerHTML = `
+                <h2>Test Completed!</h2>
+                <p>Well done, ${name}!</p>
+                <h1 style="color:var(--primary)">${score} / 10</h1>
+                <p>Your result has been saved to the database.</p>
+                <button onclick="window.location.href='index.html'" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:8px; width:100%; cursor:pointer; margin-top:10px;">Go to Dashboard</button>
+            `;
+        } catch (e) {
+            console.error("Error saving result: ", e);
+            alert("Error saving result. Check console.");
+        }
     }
 
     loadQuestion();
