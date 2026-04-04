@@ -1,12 +1,99 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 1: Units & Measurements</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .quiz-container { background: var(--card); padding: 30px; border-radius: 20px; width: 450px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); position: relative; }
+        
+        .q-slide { display: none; animation: fadeIn 0.4s ease; }
+        .active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .option { background: #334155; padding: 12px; margin: 10px 0; border-radius: 10px; cursor: pointer; transition: 0.3s; border: 1px solid transparent; }
+        .option:hover { background: #475569; border-color: var(--primary); }
+        .progress-bar { height: 5px; background: #334155; margin-bottom: 20px; border-radius: 5px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: 0.3s; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    <div id="quiz-box">
+        </div>
+</div>
+
 <script>
-    let currentQ = 0;
     const questions = [
-        { q: "Power ki unit kya hai?", a: "Watt", options: ["Watt", "Joule", "Newton", "Volt"] },
-        { q: "Force ka formula?", a: "F=ma", options: ["F=mv", "F=ma", "F=mg", "P=mv"] }
+        { q: "Light year is a unit of:", options: ["Time", "Distance", "Light intensity", "Velocity"], a: 1 },
+        { q: "Dimensional formula for Pressure is:", options: ["ML⁻¹T⁻²", "MLT⁻²", "ML²T⁻²", "ML⁻²T⁻²"], a: 0 },
+        { q: "How many SI base units are there?", options: ["5", "6", "7", "9"], a: 2 },
+        { q: "Which of the following is NOT a unit of energy?", options: ["Joule", "Watt-hour", "Electron-Volt", "Watt"], a: 3 },
+        { q: "The prefix 'pico' represents:", options: ["10⁻⁹", "10⁻¹²", "10⁻⁶", "10⁻¹⁵"], a: 1 },
+        { q: "Dimensional formula of Planck's constant is same as:", options: ["Force", "Energy", "Linear Momentum", "Angular Momentum"], a: 3 },
+        { q: "1 AU (Astronomical Unit) is equal to:", options: ["1.5x10¹¹ m", "1.5x10⁸ m", "9.46x10¹⁵ m", "3.08x10¹⁶ m"], a: 0 },
+        { q: "Parsec is the unit of:", options: ["Time", "Angle", "Distance", "Brightness"], a: 2 },
+        { q: "Which of the following is dimensionless?", options: ["Strain", "Stress", "Force", "Work"], a: 0 },
+        { q: "Solid angle is measured in:", options: ["Radian", "Steradian", "Degree", "Candela"], a: 1 }
     ];
 
-    function showQuestion() {
-        let q = questions[currentQ];
-        // Yahan HTML render karne ka code aayega jo auto-next karega
+    let currentQ = 0;
+    let score = 0;
+    let userAnswers = [];
+
+    function loadQuestion() {
+        const quizBox = document.getElementById('quiz-box');
+        const qData = questions[currentQ];
+        const progress = ((currentQ + 1) / questions.length) * 100;
+        document.getElementById('progress').style.width = progress + "%";
+
+        quizBox.innerHTML = `
+            <div class="q-slide active">
+                <p style="font-size: 14px; color: #94a3b8;">Question ${currentQ + 1} of 10</p>
+                <h3 style="margin-bottom:20px;">${qData.q}</h3>
+                ${qData.options.map((opt, i) => `
+                    <div class="option" onclick="handleAnswer(${i})">${opt}</div>
+                `).join('')}
+            </div>
+        `;
     }
+
+    function handleAnswer(index) {
+        // Record answer
+        if(index === questions[currentQ].a) score++;
+        userAnswers.push({q: questions[currentQ].q, selected: questions[currentQ].options[index], correct: questions[currentQ].options[questions[currentQ].a]});
+
+        if(currentQ < questions.length - 1) {
+            currentQ++;
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        const name = localStorage.getItem('currentUser') || "Student";
+        const email = localStorage.getItem('currentEmail');
+        localStorage.setItem('done_' + email, true); // Lock test for this email
+
+        document.getElementById('quiz-box').innerHTML = `
+            <h2>Test Completed!</h2>
+            <p>Well done, ${name}!</p>
+            <h1 style="color:var(--primary)">${score} / 10</h1>
+            <p>Aapka score save kar liya gaya hai.</p>
+            <button onclick="window.location.href='index.html'" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:8px; width:100%; cursor:pointer;">Go to Feedback</button>
+        `;
+        
+        // Yahan aap apna Score saving logic (Google Sheet) add kar sakte hain
+        console.log("Final Data:", { name, email, score, details: userAnswers });
+    }
+
+    loadQuestion();
 </script>
+</body>
+</html>
