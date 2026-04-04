@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Physics Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+        .dashboard { max-width: 1000px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
+        th { background-color: var(--primary); color: white; }
+        tr:hover { background-color: #2d3748; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        #login-screen { text-align: center; margin-top: 100px; }
+        input { padding: 10px; border-radius: 5px; border: none; margin-bottom: 10px; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="login-screen">
+    <h2>Admin Access</h2>
+    <input type="password" id="adminPass" placeholder="Enter Admin Password"> <br>
+    <button onclick="checkPass()">Login</button>
+</div>
+
+<div class="dashboard" id="main-dashboard" style="display:none;">
+    <div class="header">
+        <h1>Student Results</h1>
+        <button onclick="location.reload()" style="background:#4b5563;">Refresh Data</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Score</th>
+                <th>Date & Time</th>
+            </tr>
+        </thead>
+        <tbody id="results-table">
+            </tbody>
+    </table>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
+        authDomain: "physics-test-series-405c7.firebaseapp.com",
+        projectId: "physics-test-series-405c7",
+        storageBucket: "physics-test-series-405c7.firebasestorage.app",
+        messagingSenderId: "758620061190",
+        appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.checkPass = function() {
+        const pass = document.getElementById('adminPass').value;
+        if(pass === "physics123") { // Aap apna password yahan change kar sakte hain
+            document.getElementById('login-screen').style.display = "none";
+            document.getElementById('main-dashboard').style.display = "block";
+            loadResults();
+        } else {
+            alert("Wrong Password!");
+        }
+    }
+
+    async function loadResults() {
+        const tableBody = document.getElementById('results-table');
+        tableBody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
+        
+        try {
+            const q = query(collection(db, "results"), orderBy("timestamp", "desc"));
+            const querySnapshot = await getDocs(q);
+            tableBody.innerHTML = "";
+            
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : "N/A";
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${data.name}</td>
+                        <td>${data.email}</td>
+                        <td>${data.score} / ${data.total}</td>
+                        <td>${date}</td>
+                    </tr>
+                `;
+            });
+        } catch (e) {
+            console.error("Error fetching data: ", e);
+            tableBody.innerHTML = "<tr><td colspan='4'>Error loading data. Check console.</td></tr>";
+        }
+    }
+</script>
+
+</body>
+</html>
