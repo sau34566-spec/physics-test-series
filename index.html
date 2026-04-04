@@ -21,8 +21,11 @@
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
+        .input-group { text-align: left; margin-bottom: 15px; }
+        label { font-size: 0.75rem; color: #818cf8; font-weight: 600; margin-left: 5px; }
+        
         input { 
-            width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #334155; 
+            width: 100%; padding: 14px; margin-top: 5px; border-radius: 12px; border: 1px solid #334155; 
             background: rgba(15, 23, 42, 0.8); color: white; outline: none; box-sizing: border-box;
         }
         input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3); }
@@ -35,22 +38,39 @@
         button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); }
         button:disabled { background: #475569; cursor: not-allowed; }
 
-        #status-msg { margin-top: 20px; font-size: 0.9rem; font-weight: 400; }
-        .err { color: #ef4444; }
+        #status-msg { margin-top: 20px; font-size: 0.9rem; min-height: 25px; }
+        .err { color: #ef4444; font-weight: 600; }
         .ok { color: #22c55e; }
     </style>
 </head>
 <body>
 
-<div class="login-box">
+<div class="login-box" id="auth-ui">
     <h2 style="margin-bottom:5px;">Physics Elite Portal</h2>
-    <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:25px;">Enter details to unlock your test session</p>
+    <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:25px;">Verify your identity to start the test</p>
 
-    <input type="text" id="name" placeholder="Your Full Name">
-    <input type="email" id="email" placeholder="student@example.com">
+    <div class="input-group">
+        <label>FULL NAME</label>
+        <input type="text" id="name" placeholder="Enter your name">
+    </div>
+    <div class="input-group">
+        <label>EMAIL ADDRESS</label>
+        <input type="email" id="email" placeholder="student@example.com">
+    </div>
 
-    <button id="entryBtn">Start Examination</button>
+    <button id="entryBtn">Verify & Continue</button>
     <div id="status-msg"></div>
+</div>
+
+<div class="login-box" id="instruction-ui" style="display:none;">
+    <h2 style="color:var(--primary)">Test Instructions</h2>
+    <div style="text-align:left; color:#94a3b8; font-size:0.9rem; margin: 20px 0; line-height:1.6;">
+        <p>✅ <b>Total Questions:</b> 10</p>
+        <p>⏱️ <b>Timer:</b> 30 Seconds per question</p>
+        <p>📝 <b>Feedback:</b> Required after submission</p>
+        <p>⚠️ <b>Warning:</b> Do not refresh during the test</p>
+    </div>
+    <button onclick="window.location.href='chapter1.html'">I am Ready, Start Test</button>
 </div>
 
 <script type="module">
@@ -82,27 +102,26 @@
         }
 
         btn.disabled = true;
-        msg.innerHTML = 'Verifying credentials...';
+        msg.innerHTML = '<span style="color:var(--primary)">Verifying with Database...</span>';
 
         try {
-            // Smart Check: Searching Firebase for this email
+            // Live Firebase Check
             const q = query(collection(db, "results"), where("email", "==", emailVal));
             const snap = await getDocs(q);
 
             if (!snap.empty) {
-                msg.innerHTML = '<span class="err">❌ Access Denied: You have already completed this test.</span>';
+                msg.innerHTML = '<span class="err">❌ Access Denied: Test already completed.</span>';
                 btn.disabled = false;
             } else {
                 localStorage.setItem('currentUser', nameVal);
                 localStorage.setItem('currentEmail', emailVal);
-                msg.innerHTML = '<span class="ok">✅ Identity Verified! Preparing test...</span>';
                 
-                setTimeout(() => {
-                    window.location.href = 'chapter1.html';
-                }, 1200);
+                // Switch to Instructions Slide
+                document.getElementById('auth-ui').style.display = 'none';
+                document.getElementById('instruction-ui').style.display = 'block';
             }
         } catch (error) {
-            msg.innerHTML = '<span class="err">Network Error. Check your connection.</span>';
+            msg.innerHTML = '<span class="err">Connection Error. Please try again.</span>';
             btn.disabled = false;
         }
     });
