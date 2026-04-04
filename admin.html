@@ -5,16 +5,18 @@
     <title>Admin Dashboard | Physics Elite</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
+        :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --danger: #ef4444; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
         .dashboard { max-width: 1200px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid #334155; }
         th { background: var(--primary); color: white; }
-        .star-box { color: #f59e0b; font-weight: bold; } /* Stars color */
+        .star-box { color: #f59e0b; font-weight: bold; }
         #login-screen { text-align: center; margin-top: 100px; }
         input { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 10px; width: 250px; }
-        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .btn-reset { background: var(--danger); margin-left: 10px; }
+        button:hover { opacity: 0.8; transform: translateY(-2px); }
     </style>
 </head>
 <body>
@@ -28,7 +30,10 @@
 <div class="dashboard" id="main-dashboard" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <h1>Student Reports</h1>
-        <button onclick="location.reload()">Refresh Data</button>
+        <div>
+            <button onclick="location.reload()">Refresh Data</button>
+            <button class="btn-reset" onclick="resetAllData()">Reset All Data</button>
+        </div>
     </div>
     <table>
         <thead>
@@ -36,7 +41,8 @@
                 <th>Name</th>
                 <th>Email</th>
                 <th>Score</th>
-                <th>Rating</th> <th>Feedback</th>
+                <th>Rating</th>
+                <th>Feedback</th>
                 <th>Date</th>
             </tr>
         </thead>
@@ -46,7 +52,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -72,10 +78,15 @@
         const q = query(collection(db, "results"), orderBy("timestamp", "desc"));
         const snap = await getDocs(q);
         table.innerHTML = "";
+        
+        if(snap.empty) {
+            table.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No records found.</td></tr>";
+            return;
+        }
 
         snap.forEach((doc) => {
             const d = doc.data();
-            const rating = d.rating || "N/A"; // Firebase se rating uthana
+            const rating = d.rating || "N/A";
             const date = d.timestamp ? d.timestamp.toDate().toLocaleString() : "N/A";
             
             table.innerHTML += `
@@ -90,6 +101,17 @@
             `;
         });
     }
+
+    // RESET FUNCTION
+    window.resetAllData = async () => {
+        if(confirm("Are you sure? This will delete ALL student results permanently!")) {
+            const snap = await getDocs(collection(db, "results"));
+            const deletePromises = snap.docs.map(d => deleteDoc(doc(db, "results", d.id)));
+            await Promise.all(deletePromises);
+            alert("All data has been wiped!");
+            loadData();
+        }
+    };
 </script>
 </body>
 </html>
