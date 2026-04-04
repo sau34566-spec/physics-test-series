@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Test Portal</title>
+    <style>
+        :root { --primary: #2563eb; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 400px; text-align: center; }
+        .slide { display: none; }
+        .slide.active { display: block; }
+        button { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; margin-top: 20px; width: 100%; }
+        input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+        .chapter-btn { background: #64748b; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="slide active" id="slide1">
+        <h1>Welcome to Physics Test</h1>
+        <p><strong>Instructions:</strong><br>1. Har sawal ke 4 options hain.<br>2. Ek baar select karne par agla sawal aayega.<br>3. Result ant mein dikhega.</p>
+        <button onclick="nextSlide(2)">Start</button>
+    </div>
+
+    <div class="slide" id="slide2">
+        <h2>Student Details</h2>
+        <input type="text" id="studentName" placeholder="Apna Naam Likhein" required>
+        <input type="email" id="studentEmail" placeholder="Email Address" required>
+        <p id="errorMsg" style="color:red; font-size:12px;"></p>
+        <button onclick="validateStudent()">Next</button>
+    </div>
+
+    <div class="slide" id="slide3">
+        <h2>Select Chapter</h2>
+        <button class="chapter-btn" onclick="goToTest('chapter1.html')">Chapter 1: Motion</button>
+        <button class="chapter-btn" onclick="goToTest('chapter2.html')">Chapter 2: Force</button>
+    </div>
+
+    <div class="slide" id="id4">
+        <h2>Feedback</h2>
+        <textarea id="feedbackText" style="width:100%; height:80px;" placeholder="Apna feedback dein..."></textarea>
+        <button onclick="submitFeedback()">Submit Feedback</button>
+    </div>
+
+    <div class="slide" id="slide5">
+        <h2>Test Result</h2>
+        <div id="finalScore"></div>
+        <button onclick="location.reload()">Back to Home</button>
+    </div>
+</div>
+
+<script>
+    function nextSlide(n) {
+        document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+        document.getElementById('slide' + n).classList.add('active');
+    }
+
+    function validateStudent() {
+        const email = document.getElementById('studentEmail').value;
+        const name = document.getElementById('studentName').value;
+        
+        if(!name || !email) { alert("Details bharein!"); return; }
+
+        // Check if already tested (Using LocalStorage for demo)
+        if(localStorage.getItem('tested_' + email)) {
+            document.getElementById('errorMsg').innerText = "Is email se test diya ja chuka hai!";
+        } else {
+            localStorage.setItem('currentUser', name);
+            localStorage.setItem('currentEmail', email);
+            nextSlide(3);
+        }
+    }
+
+    function goToTest(page) {
+        // Data save karke naye page par bhej rahe hain
+        window.location.href = page;
+    }
+</script>
+
+</body>
+</html>
