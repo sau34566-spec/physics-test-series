@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,69 +6,39 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #6366f1; --bg: #0f172a; --card: rgba(30, 41, 59, 0.7); --text: #f8fafc; }
-        
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background: radial-gradient(circle at top right, #1e1b4b, #0f172a); 
-            color: var(--text); display: flex; justify-content: center; align-items: center; 
-            min-height: 100vh; margin: 0; overflow-x: hidden;
-        }
+        body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle at top right, #1e1b4b, #0f172a); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow-x: hidden; }
 
-        /* Floating Animation */
-        .master-box { 
-            background: var(--card); backdrop-filter: blur(20px); padding: 40px; 
-            border-radius: 30px; width: 90%; max-width: 500px; 
-            box-shadow: 0 25px 50px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); 
-            text-align: center; animation: float 6s ease-in-out infinite; 
-        }
+        /* Animations */
+        .master-box { background: var(--card); backdrop-filter: blur(20px); padding: 40px; border-radius: 30px; width: 90%; max-width: 500px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); text-align: center; animation: float 6s ease-in-out infinite; }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-
-        /* Smooth UI Entrance */
         .fade-in { animation: fadeIn 0.5s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-        input, textarea { 
-            width: 100%; padding: 14px; margin: 12px 0; border-radius: 15px; 
-            border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.8); 
-            color: white; box-sizing: border-box; font-family: inherit; transition: 0.3s;
-        }
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
-
-        button { 
-            width: 100%; background: linear-gradient(135deg, #6366f1, #a855f7); 
-            color: white; border: none; padding: 16px; border-radius: 15px; 
-            cursor: pointer; font-weight: 600; margin-top: 15px; transition: 0.4s;
-        }
+        input, textarea { width: 100%; padding: 14px; margin: 12px 0; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.8); color: white; box-sizing: border-box; font-family: inherit; transition: 0.3s; }
+        button { width: 100%; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; padding: 16px; border-radius: 15px; cursor: pointer; font-weight: 600; margin-top: 15px; transition: 0.4s; }
         button:hover { transform: scale(1.02); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4); }
 
-        /* Countdown Timer UI */
-        .timer-wrapper { display: none; align-items: center; justify-content: center; margin-bottom: 25px; }
-        .timer-circle { 
-            position: relative; width: 60px; height: 60px; border-radius: 50%;
-            background: conic-gradient(var(--primary) var(--p), #334155 0);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .timer-circle::after { content: attr(data-time); position: absolute; width: 50px; height: 50px; background: #1e293b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; }
+        /* Star Rating CSS */
+        .star-rating { display: flex; justify-content: center; flex-direction: row-reverse; margin: 20px 0; }
+        .star-rating input { display: none; }
+        .star-rating label { font-size: 2.5rem; color: #334155; cursor: pointer; transition: 0.3s; margin: 0 5px; }
+        .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: #f59e0b; transform: scale(1.1); }
 
-        .option { 
-            background: rgba(51, 65, 85, 0.5); padding: 16px; margin: 12px 0; 
-            border-radius: 15px; cursor: pointer; text-align: left; 
-            border: 1px solid transparent; transition: 0.3s;
-        }
-        .option:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); transform: translateX(5px); }
-        
-        .review-item { 
-            text-align: left; padding: 15px; border-radius: 15px; 
-            background: rgba(15, 23, 42, 0.6); margin-top: 15px; border-left: 5px solid #4b5563;
-        }
+        /* Timer Circle */
+        .timer-wrapper { display: none; align-items: center; justify-content: center; margin-bottom: 25px; }
+        .timer-circle { position: relative; width: 65px; height: 65px; border-radius: 50%; background: conic-gradient(var(--primary) var(--p), #334155 0); display: flex; align-items: center; justify-content: center; transition: background 1s linear; }
+        .timer-circle::after { content: attr(data-time); position: absolute; width: 55px; height: 55px; background: #1e293b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; }
+
+        .option { background: rgba(51, 65, 85, 0.5); padding: 16px; margin: 12px 0; border-radius: 15px; cursor: pointer; text-align: left; border: 1px solid transparent; transition: 0.3s; }
+        .option:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); transform: translateX(8px); }
+        .review-item { text-align: left; padding: 15px; border-radius: 15px; background: rgba(15, 23, 42, 0.6); margin-top: 15px; border-left: 5px solid #4b5563; }
     </style>
 </head>
 <body>
 
 <div class="master-box" id="main-container">
     <div id="login-ui" class="fade-in">
-        <h1 style="margin-bottom: 10px; font-weight: 600;">Physics Elite</h1>
-        <p style="color: #94a3b8; margin-bottom: 25px;">Enter your credentials to verify</p>
+        <h1>Physics Elite</h1>
         <input type="text" id="stdName" placeholder="Student Full Name">
         <input type="email" id="stdEmail" placeholder="Email Address">
         <button onclick="verifyUser()">Verify Identity</button>
@@ -77,10 +47,10 @@
 
     <div id="instruct-ui" style="display:none;" class="fade-in">
         <h2 style="color:var(--primary)">Test Protocol</h2>
-        <div style="text-align:left; color:#94a3b8; font-size:0.95rem; margin: 25px 0; line-height: 2;">
+        <div style="text-align:left; color:#94a3b8; font-size:0.95rem; margin: 25px 0; line-height: 2.2;">
             <p>⏱️ <b>30 Seconds</b> per question countdown.</p>
-            <p>📝 <b>Feedback</b> mandatory for data sync.</p>
-            <p>❌ <b>No Refresh</b> or tab switching allowed.</p>
+            <p>⭐ <b>Rating & Feedback</b> is mandatory.</p>
+            <p>❌ <b>No Refresh</b> allowed during session.</p>
         </div>
         <button onclick="fetchQuestions()">Initialize Test</button>
     </div>
@@ -93,11 +63,22 @@
     </div>
 
     <div id="result-ui" style="display:none;" class="fade-in">
-        <h2 style="margin-bottom: 5px;">Test Complete!</h2>
-        <h1 id="final-score" style="color:var(--primary); font-size: 3rem; margin: 10px 0;"></h1>
-        <textarea id="feedback-txt" rows="3" placeholder="Share your experience (Optional)"></textarea>
-        <button onclick="submitToFirebase()">Sync Results & Exit</button>
-        <h3 style="text-align:left; margin-top:30px; border-bottom: 1px solid #334155; padding-bottom: 10px;">Review Report</h3>
+        <h2 style="margin-bottom: 0;">Test Complete!</h2>
+        <h1 id="final-score" style="color:var(--primary); font-size: 3.5rem; margin: 10px 0;"></h1>
+        
+        <p style="margin-top:20px; font-weight:600;">Rate your experience:</p>
+        <div class="star-rating">
+            <input type="radio" id="5-stars" name="rating" value="5"><label for="5-stars">★</label>
+            <input type="radio" id="4-stars" name="rating" value="4"><label for="4-stars">★</label>
+            <input type="radio" id="3-stars" name="rating" value="3"><label for="3-stars">★</label>
+            <input type="radio" id="2-stars" name="rating" value="2"><label for="2-stars">★</label>
+            <input type="radio" id="1-star" name="rating" value="1"><label for="1-star">★</label>
+        </div>
+
+        <textarea id="feedback-txt" rows="3" placeholder="Any suggestions for us?"></textarea>
+        <button id="syncBtn" onclick="submitToFirebase()">Sync Results & Exit</button>
+        
+        <h3 style="text-align:left; margin-top:40px; border-bottom: 1px solid #334155; padding-bottom: 10px;">Review Report</h3>
         <div id="review-list"></div>
     </div>
 </div>
@@ -200,15 +181,25 @@
     }
 
     window.submitToFirebase = async () => {
-        const fb = document.getElementById('feedback-txt').value;
-        const btn = event.target;
-        btn.disabled = true; btn.innerText = "Syncing...";
+        const fbText = document.getElementById('feedback-txt').value;
+        const rating = document.querySelector('input[name="rating"]:checked')?.value || "No Rating";
+        const btn = document.getElementById('syncBtn');
+        
+        btn.disabled = true; 
+        btn.innerText = "Syncing Data...";
+
         await addDoc(collection(db, "results"), {
-            name: localStorage.getItem('user'), email: localStorage.getItem('mail'),
-            score, feedback: fb || "No feedback", timestamp: serverTimestamp()
+            name: localStorage.getItem('user'),
+            email: localStorage.getItem('mail'),
+            score,
+            rating: rating + " Stars",
+            feedback: fbText || "No feedback",
+            timestamp: serverTimestamp()
         });
-        alert("Results successfully synced with Cloud!"); window.location.reload();
+
+        alert("Test report successfully synced!");
+        window.location.reload();
     };
 </script>
 </body>
-</html> 
+</html>
