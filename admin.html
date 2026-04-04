@@ -2,40 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Physics Test</title>
+    <title>Admin Dashboard | Physics Elite</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --danger: #ef4444; }
+        :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .dashboard { max-width: 1100px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9rem; }
+        .dashboard { max-width: 1200px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid #334155; }
-        th { background-color: var(--primary); color: white; }
-        tr:hover { background-color: #2d3748; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        th { background: var(--primary); color: white; }
+        .star-box { color: #f59e0b; font-weight: bold; } /* Stars color */
         #login-screen { text-align: center; margin-top: 100px; }
         input { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 10px; width: 250px; }
-        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-        .btn-danger { background: var(--danger); margin-left: 10px; }
-        .feedback-cell { max-width: 200px; font-style: italic; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <h2>Admin Access</h2>
-    <input type="password" id="adminPass" placeholder="Enter Admin Password"> <br>
+    <input type="password" id="adminPass" placeholder="Enter Password"> <br>
     <button onclick="checkPass()">Login</button>
 </div>
 
 <div class="dashboard" id="main-dashboard" style="display:none;">
-    <div class="header">
-        <h1>Student Results</h1>
-        <div>
-            <button onclick="location.reload()">Refresh</button>
-            <button class="btn-danger" id="resetBtn">Reset All Data</button>
-        </div>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h1>Student Reports</h1>
+        <button onclick="location.reload()">Refresh Data</button>
     </div>
     <table>
         <thead>
@@ -43,19 +36,17 @@
                 <th>Name</th>
                 <th>Email</th>
                 <th>Score</th>
-                <th>Feedback</th>
-                <th>Date & Time</th>
+                <th>Rating</th> <th>Feedback</th>
+                <th>Date</th>
             </tr>
         </thead>
-        <tbody id="results-table">
-            <tr><td colspan="5" style="text-align:center;">Loading data...</td></tr>
-        </tbody>
+        <tbody id="results-table"></tbody>
     </table>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -66,63 +57,39 @@
         appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const db = getFirestore(initializeApp(firebaseConfig));
 
-    window.checkPass = function() {
-        const pass = document.getElementById('adminPass').value;
-        if(pass === "physics123") {
+    window.checkPass = () => {
+        if(document.getElementById('adminPass').value === "physics123") {
             document.getElementById('login-screen').style.display = "none";
             document.getElementById('main-dashboard').style.display = "block";
-            loadResults();
-        } else {
-            alert("Wrong Password!");
-        }
-    }
-
-    async function loadResults() {
-        const tableBody = document.getElementById('results-table');
-        try {
-            const q = query(collection(db, "results"), orderBy("timestamp", "desc"));
-            const querySnapshot = await getDocs(q);
-            tableBody.innerHTML = "";
-            
-            if (querySnapshot.empty) {
-                tableBody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No records found.</td></tr>";
-                return;
-            }
-
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : "N/A";
-                const feedback = data.feedback || "No feedback";
-                
-                tableBody.innerHTML += `
-                    <tr>
-                        <td>${data.name}</td>
-                        <td>${data.email}</td>
-                        <td>${data.score}</td>
-                        <td class="feedback-cell" title="${feedback}">${feedback}</td>
-                        <td>${date}</td>
-                    </tr>
-                `;
-            });
-        } catch (e) {
-            tableBody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Error loading data.</td></tr>";
-        }
-    }
-
-    document.getElementById('resetBtn').onclick = async () => {
-        if (confirm("Reset all data? This cannot be undone!")) {
-            const querySnapshot = await getDocs(collection(db, "results"));
-            querySnapshot.forEach(async (document) => {
-                await deleteDoc(doc(db, "results", document.id));
-            });
-            alert("Data Reset Successfully!");
-            loadResults();
-        }
+            loadData();
+        } else { alert("Wrong Password!"); }
     };
-</script>
 
+    async function loadData() {
+        const table = document.getElementById('results-table');
+        const q = query(collection(db, "results"), orderBy("timestamp", "desc"));
+        const snap = await getDocs(q);
+        table.innerHTML = "";
+
+        snap.forEach((doc) => {
+            const d = doc.data();
+            const rating = d.rating || "N/A"; // Firebase se rating uthana
+            const date = d.timestamp ? d.timestamp.toDate().toLocaleString() : "N/A";
+            
+            table.innerHTML += `
+                <tr>
+                    <td>${d.name}</td>
+                    <td>${d.email}</td>
+                    <td><b>${d.score}</b></td>
+                    <td class="star-box">${rating}</td>
+                    <td>${d.feedback}</td>
+                    <td style="font-size:0.8rem;">${date}</td>
+                </tr>
+            `;
+        });
+    }
+</script>
 </body>
 </html>
