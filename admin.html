@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,17 +6,19 @@
     <title>Admin Dashboard - Physics Test</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
+        :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --danger: #ef4444; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
         .dashboard { max-width: 1000px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
         th { background-color: var(--primary); color: white; }
         tr:hover { background-color: #2d3748; }
-        .header { display: flex; justify-content: space-between; align-items: center; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         #login-screen { text-align: center; margin-top: 100px; }
-        input { padding: 10px; border-radius: 5px; border: none; margin-bottom: 10px; }
-        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 10px; width: 250px; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .btn-danger { background: var(--danger); margin-left: 10px; }
+        .controls { display: flex; gap: 10px; }
     </style>
 </head>
 <body>
@@ -30,7 +32,10 @@
 <div class="dashboard" id="main-dashboard" style="display:none;">
     <div class="header">
         <h1>Student Results</h1>
-        <button onclick="location.reload()" style="background:#4b5563;">Refresh Data</button>
+        <div class="controls">
+            <button onclick="location.reload()">Refresh</button>
+            <button class="btn-danger" id="resetBtn">Reset All Data</button>
+        </div>
     </div>
     <table>
         <thead>
@@ -42,13 +47,14 @@
             </tr>
         </thead>
         <tbody id="results-table">
-            </tbody>
+            <tr><td colspan="4">Loading data...</td></tr>
+        </tbody>
     </table>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -64,7 +70,7 @@
 
     window.checkPass = function() {
         const pass = document.getElementById('adminPass').value;
-        if(pass === "physics123") { // Aap apna password yahan change kar sakte hain
+        if(pass === "physics123") {
             document.getElementById('login-screen').style.display = "none";
             document.getElementById('main-dashboard').style.display = "block";
             loadResults();
@@ -75,13 +81,16 @@
 
     async function loadResults() {
         const tableBody = document.getElementById('results-table');
-        tableBody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
-        
         try {
             const q = query(collection(db, "results"), orderBy("timestamp", "desc"));
             const querySnapshot = await getDocs(q);
             tableBody.innerHTML = "";
             
+            if (querySnapshot.empty) {
+                tableBody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>No records found.</td></tr>";
+                return;
+            }
+
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
                 const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : "N/A";
@@ -95,10 +104,24 @@
                 `;
             });
         } catch (e) {
-            console.error("Error fetching data: ", e);
-            tableBody.innerHTML = "<tr><td colspan='4'>Error loading data. Check console.</td></tr>";
+            tableBody.innerHTML = "<tr><td colspan='4'>Error loading data.</td></tr>";
         }
     }
+
+    // Reset Data Logic
+    document.getElementById('resetBtn').addEventListener('click', async () => {
+        if (confirm("Kya aap sach mein saara data delete karna chahte hain? Ye wapas nahi aayega!")) {
+            const querySnapshot = await getDocs(collection(db, "results"));
+            const deletePromises = [];
+            querySnapshot.forEach((document) => {
+                deletePromises.push(deleteDoc(doc(db, "results", document.id)));
+            });
+            
+            await Promise.all(deletePromises);
+            alert("Saara data reset ho gaya hai!");
+            loadResults();
+        }
+    });
 </script>
 
 </body>
