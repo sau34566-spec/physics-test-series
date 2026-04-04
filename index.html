@@ -1,81 +1,60 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physics Elite | Entrance</title>
+    <title>Physics Elite | Master Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6366f1; --bg: #0f172a; --card: rgba(30, 41, 59, 0.7); --text: #f8fafc; }
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
-            color: var(--text); display: flex; justify-content: center; align-items: center; 
-            height: 100vh; margin: 0; overflow: hidden;
-        }
-        .login-box { 
-            background: var(--card); backdrop-filter: blur(15px);
-            padding: 40px; border-radius: 28px; width: 100%; max-width: 400px; 
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
-            text-align: center; animation: fadeIn 0.8s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .input-group { text-align: left; margin-bottom: 15px; }
-        label { font-size: 0.75rem; color: #818cf8; font-weight: 600; margin-left: 5px; }
-        
-        input { 
-            width: 100%; padding: 14px; margin-top: 5px; border-radius: 12px; border: 1px solid #334155; 
-            background: rgba(15, 23, 42, 0.8); color: white; outline: none; box-sizing: border-box;
-        }
-        input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3); }
-
-        button { 
-            width: 100%; background: var(--primary); color: white; border: none; 
-            padding: 15px; border-radius: 12px; cursor: pointer; font-weight: 600;
-            font-size: 1rem; margin-top: 15px; transition: 0.3s;
-        }
-        button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); }
-        button:disabled { background: #475569; cursor: not-allowed; }
-
-        #status-msg { margin-top: 20px; font-size: 0.9rem; min-height: 25px; }
-        .err { color: #ef4444; font-weight: 600; }
-        .ok { color: #22c55e; }
+        :root { --primary: #6366f1; --bg: #0f172a; --card: rgba(30, 41, 59, 0.8); --text: #f8fafc; }
+        body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle at top right, #1e1b4b, #0f172a); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .master-box { background: var(--card); backdrop-filter: blur(15px); padding: 35px; border-radius: 24px; width: 90%; max-width: 500px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        input, textarea { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #334155; background: rgba(15, 23, 42, 0.8); color: white; box-sizing: border-box; font-family: inherit; }
+        button { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; cursor: pointer; font-weight: 600; margin-top: 15px; transition: 0.3s; }
+        .timer-container { width: 100%; height: 8px; background: #334155; border-radius: 10px; margin-bottom: 20px; overflow: hidden; display: none; }
+        #timer-bar { width: 100%; height: 100%; background: var(--primary); transition: width 1s linear; }
+        .option { background: #334155; padding: 15px; margin: 10px 0; border-radius: 12px; cursor: pointer; text-align: left; border: 2px solid transparent; }
+        .option:hover { border-color: var(--primary); background: #475569; }
+        .review-item { text-align: left; padding: 10px; border-radius: 10px; background: #0f172a; margin-top: 10px; border-left: 4px solid #4b5563; }
     </style>
 </head>
 <body>
 
-<div class="login-box" id="auth-ui">
-    <h2 style="margin-bottom:5px;">Physics Elite Portal</h2>
-    <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:25px;">Verify your identity to start the test</p>
-
-    <div class="input-group">
-        <label>FULL NAME</label>
-        <input type="text" id="name" placeholder="Enter your name">
-    </div>
-    <div class="input-group">
-        <label>EMAIL ADDRESS</label>
-        <input type="email" id="email" placeholder="student@example.com">
+<div class="master-box" id="main-container">
+    <div id="login-ui">
+        <h2>Physics Elite</h2>
+        <input type="text" id="stdName" placeholder="Full Name">
+        <input type="email" id="stdEmail" placeholder="Email Address">
+        <button onclick="verifyUser()">Verify Identity</button>
+        <p id="msg" style="font-size:0.8rem; margin-top:10px;"></p>
     </div>
 
-    <button id="entryBtn">Verify & Continue</button>
-    <div id="status-msg"></div>
-</div>
-
-<div class="login-box" id="instruction-ui" style="display:none;">
-    <h2 style="color:var(--primary)">Test Instructions</h2>
-    <div style="text-align:left; color:#94a3b8; font-size:0.9rem; margin: 20px 0; line-height:1.6;">
-        <p>✅ <b>Total Questions:</b> 10</p>
-        <p>⏱️ <b>Timer:</b> 30 Seconds per question</p>
-        <p>📝 <b>Feedback:</b> Required after submission</p>
-        <p>⚠️ <b>Warning:</b> Do not refresh during the test</p>
+    <div id="instruct-ui" style="display:none;">
+        <h2 style="color:var(--primary)">Instructions</h2>
+        <div style="text-align:left; color:#94a3b8; font-size:0.9rem; margin: 20px 0;">
+            <p>⏱️ <b>30 Seconds</b> per question.</p>
+            <p>📝 <b>Feedback</b> is mandatory to save result.</p>
+            <p>❌ <b>No Refresh</b> allowed during test.</p>
+        </div>
+        <button onclick="fetchQuestions()">Start Chapter 1 Test</button>
     </div>
-    <button onclick="window.location.href='chapter1.html'">I am Ready, Start Test</button>
+
+    <div id="quiz-ui" style="display:none;">
+        <div class="timer-container" id="t-cont"><div id="timer-bar"></div></div>
+        <div id="q-box"></div>
+    </div>
+
+    <div id="result-ui" style="display:none;">
+        <h2>Score: <span id="final-score" style="color:var(--primary)"></span></h2>
+        <textarea id="feedback-txt" rows="3" placeholder="How was the test?"></textarea>
+        <button onclick="submitToFirebase()">Submit & Close</button>
+        <h3 style="text-align:left; margin-top:25px;">Review:</h3>
+        <div id="review-list"></div>
+    </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -86,46 +65,92 @@
         appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const db = getFirestore(initializeApp(firebaseConfig));
+    let questions = [], currentQ = 0, score = 0, userAnswers = [], timer, timeLeft = 30;
 
-    const btn = document.getElementById('entryBtn');
-    const msg = document.getElementById('status-msg');
+    // VERIFY USER
+    window.verifyUser = async () => {
+        const n = document.getElementById('stdName').value;
+        const e = document.getElementById('stdEmail').value.toLowerCase();
+        if(!n || !e) return alert("Enter Name & Email");
 
-    btn.addEventListener('click', async () => {
-        const nameVal = document.getElementById('name').value.trim();
-        const emailVal = document.getElementById('email').value.trim().toLowerCase();
-
-        if (!nameVal || !emailVal) {
-            msg.innerHTML = '<span class="err">⚠️ Please enter both Name and Email.</span>';
-            return;
+        const q = query(collection(db, "results"), where("email", "==", e));
+        const snap = await getDocs(q);
+        if(!snap.empty) {
+            document.getElementById('msg').innerHTML = "<span style='color:red'>Already Attempted!</span>";
+        } else {
+            localStorage.setItem('user', n); localStorage.setItem('mail', e);
+            document.getElementById('login-ui').style.display = 'none';
+            document.getElementById('instruct-ui').style.display = 'block';
         }
+    };
 
-        btn.disabled = true;
-        msg.innerHTML = '<span style="color:var(--primary)">Verifying with Database...</span>';
-
+    // FETCH DATA FROM CHAPTER FILE
+    window.fetchQuestions = async () => {
         try {
-            // Live Firebase Check
-            const q = query(collection(db, "results"), where("email", "==", emailVal));
-            const snap = await getDocs(q);
+            const res = await fetch('chapter1.html');
+            const text = await res.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, 'text/html');
+            const jsonStr = doc.getElementById('question-data').textContent;
+            questions = JSON.parse(jsonStr);
+            startQuiz();
+        } catch(e) { alert("Chapter file not found!"); }
+    };
 
-            if (!snap.empty) {
-                msg.innerHTML = '<span class="err">❌ Access Denied: Test already completed.</span>';
-                btn.disabled = false;
-            } else {
-                localStorage.setItem('currentUser', nameVal);
-                localStorage.setItem('currentEmail', emailVal);
-                
-                // Switch to Instructions Slide
-                document.getElementById('auth-ui').style.display = 'none';
-                document.getElementById('instruction-ui').style.display = 'block';
-            }
-        } catch (error) {
-            msg.innerHTML = '<span class="err">Connection Error. Please try again.</span>';
-            btn.disabled = false;
-        }
-    });
+    function startQuiz() {
+        document.getElementById('instruct-ui').style.display = 'none';
+        document.getElementById('quiz-ui').style.display = 'block';
+        document.getElementById('t-cont').style.display = 'block';
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        if(currentQ >= questions.length) return showResults();
+        timeLeft = 30;
+        document.getElementById('timer-bar').style.width = "100%";
+        document.getElementById('q-box').innerHTML = `
+            <p>Question ${currentQ+1}/${questions.length}</p>
+            <h3>${questions[currentQ].q}</h3>
+            ${questions[currentQ].options.map((o, i) => `<div class="option" onclick="handleSelect(${i})">${o}</div>`).join('')}
+        `;
+        clearInterval(timer);
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer-bar').style.width = (timeLeft/30*100) + "%";
+            if(timeLeft <= 0) handleSelect(-1);
+        }, 1000);
+    }
+
+    window.handleSelect = (idx) => {
+        userAnswers.push(idx);
+        if(idx === questions[currentQ].a) score++;
+        currentQ++; renderQuestion();
+    };
+
+    function showResults() {
+        clearInterval(timer);
+        document.getElementById('quiz-ui').style.display = 'none';
+        document.getElementById('result-ui').style.display = 'block';
+        document.getElementById('final-score').innerText = `${score}/${questions.length}`;
+        
+        questions.forEach((q, i) => {
+            const correct = userAnswers[i] === q.a;
+            document.getElementById('review-list').innerHTML += `
+                <div class="review-item" style="border-left-color:${correct?'#22c55e':'#ef4444'}">
+                    <b>${q.q}</b><br><small>Ans: ${userAnswers[i]==-1?'Timeout':q.options[userAnswers[i]]} | Right: ${q.options[q.a]}</small>
+                </div>`;
+        });
+    }
+
+    window.submitToFirebase = async () => {
+        const fb = document.getElementById('feedback-txt').value;
+        await addDoc(collection(db, "results"), {
+            name: localStorage.getItem('user'), email: localStorage.getItem('mail'),
+            score, feedback: fb || "None", timestamp: serverTimestamp()
+        });
+        alert("Saved!"); window.location.reload();
+    };
 </script>
-
 </body>
-</html>
+</html> 
