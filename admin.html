@@ -8,9 +8,9 @@
     <style>
         :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --danger: #ef4444; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .dashboard { max-width: 1000px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
+        .dashboard { max-width: 1100px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9rem; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #334155; }
         th { background-color: var(--primary); color: white; }
         tr:hover { background-color: #2d3748; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -18,7 +18,7 @@
         input { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 10px; width: 250px; }
         button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .btn-danger { background: var(--danger); margin-left: 10px; }
-        .controls { display: flex; gap: 10px; }
+        .feedback-cell { max-width: 200px; font-style: italic; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; }
     </style>
 </head>
 <body>
@@ -32,7 +32,7 @@
 <div class="dashboard" id="main-dashboard" style="display:none;">
     <div class="header">
         <h1>Student Results</h1>
-        <div class="controls">
+        <div>
             <button onclick="location.reload()">Refresh</button>
             <button class="btn-danger" id="resetBtn">Reset All Data</button>
         </div>
@@ -43,11 +43,12 @@
                 <th>Name</th>
                 <th>Email</th>
                 <th>Score</th>
+                <th>Feedback</th>
                 <th>Date & Time</th>
             </tr>
         </thead>
         <tbody id="results-table">
-            <tr><td colspan="4">Loading data...</td></tr>
+            <tr><td colspan="5" style="text-align:center;">Loading data...</td></tr>
         </tbody>
     </table>
 </div>
@@ -87,41 +88,40 @@
             tableBody.innerHTML = "";
             
             if (querySnapshot.empty) {
-                tableBody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>No records found.</td></tr>";
+                tableBody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No records found.</td></tr>";
                 return;
             }
 
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
                 const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : "N/A";
+                const feedback = data.feedback || "No feedback";
+                
                 tableBody.innerHTML += `
                     <tr>
                         <td>${data.name}</td>
                         <td>${data.email}</td>
-                        <td>${data.score} / ${data.total}</td>
+                        <td>${data.score}</td>
+                        <td class="feedback-cell" title="${feedback}">${feedback}</td>
                         <td>${date}</td>
                     </tr>
                 `;
             });
         } catch (e) {
-            tableBody.innerHTML = "<tr><td colspan='4'>Error loading data.</td></tr>";
+            tableBody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Error loading data.</td></tr>";
         }
     }
 
-    // Reset Data Logic
-    document.getElementById('resetBtn').addEventListener('click', async () => {
-        if (confirm("Kya aap sach mein saara data delete karna chahte hain? Ye wapas nahi aayega!")) {
+    document.getElementById('resetBtn').onclick = async () => {
+        if (confirm("Reset all data? This cannot be undone!")) {
             const querySnapshot = await getDocs(collection(db, "results"));
-            const deletePromises = [];
-            querySnapshot.forEach((document) => {
-                deletePromises.push(deleteDoc(doc(db, "results", document.id)));
+            querySnapshot.forEach(async (document) => {
+                await deleteDoc(doc(db, "results", document.id));
             });
-            
-            await Promise.all(deletePromises);
-            alert("Saara data reset ho gaya hai!");
+            alert("Data Reset Successfully!");
             loadResults();
         }
-    });
+    };
 </script>
 
 </body>
