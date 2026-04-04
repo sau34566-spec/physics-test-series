@@ -1,53 +1,126 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physics Test Portal</title>
+    <title>Physics Elite Test Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --primary: #2563eb; --bg: #f8fafc; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 400px; text-align: center; }
-        .slide { display: none; }
-        .slide.active { display: block; }
-        button { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; margin-top: 20px; width: 100%; }
-        input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
-        .chapter-btn { background: #64748b; margin-bottom: 10px; }
+        :root {
+            --primary: #6366f1;
+            --secondary: #4f46e5;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            background: var(--card);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            width: 450px;
+            text-align: center;
+            position: relative;
+        }
+
+        /* Slide Animations */
+        .slide {
+            display: none;
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .active { display: block; }
+
+        h1 { color: var(--primary); font-weight: 600; }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .chapter-card {
+            background: #334155;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .chapter-card:hover { background: var(--primary); }
+
+        #errorMsg { color: #f87171; font-size: 13px; margin-top: 5px; min-height: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="slide active" id="slide1">
-        <h1>Welcome to Physics Test</h1>
-        <p><strong>Instructions:</strong><br>1. Har sawal ke 4 options hain.<br>2. Ek baar select karne par agla sawal aayega.<br>3. Result ant mein dikhega.</p>
-        <button onclick="nextSlide(2)">Start</button>
+        <h1>Physics Portal</h1>
+        <p>Best of luck for your exam!</p>
+        <div style="text-align: left; background: #334155; padding: 15px; border-radius: 10px; font-size: 14px;">
+            • 1 mark for each correct answer<br>
+            • No negative marking<br>
+            • Result at the end
+        </div>
+        <button onclick="nextSlide(2)" style="margin-top:20px;">Get Started</button>
     </div>
 
     <div class="slide" id="slide2">
-        <h2>Student Details</h2>
-        <input type="text" id="studentName" placeholder="Apna Naam Likhein" required>
-        <input type="email" id="studentEmail" placeholder="Email Address" required>
-        <p id="errorMsg" style="color:red; font-size:12px;"></p>
-        <button onclick="validateStudent()">Next</button>
+        <h2>Verify Identity</h2>
+        <input type="text" id="studentName" placeholder="Full Name">
+        <input type="email" id="studentEmail" placeholder="Email (use Gmail/Yahoo)">
+        <div id="errorMsg"></div>
+        <button onclick="validateAndMove()">Enter Dashboard</button>
     </div>
 
     <div class="slide" id="slide3">
         <h2>Select Chapter</h2>
-        <button class="chapter-btn" onclick="goToTest('chapter1.html')">Chapter 1: Motion</button>
-        <button class="chapter-btn" onclick="goToTest('chapter2.html')">Chapter 2: Force</button>
-    </div>
-
-    <div class="slide" id="id4">
-        <h2>Feedback</h2>
-        <textarea id="feedbackText" style="width:100%; height:80px;" placeholder="Apna feedback dein..."></textarea>
-        <button onclick="submitFeedback()">Submit Feedback</button>
-    </div>
-
-    <div class="slide" id="slide5">
-        <h2>Test Result</h2>
-        <div id="finalScore"></div>
-        <button onclick="location.reload()">Back to Home</button>
+        <div class="chapter-card" onclick="startTest('chapter1.html')">Chapter 1: Units & Measurements</div>
+        <div class="chapter-card" onclick="startTest('chapter2.html')">Chapter 2: Kinematics</div>
+        <div class="chapter-card" onclick="startTest('chapter3.html')">Chapter 3: Laws of Motion</div>
     </div>
 </div>
 
@@ -57,25 +130,41 @@
         document.getElementById('slide' + n).classList.add('active');
     }
 
-    function validateStudent() {
-        const email = document.getElementById('studentEmail').value;
+    function validateAndMove() {
         const name = document.getElementById('studentName').value;
+        const email = document.getElementById('studentEmail').value;
+        const err = document.getElementById('errorMsg');
         
-        if(!name || !email) { alert("Details bharein!"); return; }
+        // Fake/Temp Email List (Sample)
+        const blockedDomains = ['tempmail.com', '10minutemail.com', 'mailinator.com'];
+        const domain = email.split('@')[1];
 
-        // Check if already tested (Using LocalStorage for demo)
-        if(localStorage.getItem('tested_' + email)) {
-            document.getElementById('errorMsg').innerText = "Is email se test diya ja chuka hai!";
-        } else {
-            localStorage.setItem('currentUser', name);
-            localStorage.setItem('currentEmail', email);
-            nextSlide(3);
+        if(name.length < 3) {
+            err.innerText = "Please enter your full name.";
+            return;
         }
+        if(!email.includes('@') || !email.includes('.')) {
+            err.innerText = "Invalid email format.";
+            return;
+        }
+        if(blockedDomains.includes(domain)) {
+            err.innerText = "Fake/Temporary emails are not allowed!";
+            return;
+        }
+        
+        // Check if already taken
+        if(localStorage.getItem('done_' + email)) {
+            err.innerText = "You have already attempted the test!";
+            return;
+        }
+
+        localStorage.setItem('currentUser', name);
+        localStorage.setItem('currentEmail', email);
+        nextSlide(3);
     }
 
-    function goToTest(page) {
-        // Data save karke naye page par bhej rahe hain
-        window.location.href = page;
+    function startTest(url) {
+        window.location.href = url;
     }
 </script>
 
