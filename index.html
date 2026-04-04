@@ -5,49 +5,99 @@
     <title>Physics Elite | Master Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6366f1; --bg: #0f172a; --card: rgba(30, 41, 59, 0.8); --text: #f8fafc; }
-        body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle at top right, #1e1b4b, #0f172a); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .master-box { background: var(--card); backdrop-filter: blur(15px); padding: 35px; border-radius: 24px; width: 90%; max-width: 500px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); text-align: center; }
-        input, textarea { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #334155; background: rgba(15, 23, 42, 0.8); color: white; box-sizing: border-box; font-family: inherit; }
-        button { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; cursor: pointer; font-weight: 600; margin-top: 15px; transition: 0.3s; }
-        .timer-container { width: 100%; height: 8px; background: #334155; border-radius: 10px; margin-bottom: 20px; overflow: hidden; display: none; }
-        #timer-bar { width: 100%; height: 100%; background: var(--primary); transition: width 1s linear; }
-        .option { background: #334155; padding: 15px; margin: 10px 0; border-radius: 12px; cursor: pointer; text-align: left; border: 2px solid transparent; }
-        .option:hover { border-color: var(--primary); background: #475569; }
-        .review-item { text-align: left; padding: 10px; border-radius: 10px; background: #0f172a; margin-top: 10px; border-left: 4px solid #4b5563; }
+        :root { --primary: #6366f1; --bg: #0f172a; --card: rgba(30, 41, 59, 0.7); --text: #f8fafc; }
+        
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: radial-gradient(circle at top right, #1e1b4b, #0f172a); 
+            color: var(--text); display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; margin: 0; overflow-x: hidden;
+        }
+
+        /* Floating Animation */
+        .master-box { 
+            background: var(--card); backdrop-filter: blur(20px); padding: 40px; 
+            border-radius: 30px; width: 90%; max-width: 500px; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); 
+            text-align: center; animation: float 6s ease-in-out infinite; 
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        /* Smooth UI Entrance */
+        .fade-in { animation: fadeIn 0.5s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        input, textarea { 
+            width: 100%; padding: 14px; margin: 12px 0; border-radius: 15px; 
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.8); 
+            color: white; box-sizing: border-box; font-family: inherit; transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
+
+        button { 
+            width: 100%; background: linear-gradient(135deg, #6366f1, #a855f7); 
+            color: white; border: none; padding: 16px; border-radius: 15px; 
+            cursor: pointer; font-weight: 600; margin-top: 15px; transition: 0.4s;
+        }
+        button:hover { transform: scale(1.02); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4); }
+
+        /* Countdown Timer UI */
+        .timer-wrapper { display: none; align-items: center; justify-content: center; margin-bottom: 25px; }
+        .timer-circle { 
+            position: relative; width: 60px; height: 60px; border-radius: 50%;
+            background: conic-gradient(var(--primary) var(--p), #334155 0);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .timer-circle::after { content: attr(data-time); position: absolute; width: 50px; height: 50px; background: #1e293b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; }
+
+        .option { 
+            background: rgba(51, 65, 85, 0.5); padding: 16px; margin: 12px 0; 
+            border-radius: 15px; cursor: pointer; text-align: left; 
+            border: 1px solid transparent; transition: 0.3s;
+        }
+        .option:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); transform: translateX(5px); }
+        
+        .review-item { 
+            text-align: left; padding: 15px; border-radius: 15px; 
+            background: rgba(15, 23, 42, 0.6); margin-top: 15px; border-left: 5px solid #4b5563;
+        }
     </style>
 </head>
 <body>
 
 <div class="master-box" id="main-container">
-    <div id="login-ui">
-        <h2>Physics Elite</h2>
-        <input type="text" id="stdName" placeholder="Full Name">
+    <div id="login-ui" class="fade-in">
+        <h1 style="margin-bottom: 10px; font-weight: 600;">Physics Elite</h1>
+        <p style="color: #94a3b8; margin-bottom: 25px;">Enter your credentials to verify</p>
+        <input type="text" id="stdName" placeholder="Student Full Name">
         <input type="email" id="stdEmail" placeholder="Email Address">
         <button onclick="verifyUser()">Verify Identity</button>
-        <p id="msg" style="font-size:0.8rem; margin-top:10px;"></p>
+        <p id="msg" style="font-size:0.8rem; margin-top:15px;"></p>
     </div>
 
-    <div id="instruct-ui" style="display:none;">
-        <h2 style="color:var(--primary)">Instructions</h2>
-        <div style="text-align:left; color:#94a3b8; font-size:0.9rem; margin: 20px 0;">
-            <p>⏱️ <b>30 Seconds</b> per question.</p>
-            <p>📝 <b>Feedback</b> is mandatory to save result.</p>
-            <p>❌ <b>No Refresh</b> allowed during test.</p>
+    <div id="instruct-ui" style="display:none;" class="fade-in">
+        <h2 style="color:var(--primary)">Test Protocol</h2>
+        <div style="text-align:left; color:#94a3b8; font-size:0.95rem; margin: 25px 0; line-height: 2;">
+            <p>⏱️ <b>30 Seconds</b> per question countdown.</p>
+            <p>📝 <b>Feedback</b> mandatory for data sync.</p>
+            <p>❌ <b>No Refresh</b> or tab switching allowed.</p>
         </div>
-        <button onclick="fetchQuestions()">Start Chapter 1 Test</button>
+        <button onclick="fetchQuestions()">Initialize Test</button>
     </div>
 
-    <div id="quiz-ui" style="display:none;">
-        <div class="timer-container" id="t-cont"><div id="timer-bar"></div></div>
+    <div id="quiz-ui" style="display:none;" class="fade-in">
+        <div class="timer-wrapper" id="t-cont">
+            <div class="timer-circle" id="timer-circ" data-time="30" style="--p:100%"></div>
+        </div>
         <div id="q-box"></div>
     </div>
 
-    <div id="result-ui" style="display:none;">
-        <h2>Score: <span id="final-score" style="color:var(--primary)"></span></h2>
-        <textarea id="feedback-txt" rows="3" placeholder="How was the test?"></textarea>
-        <button onclick="submitToFirebase()">Submit & Close</button>
-        <h3 style="text-align:left; margin-top:25px;">Review:</h3>
+    <div id="result-ui" style="display:none;" class="fade-in">
+        <h2 style="margin-bottom: 5px;">Test Complete!</h2>
+        <h1 id="final-score" style="color:var(--primary); font-size: 3rem; margin: 10px 0;"></h1>
+        <textarea id="feedback-txt" rows="3" placeholder="Share your experience (Optional)"></textarea>
+        <button onclick="submitToFirebase()">Sync Results & Exit</button>
+        <h3 style="text-align:left; margin-top:30px; border-bottom: 1px solid #334155; padding-bottom: 10px;">Review Report</h3>
         <div id="review-list"></div>
     </div>
 </div>
@@ -68,16 +118,15 @@
     const db = getFirestore(initializeApp(firebaseConfig));
     let questions = [], currentQ = 0, score = 0, userAnswers = [], timer, timeLeft = 30;
 
-    // VERIFY USER
     window.verifyUser = async () => {
         const n = document.getElementById('stdName').value;
         const e = document.getElementById('stdEmail').value.toLowerCase();
-        if(!n || !e) return alert("Enter Name & Email");
+        if(!n || !e) return alert("Please fill details");
 
         const q = query(collection(db, "results"), where("email", "==", e));
         const snap = await getDocs(q);
         if(!snap.empty) {
-            document.getElementById('msg').innerHTML = "<span style='color:red'>Already Attempted!</span>";
+            document.getElementById('msg').innerHTML = "<span style='color:#ef4444'>Access Denied: Already attempted!</span>";
         } else {
             localStorage.setItem('user', n); localStorage.setItem('mail', e);
             document.getElementById('login-ui').style.display = 'none';
@@ -85,7 +134,6 @@
         }
     };
 
-    // FETCH DATA FROM CHAPTER FILE
     window.fetchQuestions = async () => {
         try {
             const res = await fetch('chapter1.html');
@@ -95,31 +143,37 @@
             const jsonStr = doc.getElementById('question-data').textContent;
             questions = JSON.parse(jsonStr);
             startQuiz();
-        } catch(e) { alert("Chapter file not found!"); }
+        } catch(e) { alert("Data Sync Error!"); }
     };
 
     function startQuiz() {
         document.getElementById('instruct-ui').style.display = 'none';
         document.getElementById('quiz-ui').style.display = 'block';
-        document.getElementById('t-cont').style.display = 'block';
+        document.getElementById('t-cont').style.display = 'flex';
         renderQuestion();
     }
 
     function renderQuestion() {
         if(currentQ >= questions.length) return showResults();
         timeLeft = 30;
-        document.getElementById('timer-bar').style.width = "100%";
+        updateTimerUI();
         document.getElementById('q-box').innerHTML = `
-            <p>Question ${currentQ+1}/${questions.length}</p>
-            <h3>${questions[currentQ].q}</h3>
+            <p style="color:#6366f1; font-weight:600;">Question ${currentQ+1} of ${questions.length}</p>
+            <h3 style="margin: 15px 0 25px 0;">${questions[currentQ].q}</h3>
             ${questions[currentQ].options.map((o, i) => `<div class="option" onclick="handleSelect(${i})">${o}</div>`).join('')}
         `;
         clearInterval(timer);
         timer = setInterval(() => {
             timeLeft--;
-            document.getElementById('timer-bar').style.width = (timeLeft/30*100) + "%";
+            updateTimerUI();
             if(timeLeft <= 0) handleSelect(-1);
         }, 1000);
+    }
+
+    function updateTimerUI() {
+        const circ = document.getElementById('timer-circ');
+        circ.setAttribute('data-time', timeLeft);
+        circ.style.setProperty('--p', (timeLeft / 30 * 100) + '%');
     }
 
     window.handleSelect = (idx) => {
@@ -132,24 +186,28 @@
         clearInterval(timer);
         document.getElementById('quiz-ui').style.display = 'none';
         document.getElementById('result-ui').style.display = 'block';
-        document.getElementById('final-score').innerText = `${score}/${questions.length}`;
+        document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
         
         questions.forEach((q, i) => {
-            const correct = userAnswers[i] === q.a;
+            const isCorrect = userAnswers[i] === q.a;
             document.getElementById('review-list').innerHTML += `
-                <div class="review-item" style="border-left-color:${correct?'#22c55e':'#ef4444'}">
-                    <b>${q.q}</b><br><small>Ans: ${userAnswers[i]==-1?'Timeout':q.options[userAnswers[i]]} | Right: ${q.options[q.a]}</small>
+                <div class="review-item" style="border-left-color:${isCorrect?'#22c55e':'#ef4444'}">
+                    <p style="margin:0 0 5px 0; font-weight:600;">${q.q}</p>
+                    <small style="color:${isCorrect?'#22c55e':'#ef4444'}">Your Answer: ${userAnswers[i]==-1?'Timeout':q.options[userAnswers[i]]}</small><br>
+                    <small style="color:#22c55e">Correct: ${q.options[q.a]}</small>
                 </div>`;
         });
     }
 
     window.submitToFirebase = async () => {
         const fb = document.getElementById('feedback-txt').value;
+        const btn = event.target;
+        btn.disabled = true; btn.innerText = "Syncing...";
         await addDoc(collection(db, "results"), {
             name: localStorage.getItem('user'), email: localStorage.getItem('mail'),
-            score, feedback: fb || "None", timestamp: serverTimestamp()
+            score, feedback: fb || "No feedback", timestamp: serverTimestamp()
         });
-        alert("Saved!"); window.location.reload();
+        alert("Results successfully synced with Cloud!"); window.location.reload();
     };
 </script>
 </body>
