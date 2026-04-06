@@ -28,96 +28,94 @@
             padding: 20px;
         }
 
+        /* Box Size Increased for Better View */
         .master-box {
             background: var(--card);
             backdrop-filter: blur(25px);
-            padding: 40px;
-            border-radius: 24px;
+            padding: 50px; /* Increased padding */
+            border-radius: 28px;
             width: 100%;
-            max-width: 650px;
-            box-shadow: 0 0 40px rgba(99, 102, 241, 0.2);
+            max-width: 800px; /* Width increased from 650px to 800px */
+            box-shadow: 0 0 50px rgba(99, 102, 241, 0.25);
             border: 1px solid rgba(255,255,255,0.1);
             text-align: center;
         }
 
         .welcome-text {
             font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
+            font-size: 2.8rem; /* Font size increased */
             background: linear-gradient(to right, #fff, #a855f7, #6366f1);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 700;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
 
         .chapter-badge {
             display: inline-block;
             background: rgba(99, 102, 241, 0.1);
             color: var(--primary);
-            padding: 6px 16px;
+            padding: 8px 20px;
             border-radius: 30px;
-            font-size: 0.85rem;
+            font-size: 1rem;
             font-weight: 600;
             border: 1px solid var(--primary);
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
-        /* Input Styles */
         input, textarea {
-            width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px;
+            width: 100%; padding: 18px; margin: 12px 0; border-radius: 14px;
             border: 1px solid rgba(255,255,255,0.1); background: rgba(2, 6, 23, 0.6);
-            color: white; box-sizing: border-box;
+            color: white; box-sizing: border-box; font-size: 1rem;
         }
 
-        /* Button Styles */
         .btn-main {
             width: 100%; background: linear-gradient(135deg, #6366f1, #a855f7);
-            color: white; border: none; padding: 16px; border-radius: 12px;
-            cursor: pointer; font-weight: 600; transition: 0.3s; margin-top: 10px;
+            color: white; border: none; padding: 18px; border-radius: 14px;
+            cursor: pointer; font-weight: 600; transition: 0.3s; margin-top: 15px; font-size: 1.1rem;
         }
-        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
+        .btn-main:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4); }
         
         .btn-sub {
             background: transparent; border: 1px solid #475569;
-            color: #94a3b8; padding: 12px 20px; border-radius: 12px; cursor: pointer;
+            color: #94a3b8; padding: 14px 25px; border-radius: 14px; cursor: pointer; font-size: 1rem;
         }
 
-        /* Quiz UI */
         .timer-circle {
-            width: 60px; height: 60px; border-radius: 50%;
+            width: 80px; height: 80px; border-radius: 50%;
             background: conic-gradient(var(--primary) var(--p), #1e293b 0);
-            display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
             position: relative; --p: 100%;
         }
         .timer-circle::after {
-            content: attr(data-time); position: absolute; width: 50px; height: 50px;
-            background: #0f172a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;
+            content: attr(data-time); position: absolute; width: 65px; height: 65px;
+            background: #0f172a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem;
         }
 
         .option {
-            background: rgba(30, 41, 59, 0.5); padding: 15px; margin: 10px 0;
-            border-radius: 12px; cursor: pointer; text-align: left; border: 1px solid transparent; transition: 0.2s;
+            background: rgba(30, 41, 59, 0.5); padding: 18px; margin: 12px 0;
+            border-radius: 14px; cursor: pointer; text-align: left; border: 1px solid transparent; transition: 0.2s; font-size: 1.05rem;
         }
-        .option.selected { background: var(--primary); border-color: var(--accent); }
+        .option.selected { background: var(--primary); border-color: var(--accent); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
 
-        /* Review Section */
         #review-container {
-            text-align: left; margin-top: 25px; max-height: 350px; overflow-y: auto;
-            padding-right: 10px;
+            text-align: left; margin-top: 30px; max-height: 450px; overflow-y: auto;
+            padding-right: 15px;
         }
         .review-card {
-            background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px;
-            margin-bottom: 15px; border-left: 4px solid #334155;
+            background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px;
+            margin-bottom: 20px; border-left: 5px solid #334155;
         }
-        .review-q { font-weight: 600; font-size: 0.95rem; margin-bottom: 8px; color: #fff; }
-        .review-info { font-size: 0.85rem; margin: 4px 0; }
+        .review-q { font-weight: 600; font-size: 1.1rem; margin-bottom: 10px; color: #fff; }
+        .review-info { font-size: 0.95rem; margin: 6px 0; }
 
-        /* Star Rating */
-        .star-rating { display: flex; justify-content: center; gap: 10px; margin: 15px 0; direction: rtl; }
+        .star-rating { display: flex; justify-content: center; gap: 15px; margin: 20px 0; direction: rtl; }
         .star-rating input { display: none; }
-        .star-rating label { font-size: 30px; color: #334155; cursor: pointer; transition: 0.2s; }
+        .star-rating label { font-size: 35px; color: #334155; cursor: pointer; transition: 0.2s; }
         .star-rating label:hover, .star-rating label:hover ~ label,
         .star-rating input:checked ~ label { color: #facc15; }
+
+        #q-box h3 { font-size: 1.3rem; margin-bottom: 20px; }
 
     </style>
 </head>
@@ -125,21 +123,21 @@
 
 <div class="master-box">
     <div id="login-ui">
-        <h1 class="welcome-text">Welcome to<br>RN.Singh Physics Classes</h1>
-        <input type="text" id="stdName" placeholder="Full Name">
-        <input type="email" id="stdEmail" placeholder="Email Address">
+        <h1 class="welcome-text">Welcome to <br> RN.Singh Physics Classes</h1>
+        <input type="text" id="stdName" placeholder="Enter Full Name">
+        <input type="email" id="stdEmail" placeholder="Enter Email Address">
         <button class="btn-main" onclick="verifyUser()">Enter Portal</button>
-        <p id="msg" style="margin-top:15px; color: var(--error); font-size: 0.9rem;"></p>
+        <p id="msg" style="margin-top:20px; color: var(--error); font-size: 1rem; font-weight: 500;"></p>
     </div>
 
     <div id="instruct-ui" style="display:none;">
-        <h2 style="color:var(--primary)">Test Guidelines</h2>
-        <div style="text-align:left; color:#94a3b8; font-size:0.9rem; line-height:1.7; margin: 20px 0;">
-            <p>1. ⏱️ <b>60 Seconds:</b> Each question has a strict time limit.</p>
-            <p>2. ⏭️ <b>Navigation:</b> Use 'Skip' to move forward without answering.</p>
-            <p>3. ✅ <b>Flow:</b> 'Submit Answer' will automatically load the next question.</p>
-            <p>4. 🚦 <b>Final Review:</b> You can see your wrong and correct answers at the end.</p>
-            <p>5. 📝 <b>Support:</b> Mention your doubts in the final section for teacher review.</p>
+        <h2 style="color:var(--primary); font-size: 1.8rem;">Test Guidelines</h2>
+        <div style="text-align:left; color:#cbd5e1; font-size:1.1rem; line-height:1.8; margin: 30px 0;">
+            <p>1. ⏱️ <b>60 Seconds:</b> Each question has a dedicated time limit.</p>
+            <p>2. ⏭️ <b>Navigation:</b> Click 'Skip' if you wish to move forward without answering.</p>
+            <p>3. ✅ <b>Automatic Flow:</b> Clicking 'Submit Answer' will take you to the next question.</p>
+            <p>4. 🚦 <b>Performance Review:</b> A detailed analysis of your answers will be shown at the end.</p>
+            <p>5. 📝 <b>Support:</b> You can submit your queries in the Doubt Box for teacher review.</p>
         </div>
         <button class="btn-main" onclick="fetchQuestions()">Start Chapter 1 Test</button>
     </div>
@@ -148,23 +146,22 @@
         <div class="chapter-badge">Chapter 1: Electrostatics</div>
         <div class="timer-circle" id="timer-circ" data-time="60"></div>
         <div id="q-box"></div>
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <div style="display: flex; gap: 15px; margin-top: 25px;">
             <button class="btn-sub" style="flex:1" onclick="changeQuestion(1)">Skip / Next</button>
             <button class="btn-main" style="flex:1.5; margin-top:0;" onclick="submitAndNext()">Submit Answer</button>
         </div>
-        <p id="q-counter" style="margin-top:15px; font-size:0.8rem; opacity:0.5;"></p>
+        <p id="q-counter" style="margin-top:20px; font-size: 0.9rem; opacity:0.6;"></p>
     </div>
 
     <div id="result-ui" style="display:none;">
-        <h2>Test Summary</h2>
-        <h1 id="final-score" style="color:var(--primary); font-size: 3rem; margin: 10px 0;"></h1>
+        <h2 style="font-size: 1.8rem;">Test Summary</h2>
+        <h1 id="final-score" style="color:var(--primary); font-size: 4rem; margin: 15px 0;"></h1>
         
-        <div id="review-container">
-            </div>
+        <div id="review-container"></div>
 
-        <hr style="opacity:0.1; margin: 25px 0;">
+        <hr style="opacity:0.1; margin: 35px 0;">
         
-        <p style="font-weight:600; margin-bottom: 5px;">Rate your experience:</p>
+        <p style="font-weight:600; font-size: 1.1rem; margin-bottom: 10px;">Rate your experience:</p>
         <div class="star-rating">
             <input type="radio" name="star" id="s5" value="5"><label for="s5">★</label>
             <input type="radio" name="star" id="s4" value="4"><label for="s4">★</label>
@@ -173,7 +170,7 @@
             <input type="radio" name="star" id="s1" value="1"><label for="s1">★</label>
         </div>
 
-        <textarea id="feedback-txt" rows="3" placeholder="Any doubts or queries about this test?"></textarea>
+        <textarea id="feedback-txt" rows="4" placeholder="Mention any doubts or queries here..."></textarea>
         <button class="btn-main" id="syncBtn" onclick="submitToFirebase()">Final Submission</button>
     </div>
 </div>
@@ -201,8 +198,10 @@
         
         const q = query(collection(db, "results"), where("email", "==", e));
         const snap = await getDocs(q);
+        
+        // Updated English message for duplicate email
         if(!snap.empty) {
-            document.getElementById('msg').innerText = "Test already submitted by this email.";
+            document.getElementById('msg').innerText = "You have already completed this test.";
         } else {
             localStorage.setItem('user', n); localStorage.setItem('mail', e);
             document.getElementById('login-ui').style.display = 'none';
@@ -220,14 +219,14 @@
             document.getElementById('instruct-ui').style.display = 'none';
             document.getElementById('quiz-ui').style.display = 'block';
             renderQuestion();
-        } catch(e) { alert("Error loading chapter data."); }
+        } catch(e) { alert("Error: Chapter data not found."); }
     };
 
     function renderQuestion() {
         const q = questions[currentQ];
         document.getElementById('q-counter').innerText = `Question ${currentQ + 1} of ${questions.length}`;
         document.getElementById('q-box').innerHTML = `
-            <h3 style="min-height:60px;">${q.q}</h3>
+            <h3>${q.q}</h3>
             ${q.options.map((o, i) => `<div class="option ${userAnswers[currentQ]===i?'selected':''}" onclick="selectOpt(${i})">${o}</div>`).join('')}
         `;
         resetTimer();
@@ -273,12 +272,11 @@
         document.getElementById('result-ui').style.display = 'block';
         
         score = 0;
-        let reviewHTML = "<p style='font-weight:600;'>Detailed Question Review:</p>";
+        let reviewHTML = "<p style='font-weight:600; font-size: 1.2rem; margin-bottom:15px;'>Detailed Question Review:</p>";
         
         questions.forEach((q, i) => {
             const isCorrect = userAnswers[i] === q.a;
             if(isCorrect) score++;
-            
             const userChoice = userAnswers[i] === -1 ? "Skipped" : q.options[userAnswers[i]];
             const correctChoice = q.options[q.a];
 
@@ -286,7 +284,7 @@
                 <div class="review-card" style="border-left-color: ${isCorrect ? 'var(--success)' : 'var(--error)'}">
                     <div class="review-q">${i+1}. ${q.q}</div>
                     <div class="review-info" style="color:${isCorrect ? 'var(--success)' : 'var(--error)'}">
-                        <b>Your Answer:</b> ${userChoice}
+                        <b>Your Choice:</b> ${userChoice}
                     </div>
                     ${!isCorrect ? `<div class="review-info" style="color:var(--success)"><b>Correct Answer:</b> ${correctChoice}</div>` : ''}
                 </div>
@@ -300,7 +298,7 @@
     window.submitToFirebase = async () => {
         const star = document.querySelector('input[name="star"]:checked')?.value || 0;
         const btn = document.getElementById('syncBtn');
-        btn.innerText = "Saving...";
+        btn.innerText = "Processing...";
         btn.disabled = true;
 
         try {
@@ -309,13 +307,13 @@
                 email: localStorage.getItem('mail'),
                 score,
                 rating: star,
-                doubt: document.getElementById('feedback-txt').value || "No doubts",
+                doubt: document.getElementById('feedback-txt').value || "No doubts reported",
                 timestamp: serverTimestamp()
             });
-            alert("Test Submitted Successfully!");
+            alert("Test record saved successfully!");
             location.reload();
         } catch(e) { 
-            alert("Error saving result."); 
+            alert("System Error: Could not save result."); 
             btn.disabled = false; 
             btn.innerText = "Final Submission";
         }
