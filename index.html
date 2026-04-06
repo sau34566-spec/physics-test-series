@@ -10,8 +10,10 @@
             --primary: #6366f1;
             --accent: #a855f7;
             --bg: #0f172a;
-            --card: rgba(15, 23, 42, 0.8);
+            --card: rgba(15, 23, 42, 0.9);
             --text: #f8fafc;
+            --success: #22c55e;
+            --error: #ef4444;
         }
 
         body {
@@ -23,6 +25,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            padding: 20px;
         }
 
         .master-box {
@@ -30,142 +33,148 @@
             backdrop-filter: blur(25px);
             padding: 40px;
             border-radius: 24px;
-            width: 95%;
-            max-width: 550px;
+            width: 100%;
+            max-width: 650px;
             box-shadow: 0 0 40px rgba(99, 102, 241, 0.2);
             border: 1px solid rgba(255,255,255,0.1);
             text-align: center;
-            position: relative;
         }
 
-        /* Highly Professional Welcome Font */
         .welcome-text {
             font-family: 'Playfair Display', serif;
             font-size: 2.2rem;
-            line-height: 1.2;
-            margin-bottom: 30px;
             background: linear-gradient(to right, #fff, #a855f7, #6366f1);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 700;
-            animation: glow 3s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { filter: drop-shadow(0 0 2px rgba(168, 85, 247, 0.4)); }
-            to { filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.6)); }
+            margin-bottom: 30px;
         }
 
         .chapter-badge {
             display: inline-block;
-            background: rgba(99, 102, 241, 0.2);
+            background: rgba(99, 102, 241, 0.1);
             color: var(--primary);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
             font-weight: 600;
-            margin-bottom: 15px;
             border: 1px solid var(--primary);
+            margin-bottom: 20px;
         }
 
+        /* Input Styles */
         input, textarea {
-            width: 100%; padding: 15px; margin: 12px 0; border-radius: 12px;
+            width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.1); background: rgba(2, 6, 23, 0.6);
-            color: white; box-sizing: border-box; transition: 0.3s;
+            color: white; box-sizing: border-box;
         }
 
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px rgba(99, 102, 241, 0.3); }
-
+        /* Button Styles */
         .btn-main {
             width: 100%; background: linear-gradient(135deg, #6366f1, #a855f7);
             color: white; border: none; padding: 16px; border-radius: 12px;
-            cursor: pointer; font-weight: 600; transition: 0.4s;
+            cursor: pointer; font-weight: 600; transition: 0.3s; margin-top: 10px;
         }
-
-        .btn-main:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4); }
-
+        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
+        
         .btn-sub {
             background: transparent; border: 1px solid #475569;
-            color: #94a3b8; padding: 12px 20px; border-radius: 12px; cursor: pointer; transition: 0.3s;
+            color: #94a3b8; padding: 12px 20px; border-radius: 12px; cursor: pointer;
         }
 
-        .btn-sub:hover { border-color: var(--primary); color: white; }
-
-        .action-btns { display: flex; gap: 12px; margin-top: 25px; }
-
+        /* Quiz UI */
         .timer-circle {
-            width: 70px; height: 70px; border-radius: 50%;
+            width: 60px; height: 60px; border-radius: 50%;
             background: conic-gradient(var(--primary) var(--p), #1e293b 0);
-            display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
-            position: relative; transition: --p 1s linear;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;
+            position: relative; --p: 100%;
         }
-
         .timer-circle::after {
-            content: attr(data-time); position: absolute; width: 60px; height: 60px;
+            content: attr(data-time); position: absolute; width: 50px; height: 50px;
             background: #0f172a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;
         }
 
         .option {
-            background: rgba(30, 41, 59, 0.5); padding: 16px; margin: 12px 0;
-            border-radius: 12px; cursor: pointer; text-align: left; transition: 0.3s;
-            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(30, 41, 59, 0.5); padding: 15px; margin: 10px 0;
+            border-radius: 12px; cursor: pointer; text-align: left; border: 1px solid transparent; transition: 0.2s;
         }
+        .option.selected { background: var(--primary); border-color: var(--accent); }
 
-        .option:hover { background: rgba(99, 102, 241, 0.1); border-color: var(--primary); }
-        .option.selected { background: var(--primary); color: white; font-weight: 600; }
-
-        #review-list {
-            text-align: left; margin-top: 20px; max-height: 200px; overflow-y: auto;
-            padding: 10px; background: rgba(0,0,0,0.2); border-radius: 12px;
+        /* Review Section */
+        #review-container {
+            text-align: left; margin-top: 25px; max-height: 350px; overflow-y: auto;
+            padding-right: 10px;
         }
+        .review-card {
+            background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px;
+            margin-bottom: 15px; border-left: 4px solid #334155;
+        }
+        .review-q { font-weight: 600; font-size: 0.95rem; margin-bottom: 8px; color: #fff; }
+        .review-info { font-size: 0.85rem; margin: 4px 0; }
+
+        /* Star Rating */
+        .star-rating { display: flex; justify-content: center; gap: 10px; margin: 15px 0; direction: rtl; }
+        .star-rating input { display: none; }
+        .star-rating label { font-size: 30px; color: #334155; cursor: pointer; transition: 0.2s; }
+        .star-rating label:hover, .star-rating label:hover ~ label,
+        .star-rating input:checked ~ label { color: #facc15; }
+
     </style>
 </head>
 <body>
 
-<div class="master-box" id="main-container">
+<div class="master-box">
     <div id="login-ui">
         <h1 class="welcome-text">Welcome to<br>RN.Singh Physics Classes</h1>
         <input type="text" id="stdName" placeholder="Full Name">
         <input type="email" id="stdEmail" placeholder="Email Address">
         <button class="btn-main" onclick="verifyUser()">Enter Portal</button>
-        <p id="msg" style="margin-top:15px; font-size:0.9rem;"></p>
+        <p id="msg" style="margin-top:15px; color: var(--error); font-size: 0.9rem;"></p>
     </div>
 
     <div id="instruct-ui" style="display:none;">
-        <h2 style="color:var(--primary)">Examination Guidelines</h2>
-        <div style="text-align:left; color:#94a3b8; font-size:0.9rem; line-height:1.8; margin: 20px 0;">
-            <p>• ⏱️ Each question is timed for <b>60 seconds</b> specifically.</p>
-            <p>• ⏭️ Use 'Skip/Next' to move forward without marking an answer.</p>
-            <p>• ✅ Clicking 'Submit Answer' will auto-advance to the next slide.</p>
-            <p>• 🛡️ <b>Maintain integrity: Switching tabs or refreshing may void your session.</b></p>
-            <p>• 📝 Submit your queries in the Doubt Box after the result.</p>
+        <h2 style="color:var(--primary)">Test Guidelines</h2>
+        <div style="text-align:left; color:#94a3b8; font-size:0.9rem; line-height:1.7; margin: 20px 0;">
+            <p>1. ⏱️ <b>60 Seconds:</b> Each question has a strict time limit.</p>
+            <p>2. ⏭️ <b>Navigation:</b> Use 'Skip' to move forward without answering.</p>
+            <p>3. ✅ <b>Flow:</b> 'Submit Answer' will automatically load the next question.</p>
+            <p>4. 🚦 <b>Final Review:</b> You can see your wrong and correct answers at the end.</p>
+            <p>5. 📝 <b>Support:</b> Mention your doubts in the final section for teacher review.</p>
         </div>
         <button class="btn-main" onclick="fetchQuestions()">Start Chapter 1 Test</button>
     </div>
 
     <div id="quiz-ui" style="display:none;">
         <div class="chapter-badge">Chapter 1: Electrostatics</div>
-        <div class="timer-circle" id="timer-circ" data-time="60" style="--p:100%"></div>
+        <div class="timer-circle" id="timer-circ" data-time="60"></div>
         <div id="q-box"></div>
-        <div class="action-btns">
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
             <button class="btn-sub" style="flex:1" onclick="changeQuestion(1)">Skip / Next</button>
-            <button class="btn-main" style="flex:1.5;" onclick="submitAndNext()">Submit Answer</button>
+            <button class="btn-main" style="flex:1.5; margin-top:0;" onclick="submitAndNext()">Submit Answer</button>
         </div>
-        <p id="q-counter" style="margin-top:20px; font-size:0.8rem; opacity:0.6;"></p>
+        <p id="q-counter" style="margin-top:15px; font-size:0.8rem; opacity:0.5;"></p>
     </div>
 
     <div id="result-ui" style="display:none;">
-        <h2 style="margin-bottom:5px;">Result Card</h2>
-        <div class="chapter-badge">Chapter 1 Completed</div>
-        <h1 id="final-score" style="color:var(--primary); font-size: 3.5rem; margin: 10px 0;"></h1>
+        <h2>Test Summary</h2>
+        <h1 id="final-score" style="color:var(--primary); font-size: 3rem; margin: 10px 0;"></h1>
         
-        <p style="text-align:left; font-weight:600; margin-bottom:5px;">Question Review:</p>
-        <div id="review-list"></div>
+        <div id="review-container">
+            </div>
 
-        <p style="text-align:left; font-weight:600; margin-top:20px;">Doubt / Query Box:</p>
-        <textarea id="feedback-txt" rows="3" placeholder="If you have any doubt in any question, write here..."></textarea>
+        <hr style="opacity:0.1; margin: 25px 0;">
         
-        <button class="btn-main" id="syncBtn" onclick="submitToFirebase()">Submit Doubts & Finish</button>
+        <p style="font-weight:600; margin-bottom: 5px;">Rate your experience:</p>
+        <div class="star-rating">
+            <input type="radio" name="star" id="s5" value="5"><label for="s5">★</label>
+            <input type="radio" name="star" id="s4" value="4"><label for="s4">★</label>
+            <input type="radio" name="star" id="s3" value="3"><label for="s3">★</label>
+            <input type="radio" name="star" id="s2" value="2"><label for="s2">★</label>
+            <input type="radio" name="star" id="s1" value="1"><label for="s1">★</label>
+        </div>
+
+        <textarea id="feedback-txt" rows="3" placeholder="Any doubts or queries about this test?"></textarea>
+        <button class="btn-main" id="syncBtn" onclick="submitToFirebase()">Final Submission</button>
     </div>
 </div>
 
@@ -188,12 +197,12 @@
     window.verifyUser = async () => {
         const n = document.getElementById('stdName').value;
         const e = document.getElementById('stdEmail').value.toLowerCase();
-        if(!n || !e) return alert("Please fill your details");
+        if(!n || !e) return alert("Please enter your name and email.");
         
         const q = query(collection(db, "results"), where("email", "==", e));
         const snap = await getDocs(q);
         if(!snap.empty) {
-            document.getElementById('msg').innerHTML = "<span style='color:#f87171'>Access Denied: Already Attempted.</span>";
+            document.getElementById('msg').innerText = "Test already submitted by this email.";
         } else {
             localStorage.setItem('user', n); localStorage.setItem('mail', e);
             document.getElementById('login-ui').style.display = 'none';
@@ -211,14 +220,14 @@
             document.getElementById('instruct-ui').style.display = 'none';
             document.getElementById('quiz-ui').style.display = 'block';
             renderQuestion();
-        } catch(e) { alert("Data Error: Ensure chapter1.html exists."); }
+        } catch(e) { alert("Error loading chapter data."); }
     };
 
     function renderQuestion() {
         const q = questions[currentQ];
-        document.getElementById('q-counter').innerText = `Progress: ${currentQ + 1} / ${questions.length}`;
+        document.getElementById('q-counter').innerText = `Question ${currentQ + 1} of ${questions.length}`;
         document.getElementById('q-box').innerHTML = `
-            <h3 style="min-height:70px; font-size:1.1rem;">${q.q}</h3>
+            <h3 style="min-height:60px;">${q.q}</h3>
             ${q.options.map((o, i) => `<div class="option ${userAnswers[currentQ]===i?'selected':''}" onclick="selectOpt(${i})">${o}</div>`).join('')}
         `;
         resetTimer();
@@ -226,11 +235,12 @@
 
     window.selectOpt = (idx) => {
         userAnswers[currentQ] = idx;
-        renderQuestion();
+        const opts = document.querySelectorAll('.option');
+        opts.forEach((o, i) => o.classList.toggle('selected', i === idx));
     };
 
     window.submitAndNext = () => {
-        if(userAnswers[currentQ] === -1) return alert("Please select an answer first.");
+        if(userAnswers[currentQ] === -1) return alert("Please select an answer.");
         changeQuestion(1);
     };
 
@@ -263,34 +273,52 @@
         document.getElementById('result-ui').style.display = 'block';
         
         score = 0;
-        let reviewHTML = "";
+        let reviewHTML = "<p style='font-weight:600;'>Detailed Question Review:</p>";
+        
         questions.forEach((q, i) => {
             const isCorrect = userAnswers[i] === q.a;
             if(isCorrect) score++;
-            reviewHTML += `<div style="color:${isCorrect?'#4ade80':'#f87171'}; font-size:0.85rem; margin-bottom:5px;">
-                Q${i+1}: ${isCorrect ? '✓ Correct' : '✗ Wrong/Skipped'}
-            </div>`;
+            
+            const userChoice = userAnswers[i] === -1 ? "Skipped" : q.options[userAnswers[i]];
+            const correctChoice = q.options[q.a];
+
+            reviewHTML += `
+                <div class="review-card" style="border-left-color: ${isCorrect ? 'var(--success)' : 'var(--error)'}">
+                    <div class="review-q">${i+1}. ${q.q}</div>
+                    <div class="review-info" style="color:${isCorrect ? 'var(--success)' : 'var(--error)'}">
+                        <b>Your Answer:</b> ${userChoice}
+                    </div>
+                    ${!isCorrect ? `<div class="review-info" style="color:var(--success)"><b>Correct Answer:</b> ${correctChoice}</div>` : ''}
+                </div>
+            `;
         });
         
         document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
-        document.getElementById('review-list').innerHTML = reviewHTML;
+        document.getElementById('review-container').innerHTML = reviewHTML;
     }
 
     window.submitToFirebase = async () => {
+        const star = document.querySelector('input[name="star"]:checked')?.value || 0;
         const btn = document.getElementById('syncBtn');
-        btn.innerText = "Finalizing...";
+        btn.innerText = "Saving...";
         btn.disabled = true;
+
         try {
             await addDoc(collection(db, "results"), {
                 name: localStorage.getItem('user'),
                 email: localStorage.getItem('mail'),
                 score,
-                doubt: document.getElementById('feedback-txt').value || "No doubt reported",
+                rating: star,
+                doubt: document.getElementById('feedback-txt').value || "No doubts",
                 timestamp: serverTimestamp()
             });
-            alert("Report Submitted Successfully!");
+            alert("Test Submitted Successfully!");
             location.reload();
-        } catch(e) { alert("Error syncing data."); btn.disabled = false; }
+        } catch(e) { 
+            alert("Error saving result."); 
+            btn.disabled = false; 
+            btn.innerText = "Final Submission";
+        }
     };
 </script>
 </body>
