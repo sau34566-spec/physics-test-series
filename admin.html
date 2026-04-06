@@ -2,53 +2,174 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard | Physics Elite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | RN.Singh Physics Classes</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --danger: #ef4444; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .dashboard { max-width: 1200px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #334155; }
-        th { background: var(--primary); color: white; }
-        .star-box { color: #f59e0b; font-weight: bold; }
-        #login-screen { text-align: center; margin-top: 100px; }
-        input { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 10px; width: 250px; }
-        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; }
-        .btn-reset { background: var(--danger); margin-left: 10px; }
-        button:hover { opacity: 0.8; transform: translateY(-2px); }
+        :root {
+            --primary: #6366f1;
+            --accent: #a855f7;
+            --bg: #020617;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 30px;
+            margin: 0;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--card);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(to right, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 18px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .star-rating {
+            color: #facc15;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .score-badge {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .doubt-cell {
+            max-width: 300px;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            line-height: 1.4;
+        }
+
+        /* Login Screen */
+        #login-screen {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, #1e1b4b, #020617);
+        }
+
+        input[type="password"] {
+            padding: 15px;
+            width: 300px;
+            border-radius: 12px;
+            border: 1px solid var(--primary);
+            background: #0f172a;
+            color: white;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        button {
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-refresh { background: var(--primary); color: white; }
+        .btn-reset { background: var(--danger); color: white; margin-left: 10px; }
+        button:hover { opacity: 0.9; transform: translateY(-2px); }
+
     </style>
 </head>
 <body>
 
-<div id="login-screen">
-    <h2>Admin Access</h2>
-    <input type="password" id="adminPass" placeholder="Enter Password"> <br>
-    <button onclick="checkPass()">Login</button>
-</div>
-
-<div class="dashboard" id="main-dashboard" style="display:none;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h1>Student Reports</h1>
-        <div>
-            <button onclick="location.reload()">Refresh Data</button>
-            <button class="btn-reset" onclick="resetAllData()">Reset All Data</button>
-        </div>
+    <div id="login-screen">
+        <h1 style="color:white; margin-bottom:10px;">Portal Admin Access</h1>
+        <p style="color:rgba(255,255,255,0.5); margin-bottom:30px;">Enter credentials to view student reports</p>
+        <input type="password" id="adminPass" placeholder="Enter Admin Password">
+        <button class="btn-refresh" onclick="checkPass()">Login to Dashboard</button>
     </div>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Score</th>
-                <th>Rating</th>
-                <th>Feedback</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody id="results-table"></tbody>
-    </table>
-</div>
+
+    <div class="dashboard-container" id="main-dashboard" style="display:none;">
+        <div class="header">
+            <div>
+                <h1>RN.Singh Classes | Reports</h1>
+                <p style="font-size: 0.9rem; color: #94a3b8;">Chapter 1: Electrostatics - Student Performance</p>
+            </div>
+            <div>
+                <button class="btn-refresh" onclick="loadData()">Refresh Real-time</button>
+                <button class="btn-reset" onclick="resetAllData()">Wipe All Records</button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Email Address</th>
+                    <th>Score</th>
+                    <th>Experience (Rating)</th>
+                    <th>Doubt / Query</th>
+                    <th>Submission Date</th>
+                </tr>
+            </thead>
+            <tbody id="results-table">
+                </tbody>
+        </table>
+    </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
@@ -66,52 +187,66 @@
     const db = getFirestore(initializeApp(firebaseConfig));
 
     window.checkPass = () => {
+        // Password wahi rakha hai jo pehle tha: physics123
         if(document.getElementById('adminPass').value === "physics123") {
             document.getElementById('login-screen').style.display = "none";
             document.getElementById('main-dashboard').style.display = "block";
             loadData();
-        } else { alert("Wrong Password!"); }
+        } else {
+            alert("Unauthorized Access: Incorrect Password!");
+        }
     };
 
     async function loadData() {
-        const table = document.getElementById('results-table');
-        const q = query(collection(db, "results"), orderBy("timestamp", "desc"));
-        const snap = await getDocs(q);
-        table.innerHTML = "";
+        const tableBody = document.getElementById('results-table');
+        tableBody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Loading reports...</td></tr>";
         
-        if(snap.empty) {
-            table.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No records found.</td></tr>";
-            return;
-        }
+        try {
+            const q = query(collection(db, "results"), orderBy("timestamp", "desc"));
+            const snap = await getDocs(q);
+            tableBody.innerHTML = "";
 
-        snap.forEach((doc) => {
-            const d = doc.data();
-            const rating = d.rating || "N/A";
-            const date = d.timestamp ? d.timestamp.toDate().toLocaleString() : "N/A";
-            
-            table.innerHTML += `
-                <tr>
-                    <td>${d.name}</td>
-                    <td>${d.email}</td>
-                    <td><b>${d.score}</b></td>
-                    <td class="star-box">${rating}</td>
-                    <td>${d.feedback}</td>
-                    <td style="font-size:0.8rem;">${date}</td>
-                </tr>
-            `;
-        });
+            if(snap.empty) {
+                tableBody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No student records found yet.</td></tr>";
+                return;
+            }
+
+            snap.forEach((doc) => {
+                const data = doc.data();
+                const stars = "⭐".repeat(data.rating || 0) || "No Rating";
+                const date = data.timestamp ? data.timestamp.toDate().toLocaleString('en-IN') : "N/A";
+                
+                tableBody.innerHTML += `
+                    <tr>
+                        <td style="font-weight:600;">${data.name}</td>
+                        <td style="color:#94a3b8;">${data.email}</td>
+                        <td><span class="score-badge">${data.score}</span></td>
+                        <td class="star-rating">${stars}</td>
+                        <td class="doubt-cell">${data.doubt || 'No queries'}</td>
+                        <td style="font-size:0.8rem; color:#64748b;">${date}</td>
+                    </tr>
+                `;
+            });
+        } catch (e) {
+            alert("Database Error: Could not fetch data.");
+        }
     }
 
-    // RESET FUNCTION
     window.resetAllData = async () => {
-        if(confirm("Are you sure? This will delete ALL student results permanently!")) {
+        if(confirm("CRITICAL WARNING: This will permanently delete all student performance data. Do you want to proceed?")) {
             const snap = await getDocs(collection(db, "results"));
             const deletePromises = snap.docs.map(d => deleteDoc(doc(db, "results", d.id)));
             await Promise.all(deletePromises);
-            alert("All data has been wiped!");
+            alert("All records have been successfully cleared.");
             loadData();
         }
     };
+
+    // Keyboard support for login
+    document.getElementById('adminPass').addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') checkPass();
+    });
+
 </script>
 </body>
 </html>
