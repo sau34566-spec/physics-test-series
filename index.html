@@ -6,318 +6,229 @@
     <title>RN.Singh Physics Classes | Master Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #6366f1;
-            --accent: #a855f7;
-            --bg: #0f172a;
-            --card: rgba(15, 23, 42, 0.9);
-            --text: #f8fafc;
-            --success: #22c55e;
-            --error: #ef4444;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: radial-gradient(circle at top right, #1e1b4b, #020617);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-
-        /* Box Size Increased for Better View */
-        .master-box {
-            background: var(--card);
-            backdrop-filter: blur(25px);
-            padding: 50px; /* Increased padding */
-            border-radius: 28px;
-            width: 100%;
-            max-width: 800px; /* Width increased from 650px to 800px */
-            box-shadow: 0 0 50px rgba(99, 102, 241, 0.25);
-            border: 1px solid rgba(255,255,255,0.1);
-            text-align: center;
-        }
-
-        .welcome-text {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.8rem; /* Font size increased */
-            background: linear-gradient(to right, #fff, #a855f7, #6366f1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-            margin-bottom: 35px;
-        }
-
-        .chapter-badge {
-            display: inline-block;
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--primary);
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-size: 1rem;
-            font-weight: 600;
-            border: 1px solid var(--primary);
-            margin-bottom: 25px;
-        }
-
-        input, textarea {
-            width: 100%; padding: 18px; margin: 12px 0; border-radius: 14px;
-            border: 1px solid rgba(255,255,255,0.1); background: rgba(2, 6, 23, 0.6);
-            color: white; box-sizing: border-box; font-size: 1rem;
-        }
-
-        .btn-main {
-            width: 100%; background: linear-gradient(135deg, #6366f1, #a855f7);
-            color: white; border: none; padding: 18px; border-radius: 14px;
-            cursor: pointer; font-weight: 600; transition: 0.3s; margin-top: 15px; font-size: 1.1rem;
-        }
+        :root {--primary: #6366f1; --accent: #a855f7; --bg: #0f172a; --card: rgba(15, 23, 42, 0.9); --text: #f8fafc; --success: #22c55e; --error: #ef4444; }
+        body {font-family: 'Poppins', sans-serif; background: radial-gradient(circle at top right, #1e1b4b, #020617); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .master-box {background: var(--card); backdrop-filter: blur(25px); padding: 50px; border-radius: 28px; width: 100%; max-width: 800px; box-shadow: 0 0 50px rgba(99, 102, 241, 0.25); border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .welcome-text {font-family: 'Playfair Display', serif; font-size: 2.8rem; background: linear-gradient(to right, #fff, #a855f7, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; margin-bottom: 35px; }
+        .chapter-badge {display: inline-block; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 8px 20px; border-radius: 30px; font-size: 1rem; font-weight: 600; border: 1px solid var(--primary); margin-bottom: 25px; }
+        input, textarea {width: 100%; padding: 18px; margin: 12px 0; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); background: rgba(2, 6, 23, 0.6); color: white; box-sizing: border-box; font-size: 1rem; }
+        .btn-main {width: 100%; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; padding: 18px; border-radius: 14px; cursor: pointer; font-weight: 600; transition: 0.3s; margin-top: 15px; font-size: 1.1rem; }
         .btn-main:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4); }
-        
-        .btn-sub {
-            background: transparent; border: 1px solid #475569;
-            color: #94a3b8; padding: 14px 25px; border-radius: 14px; cursor: pointer; font-size: 1rem;
-        }
-
-        .timer-circle {
-            width: 80px; height: 80px; border-radius: 50%;
-            background: conic-gradient(var(--primary) var(--p), #1e293b 0);
-            display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
-            position: relative; --p: 100%;
-        }
-        .timer-circle::after {
-            content: attr(data-time); position: absolute; width: 65px; height: 65px;
-            background: #0f172a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem;
-        }
-
-        .option {
-            background: rgba(30, 41, 59, 0.5); padding: 18px; margin: 12px 0;
-            border-radius: 14px; cursor: pointer; text-align: left; border: 1px solid transparent; transition: 0.2s; font-size: 1.05rem;
-        }
+        .btn-sub {background: transparent; border: 1px solid #475569; color: #94a3b8; padding: 14px 25px; border-radius: 14px; cursor: pointer; font-size: 1rem; }
+        .timer-circle {width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(var(--primary) var(--p), #1e293b 0); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; position: relative; --p: 100%; }
+        .timer-circle::after {content: attr(data-time); position: absolute; width: 65px; height: 65px; background: #0f172a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; }
+        .option {background: rgba(30, 41, 59, 0.5); padding: 18px; margin: 12px 0; border-radius: 14px; cursor: pointer; text-align: left; border: 1px solid transparent; transition: 0.2s; font-size: 1.05rem; }
         .option.selected { background: var(--primary); border-color: var(--accent); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
-
-        #review-container {
-            text-align: left; margin-top: 30px; max-height: 450px; overflow-y: auto;
-            padding-right: 15px;
-        }
-        .review-card {
-            background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px;
-            margin-bottom: 20px; border-left: 5px solid #334155;
-        }
+        #review-container {text-align: left; margin-top: 30px; max-height: 450px; overflow-y: auto; padding-right: 15px; }
+        .review-card {background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; margin-bottom: 20px; border-left: 5px solid #334155; }
         .review-q { font-weight: 600; font-size: 1.1rem; margin-bottom: 10px; color: #fff; }
         .review-info { font-size: 0.95rem; margin: 6px 0; }
-
         .star-rating { display: flex; justify-content: center; gap: 15px; margin: 20px 0; direction: rtl; }
         .star-rating input { display: none; }
         .star-rating label { font-size: 35px; color: #334155; cursor: pointer; transition: 0.2s; }
-        .star-rating label:hover, .star-rating label:hover ~ label,
-        .star-rating input:checked ~ label { color: #facc15; }
-
-        #q-box h3 { font-size: 1.3rem; margin-bottom: 20px; }
-
+        .star-rating label:hover, .star-rating label:hover ~ label, .star-rating input:checked ~ label { color: #facc15; }
     </style>
 </head>
 <body>
-
-<div class="master-box">
-    <div id="login-ui">
-        <h1 class="welcome-text">Welcome to <br> RN.Singh Physics Classes</h1>
-        <input type="text" id="stdName" placeholder="Enter Full Name">
-        <input type="email" id="stdEmail" placeholder="Enter Email Address">
-        <button class="btn-main" onclick="verifyUser()">Enter Portal</button>
-        <p id="msg" style="margin-top:20px; color: var(--error); font-size: 1rem; font-weight: 500;"></p>
-    </div>
-
-    <div id="instruct-ui" style="display:none;">
-        <h2 style="color:var(--primary); font-size: 1.8rem;">Test Guidelines</h2>
-        <div style="text-align:left; color:#cbd5e1; font-size:1.1rem; line-height:1.8; margin: 30px 0;">
-            <p>1. ⏱️ <b>60 Seconds:</b> Each question has a dedicated time limit.</p>
-            <p>2. ⏭️ <b>Navigation:</b> Click 'Skip' if you wish to move forward without answering.</p>
-            <p>3. ✅ <b>Automatic Flow:</b> Clicking 'Submit Answer' will take you to the next question.</p>
-            <p>4. 🚦 <b>Performance Review:</b> A detailed analysis of your answers will be shown at the end.</p>
-            <p>5. 📝 <b>Support:</b> You can submit your queries in the Doubt Box for teacher review.</p>
-        </div>
-        <button class="btn-main" onclick="fetchQuestions()">Start Chapter 1 Test</button>
-    </div>
-
-    <div id="quiz-ui" style="display:none;">
-        <div class="chapter-badge">Chapter 1: Electrostatics</div>
-        <div class="timer-circle" id="timer-circ" data-time="60"></div>
-        <div id="q-box"></div>
-        <div style="display: flex; gap: 15px; margin-top: 25px;">
-            <button class="btn-sub" style="flex:1" onclick="changeQuestion(1)">Skip / Next</button>
-            <button class="btn-main" style="flex:1.5; margin-top:0;" onclick="submitAndNext()">Submit Answer</button>
-        </div>
-        <p id="q-counter" style="margin-top:20px; font-size: 0.9rem; opacity:0.6;"></p>
-    </div>
-
-    <div id="result-ui" style="display:none;">
-        <h2 style="font-size: 1.8rem;">Test Summary</h2>
-        <h1 id="final-score" style="color:var(--primary); font-size: 4rem; margin: 15px 0;"></h1>
-        
-        <div id="review-container"></div>
-
-        <hr style="opacity:0.1; margin: 35px 0;">
-        
-        <p style="font-weight:600; font-size: 1.1rem; margin-bottom: 10px;">Rate your experience:</p>
-        <div class="star-rating">
-            <input type="radio" name="star" id="s5" value="5"><label for="s5">★</label>
-            <input type="radio" name="star" id="s4" value="4"><label for="s4">★</label>
-            <input type="radio" name="star" id="s3" value="3"><label for="s3">★</label>
-            <input type="radio" name="star" id="s2" value="2"><label for="s2">★</label>
-            <input type="radio" name="star" id="s1" value="1"><label for="s1">★</label>
+    <div class="master-box">
+        <div id="login-ui">
+            <h1 class="welcome-text">Welcome to <br> RN.Singh Physics Classes</h1>
+            <input type="text" id="stdName" placeholder="Enter Full Name">
+            <input type="email" id="stdEmail" placeholder="Enter Email Address">
+            <input type="password" id="accessPass" placeholder="Enter Access Password">
+            <button class="btn-main" onclick="verifyUser()">Enter Portal</button>
+            <p id="msg" style="margin-top:20px; color: var(--error); font-size: 1rem; font-weight: 500;"></p>
         </div>
 
-        <textarea id="feedback-txt" rows="4" placeholder="Mention any doubts or queries here..."></textarea>
-        <button class="btn-main" id="syncBtn" onclick="submitToFirebase()">Final Submission</button>
+        <div id="instruct-ui" style="display:none;">
+            <h2 style="color:var(--primary); font-size: 1.8rem;">Test Guidelines</h2>
+            <div style="text-align:left; color:#cbd5e1; font-size:1.1rem; line-height:1.8; margin: 30px 0;">
+                <p>1. ⏱️ <b>60 Seconds:</b> Each question has a dedicated time limit.</p>
+                <p>2. ⏭️ <b>Navigation:</b> Click 'Skip' if you wish to move forward without answering.</p>
+                <p>3. ✅ <b>Automatic Flow:</b> Clicking 'Submit Answer' will take you to the next question.</p>
+                <p>4. 🚦 <b>Performance Review:</b> A detailed analysis of your answers will be shown at the end.</p>
+                <p>5. 📝 <b>Support:</b> You can submit your queries in the Doubt Box for teacher review.</p>
+            </div>
+            <button class="btn-main" onclick="fetchQuestions()">Start Chapter 1 Test</button>
+        </div>
+
+        <div id="quiz-ui" style="display:none;">
+            <div class="chapter-badge">Chapter 1: Electrostatics</div>
+            <div class="timer-circle" id="timer-circ" data-time="60"></div>
+            <div id="q-box"></div>
+            <div style="display: flex; gap: 15px; margin-top: 25px;">
+                <button class="btn-sub" style="flex:1" onclick="changeQuestion(1)">Skip / Next</button>
+                <button class="btn-main" style="flex:1.5; margin-top:0;" onclick="submitAndNext()">Submit Answer</button>
+            </div>
+            <p id="q-counter" style="margin-top:20px; font-size: 0.9rem; opacity:0.6;"></p>
+        </div>
+
+        <div id="result-ui" style="display:none;">
+            <h2 style="font-size: 1.8rem;">Test Summary</h2>
+            <h1 id="final-score" style="color:var(--primary); font-size: 4rem; margin: 15px 0;"></h1>
+            <div id="review-container"></div>
+            <hr style="opacity:0.1; margin: 35px 0;">
+            <p style="font-weight:600; font-size: 1.1rem; margin-bottom: 10px;">Rate your experience:</p>
+            <div class="star-rating">
+                <input type="radio" name="star" id="s5" value="5"><label for="s5">★</label>
+                <input type="radio" name="star" id="s4" value="4"><label for="s4">★</label>
+                <input type="radio" name="star" id="s3" value="3"><label for="s3">★</label>
+                <input type="radio" name="star" id="s2" value="2"><label for="s2">★</label>
+                <input type="radio" name="star" id="s1" value="1"><label for="s1">★</label>
+            </div>
+            <textarea id="feedback-txt" rows="4" placeholder="Mention any doubts or queries here..."></textarea>
+            <button class="btn-main" id="syncBtn" onclick="submitToFirebase()">Final Submission</button>
+        </div>
     </div>
-</div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
-    const firebaseConfig = { 
-        apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
-        authDomain: "physics-test-series-405c7.firebaseapp.com",
-        projectId: "physics-test-series-405c7",
-        storageBucket: "physics-test-series-405c7.firebasestorage.app",
-        messagingSenderId: "758620061190",
-        appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
+            authDomain: "physics-test-series-405c7.firebaseapp.com",
+            projectId: "physics-test-series-405c7",
+            storageBucket: "physics-test-series-405c7.firebasestorage.app",
+            messagingSenderId: "758620061190",
+            appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
+        };
 
-    const db = getFirestore(initializeApp(firebaseConfig));
-    let questions = [], currentQ = 0, score = 0, userAnswers = [], timer, timeLeft = 60;
+        const db = getFirestore(initializeApp(firebaseConfig));
+        const PORTAL_PASSWORD = "RN_SINGH_2024"; // <-- YAHAN APNA PASSWORD BADLEIN
 
-    window.verifyUser = async () => {
-        const n = document.getElementById('stdName').value;
-        const e = document.getElementById('stdEmail').value.toLowerCase();
-        if(!n || !e) return alert("Please enter your name and email.");
-        
-        const q = query(collection(db, "results"), where("email", "==", e));
-        const snap = await getDocs(q);
-        
-        // Updated English message for duplicate email
-        if(!snap.empty) {
-            document.getElementById('msg').innerText = "You have already completed this test.";
-        } else {
-            localStorage.setItem('user', n); localStorage.setItem('mail', e);
-            document.getElementById('login-ui').style.display = 'none';
-            document.getElementById('instruct-ui').style.display = 'block';
-        }
-    };
+        let questions = [], currentQ = 0, score = 0, userAnswers = [], timer, timeLeft = 60;
 
-    window.fetchQuestions = async () => {
-        try {
-            const res = await fetch('chapter1.html');
-            const text = await res.text();
-            const doc = new DOMParser().parseFromString(text, 'text/html');
-            questions = JSON.parse(doc.getElementById('question-data').textContent);
-            userAnswers = new Array(questions.length).fill(-1);
-            document.getElementById('instruct-ui').style.display = 'none';
-            document.getElementById('quiz-ui').style.display = 'block';
-            renderQuestion();
-        } catch(e) { alert("Error: Chapter data not found."); }
-    };
+        window.verifyUser = async () => {
+            const n = document.getElementById('stdName').value;
+            const e = document.getElementById('stdEmail').value.toLowerCase();
+            const p = document.getElementById('accessPass').value;
 
-    function renderQuestion() {
-        const q = questions[currentQ];
-        document.getElementById('q-counter').innerText = `Question ${currentQ + 1} of ${questions.length}`;
-        document.getElementById('q-box').innerHTML = `
-            <h3>${q.q}</h3>
-            ${q.options.map((o, i) => `<div class="option ${userAnswers[currentQ]===i?'selected':''}" onclick="selectOpt(${i})">${o}</div>`).join('')}
-        `;
-        resetTimer();
-    }
+            if(!n || !e || !p) return alert("Please fill all fields.");
+            
+            // Password Check
+            if(p !== PORTAL_PASSWORD) {
+                document.getElementById('msg').innerText = "Incorrect access password!";
+                return;
+            }
 
-    window.selectOpt = (idx) => {
-        userAnswers[currentQ] = idx;
-        const opts = document.querySelectorAll('.option');
-        opts.forEach((o, i) => o.classList.toggle('selected', i === idx));
-    };
+            const q = query(collection(db, "results"), where("email", "==", e));
+            const snap = await getDocs(q);
 
-    window.submitAndNext = () => {
-        if(userAnswers[currentQ] === -1) return alert("Please select an answer.");
-        changeQuestion(1);
-    };
+            if(!snap.empty) {
+                document.getElementById('msg').innerText = "You have already completed this test.";
+            } else {
+                localStorage.setItem('user', n);
+                localStorage.setItem('mail', e);
+                document.getElementById('login-ui').style.display = 'none';
+                document.getElementById('instruct-ui').style.display = 'block';
+            }
+        };
 
-    window.changeQuestion = (step) => {
-        if(currentQ === questions.length - 1 && step === 1) return showResults();
-        currentQ += step;
-        renderQuestion();
-    };
+        window.fetchQuestions = async () => {
+            try {
+                const res = await fetch('chapter1.html');
+                const text = await res.text();
+                const doc = new DOMParser().parseFromString(text, 'text/html');
+                questions = JSON.parse(doc.getElementById('question-data').textContent);
+                userAnswers = new Array(questions.length).fill(-1);
+                document.getElementById('instruct-ui').style.display = 'none';
+                document.getElementById('quiz-ui').style.display = 'block';
+                renderQuestion();
+            } catch(e) { alert("Error: Chapter data not found."); }
+        };
 
-    function resetTimer() {
-        clearInterval(timer);
-        timeLeft = 60;
-        updateTimerUI();
-        timer = setInterval(() => {
-            timeLeft--;
-            updateTimerUI();
-            if(timeLeft <= 0) changeQuestion(1);
-        }, 1000);
-    }
-
-    function updateTimerUI() {
-        const circ = document.getElementById('timer-circ');
-        circ.setAttribute('data-time', timeLeft);
-        circ.style.setProperty('--p', (timeLeft / 60 * 100) + '%');
-    }
-
-    function showResults() {
-        clearInterval(timer);
-        document.getElementById('quiz-ui').style.display = 'none';
-        document.getElementById('result-ui').style.display = 'block';
-        
-        score = 0;
-        let reviewHTML = "<p style='font-weight:600; font-size: 1.2rem; margin-bottom:15px;'>Detailed Question Review:</p>";
-        
-        questions.forEach((q, i) => {
-            const isCorrect = userAnswers[i] === q.a;
-            if(isCorrect) score++;
-            const userChoice = userAnswers[i] === -1 ? "Skipped" : q.options[userAnswers[i]];
-            const correctChoice = q.options[q.a];
-
-            reviewHTML += `
-                <div class="review-card" style="border-left-color: ${isCorrect ? 'var(--success)' : 'var(--error)'}">
-                    <div class="review-q">${i+1}. ${q.q}</div>
-                    <div class="review-info" style="color:${isCorrect ? 'var(--success)' : 'var(--error)'}">
-                        <b>Your Choice:</b> ${userChoice}
-                    </div>
-                    ${!isCorrect ? `<div class="review-info" style="color:var(--success)"><b>Correct Answer:</b> ${correctChoice}</div>` : ''}
-                </div>
+        function renderQuestion() {
+            const q = questions[currentQ];
+            document.getElementById('q-counter').innerText = `Question ${currentQ + 1} of ${questions.length}`;
+            document.getElementById('q-box').innerHTML = `
+                <h3>${q.q}</h3>
+                ${q.options.map((o, i) => `<div class="option ${userAnswers[currentQ]===i?'selected':''}" onclick="selectOpt(${i})">${o}</div>`).join('')}
             `;
-        });
-        
-        document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
-        document.getElementById('review-container').innerHTML = reviewHTML;
-    }
-
-    window.submitToFirebase = async () => {
-        const star = document.querySelector('input[name="star"]:checked')?.value || 0;
-        const btn = document.getElementById('syncBtn');
-        btn.innerText = "Processing...";
-        btn.disabled = true;
-
-        try {
-            await addDoc(collection(db, "results"), {
-                name: localStorage.getItem('user'),
-                email: localStorage.getItem('mail'),
-                score,
-                rating: star,
-                doubt: document.getElementById('feedback-txt').value || "No doubts reported",
-                timestamp: serverTimestamp()
-            });
-            alert("Test record saved successfully!");
-            location.reload();
-        } catch(e) { 
-            alert("System Error: Could not save result."); 
-            btn.disabled = false; 
-            btn.innerText = "Final Submission";
+            resetTimer();
         }
-    };
-</script>
+
+        window.selectOpt = (idx) => {
+            userAnswers[currentQ] = idx;
+            const opts = document.querySelectorAll('.option');
+            opts.forEach((o, i) => o.classList.toggle('selected', i === idx));
+        };
+
+        window.submitAndNext = () => {
+            if(userAnswers[currentQ] === -1) return alert("Please select an answer.");
+            changeQuestion(1);
+        };
+
+        window.changeQuestion = (step) => {
+            if(currentQ === questions.length - 1 && step === 1) return showResults();
+            currentQ += step;
+            renderQuestion();
+        };
+
+        function resetTimer() {
+            clearInterval(timer);
+            timeLeft = 60;
+            updateTimerUI();
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerUI();
+                if(timeLeft <= 0) changeQuestion(1);
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const circ = document.getElementById('timer-circ');
+            circ.setAttribute('data-time', timeLeft);
+            circ.style.setProperty('--p', (timeLeft / 60 * 100) + '%');
+        }
+
+        function showResults() {
+            clearInterval(timer);
+            document.getElementById('quiz-ui').style.display = 'none';
+            document.getElementById('result-ui').style.display = 'block';
+            score = 0;
+            let reviewHTML = "<p style='font-weight:600; font-size: 1.2rem; margin-bottom:15px;'>Detailed Question Review:</p>";
+            questions.forEach((q, i) => {
+                const isCorrect = userAnswers[i] === q.a;
+                if(isCorrect) score++;
+                const userChoice = userAnswers[i] === -1 ? "Skipped" : q.options[userAnswers[i]];
+                const correctChoice = q.options[q.a];
+                reviewHTML += `
+                    <div class="review-card" style="border-left-color: ${isCorrect ? 'var(--success)' : 'var(--error)'}">
+                        <div class="review-q">${i+1}. ${q.q}</div>
+                        <div class="review-info" style="color:${isCorrect ? 'var(--success)' : 'var(--error)'}">
+                            <b>Your Choice:</b> ${userChoice}
+                        </div>
+                        ${!isCorrect ? `<div class="review-info" style="color:var(--success)"><b>Correct Answer:</b> ${correctChoice}</div>` : ''}
+                    </div>
+                `;
+            });
+            document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+            document.getElementById('review-container').innerHTML = reviewHTML;
+        }
+
+        window.submitToFirebase = async () => {
+            const star = document.querySelector('input[name="star"]:checked')?.value || 0;
+            const btn = document.getElementById('syncBtn');
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+            try {
+                await addDoc(collection(db, "results"), {
+                    name: localStorage.getItem('user'),
+                    email: localStorage.getItem('mail'),
+                    score,
+                    rating: star,
+                    doubt: document.getElementById('feedback-txt').value || "No doubts reported",
+                    timestamp: serverTimestamp()
+                });
+                alert("Test record saved successfully!");
+                location.reload();
+            } catch(e) {
+                alert("System Error: Could not save result.");
+                btn.disabled = false;
+                btn.innerText = "Final Submission";
+            }
+        };
+    </script>
 </body>
 </html>
