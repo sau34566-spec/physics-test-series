@@ -3,250 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | RN.Singh Physics Classes</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Admin Dashboard | Physics Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #6366f1;
-            --accent: #a855f7;
-            --bg: #020617;
-            --card: #1e293b;
-            --text: #f8fafc;
-            --danger: #ef4444;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding: 30px;
-            margin: 0;
-        }
-
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: var(--card);
-            padding: 40px;
-            border-radius: 24px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 20px;
-        }
-
-        .header h1 {
-            font-size: 1.8rem;
-            background: linear-gradient(to right, #fff, var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 15px;
-            overflow: hidden;
-        }
-
-        th, td {
-            padding: 18px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        th {
-            background: var(--primary);
-            color: white;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-        }
-
-        tr:hover {
-            background: rgba(99, 102, 241, 0.05);
-        }
-
-        .star-rating {
-            color: #facc15;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-
-        .score-badge {
-            background: rgba(34, 197, 94, 0.2);
-            color: #4ade80;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-
-        .doubt-cell {
-            max-width: 300px;
-            font-size: 0.9rem;
-            color: #cbd5e1;
-            line-height: 1.4;
-        }
-
-        /* Login Screen */
-        #login-screen {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: radial-gradient(circle, #1e1b4b, #020617);
-        }
-
-        input[type="password"] {
-            padding: 15px;
-            width: 300px;
-            border-radius: 12px;
-            border: 1px solid var(--primary);
-            background: #0f172a;
-            color: white;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 1rem;
-        }
-
-        button {
-            padding: 12px 25px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-
+        :root { --primary: #6366f1; --accent: #f43f5e; --bg: #030712; --card: rgba(17, 24, 39, 0.8); --text: #f9fafb; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); padding: 40px; margin: 0; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        h1 { font-size: 1.8rem; background: linear-gradient(to right, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .controls { display: flex; gap: 15px; }
+        .btn { padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; transition: 0.3s; }
         .btn-refresh { background: var(--primary); color: white; }
-        .btn-reset { background: var(--danger); color: white; margin-left: 10px; }
-        button:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-wipe { background: rgba(244, 63, 94, 0.1); color: var(--accent); border: 1px solid var(--accent); }
+        .btn:hover { transform: translateY(-2px); opacity: 0.9; }
 
+        .table-container { background: var(--card); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: rgba(255,255,255,0.05); padding: 15px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); }
+        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
+        tr:hover { background: rgba(255,255,255,0.02); }
+        
+        .stat-badge { padding: 4px 10px; border-radius: 6px; font-weight: 700; background: rgba(99,102,241,0.15); color: var(--primary); }
+        .date-text { font-size: 0.8rem; opacity: 0.6; }
     </style>
 </head>
 <body>
-
-    <div id="login-screen">
-        <h1 style="color:white; margin-bottom:10px;">Portal Admin Access</h1>
-        <p style="color:rgba(255,255,255,0.5); margin-bottom:30px;">Enter credentials to view student reports</p>
-        <input type="password" id="adminPass" placeholder="Enter Admin Password">
-        <button class="btn-refresh" onclick="checkPass()">Login to Dashboard</button>
-    </div>
-
-    <div class="dashboard-container" id="main-dashboard" style="display:none;">
+    <div class="container">
         <div class="header">
             <div>
-                <h1>RN.Singh Classes | Reports</h1>
-                <p style="font-size: 0.9rem; color: #94a3b8;">Chapter 1: Electrostatics - Student Performance</p>
+                <h1>Admin Panel</h1>
+                <p style="opacity: 0.6; font-size: 0.9rem;">Real-time Student Performance Tracking</p>
             </div>
-            <div>
-                <button class="btn-refresh" onclick="loadData()">Refresh Real-time</button>
-                <button class="btn-reset" onclick="resetAllData()">Wipe All Records</button>
+            <div class="controls">
+                <button class="btn btn-refresh" onclick="refreshData()">Refresh Real-time</button>
+                <button class="btn btn-wipe" onclick="wipeRecords()">Wipe All Records</button>
             </div>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Student Name</th>
-                    <th>Email Address</th>
-                    <th>Score</th>
-                    <th>Experience (Rating)</th>
-                    <th>Doubt / Query</th>
-                    <th>Submission Date</th>
-                </tr>
-            </thead>
-            <tbody id="results-table">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Email</th>
+                        <th>Score</th>
+                        <th>Doubt / Query</th>
+                        <th>Submission Date</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body">
+                    <tr><td colspan="5" style="text-align:center;">Initializing connection...</td></tr>
                 </tbody>
-        </table>
+            </table>
+        </div>
     </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getFirestore, collection, query, getDocs, deleteDoc, doc, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
-        authDomain: "physics-test-series-405c7.firebaseapp.com",
-        projectId: "physics-test-series-405c7",
-        storageBucket: "physics-test-series-405c7.firebasestorage.app",
-        messagingSenderId: "758620061190",
-        appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
+            authDomain: "physics-test-series-405c7.firebaseapp.com",
+            projectId: "physics-test-series-405c7",
+            storageBucket: "physics-test-series-405c7.firebasestorage.app",
+            messagingSenderId: "758620061190",
+            appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
+        };
 
-    const db = getFirestore(initializeApp(firebaseConfig));
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-    window.checkPass = () => {
-        // Password wahi rakha hai jo pehle tha: physics123
-        if(document.getElementById('adminPass').value === "physics123") {
-            document.getElementById('login-screen').style.display = "none";
-            document.getElementById('main-dashboard').style.display = "block";
-            loadData();
-        } else {
-            alert("Unauthorized Access: Incorrect Password!");
-        }
-    };
-
-    async function loadData() {
-        const tableBody = document.getElementById('results-table');
-        tableBody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Loading reports...</td></tr>";
-        
-        try {
+        // REAL-TIME REFRESH LOGIC (onSnapshot automatically updates the UI)
+        function listenToResults() {
             const q = query(collection(db, "results"), orderBy("timestamp", "desc"));
-            const snap = await getDocs(q);
-            tableBody.innerHTML = "";
-
-            if(snap.empty) {
-                tableBody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No student records found yet.</td></tr>";
-                return;
-            }
-
-            snap.forEach((doc) => {
-                const data = doc.data();
-                const stars = "⭐".repeat(data.rating || 0) || "No Rating";
-                const date = data.timestamp ? data.timestamp.toDate().toLocaleString('en-IN') : "N/A";
+            
+            onSnapshot(q, (snapshot) => {
+                const tableBody = document.getElementById('results-body');
+                tableBody.innerHTML = "";
                 
-                tableBody.innerHTML += `
-                    <tr>
-                        <td style="font-weight:600;">${data.name}</td>
-                        <td style="color:#94a3b8;">${data.email}</td>
-                        <td><span class="score-badge">${data.score}</span></td>
-                        <td class="star-rating">${stars}</td>
-                        <td class="doubt-cell">${data.doubt || 'No queries'}</td>
-                        <td style="font-size:0.8rem; color:#64748b;">${date}</td>
-                    </tr>
-                `;
-            });
-        } catch (e) {
-            alert("Database Error: Could not fetch data.");
-        }
-    }
+                if (snapshot.empty) {
+                    tableBody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No records found.</td></tr>";
+                    return;
+                }
 
-    window.resetAllData = async () => {
-        if(confirm("CRITICAL WARNING: This will permanently delete all student performance data. Do you want to proceed?")) {
-            const snap = await getDocs(collection(db, "results"));
+                snapshot.forEach((res) => {
+                    const data = res.data();
+                    const date = data.timestamp ? data.timestamp.toDate().toLocaleString('en-IN') : "Just now";
+                    
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td style="font-weight:600;">${data.name}</td>
+                            <td style="opacity:0.8;">${data.email}</td>
+                            <td><span class="stat-badge">${data.score}</span></td>
+                            <td style="max-width:250px; font-style:italic; color:#cbd5e1;">${data.doubt}</td>
+                            <td class="date-text">${date}</td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+
+        // Manual Refresh Button Logic
+        window.refreshData = () => {
+            const btn = document.querySelector('.btn-refresh');
+            btn.innerText = "Syncing...";
+            setTimeout(() => { 
+                btn.innerText = "Refresh Real-time"; 
+                // onSnapshot handles the data, so we just give visual feedback
+            }, 1000);
+        };
+
+        // Wipe Records Logic
+        window.wipeRecords = async () => {
+            if(!confirm("Are you sure? This will delete ALL student results permanently!")) return;
+            const q = query(collection(db, "results"));
+            const snap = await getDocs(q);
             const deletePromises = snap.docs.map(d => deleteDoc(doc(db, "results", d.id)));
             await Promise.all(deletePromises);
-            alert("All records have been successfully cleared.");
-            loadData();
-        }
-    };
+            alert("Database cleared.");
+        };
 
-    // Keyboard support for login
-    document.getElementById('adminPass').addEventListener('keypress', (e) => {
-        if(e.key === 'Enter') checkPass();
-    });
-
-</script>
+        // Start listening when page loads
+        listenToResults();
+    </script>
 </body>
 </html>
