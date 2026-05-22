@@ -16,8 +16,8 @@
   let questions = [], currentQ = 0, userAnswers = [], markedReviews = [], timer, timeLeft = 60;
   let isTestRunning = false;
 
-  // USER VERIFICATION AND INTERFACE SWITCHING FIXED HERE
-  window.verifyUser = async () => {
+  // Button par event listener lagana taaki crash na ho
+  document.getElementById('start-btn').addEventListener('click', async () => {
     const n = document.getElementById('stdName').value.trim();
     const e = document.getElementById('stdEmail').value.toLowerCase().trim();
     
@@ -33,7 +33,8 @@
       } else {
         localStorage.setItem('user', n);
         localStorage.setItem('mail', e);
-        // Login UI chhupao aur Guidelines UI dikhao
+        
+        // UI Switch karna
         document.getElementById('login-ui').style.display = 'none';
         document.getElementById('instruct-ui').style.display = 'block';
       }
@@ -41,7 +42,7 @@
       alert("Firebase Error: " + error.message);
       console.error(error);
     }
-  };
+  });
 
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === 'hidden' && isTestRunning) {
@@ -53,9 +54,14 @@
   window.fetchQuestions = async () => {
     try {
       const res = await fetch('chapter1.html');
+      if (!res.ok) throw new Error("chapter1.html file not found!");
       const text = await res.text();
       const doc = new DOMParser().parseFromString(text, 'text/html');
-      questions = JSON.parse(doc.getElementById('question-data').textContent);
+      const dataElement = doc.getElementById('question-data');
+      
+      if(!dataElement) throw new Error("ID 'question-data' not found inside chapter1.html");
+      
+      questions = JSON.parse(dataElement.textContent);
       userAnswers = new Array(questions.length).fill(-1);
       markedReviews = new Array(questions.length).fill(false);
       
@@ -64,7 +70,7 @@
       isTestRunning = true;
       renderQuestion();
     } catch(e) { 
-      alert("Error loading chapter data. Make sure chapter1.html exists!"); 
+      alert("Error: " + e.message + "\nPlease make sure chapter1.html is correct."); 
     }
   };
 
