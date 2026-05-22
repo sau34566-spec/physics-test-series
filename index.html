@@ -1,167 +1,283 @@
- <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-  import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Physics Elite | Test Series</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --success: #10b981;
+      --error: #ef4444;
+      --warning: #f59e0b;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+    .container { background: var(--surface); width: 100%; max-width: 500px; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); }
+    h2 { margin-bottom: 8px; font-weight: 700; text-align: center; }
+    p { color: var(--text-dim); font-size: 0.95rem; text-align: center; margin-bottom: 24px; }
+    .input-group { margin-bottom: 16px; }
+    label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-dim); font-weight: 500; }
+    input, textarea { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 1rem; transition: all 0.2s; }
+    input:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+    .btn { width: 100%; padding: 12px; background: var(--primary); border: none; border-radius: 8px; color: white; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .btn:hover { background: var(--primary-hover); }
+    .error-msg { color: var(--error); font-size: 0.85rem; text-align: center; margin-top: 12px; font-weight: 500; }
+    .ui-section { display: none; }
+    .ui-section.active { display: block; }
+    .instruction-list { text-align: left; margin-bottom: 20px; color: var(--text-dim); font-size: 0.9rem; line-height: 1.6; }
+    .instruction-list li { margin-bottom: 8px; margin-left: 20px; }
+    /* Quiz UI Styles */
+    .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #334155; }
+    .progress-container { width: 100%; background: #0f172a; height: 6px; border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
+    .progress-bar { width: 0%; height: 100%; background: var(--primary); transition: width 0.3s; }
+    .option { background: #0f172a; padding: 14px; border: 1px solid #334155; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; }
+    .option:hover { border-color: var(--primary); background: rgba(59,130,246,0.05); }
+    .option.selected { border-color: var(--primary); background: rgba(59,130,246,0.15); font-weight: 600; }
+    .quiz-controls { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-sec { background: #334155; }
+    .btn-sec:hover { background: #475569; }
+    .timer-circle { width: 45px; height: 45px; border-radius: 50%; border: 3px solid var(--primary); display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 0.9rem; }
+    /* Results Dashboard */
+    .score-display { text-align: center; margin: 20px 0; }
+    .score-num { font-size: 3rem; font-weight: 800; color: var(--primary); }
+    .stat-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; margin: 0 4px; }
+    .review-container { max-height: 250px; overflow-y: auto; margin-top: 15px; padding-right: 5px; }
+    .review-card { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #334155; text-align: left; }
+    .review-card b { display: block; font-size: 0.9rem; margin-bottom: 4px; }
+    .review-card small { display: block; font-size: 0.8rem; color: var(--text-dim); }
+  </style>
+</head>
+<body>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
-    authDomain: "physics-test-series-405c7.firebaseapp.com",
-    projectId: "physics-test-series-405c7",
-    storageBucket: "physics-test-series-405c7.firebasestorage.app",
-    messagingSenderId: "758620061190",
-    appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87" 
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  let questions = [], currentQ = 0, userAnswers = [], markedReviews = [], timer, timeLeft = 60;
-  let isTestRunning = false;
-
-  // Button par event listener lagana taaki crash na ho
-  document.getElementById('start-btn').addEventListener('click', async () => {
-    const n = document.getElementById('stdName').value.trim();
-    const e = document.getElementById('stdEmail').value.toLowerCase().trim();
+  <div class="container">
     
-    if(!n || !e) return alert("Please fill all fields.");
-    if(!e.endsWith("@gmail.com")) return alert("Only @gmail.com is allowed.");
-    
-    try {
-      const q = query(collection(db, "results"), where("email", "==", e));
-      const snap = await getDocs(q);
+    <div id="login-ui" class="ui-section active">
+      <h2>Physics Elite</h2>
+      <p>Enter your details to begin the test series</p>
       
-      if(!snap.empty) {
-        document.getElementById('msg').innerText = "Test already completed.";
-      } else {
-        localStorage.setItem('user', n);
-        localStorage.setItem('mail', e);
+      <div class="input-group">
+        <label for="student-name">Full Name</label>
+        <input type="text" id="student-name" placeholder="John Doe">
+      </div>
+      
+      <div class="input-group">
+        <label for="student-email">Gmail Address</label>
+        <input type="email" id="student-email" placeholder="example@gmail.com">
+      </div>
+      
+      <button class="btn" id="start-btn">START TEST</button>
+      <div class="error-msg" id="msg"></div>
+    </div>
+
+    <div id="instruct-ui" class="ui-section">
+      <h2>Test Guidelines</h2>
+      <p>Please read the instructions carefully</p>
+      <ul class="instruction-list">
+        <li>Each question has a strict time limit of <b>60 seconds</b>.</li>
+        <li>Switching tabs or minimizing the browser will trigger <b>automatic submission</b>.</li>
+        <li>Correct answer gives <b>+1 mark</b>; Wrong answer deducts <b>-0.25 marks</b>.</li>
+      </ul>
+      <button class="btn" onclick="fetchQuestions()">I AM READY</button>
+    </div>
+
+    <div id="quiz-ui" class="ui-section">
+      <div class="quiz-header">
+        <div id="q-counter" style="font-weight:600;">Q 1 / 10</div>
+        <div class="timer-circle" id="timer-circ">60</div>
+      </div>
+      <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      <div id="q-box">
+        </div>
+      <div class="quiz-controls">
+        <button class="btn btn-sec" id="reviewBtn" onclick="toggleReview()">Bookmark 🔖</button>
+        <button class="btn" onclick="submitAndNext()">Submit & Next</button>
+      </div>
+    </div>
+
+    <div id="result-ui" class="ui-section">
+      <h2>Test Completed!</h2>
+      <p>Your performance summary</p>
+      <div class="score-display">
+        <div class="score-num" id="final-score">0.00</div>
+        <div style="font-size:0.85rem; color:var(--text-dim); margin-top:4px;">Final Scaled Score</div>
+      </div>
+      <div id="stat-text" style="text-align:center; margin-bottom:15px;"></div>
+      <textarea id="feedback-txt" rows="3" placeholder="Any doubts or queries from this test? (Optional)"></textarea>
+      <div class="review-container" id="review-container"></div>
+      <button class="btn" id="syncBtn" onclick="submitToFirebase()" style="margin-top:15px; background:var(--success);">Final Submission</button>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
+      authDomain: "physics-test-series-405c7.firebaseapp.com",
+      projectId: "physics-test-series-405c7",
+      storageBucket: "physics-test-series-405c7.firebasestorage.app",
+      messagingSenderId: "758620061190",
+      appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87" 
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    let questions = [], currentQ = 0, userAnswers = [], markedReviews = [], timer, timeLeft = 60;
+    let isTestRunning = false;
+
+    // Login Handle Trigger
+    document.getElementById('start-btn').addEventListener('click', async () => {
+      const n = document.getElementById('student-name').value.trim();
+      const e = document.getElementById('student-email').value.toLowerCase().trim();
+      const msgBox = document.getElementById('msg');
+      
+      msgBox.innerText = ""; // Clear errors
+      
+      if(!n || !e) { alert("Please fill all fields."); return; }
+      if(!e.endsWith("@gmail.com")) { alert("Only @gmail.com is allowed."); return; }
+      
+      try {
+        const q = query(collection(db, "results"), where("email", "==", e));
+        const snap = await getDocs(q);
         
-        // UI Switch karna
-        document.getElementById('login-ui').style.display = 'none';
-        document.getElementById('instruct-ui').style.display = 'block';
+        if(!snap.empty) {
+          msgBox.innerText = "Test already completed.";
+        } else {
+          localStorage.setItem('user', n);
+          localStorage.setItem('mail', e);
+          
+          document.getElementById('login-ui').classList.remove('active');
+          document.getElementById('instruct-ui').classList.add('active');
+        }
+      } catch (error) {
+        alert("Firebase Error: " + error.message);
+        console.error(error);
       }
-    } catch (error) {
-      alert("Firebase Error: " + error.message);
-      console.error(error);
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === 'hidden' && isTestRunning) {
+        alert("Security Alert: Tab switched. Automatic submission.");
+        showResults();
+      }
+    });
+
+    window.fetchQuestions = async () => {
+      try {
+        const res = await fetch('chapter1.html');
+        if (!res.ok) throw new Error("chapter1.html file not found!");
+        const text = await res.text();
+        const doc = new DOMParser().parseFromString(text, 'text/html');
+        const dataElement = doc.getElementById('question-data');
+        
+        if(!dataElement) throw new Error("ID 'question-data' not found inside chapter1.html");
+        
+        questions = JSON.parse(dataElement.textContent);
+        userAnswers = new Array(questions.length).fill(-1);
+        markedReviews = new Array(questions.length).fill(false);
+        
+        document.getElementById('instruct-ui').classList.remove('active');
+        document.getElementById('quiz-ui').classList.add('active');
+        isTestRunning = true;
+        renderQuestion();
+      } catch(e) { 
+        alert("Error: " + e.message + "\nPlease check chapter1.html setup."); 
+      }
+    };
+
+    function renderQuestion() {
+      const q = questions[currentQ];
+      document.getElementById('progress-bar').style.width = ((currentQ + 1) / questions.length * 100) + '%';
+      document.getElementById('q-counter').innerText = `Q ${currentQ + 1} / ${questions.length}`;
+      document.getElementById('q-box').innerHTML = `<h3 style="margin-bottom: 20px; text-align:left;">${q.q}</h3>${q.options.map((o, i) => `<div class="option ${userAnswers[currentQ]===i?'selected':''}" onclick="selectOpt(${i})">${o}</div>`).join('')}`;
+      const revBtn = document.getElementById('reviewBtn');
+      markedReviews[currentQ] ? revBtn.classList.add('active') : revBtn.classList.remove('active');
+      resetTimer();
     }
-  });
 
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === 'hidden' && isTestRunning) {
-      alert("Security Alert: Tab switched. Automatic submission.");
-      showResults();
+    window.selectOpt = (idx) => { 
+      userAnswers[currentQ] = idx; 
+      renderQuestion(); 
+    };
+
+    window.toggleReview = () => { 
+      markedReviews[currentQ] = !markedReviews[currentQ]; 
+      document.getElementById('reviewBtn').classList.toggle('active'); 
+    };
+
+    window.submitAndNext = () => { 
+      if(userAnswers[currentQ] === -1) return alert("Select an option."); 
+      changeQuestion(1); 
+    };
+
+    window.changeQuestion = (step) => {
+      if(currentQ === questions.length - 1 && step === 1) return showResults(); 
+      currentQ += step; 
+      renderQuestion(); 
+    };
+
+    function resetTimer() {
+      clearInterval(timer); 
+      timeLeft = 60; 
+      document.getElementById('timer-circ').innerText = timeLeft;
+      timer = setInterval(() => { 
+        timeLeft--; 
+        document.getElementById('timer-circ').innerText = timeLeft;
+        if(timeLeft <= 0) changeQuestion(1); 
+      }, 1000); 
     }
-  });
 
-  window.fetchQuestions = async () => {
-    try {
-      const res = await fetch('chapter1.html');
-      if (!res.ok) throw new Error("chapter1.html file not found!");
-      const text = await res.text();
-      const doc = new DOMParser().parseFromString(text, 'text/html');
-      const dataElement = doc.getElementById('question-data');
+    function showResults() {
+      isTestRunning = false; 
+      clearInterval(timer); 
+      document.getElementById('quiz-ui').classList.remove('active'); 
+      document.getElementById('result-ui').classList.add('active'); 
+      let score = 0, c = 0, w = 0, html = ""; 
       
-      if(!dataElement) throw new Error("ID 'question-data' not found inside chapter1.html");
-      
-      questions = JSON.parse(dataElement.textContent);
-      userAnswers = new Array(questions.length).fill(-1);
-      markedReviews = new Array(questions.length).fill(false);
-      
-      document.getElementById('instruct-ui').style.display = 'none';
-      document.getElementById('quiz-ui').style.display = 'block';
-      isTestRunning = true;
-      renderQuestion();
-    } catch(e) { 
-      alert("Error: " + e.message + "\nPlease make sure chapter1.html is correct."); 
-    }
-  };
-
-  function renderQuestion() {
-    const q = questions[currentQ];
-    document.getElementById('progress-bar').style.width = ((currentQ + 1) / questions.length * 100) + '%';
-    document.getElementById('q-counter').innerText = `Q ${currentQ + 1} / ${questions.length}`;
-    document.getElementById('q-box').innerHTML = `<h3 style="margin-bottom: 20px;">${q.q}</h3>${q.options.map((o, i) => `<div class="option ${userAnswers[currentQ]===i?'selected':''}" onclick="selectOpt(${i})">${o}</div>`).join('')}`;
-    const revBtn = document.getElementById('reviewBtn');
-    markedReviews[currentQ] ? revBtn.classList.add('active') : revBtn.classList.remove('active');
-    resetTimer();
-  }
-
-  window.selectOpt = (idx) => { 
-    userAnswers[currentQ] = idx; 
-    renderQuestion(); 
-  };
-
-  window.toggleReview = () => { 
-    markedReviews[currentQ] = !markedReviews[currentQ]; 
-    document.getElementById('reviewBtn').classList.toggle('active'); 
-  };
-
-  window.submitAndNext = () => { 
-    if(userAnswers[currentQ] === -1) return alert("Select an option."); 
-    changeQuestion(1); 
-  };
-
-  window.changeQuestion = (step) => {
-    if(currentQ === questions.length - 1 && step === 1) return showResults(); 
-    currentQ += step; 
-    renderQuestion(); 
-  };
-
-  function resetTimer() {
-    clearInterval(timer); 
-    timeLeft = 60; 
-    updateTimerUI(); 
-    timer = setInterval(() => { 
-      timeLeft--; 
-      updateTimerUI(); 
-      if(timeLeft <= 0) changeQuestion(1); 
-    }, 1000); 
-  }
-
-  function updateTimerUI() {
-    const circ = document.getElementById('timer-circ'); 
-    circ.setAttribute('data-time', timeLeft); 
-    circ.style.setProperty('--p', (timeLeft / 60 * 100) + '%'); 
-  }
-
-  function showResults() {
-    isTestRunning = false; 
-    clearInterval(timer); 
-    document.getElementById('quiz-ui').style.display = 'none'; 
-    document.getElementById('result-ui').style.display = 'block'; 
-    let score = 0, c = 0, w = 0, s = 0, html = ""; 
-    
-    questions.forEach((q, i) => {
-      const ua = userAnswers[i]; 
-      if(ua === q.a) { score += 1; c++; } 
-      else if(ua !== -1) { score -= 0.25; w++; } 
-      else { s++; } 
-      const color = ua===-1 ? 'var(--warning)' : (ua===q.a ? 'var(--success)' : 'var(--error)'); 
-      html += `<div class="review-card" style="border-left-color: ${color}"><b>${i+1}. ${q.q} ${markedReviews[i]?'🔖':''}</b><small style="color: var(--text-dim)">Chosen: ${ua===-1?'Skipped':q.options[ua]} | Correct: ${q.options[q.a]}</small></div>`; 
-    }); 
-    
-    document.getElementById('final-score').innerText = score.toFixed(2); 
-    document.getElementById('stat-text').innerHTML = `<span class="stat-badge" style="background: rgba(16,185,129,0.15); color: var(--success);">CORRECT: ${c}</span> <span class="stat-badge" style="background: rgba(239,68,68,0.15); color: var(--error);">WRONG: ${w}</span>`; 
-    document.getElementById('review-container').innerHTML = html; 
-    window.finalVal = score; 
-  }
-
-  window.submitToFirebase = async () => {
-    const btn = document.getElementById('syncBtn'); 
-    btn.innerText = "Syncing..."; 
-    btn.disabled = true; 
-    try {
-      await addDoc(collection(db, "results"), {
-        name: localStorage.getItem('user'), 
-        email: localStorage.getItem('mail'), 
-        score: window.finalVal, 
-        doubt: document.getElementById('feedback-txt').value || "No Doubts", 
-        timestamp: serverTimestamp() 
+      questions.forEach((q, i) => {
+        const ua = userAnswers[i]; 
+        if(ua === q.a) { score += 1; c++; } 
+        else if(ua !== -1) { score -= 0.25; w++; } 
+        const color = ua===-1 ? 'var(--warning)' : (ua===q.a ? 'var(--success)' : 'var(--error)'); 
+        html += `<div class="review-card" style="border-left-color: ${color}"><b>${i+1}. ${q.q} ${markedReviews[i]?'🔖':''}</b><small>Chosen: ${ua===-1?'Skipped':q.options[ua]} | Correct: ${q.options[q.a]}</small></div>`; 
       }); 
-      alert("Data secured!"); 
-      location.reload(); 
-    } catch(e) { 
-      alert("Error syncing: " + e.message); 
-      btn.disabled = false; 
-      btn.innerText = "Final Submission"; 
-    } 
-  };
-</script>
+      
+      document.getElementById('final-score').innerText = score.toFixed(2); 
+      document.getElementById('stat-text').innerHTML = `<span class="stat-badge" style="background: rgba(16,185,129,0.15); color: var(--success);">CORRECT: ${c}</span> <span class="stat-badge" style="background: rgba(239,68,68,0.15); color: var(--error);">WRONG: ${w}</span>`; 
+      document.getElementById('review-container').innerHTML = html; 
+      window.finalVal = score; 
+    }
+
+    window.submitToFirebase = async () => {
+      const btn = document.getElementById('syncBtn'); 
+      btn.innerText = "Syncing..."; 
+      btn.disabled = true; 
+      try {
+        await addDoc(collection(db, "results"), {
+          name: localStorage.getItem('user'), 
+          email: localStorage.getItem('mail'), 
+          score: window.finalVal, 
+          doubt: document.getElementById('feedback-txt').value || "No Doubts", 
+          timestamp: serverTimestamp() 
+        }); 
+        alert("Data secured!"); 
+        location.reload(); 
+      } catch(e) { 
+        alert("Error syncing: " + e.message); 
+        btn.disabled = false; 
+        btn.innerText = "Final Submission"; 
+      } 
+    };
+  </script>
+</body>
+</html>
