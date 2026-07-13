@@ -4,112 +4,127 @@
     justify-content: center; 
     align-items: center; 
     min-height: 100vh; 
-    background: radial-gradient(circle at center, #1e293b, #0f172a); 
+    background: radial-gradient(circle at 70% 20%, #1e3a8a 0%, #0f172a 60%), #0f172a;
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     padding: 20px;
+    position: relative;
+    overflow: hidden;
 ">
-    <!-- Professional Glassmorphism Card -->
+    <!-- 3D Geometric & Science Paint Accents (Background) -->
+    <div style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; z-index: 1;">
+        <div style="position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%); top: -100px; right: -100px; filter: blur(40px);"></div>
+        <div style="position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, rgba(234,179,8,0.08) 0%, transparent 70%); bottom: -50px; left: -100px; filter: blur(30px);"></div>
+        
+        <!-- 3D Scientific Floating Shapes (CSS Painted Canvas) -->
+        <div style="position: absolute; top: 15%; right: 15%; width: 60px; height: 60px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; transform: rotate(15deg); opacity: 0.6; box-shadow: inset -10px -10px 20px rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.2);"></div>
+        <div style="position: absolute; bottom: 20%; left: 12%; width: 80px; height: 80px; background: linear-gradient(135deg, #eab308, #ca8a04); border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; transform: rotate(-25deg); opacity: 0.5; box-shadow: inset -12px -12px 24px rgba(0,0,0,0.4), 0 15px 25px rgba(0,0,0,0.25);"></div>
+        <div style="position: absolute; top: 65%; right: 10%; width: 45px; height: 45px; background: linear-gradient(135deg, #ec4899, #be185d); border-radius: 50%; transform: scaleX(1.3) rotate(45deg); opacity: 0.4; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.4);"></div>
+    </div>
+
+    <!-- Professional Glassmorphism Test Card -->
     <div style="
-        background: rgba(30, 41, 59, 0.7);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
-        padding: 40px 32px;
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 20px;
+        padding: 45px 35px;
         width: 100%;
-        max-width: 420px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         text-align: center;
+        position: relative;
+        z-index: 2;
     ">
-        <!-- Logo / Title Header -->
+        <!-- Header -->
         <h2 style="
             color: #ffffff;
-            font-size: 28px;
+            font-size: 30px;
             font-weight: 700;
-            margin: 0 0 8px 0;
+            margin: 0 0 6px 0;
             letter-spacing: -0.5px;
+            background: linear-gradient(to right, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         ">Physics Elite</h2>
         
         <p style="
             color: #94a3b8;
-            font-size: 14px;
-            margin: 0 0 32px 0;
+            font-size: 13px;
+            margin: 0 0 35px 0;
             font-weight: 400;
-        ">Enter your details to begin the test series</p>
+        ">Enter your credentials to initialization the test</p>
 
-        <!-- Form Fields -->
+        <!-- Clean Form Configuration -->
         <form id="login-form" style="text-align: left;">
             
             <!-- Input 1: Full Name -->
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 22px;">
                 <label for="name" style="
                     display: block;
-                    color: #cbd5e1;
-                    font-size: 13px;
-                    font-weight: 500;
+                    color: #94a3b8;
+                    font-size: 12px;
+                    font-weight: 600;
                     margin-bottom: 8px;
                     text-transform: uppercase;
-                    letter-spacing: 0.5px;
+                    letter-spacing: 0.8px;
                 ">Full Name</label>
-                <input type="text" id="name" placeholder="e.g. John Doe" required style="
+                <input type="text" id="name" required style="
                     width: 100%;
-                    padding: 12px 16px;
-                    background: rgba(15, 23, 42, 0.6);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    border-radius: 8px;
+                    padding: 14px 16px;
+                    background: rgba(30, 41, 59, 0.5);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 10px;
                     color: #ffffff;
                     font-size: 15px;
                     box-sizing: border-box;
-                    transition: all 0.3s ease;
+                    transition: all 0.25s ease;
                     outline: none;
-                " onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.15)'" 
-                   onblur="this.style.borderColor='rgba(255, 255, 255, 0.1)'; this.style.boxShadow='none'">
+                '">
             </div>
 
             <!-- Input 2: Gmail Address -->
-            <div style="margin-bottom: 32px;">
+            <div style="margin-bottom: 35px;">
                 <label for="email" style="
                     display: block;
-                    color: #cbd5e1;
-                    font-size: 13px;
-                    font-weight: 500;
+                    color: #94a3b8;
+                    font-size: 12px;
+                    font-weight: 600;
                     margin-bottom: 8px;
                     text-transform: uppercase;
-                    letter-spacing: 0.5px;
+                    letter-spacing: 0.8px;
                 ">Gmail Address</label>
-                <input type="email" id="email" placeholder="example@gmail.com" required style="
+                <input type="email" id="email" required style="
                     width: 100%;
-                    padding: 12px 16px;
-                    background: rgba(15, 23, 42, 0.6);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    border-radius: 8px;
+                    padding: 14px 16px;
+                    background: rgba(30, 41, 59, 0.5);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 10px;
                     color: #ffffff;
                     font-size: 15px;
                     box-sizing: border-box;
-                    transition: all 0.3s ease;
+                    transition: all 0.25s ease;
                     outline: none;
-                " onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.15)'" 
-                   onblur="this.style.borderColor='rgba(255, 255, 255, 0.1)'; this.style.boxShadow='none'">
+                '">
             </div>
 
-            <!-- Professional CTA Button -->
+            <!-- Action Button -->
             <button type="submit" style="
                 width: 100%;
-                padding: 14px;
-                background: #2563eb;
+                padding: 15px;
+                background: linear-gradient(135deg, #2563eb, #1d4ed8);
                 color: #ffffff;
                 border: none;
-                border-radius: 8px;
+                border-radius: 10px;
                 font-size: 15px;
                 font-weight: 600;
+                letter-spacing: 0.5px;
                 cursor: pointer;
                 transition: all 0.2s ease;
-                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-            " onmouseover="this.style.background='#1d4ed8'; this.style.transform='translateY(-1px)'" 
-               onmouseout="this.style.background='#2563eb'; this.style.transform='translateY(0)'">
+                box-shadow: 0 4px 15px rgba(37, 99, 235, 0.25);
+            ">
                 START TEST
             </button>
-            
         </form>
     </div>
 </div>
