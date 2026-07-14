@@ -173,6 +173,7 @@
         .instruction-list {
             list-style: none;
             margin-bottom: 2rem;
+            color: var(--text-main);
         }
         .instruction-list li {
             padding: 0.75rem 0;
@@ -193,62 +194,6 @@
             margin-bottom: 1.5rem;
             font-weight: 500;
             color: #b91c1c;
-        }
-
-        /* Quiz UI Layout */
-        .quiz-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid #f1f5f9;
-            margin-bottom: 1.5rem;
-        }
-        .timer-box {
-            background: #fef3c7;
-            border: 1px solid var(--accent);
-            color: #b45309;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .question-text {
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            line-height: 1.5;
-        }
-        .option-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .option-label {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
-        .option-label:hover {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-        }
-        .option-label input {
-            margin-right: 12px;
-            width: 18px;
-            height: 18px;
-            accent-color: var(--primary);
-        }
-        .option-label.selected {
-            border-color: var(--primary-light);
-            background: rgba(59, 130, 246, 0.05);
         }
 
         /* Rating Stars Style */
@@ -275,7 +220,7 @@
         <!-- ================= SLIDE 1: CREDENTIAL INITIALIZATION ================= -->
         <div class="slide active" id="slide-1">
             <h2><i class="fa-solid fa-user-shield"></i> Physics Elite</h2>
-            <p class="subtitle">Enter your credentials to initialization the test</p>
+            <p class="subtitle">Enter your credentials to initialize the test portal</p>
             
             <form id="login-form" autocomplete="off" onsubmit="validateAndNext(event)">
                 <div class="form-group">
@@ -285,7 +230,6 @@
                 
                 <div class="form-group">
                     <label for="student-email">Gmail Address *</label>
-                    <!-- autocomplete="new-password" standard tarika hai browser lists/examples hide karne ka -->
                     <input type="email" id="student-email" placeholder="username@gmail.com" autocomplete="new-password" required>
                     <div class="error-msg" id="email-error">
                         <i class="fa-solid fa-circle-exclamation"></i> Only official @gmail.com addresses are supported.
@@ -311,7 +255,7 @@
             <ul class="instruction-list">
                 <li>
                     <i class="fa-solid fa-circle-chevron-right" style="color: var(--primary-light);"></i>
-                    <span>Each question is allotted a maximum time of <b>60 seconds</b>. If you fail to submit, the system skips to the next item automatically.</span>
+                    <span>Each question is allotted a maximum time of <b>60 seconds</b> on the next portal. If you fail to submit, the system skips automatically.</span>
                 </li>
                 <li>
                     <i class="fa-solid fa-circle-chevron-right" style="color: var(--primary-light);"></i>
@@ -330,32 +274,10 @@
         </div>
 
 
-        <!-- ================= SLIDE 3: ACTIVE TEST ENVIRONMENT ================= -->
+        <!-- ================= SLIDE 3: RATINGS, FEEDBACK & DOUBTS (Formally Slide 4) ================= -->
         <div class="slide" id="slide-3">
-            <div class="quiz-header">
-                <span id="question-counter" style="font-weight: 600; color: var(--text-muted);">Question 1 of 2</span>
-                <div class="timer-box">
-                    <i class="fa-regular fa-clock"></i> <span id="timer-display">60s</span>
-                </div>
-            </div>
-
-            <div id="quiz-body">
-                <!-- Dynamically Injecting Question Content via JS -->
-                <div class="question-text" id="q-text">Loading question data...</div>
-                <div class="option-container" id="options-block"></div>
-            </div>
-
-            <div class="btn-group">
-                <button class="btn btn-secondary" id="btn-prev" onclick="handlePrevious()"><i class="fa-solid fa-angle-left"></i> Previous</button>
-                <button class="btn" id="btn-next" onclick="handleNext()">Save & Next <i class="fa-solid fa-angle-right"></i></button>
-            </div>
-        </div>
-
-
-        <!-- ================= SLIDE 4: RATINGS, FEEDBACK & DOUBTS ================= -->
-        <div class="slide" id="slide-4">
             <h2><i class="fa-solid fa-square-poll-horizontal"></i> Assessment Feedback</h2>
-            <p class="subtitle">Your test has been successfully submitted. Please rate your experience.</p>
+            <p class="subtitle">Your portal registration is active. Please leave your structural rating or log any pre-test doubts.</p>
             
             <form id="feedback-form" onsubmit="submitFinalFeedback(event)">
                 <div class="form-group">
@@ -392,26 +314,6 @@
 
     <!-- ================= ENGINE CONTROLLER LOGIC ================= -->
     <script>
-        // Sample Test Data Schema
-        const questionsList = [
-            {
-                id: 1,
-                question: "Which of the following phenomena exhibits the particle nature of electromagnetic radiation?",
-                options: ["Interference", "Diffraction", "Photoelectric Effect", "Polarization"],
-                correct: 2
-            },
-            {
-                id: 2,
-                question: "What happens to the wavelength of an electron when its kinetic energy is multiplied by four?",
-                options: ["It becomes doubled", "It is halved", "It remains unchanged", "It becomes four times"],
-                correct: 1
-            }
-        ];
-
-        let currentQuestionIndex = 0;
-        let selectedAnswers = {}; 
-        let timerInterval = null;
-        let timeLeft = 60;
         let selectedRating = 0;
 
         // Slide Changer Engine
@@ -420,13 +322,12 @@
             document.getElementById(`slide-${slideNumber}`).classList.add('active');
         }
 
-        // Slide 1 Strict Gmail Validation & Stop Browser Examples/Dropdowns
+        // Slide 1: Strict Gmail Validation
         function validateAndNext(e) {
             e.preventDefault();
             const emailInput = document.getElementById('student-email').value.trim();
             const errorDiv = document.getElementById('email-error');
             
-            // Check strictly for ending structure matching "@gmail.com"
             if(emailInput.toLowerCase().endsWith('@gmail.com')) {
                 errorDiv.style.display = 'none';
                 changeSlide(2);
@@ -435,81 +336,12 @@
             }
         }
 
-        // Slide 2 Initialization 
+        // Slide 2: Direct Jump to Feedback/Doubt (Questions are now in chapter1.html)
         function startTest() {
             changeSlide(3);
-            loadQuestion(0);
         }
 
-        // Slide 3 Engine Loops & Timers
-        function loadQuestion(index) {
-            clearInterval(timerInterval);
-            currentQuestionIndex = index;
-            
-            // Update UI State Metadata
-            document.getElementById('question-counter').innerText = `Question ${index + 1} of ${questionsList.length}`;
-            
-            // Render Configs
-            const qData = questionsList[index];
-            document.getElementById('q-text').innerText = qData.question;
-            
-            const optionsBlock = document.getElementById('options-block');
-            optionsBlock.innerHTML = '';
-            
-            qData.options.forEach((opt, idx) => {
-                const isSelected = selectedAnswers[index] === idx;
-                const label = document.createElement('label');
-                label.className = `option-label ${isSelected ? 'selected' : ''}`;
-                label.innerHTML = `
-                    <input type="radio" name="quiz-opt" value="${idx}" ${isSelected ? 'checked' : ''} onchange="selectOption(${index}, ${idx})">
-                    ${opt}
-                `;
-                optionsBlock.appendChild(label);
-            });
-
-            // Adjust Footer Dynamic Navigation Visibility
-            document.getElementById('btn-prev').style.visibility = index === 0 ? 'hidden' : 'visible';
-            document.getElementById('btn-next').innerHTML = index === (questionsList.length - 1) ? 'Finish System <i class="fa-solid fa-flag-checkered"></i>' : 'Save & Next <i class="fa-solid fa-angle-right"></i>';
-
-            // Reset Timer Metrics
-            timeLeft = 60;
-            document.getElementById('timer-display').innerText = `${timeLeft}s`;
-            
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById('timer-display').innerText = `${timeLeft}s`;
-                if(timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    handleNext(); // Automatic Skip Engine execution
-                }
-            }, 1000);
-        }
-
-        function selectOption(qIdx, optIdx) {
-            selectedAnswers[qIdx] = optIdx;
-            // Highlight layout correction visually
-            document.querySelectorAll('.option-label').forEach((el, idx) => {
-                if(idx === optIdx) el.classList.add('selected');
-                else el.classList.remove('selected');
-            });
-        }
-
-        function handleNext() {
-            if(currentQuestionIndex < questionsList.length - 1) {
-                loadQuestion(currentQuestionIndex + 1);
-            } else {
-                clearInterval(timerInterval);
-                changeSlide(4); // Trigger Survey Metric
-            }
-        }
-
-        function handlePrevious() {
-            if(currentQuestionIndex > 0) {
-                loadQuestion(currentQuestionIndex - 1);
-            }
-        }
-
-        // Slide 4 Interactive Compulsory Rating Matrix Configuration
+        // Slide 3: Interactive Compulsory Rating Matrix Configuration
         document.querySelectorAll('#stars-container i').forEach(star => {
             star.addEventListener('click', function() {
                 selectedRating = parseInt(this.getAttribute('data-value'));
@@ -525,7 +357,7 @@
             });
         });
 
-        // Pipeline Termination Validation
+        // Final Submission and System Tracking
         function submitFinalFeedback(e) {
             e.preventDefault();
             if(selectedRating === 0) {
@@ -533,8 +365,9 @@
                 return;
             }
             
-            alert('Your examination response matrix and feedback metadata have been successfully packaged and transmitted.');
-            // Yahan se aap window.location.href karke admin ya results panel control render karwa sakte hain.
+            alert('Your registration metadata, rating, and doubts have been successfully captured!');
+            // Yahan se aap user ko direct chapter1.html par redirect kar sakte hain:
+            window.location.href = "chapter1.html";
         }
     </script>
 </body>
