@@ -1,130 +1,541 @@
- <!-- Main Container (Slide 1) -->
-<div style="
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    min-height: 100vh; 
-    background: radial-gradient(circle at 70% 20%, #1e3a8a 0%, #0f172a 60%), #0f172a;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    padding: 20px;
-    position: relative;
-    overflow: hidden;
-">
-    <!-- 3D Geometric & Science Paint Accents (Background) -->
-    <div style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; z-index: 1;">
-        <div style="position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%); top: -100px; right: -100px; filter: blur(40px);"></div>
-        <div style="position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, rgba(234,179,8,0.08) 0%, transparent 70%); bottom: -50px; left: -100px; filter: blur(30px);"></div>
-        
-        <!-- 3D Scientific Floating Shapes (CSS Painted Canvas) -->
-        <div style="position: absolute; top: 15%; right: 15%; width: 60px; height: 60px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; transform: rotate(15deg); opacity: 0.6; box-shadow: inset -10px -10px 20px rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.2);"></div>
-        <div style="position: absolute; bottom: 20%; left: 12%; width: 80px; height: 80px; background: linear-gradient(135deg, #eab308, #ca8a04); border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; transform: rotate(-25deg); opacity: 0.5; box-shadow: inset -12px -12px 24px rgba(0,0,0,0.4), 0 15px 25px rgba(0,0,0,0.25);"></div>
-        <div style="position: absolute; top: 65%; right: 10%; width: 45px; height: 45px; background: linear-gradient(135deg, #ec4899, #be185d); border-radius: 50%; transform: scaleX(1.3) rotate(45deg); opacity: 0.4; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.4);"></div>
-    </div>
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Elite | Online Test Series</title>
+    <!-- Google Fonts for Professional Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #1e3a8a;       /* Deep Navy Blue */
+            --primary-light: #3b82f6; /* Slate Blue */
+            --accent: #f59e0b;        /* Amber Gold */
+            --bg-dark: #0f172a;       /* Dark Tech Background */
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
 
-    <!-- Professional Glassmorphism Test Card -->
-    <div style="
-        background: rgba(15, 23, 42, 0.75);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.07);
-        border-radius: 20px;
-        padding: 45px 35px;
-        width: 100%;
-        max-width: 400px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        text-align: center;
-        position: relative;
-        z-index: 2;
-    ">
-        <!-- Header -->
-        <h2 style="
-            color: #ffffff;
-            font-size: 30px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Abstract Physics/Tech Background Art Grid */
+        body::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(30, 58, 138, 0.15) 0%, transparent 50%),
+                linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><path d="M0 0h60v60H0z" fill="none"/><path d="M60 0v60H0" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="1"/></svg>');
+            z-index: -1;
+        }
+
+        /* Test Container Layout */
+        .test-container {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 650px;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        /* Slide Management */
+        .slide {
+            display: none;
+        }
+        .slide.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Typography & Headings */
+        h2 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
             font-weight: 700;
-            margin: 0 0 6px 0;
-            letter-spacing: -0.5px;
-            background: linear-gradient(to right, #ffffff, #cbd5e1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        ">Physics Elite</h2>
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+        input[type="text"], input[type="email"], textarea {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+        input:focus, textarea:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Buttons styling */
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.85rem 1.8rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--text-main);
+        }
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        /* Error Messages */
+        .error-msg {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 0.4rem;
+            display: none;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Instruction Slide Style */
+        .instruction-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+        .instruction-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.95rem;
+        }
+        .instruction-list li i {
+            margin-top: 3px;
+        }
+        .negative-marking-box {
+            background: rgba(239, 68, 68, 0.08);
+            border-left: 4px solid var(--danger);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            color: #b91c1c;
+        }
+
+        /* Quiz UI Layout */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 1.5rem;
+        }
+        .timer-box {
+            background: #fef3c7;
+            border: 1px solid var(--accent);
+            color: #b45309;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        .option-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .option-label:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+        .option-label input {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+        .option-label.selected {
+            border-color: var(--primary-light);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        /* Rating Stars Style */
+        .rating-stars {
+            display: flex;
+            gap: 12px;
+            margin: 1rem 0 1.5rem 0;
+        }
+        .rating-stars i {
+            font-size: 2rem;
+            color: #cbd5e1;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .rating-stars i.active {
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="test-container">
         
-        <p style="
-            color: #94a3b8;
-            font-size: 13px;
-            margin: 0 0 35px 0;
-            font-weight: 400;
-        ">Enter your credentials to initialization the test</p>
-
-        <!-- Clean Form Configuration -->
-        <form id="login-form" style="text-align: left;">
+        <!-- ================= SLIDE 1: CREDENTIAL INITIALIZATION ================= -->
+        <div class="slide active" id="slide-1">
+            <h2><i class="fa-solid fa-user-shield"></i> Physics Elite</h2>
+            <p class="subtitle">Enter your credentials to initialization the test</p>
             
-            <!-- Input 1: Full Name -->
-            <div style="margin-bottom: 22px;">
-                <label for="name" style="
-                    display: block;
-                    color: #94a3b8;
-                    font-size: 12px;
-                    font-weight: 600;
-                    margin-bottom: 8px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.8px;
-                ">Full Name</label>
-                <input type="text" id="name" required style="
-                    width: 100%;
-                    padding: 14px 16px;
-                    background: rgba(30, 41, 59, 0.5);
-                    border: 1px solid rgba(255, 255, 255, 0.08);
-                    border-radius: 10px;
-                    color: #ffffff;
-                    font-size: 15px;
-                    box-sizing: border-box;
-                    transition: all 0.25s ease;
-                    outline: none;
-                '">
+            <form id="login-form" autocomplete="off" onsubmit="validateAndNext(event)">
+                <div class="form-group">
+                    <label for="student-name">Full Name *</label>
+                    <input type="text" id="student-name" placeholder="Enter your full name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="student-email">Gmail Address *</label>
+                    <!-- autocomplete="new-password" standard tarika hai browser lists/examples hide karne ka -->
+                    <input type="email" id="student-email" placeholder="username@gmail.com" autocomplete="new-password" required>
+                    <div class="error-msg" id="email-error">
+                        <i class="fa-solid fa-circle-exclamation"></i> Only official @gmail.com addresses are supported.
+                    </div>
+                </div>
+
+                <div style="text-align: right; margin-top: 2rem;">
+                    <button type="submit" class="btn">Proceed to Instructions <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </form>
+        </div>
+
+
+        <!-- ================= SLIDE 2: EXAMINATION INSTRUCTIONS ================= -->
+        <div class="slide" id="slide-2">
+            <h2><i class="fa-solid fa-clipboard-list"></i> Test Instructions</h2>
+            <p class="subtitle">Please read all instructions completely before starting.</p>
+            
+            <div class="negative-marking-box">
+                <i class="fa-solid fa-triangle-exclamation"></i> Warning: There is a negative marking of -0.25 marks for every wrong answer.
             </div>
 
-            <!-- Input 2: Gmail Address -->
-            <div style="margin-bottom: 35px;">
-                <label for="email" style="
-                    display: block;
-                    color: #94a3b8;
-                    font-size: 12px;
-                    font-weight: 600;
-                    margin-bottom: 8px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.8px;
-                ">Gmail Address</label>
-                <input type="email" id="email" required style="
-                    width: 100%;
-                    padding: 14px 16px;
-                    background: rgba(30, 41, 59, 0.5);
-                    border: 1px solid rgba(255, 255, 255, 0.08);
-                    border-radius: 10px;
-                    color: #ffffff;
-                    font-size: 15px;
-                    box-sizing: border-box;
-                    transition: all 0.25s ease;
-                    outline: none;
-                '">
+            <ul class="instruction-list">
+                <li>
+                    <i class="fa-solid fa-circle-chevron-right" style="color: var(--primary-light);"></i>
+                    <span>Each question is allotted a maximum time of <b>60 seconds</b>. If you fail to submit, the system skips to the next item automatically.</span>
+                </li>
+                <li>
+                    <i class="fa-solid fa-circle-chevron-right" style="color: var(--primary-light);"></i>
+                    <span>Click on <b>Save & Next</b> to securely upload your response. You can navigate backwards using the <b>Previous</b> button.</span>
+                </li>
+                <li>
+                    <i class="fa-solid fa-circle-chevron-right" style="color: var(--primary-light);"></i>
+                    <span>Do not refresh the webpage or change your tab layout, otherwise your current progress might get wiped.</span>
+                </li>
+            </ul>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="changeSlide(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                <button class="btn" onclick="startTest()">Start Examination <i class="fa-solid fa-vial"></i></button>
+            </div>
+        </div>
+
+
+        <!-- ================= SLIDE 3: ACTIVE TEST ENVIRONMENT ================= -->
+        <div class="slide" id="slide-3">
+            <div class="quiz-header">
+                <span id="question-counter" style="font-weight: 600; color: var(--text-muted);">Question 1 of 2</span>
+                <div class="timer-box">
+                    <i class="fa-regular fa-clock"></i> <span id="timer-display">60s</span>
+                </div>
             </div>
 
-            <!-- Action Button -->
-            <button type="submit" style="
-                width: 100%;
-                padding: 15px;
-                background: linear-gradient(135deg, #2563eb, #1d4ed8);
-                color: #ffffff;
-                border: none;
-                border-radius: 10px;
-                font-size: 15px;
-                font-weight: 600;
-                letter-spacing: 0.5px;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                box-shadow: 0 4px 15px rgba(37, 99, 235, 0.25);
-            ">
-                START TEST
-            </button>
-        </form>
+            <div id="quiz-body">
+                <!-- Dynamically Injecting Question Content via JS -->
+                <div class="question-text" id="q-text">Loading question data...</div>
+                <div class="option-container" id="options-block"></div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="btn-prev" onclick="handlePrevious()"><i class="fa-solid fa-angle-left"></i> Previous</button>
+                <button class="btn" id="btn-next" onclick="handleNext()">Save & Next <i class="fa-solid fa-angle-right"></i></button>
+            </div>
+        </div>
+
+
+        <!-- ================= SLIDE 4: RATINGS, FEEDBACK & DOUBTS ================= -->
+        <div class="slide" id="slide-4">
+            <h2><i class="fa-solid fa-square-poll-horizontal"></i> Assessment Feedback</h2>
+            <p class="subtitle">Your test has been successfully submitted. Please rate your experience.</p>
+            
+            <form id="feedback-form" onsubmit="submitFinalFeedback(event)">
+                <div class="form-group">
+                    <label>Overall Experience Rating *</label>
+                    <div class="rating-stars" id="stars-container">
+                        <i class="fa-solid fa-star" data-value="1"></i>
+                        <i class="fa-solid fa-star" data-value="2"></i>
+                        <i class="fa-solid fa-star" data-value="3"></i>
+                        <i class="fa-solid fa-star" data-value="4"></i>
+                        <i class="fa-solid fa-star" data-value="5"></i>
+                    </div>
+                    <div class="error-msg" id="rating-error">
+                        <i class="fa-solid fa-circle-exclamation"></i> Rating is compulsory before final portal submission.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="doubt-input">Do you have any Doubts / Queries? (Optional)</label>
+                    <textarea id="doubt-input" rows="2" placeholder="Describe any conceptual doubt from this test series..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="feedback-input">Valuable Feedback (Optional)</label>
+                    <textarea id="feedback-input" rows="3" placeholder="Tell us how we can optimize your learning ecosystem..."></textarea>
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%; justify-content: center;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Complete & Close Session
+                </button>
+            </form>
+        </div>
+
     </div>
-</div>
+
+    <!-- ================= ENGINE CONTROLLER LOGIC ================= -->
+    <script>
+        // Sample Test Data Schema
+        const questionsList = [
+            {
+                id: 1,
+                question: "Which of the following phenomena exhibits the particle nature of electromagnetic radiation?",
+                options: ["Interference", "Diffraction", "Photoelectric Effect", "Polarization"],
+                correct: 2
+            },
+            {
+                id: 2,
+                question: "What happens to the wavelength of an electron when its kinetic energy is multiplied by four?",
+                options: ["It becomes doubled", "It is halved", "It remains unchanged", "It becomes four times"],
+                correct: 1
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let selectedAnswers = {}; 
+        let timerInterval = null;
+        let timeLeft = 60;
+        let selectedRating = 0;
+
+        // Slide Changer Engine
+        function changeSlide(slideNumber) {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.getElementById(`slide-${slideNumber}`).classList.add('active');
+        }
+
+        // Slide 1 Strict Gmail Validation & Stop Browser Examples/Dropdowns
+        function validateAndNext(e) {
+            e.preventDefault();
+            const emailInput = document.getElementById('student-email').value.trim();
+            const errorDiv = document.getElementById('email-error');
+            
+            // Check strictly for ending structure matching "@gmail.com"
+            if(emailInput.toLowerCase().endsWith('@gmail.com')) {
+                errorDiv.style.display = 'none';
+                changeSlide(2);
+            } else {
+                errorDiv.style.display = 'flex';
+            }
+        }
+
+        // Slide 2 Initialization 
+        function startTest() {
+            changeSlide(3);
+            loadQuestion(0);
+        }
+
+        // Slide 3 Engine Loops & Timers
+        function loadQuestion(index) {
+            clearInterval(timerInterval);
+            currentQuestionIndex = index;
+            
+            // Update UI State Metadata
+            document.getElementById('question-counter').innerText = `Question ${index + 1} of ${questionsList.length}`;
+            
+            // Render Configs
+            const qData = questionsList[index];
+            document.getElementById('q-text').innerText = qData.question;
+            
+            const optionsBlock = document.getElementById('options-block');
+            optionsBlock.innerHTML = '';
+            
+            qData.options.forEach((opt, idx) => {
+                const isSelected = selectedAnswers[index] === idx;
+                const label = document.createElement('label');
+                label.className = `option-label ${isSelected ? 'selected' : ''}`;
+                label.innerHTML = `
+                    <input type="radio" name="quiz-opt" value="${idx}" ${isSelected ? 'checked' : ''} onchange="selectOption(${index}, ${idx})">
+                    ${opt}
+                `;
+                optionsBlock.appendChild(label);
+            });
+
+            // Adjust Footer Dynamic Navigation Visibility
+            document.getElementById('btn-prev').style.visibility = index === 0 ? 'hidden' : 'visible';
+            document.getElementById('btn-next').innerHTML = index === (questionsList.length - 1) ? 'Finish System <i class="fa-solid fa-flag-checkered"></i>' : 'Save & Next <i class="fa-solid fa-angle-right"></i>';
+
+            // Reset Timer Metrics
+            timeLeft = 60;
+            document.getElementById('timer-display').innerText = `${timeLeft}s`;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-display').innerText = `${timeLeft}s`;
+                if(timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleNext(); // Automatic Skip Engine execution
+                }
+            }, 1000);
+        }
+
+        function selectOption(qIdx, optIdx) {
+            selectedAnswers[qIdx] = optIdx;
+            // Highlight layout correction visually
+            document.querySelectorAll('.option-label').forEach((el, idx) => {
+                if(idx === optIdx) el.classList.add('selected');
+                else el.classList.remove('selected');
+            });
+        }
+
+        function handleNext() {
+            if(currentQuestionIndex < questionsList.length - 1) {
+                loadQuestion(currentQuestionIndex + 1);
+            } else {
+                clearInterval(timerInterval);
+                changeSlide(4); // Trigger Survey Metric
+            }
+        }
+
+        function handlePrevious() {
+            if(currentQuestionIndex > 0) {
+                loadQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        // Slide 4 Interactive Compulsory Rating Matrix Configuration
+        document.querySelectorAll('#stars-container i').forEach(star => {
+            star.addEventListener('click', function() {
+                selectedRating = parseInt(this.getAttribute('data-value'));
+                document.getElementById('rating-error').style.display = 'none';
+                
+                document.querySelectorAll('#stars-container i').forEach(s => {
+                    if(parseInt(s.getAttribute('data-value')) <= selectedRating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+        });
+
+        // Pipeline Termination Validation
+        function submitFinalFeedback(e) {
+            e.preventDefault();
+            if(selectedRating === 0) {
+                document.getElementById('rating-error').style.display = 'flex';
+                return;
+            }
+            
+            alert('Your examination response matrix and feedback metadata have been successfully packaged and transmitted.');
+            // Yahan se aap window.location.href karke admin ya results panel control render karwa sakte hain.
+        }
+    </script>
+</body>
+</html>
