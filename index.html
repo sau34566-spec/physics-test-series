@@ -40,7 +40,6 @@
             position: relative;
         }
 
-        /* Abstract Physics/Tech Background Art Grid */
         body::before {
             content: "";
             position: absolute;
@@ -56,7 +55,6 @@
             z-index: -1;
         }
 
-        /* Test Container Layout */
         .test-container {
             background: var(--bg-card);
             width: 100%;
@@ -69,21 +67,14 @@
             transition: all 0.3s ease;
         }
 
-        /* Slide Management */
-        .slide {
-            display: none;
-        }
-        .slide.active {
-            display: block;
-            animation: fadeIn 0.4s ease-in-out;
-        }
+        .slide { display: none; }
+        .slide.active { display: block; animation: fadeIn 0.4s ease-in-out; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Typography & Headings */
         h2 {
             font-size: 1.8rem;
             color: var(--primary);
@@ -99,11 +90,7 @@
             margin-bottom: 2rem;
         }
 
-        /* Form Controls */
-        .form-group {
-            margin-bottom: 1.5rem;
-            position: relative;
-        }
+        .form-group { margin-bottom: 1.5rem; position: relative; }
         label {
             display: block;
             font-size: 0.85rem;
@@ -127,7 +114,6 @@
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
 
-        /* Buttons styling */
         .btn {
             background: var(--primary);
             color: white;
@@ -142,28 +128,12 @@
             align-items: center;
             gap: 8px;
         }
-        .btn:hover {
-            background: #1d4ed8;
-            transform: translateY(-1px);
-        }
-        .btn:disabled {
-            background: #cbd5e1;
-            cursor: not-allowed;
-        }
-        .btn-secondary {
-            background: #e2e8f0;
-            color: var(--text-main);
-        }
-        .btn-secondary:hover {
-            background: #cbd5e1;
-        }
-        .btn-group {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 2rem;
-        }
+        .btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+        .btn-secondary { background: #e2e8f0; color: var(--text-main); }
+        .btn-secondary:hover { background: #cbd5e1; }
+        .btn-group { display: flex; justify-content: space-between; margin-top: 2rem; }
 
-        /* Error Messages */
         .error-msg {
             color: var(--danger);
             font-size: 0.85rem;
@@ -173,12 +143,7 @@
             gap: 5px;
         }
 
-        /* Instruction Slide Style */
-        .instruction-list {
-            list-style: none;
-            margin-bottom: 2rem;
-            color: var(--text-main);
-        }
+        .instruction-list { list-style: none; margin-bottom: 2rem; color: var(--text-main); }
         .instruction-list li {
             padding: 0.75rem 0;
             border-bottom: 1px solid #f1f5f9;
@@ -187,9 +152,7 @@
             gap: 10px;
             font-size: 0.95rem;
         }
-        .instruction-list li i {
-            margin-top: 3px;
-        }
+        .instruction-list li i { margin-top: 3px; }
         .negative-marking-box {
             background: rgba(239, 68, 68, 0.08);
             border-left: 4px solid var(--danger);
@@ -200,7 +163,6 @@
             color: #b91c1c;
         }
 
-        /* Quiz UI Layout */
         .quiz-header {
             display: flex;
             justify-content: space-between;
@@ -220,17 +182,8 @@
             align-items: center;
             gap: 6px;
         }
-        .question-text {
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            line-height: 1.5;
-        }
-        .option-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+        .question-text { font-size: 1.15rem; font-weight: 600; margin-bottom: 1.5rem; line-height: 1.5; }
+        .option-container { display: flex; flex-direction: column; gap: 10px; }
         .option-label {
             display: flex;
             align-items: center;
@@ -241,22 +194,10 @@
             transition: all 0.2s;
             font-weight: 500;
         }
-        .option-label:hover {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-        }
-        .option-label input {
-            margin-right: 12px;
-            width: 18px;
-            height: 18px;
-            accent-color: var(--primary);
-        }
-        .option-label.selected {
-            border-color: var(--primary-light);
-            background: rgba(59, 130, 246, 0.05);
-        }
+        .option-label:hover { background: #f8fafc; border-color: #cbd5e1; }
+        .option-label input { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--primary); }
+        .option-label.selected { border-color: var(--primary-light); background: rgba(59, 130, 246, 0.05); }
 
-        /* Score Dashboard Layout */
         .score-board {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -275,19 +216,9 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             border: 1px solid #edf2f7;
         }
-        .score-card h4 {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-        }
-        .score-card p {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
+        .score-card h4 { font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .score-card p { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
 
-        /* Advanced Question Review UI */
         .review-section {
             margin-bottom: 2rem;
             max-height: 350px;
@@ -308,26 +239,12 @@
         .review-item.correct-item { border-left-color: var(--success); }
         .review-item.wrong-item { border-left-color: var(--danger); }
         .review-item h5 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem; }
-        .review-ans-info { font-size: 0.85rem; margin-bottom: 0.5rem; }
-        .review-metrics { display: flex; gap: 15px; font-size: 0.8rem; font-weight: 500; color: var(--text-muted); background: #f1f5f9; padding: 4px 8px; border-radius: 4px; width: fit-content; }
+        .review-ans-info { font-size: 0.85rem; line-height: 1.5; }
 
-        /* Rating Stars Style */
-        .rating-stars {
-            display: flex;
-            gap: 12px;
-            margin: 1rem 0 1.5rem 0;
-        }
-        .rating-stars i {
-            font-size: 2rem;
-            color: #cbd5e1;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        .rating-stars i.active {
-            color: var(--accent);
-        }
+        .rating-stars { display: flex; gap: 12px; margin: 1rem 0 1.5rem 0; }
+        .rating-stars i { font-size: 2rem; color: #cbd5e1; cursor: pointer; transition: color 0.2s; }
+        .rating-stars i.active { color: var(--accent); }
 
-        /* Custom Success Pop-up Modal */
         .success-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -362,7 +279,6 @@
         
         <!-- ================= SLIDE 1: LOGIN ================= -->
         <div class="slide active" id="slide-1">
-            <!-- Title changed from Physics Elite to Exam Elite -->
             <h2><i class="fa-solid fa-user-shield"></i> Exam Elite</h2>
             <p class="subtitle">Enter your credentials to initialize the test portal</p>
             
@@ -384,11 +300,10 @@
                 </div>
 
                 <div style="text-align: right; margin-top: 2rem;">
-                    <button type="submit" class="btn">Proceed to Instructions <i class="fa-solid fa-arrow-right"></i></button>
+                    <button type="submit" id="proceed-btn" class="btn">Proceed to Instructions <i class="fa-solid fa-arrow-right"></i></button>
                 </div>
             </form>
         </div>
-
 
         <!-- ================= SLIDE 2: INSTRUCTIONS ================= -->
         <div class="slide" id="slide-2">
@@ -408,10 +323,6 @@
                     <i class="fa-solid fa-circle-chevron-right" style="color: var(--primary-light);"></i>
                     <span>Click on <b>Save & Next</b> to securely upload your response. You can navigate backwards using the <b>Previous</b> button.</span>
                 </li>
-                <li>
-                    <i class="fa-solid fa-circle-chevron-right" style="color: var(--primary-light);"></i>
-                    <span>Do not refresh the webpage or change your tab layout, otherwise your current progress might get wiped.</span>
-                </li>
             </ul>
 
             <div class="btn-group">
@@ -419,7 +330,6 @@
                 <button class="btn" id="start-exam-btn" onclick="startTestExam()">Start Examination <i class="fa-solid fa-vial"></i></button>
             </div>
         </div>
-
 
         <!-- ================= SLIDE 3: ACTIVE SYSTEM TEST ================= -->
         <div class="slide" id="slide-3">
@@ -441,13 +351,11 @@
             </div>
         </div>
 
-
-        <!-- ================= SLIDE 4: RESULTS -> RATINGS & DOUBTS CONTROLLER ================= -->
+        <!-- ================= SLIDE 4: RESULTS -> RATINGS & DOUBTS ================= -->
         <div class="slide" id="slide-4">
             <h2><i class="fa-solid fa-square-poll-horizontal"></i> Performance Dashboard</h2>
-            <p class="subtitle">Your metrics and question-wise time breakdowns have been processed.</p>
+            <p class="subtitle">Your metrics and answer-sheet evaluation sheet has been processed.</p>
             
-            <!-- LIVE RESULTS SCORE BOARD -->
             <div class="score-board">
                 <div class="score-card">
                     <h4>Total Score</h4>
@@ -467,11 +375,8 @@
                 </div>
             </div>
 
-            <!-- QUESTION-WISE DETAILED TIME & ANSWER REVIEWS -->
             <label style="margin-bottom: 0.5rem; display: block;">Detailed Evaluation Ledger</label>
-            <div class="review-section" id="review-ledger-container">
-                <!-- Injected via JavaScript dynamically -->
-            </div>
+            <div class="review-section" id="review-ledger-container"></div>
 
             <form id="feedback-form" onsubmit="submitFinalFeedback(event)">
                 <div class="form-group">
@@ -490,12 +395,12 @@
 
                 <div class="form-group">
                     <label for="doubt-input">Do you have any Doubts / Queries? (Optional)</label>
-                    <textarea id="doubt-input" rows="2" placeholder="Describe any conceptual doubt from this test series..."></textarea>
+                    <textarea id="doubt-input" rows="2" placeholder="Describe any conceptual doubt..."></textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="feedback-input">Valuable Feedback (Optional)</label>
-                    <textarea id="feedback-input" rows="3" placeholder="Tell us how we can optimize your learning ecosystem..."></textarea>
+                    <textarea id="feedback-input" rows="3" placeholder="Tell us how we can optimize your learning..."></textarea>
                 </div>
 
                 <button type="submit" id="submit-all-btn" class="btn" style="width: 100%; justify-content: center;">
@@ -511,14 +416,14 @@
         <div class="success-popup">
             <i class="fa-solid fa-circle-check"></i>
             <h3>Thank you for attempting the test!</h3>
-            <p>Your scorecard and performance matrix logs have been successfully secured and pushed onto the cloud grid system backend dashboards.</p>
+            <p>Your scorecard and performance matrix logs have been successfully secured and updated inside the Admin Dashboard Panel.</p>
         </div>
     </div>
 
     <!-- ================= FIREBASE & ENGINE CONTROLLER LOGIC ================= -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -534,7 +439,6 @@
         let questionsList = [];
         let currentQuestionIndex = 0;
         let selectedAnswers = {}; 
-        let timeTracker = {}; // Storage for time tracking per question
         let timerInterval = null;
         let timeLeft = 60;
         let selectedRating = 0;
@@ -547,12 +451,14 @@
             document.getElementById(`slide-${slideNumber}`).classList.add('active');
         };
 
-        window.validateAndNext = (e) => {
+        // Server check live dynamically from Firebase to allow re-test if admin deleted data
+        window.validateAndNext = async (e) => {
             e.preventDefault();
             const nameInput = document.getElementById('student-name').value.trim();
             const emailInput = document.getElementById('student-email').value.trim().toLowerCase();
             const emailError = document.getElementById('email-error');
             const duplicateError = document.getElementById('duplicate-error');
+            const proceedBtn = document.getElementById('proceed-btn');
             
             emailError.style.display = 'none';
             duplicateError.style.display = 'none';
@@ -562,15 +468,30 @@
                 return;
             }
 
-            let attemptedUsers = JSON.parse(localStorage.getItem('attemptedStudents') || "[]");
-            if(attemptedUsers.includes(emailInput)) {
-                duplicateError.style.display = 'flex';
-                return;
-            }
+            proceedBtn.disabled = true;
+            proceedBtn.innerText = "Verifying Entry...";
 
-            currentStudentName = nameInput;
-            currentStudentEmail = emailInput;
-            window.changeSlide(2);
+            try {
+                // Check direct in Firestore (if data deleted by admin, size will be 0)
+                const qRef = query(collection(db, "results"), where("email", "==", emailInput));
+                const snap = await getDocs(qRef);
+                
+                if(!snap.empty) {
+                    duplicateError.style.display = 'flex';
+                    proceedBtn.disabled = false;
+                    proceedBtn.innerText = "Proceed to Instructions";
+                    return;
+                }
+
+                currentStudentName = nameInput;
+                currentStudentEmail = emailInput;
+                window.changeSlide(2);
+            } catch(err) {
+                alert("Network latency error. Please check internet grid connection.");
+            } finally {
+                proceedBtn.disabled = false;
+                proceedBtn.innerText = "Proceed to Instructions";
+            }
         };
 
         window.startTestExam = async () => {
@@ -587,7 +508,7 @@
                 window.changeSlide(3);
                 loadQuestion(0);
             } catch (error) {
-                alert("Failed to fetch test matrix sheet. Please ensure valid dataset format.");
+                alert("Failed to fetch test dataset template.");
                 startBtn.disabled = false;
                 startBtn.innerText = "Start Examination";
             }
@@ -619,15 +540,11 @@
             document.getElementById('btn-prev').style.visibility = index === 0 ? 'hidden' : 'visible';
             document.getElementById('btn-next').innerHTML = index === (questionsList.length - 1) ? 'Finish Exam <i class="fa-solid fa-flag-checkered"></i>' : 'Save & Next <i class="fa-solid fa-angle-right"></i>';
 
-            // Check if there is previously consumed metric tracking time left
-            timeLeft = timeTracker[index] !== undefined ? (60 - timeTracker[index]) : 60;
+            timeLeft = 60;
             document.getElementById('timer-display').innerText = `${timeLeft}s`;
             
             timerInterval = setInterval(() => {
                 timeLeft--;
-                // Capture accurate delta time tracking
-                timeTracker[index] = 60 - timeLeft;
-
                 document.getElementById('timer-display').innerText = `${timeLeft}s`;
                 if(timeLeft <= 0) {
                     clearInterval(timerInterval);
@@ -667,23 +584,23 @@
 
             questionsList.forEach((q, idx) => {
                 const selected = selectedAnswers[idx];
-                const correctIdx = q.correct !== undefined ? q.correct : q.ans;
+                
+                // Fixed undefined tracking key reference resolution
+                let correctIdx = null;
+                if (q.correct !== undefined) correctIdx = parseInt(q.correct);
+                else if (q.ans !== undefined) correctIdx = parseInt(q.ans);
+
                 const isCorrect = selected === correctIdx;
                 
                 if (selected !== undefined) {
                     if (isCorrect) correctCount++; else wrongCount++;
                 }
 
-                // Dynamic generation of performance logs card elements per item
                 const reviewItem = document.createElement('div');
                 reviewItem.className = `review-item ${selected === undefined ? '' : (isCorrect ? 'correct-item' : 'wrong-item')}`;
                 
                 const studentSelectionText = selected !== undefined ? q.options[selected] : `<span style="color:var(--danger)">Not Attempted</span>`;
-                const correctSelectionText = q.options[correctIdx];
-
-                // Static mocked Peer average baseline metric calculation matching question context benchmarks
-                const pseudoPeerAverageTime = Math.round(32 + (idx * 3.5) % 15);
-                const actualSpentTime = timeTracker[idx] || 60;
+                const correctSelectionText = correctIdx !== null ? q.options[correctIdx] : 'N/A';
 
                 reviewItem.innerHTML = `
                     <h5>Q${idx + 1}. ${q.question || q.q}</h5>
@@ -691,12 +608,8 @@
                         <strong>Your Choice:</strong> ${studentSelectionText} <br>
                         <strong>Correct Answer:</strong> <span style="color:var(--success); font-weight:600">${correctSelectionText}</span>
                     </div>
-                    <div class="review-metrics">
-                        <span><i class="fa-regular fa-clock"></i> Time Taken: ${actualSpentTime}s</span>
-                        <span><i class="fa-solid fa-users-viewfinder"></i> Avg. Peer Time: ${pseudoPeerAverageTime}s</span>
-                    </div>
                 `;
-                reviewContainer.appendChild(reviewContainer.appendChild(reviewItem));
+                reviewContainer.appendChild(reviewItem);
             });
 
             let finalMarks = (correctCount * 1) - (wrongCount * 0.25);
@@ -708,10 +621,6 @@
             document.getElementById('res-accuracy').innerText = `${accuracy}%`;
             document.getElementById('res-correct').innerText = correctCount;
             document.getElementById('res-wrong').innerText = wrongCount;
-
-            let attemptedUsers = JSON.parse(localStorage.getItem('attemptedStudents') || "[]");
-            attemptedUsers.push(currentStudentEmail);
-            localStorage.setItem('attemptedStudents', JSON.stringify(attemptedUsers));
 
             window.changeSlide(4);
         }
@@ -756,7 +665,6 @@
                     timestamp: serverTimestamp()
                 });
 
-                // Replaced original browser pop-up prompt with optimized visual overlay screen matching guidelines
                 document.getElementById('success-modal').classList.add('show');
                 
                 setTimeout(() => {
