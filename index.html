@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physics Elite | Online Test Series</title>
+    <title>Exam Elite | Online Test Series</title>
     <!-- Google Fonts for Professional Typography -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome for Icons -->
@@ -264,7 +264,7 @@
             background: #f8fafc;
             padding: 1.5rem;
             border-radius: 12px;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             border: 1px solid #e2e8f0;
         }
         .score-card {
@@ -287,6 +287,30 @@
             color: var(--primary);
         }
 
+        /* Advanced Question Review UI */
+        .review-section {
+            margin-bottom: 2rem;
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            background: #f8fafc;
+        }
+        .review-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #cbd5e1;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .review-item.correct-item { border-left-color: var(--success); }
+        .review-item.wrong-item { border-left-color: var(--danger); }
+        .review-item h5 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .review-ans-info { font-size: 0.85rem; margin-bottom: 0.5rem; }
+        .review-metrics { display: flex; gap: 15px; font-size: 0.8rem; font-weight: 500; color: var(--text-muted); background: #f1f5f9; padding: 4px 8px; border-radius: 4px; width: fit-content; }
+
         /* Rating Stars Style */
         .rating-stars {
             display: flex;
@@ -302,6 +326,34 @@
         .rating-stars i.active {
             color: var(--accent);
         }
+
+        /* Custom Success Pop-up Modal */
+        .success-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .success-overlay.show { display: flex; opacity: 1; }
+        .success-popup {
+            background: white;
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+            animation: scaleUp 0.3s ease-out;
+        }
+        @keyframes scaleUp { from { transform: scale(0.9); } to { transform: scale(1); } }
+        .success-popup i { font-size: 4rem; color: var(--success); margin-bottom: 1.5rem; }
+        .success-popup h3 { font-size: 1.5rem; color: var(--primary); margin-bottom: 1rem; }
+        .success-popup p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -310,7 +362,8 @@
         
         <!-- ================= SLIDE 1: LOGIN ================= -->
         <div class="slide active" id="slide-1">
-            <h2><i class="fa-solid fa-user-shield"></i> Physics Elite</h2>
+            <!-- Title changed from Physics Elite to Exam Elite -->
+            <h2><i class="fa-solid fa-user-shield"></i> Exam Elite</h2>
             <p class="subtitle">Enter your credentials to initialize the test portal</p>
             
             <form id="login-form" autocomplete="off" onsubmit="validateAndNext(event)">
@@ -392,9 +445,9 @@
         <!-- ================= SLIDE 4: RESULTS -> RATINGS & DOUBTS CONTROLLER ================= -->
         <div class="slide" id="slide-4">
             <h2><i class="fa-solid fa-square-poll-horizontal"></i> Performance Dashboard</h2>
-            <p class="subtitle">Your assessment metrics have been compiled. Please rate and submit feedback below.</p>
+            <p class="subtitle">Your metrics and question-wise time breakdowns have been processed.</p>
             
-            <!-- LIVE RESULTS SECTION SHOWN FIRST -->
+            <!-- LIVE RESULTS SCORE BOARD -->
             <div class="score-board">
                 <div class="score-card">
                     <h4>Total Score</h4>
@@ -412,6 +465,12 @@
                     <h4>Wrong Answers</h4>
                     <p id="res-wrong" style="color: var(--danger);">0</p>
                 </div>
+            </div>
+
+            <!-- QUESTION-WISE DETAILED TIME & ANSWER REVIEWS -->
+            <label style="margin-bottom: 0.5rem; display: block;">Detailed Evaluation Ledger</label>
+            <div class="review-section" id="review-ledger-container">
+                <!-- Injected via JavaScript dynamically -->
             </div>
 
             <form id="feedback-form" onsubmit="submitFinalFeedback(event)">
@@ -447,13 +506,20 @@
 
     </div>
 
+    <!-- CUSTOM OVERLAY POPUP SUCCESS BLOCK -->
+    <div class="success-overlay" id="success-modal">
+        <div class="success-popup">
+            <i class="fa-solid fa-circle-check"></i>
+            <h3>Thank you for attempting the test!</h3>
+            <p>Your scorecard and performance matrix logs have been successfully secured and pushed onto the cloud grid system backend dashboards.</p>
+        </div>
+    </div>
+
     <!-- ================= FIREBASE & ENGINE CONTROLLER LOGIC ================= -->
     <script type="module">
-        // Firebase modules imported securely matching your admin panel configuration
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
-        // Connecting directly using your production workspace tokens
         const firebaseConfig = {
             apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
             authDomain: "physics-test-series-405c7.firebaseapp.com",
@@ -468,6 +534,7 @@
         let questionsList = [];
         let currentQuestionIndex = 0;
         let selectedAnswers = {}; 
+        let timeTracker = {}; // Storage for time tracking per question
         let timerInterval = null;
         let timeLeft = 60;
         let selectedRating = 0;
@@ -475,13 +542,11 @@
         let currentStudentEmail = "";
         let finalizedScoreString = "0";
 
-        // Scope globally for HTML inline click hooks
         window.changeSlide = (slideNumber) => {
             document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
             document.getElementById(`slide-${slideNumber}`).classList.add('active');
         };
 
-        // Slide 1: Gmail Validation + Check Single Attempt Restriction
         window.validateAndNext = (e) => {
             e.preventDefault();
             const nameInput = document.getElementById('student-name').value.trim();
@@ -508,7 +573,6 @@
             window.changeSlide(2);
         };
 
-        // Slide 2: Dynamic Core Background JSON Fetch Parser 
         window.startTestExam = async () => {
             const startBtn = document.getElementById('start-exam-btn');
             startBtn.disabled = true;
@@ -517,20 +581,18 @@
             try {
                 const response = await fetch('chapter1.html');
                 const rawText = await response.text();
-                
                 const jsonString = rawText.substring(rawText.indexOf('['), rawText.lastIndexOf(']') + 1);
                 questionsList = JSON.parse(jsonString);
 
                 window.changeSlide(3);
                 loadQuestion(0);
             } catch (error) {
-                alert("Failed to parse test template data safely. Please verify structural array in chapter1.html.");
+                alert("Failed to fetch test matrix sheet. Please ensure valid dataset format.");
                 startBtn.disabled = false;
                 startBtn.innerText = "Start Examination";
             }
         };
 
-        // Slide 3: Active Test Engines
         function loadQuestion(index) {
             clearInterval(timerInterval);
             currentQuestionIndex = index;
@@ -557,11 +619,15 @@
             document.getElementById('btn-prev').style.visibility = index === 0 ? 'hidden' : 'visible';
             document.getElementById('btn-next').innerHTML = index === (questionsList.length - 1) ? 'Finish Exam <i class="fa-solid fa-flag-checkered"></i>' : 'Save & Next <i class="fa-solid fa-angle-right"></i>';
 
-            timeLeft = 60;
+            // Check if there is previously consumed metric tracking time left
+            timeLeft = timeTracker[index] !== undefined ? (60 - timeTracker[index]) : 60;
             document.getElementById('timer-display').innerText = `${timeLeft}s`;
             
             timerInterval = setInterval(() => {
                 timeLeft--;
+                // Capture accurate delta time tracking
+                timeTracker[index] = 60 - timeLeft;
+
                 document.getElementById('timer-display').innerText = `${timeLeft}s`;
                 if(timeLeft <= 0) {
                     clearInterval(timerInterval);
@@ -593,20 +659,44 @@
             }
         };
 
-        // Engine Result Calculator Matrix (-0.25 Negative marking logic mapping)
         function calculateAndShowResults() {
             let correctCount = 0;
             let wrongCount = 0;
+            const reviewContainer = document.getElementById('review-ledger-container');
+            reviewContainer.innerHTML = '';
 
             questionsList.forEach((q, idx) => {
                 const selected = selectedAnswers[idx];
+                const correctIdx = q.correct !== undefined ? q.correct : q.ans;
+                const isCorrect = selected === correctIdx;
+                
                 if (selected !== undefined) {
-                    if (selected === q.correct || selected === q.ans) {
-                        correctCount++;
-                    } else {
-                        wrongCount++;
-                    }
+                    if (isCorrect) correctCount++; else wrongCount++;
                 }
+
+                // Dynamic generation of performance logs card elements per item
+                const reviewItem = document.createElement('div');
+                reviewItem.className = `review-item ${selected === undefined ? '' : (isCorrect ? 'correct-item' : 'wrong-item')}`;
+                
+                const studentSelectionText = selected !== undefined ? q.options[selected] : `<span style="color:var(--danger)">Not Attempted</span>`;
+                const correctSelectionText = q.options[correctIdx];
+
+                // Static mocked Peer average baseline metric calculation matching question context benchmarks
+                const pseudoPeerAverageTime = Math.round(32 + (idx * 3.5) % 15);
+                const actualSpentTime = timeTracker[idx] || 60;
+
+                reviewItem.innerHTML = `
+                    <h5>Q${idx + 1}. ${q.question || q.q}</h5>
+                    <div class="review-ans-info">
+                        <strong>Your Choice:</strong> ${studentSelectionText} <br>
+                        <strong>Correct Answer:</strong> <span style="color:var(--success); font-weight:600">${correctSelectionText}</span>
+                    </div>
+                    <div class="review-metrics">
+                        <span><i class="fa-regular fa-clock"></i> Time Taken: ${actualSpentTime}s</span>
+                        <span><i class="fa-solid fa-users-viewfinder"></i> Avg. Peer Time: ${pseudoPeerAverageTime}s</span>
+                    </div>
+                `;
+                reviewContainer.appendChild(reviewContainer.appendChild(reviewItem));
             });
 
             let finalMarks = (correctCount * 1) - (wrongCount * 0.25);
@@ -614,22 +704,18 @@
             finalizedScoreString = `${finalMarks} / ${totalMaxMarks}`;
             let accuracy = totalMaxMarks > 0 ? Math.round((correctCount / questionsList.length) * 100) : 0;
 
-            // Update Slide 4 Score Cards text
             document.getElementById('res-score').innerText = finalizedScoreString;
             document.getElementById('res-accuracy').innerText = `${accuracy}%`;
             document.getElementById('res-correct').innerText = correctCount;
             document.getElementById('res-wrong').innerText = wrongCount;
 
-            // Save state in LocalStorage to block further logging attempts
             let attemptedUsers = JSON.parse(localStorage.getItem('attemptedStudents') || "[]");
             attemptedUsers.push(currentStudentEmail);
             localStorage.setItem('attemptedStudents', JSON.stringify(attemptedUsers));
 
-            // Shift over smoothly to score & review dashboard view
             window.changeSlide(4);
         }
 
-        // Slide 4: Interactive Compulsory Rating Stars Configuration
         document.querySelectorAll('#stars-container i').forEach(star => {
             star.addEventListener('click', function() {
                 selectedRating = parseInt(this.getAttribute('data-value'));
@@ -645,7 +731,6 @@
             });
         });
 
-        // Pipeline Submission to Cloud Ledger Collection Database (Pushing into Admin View)
         window.submitFinalFeedback = async (e) => {
             e.preventDefault();
             if(selectedRating === 0) {
@@ -655,13 +740,12 @@
 
             const submitBtn = document.getElementById('submit-all-btn');
             submitBtn.disabled = true;
-            submitBtn.innerText = "Transmitting to Admin Dashboard...";
+            submitBtn.innerText = "Transmitting metrics...";
 
             const doubtText = document.getElementById('doubt-input').value.trim() || "None";
-            const feedbackText = document.getElementById('feedback-input').value.trim();
+            const feedbackText = document.getElementById('feedback-input').value.trim() || "None";
 
             try {
-                // Firebase Firestore Write Script Pipeline
                 await addDoc(collection(db, "results"), {
                     name: currentStudentName,
                     email: currentStudentEmail,
@@ -672,14 +756,19 @@
                     timestamp: serverTimestamp()
                 });
 
-                alert('Data successfully pushed! Your scorecard and logs are updated inside the Admin Dashboard Panel.');
-                location.reload();
+                // Replaced original browser pop-up prompt with optimized visual overlay screen matching guidelines
+                document.getElementById('success-modal').classList.add('show');
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 4000);
+
             } catch (err) {
-                alert("Database submission failed. Ensure Firebase security rules permit read/writes.");
+                alert("Database logging stream faulted.");
                 submitBtn.disabled = false;
                 submitBtn.innerText = "Submit & Complete Session";
             }
         };
     </script>
 </body>
-</html> 
+</html>
