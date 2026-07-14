@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -256,6 +256,37 @@
             background: rgba(59, 130, 246, 0.05);
         }
 
+        /* Score Dashboard Layout */
+        .score-board {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
+        }
+        .score-card {
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border: 1px solid #edf2f7;
+        }
+        .score-card h4 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        .score-card p {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
         /* Rating Stars Style */
         .rating-stars {
             display: flex;
@@ -290,7 +321,6 @@
                 
                 <div class="form-group">
                     <label for="student-email">Gmail Address *</label>
-                    <!-- Yahan se example completely clear kar diya hai -->
                     <input type="email" id="student-email" autocomplete="new-password" required>
                     <div class="error-msg" id="email-error">
                         <i class="fa-solid fa-circle-exclamation"></i> Only official @gmail.com addresses are supported.
@@ -338,7 +368,7 @@
         </div>
 
 
-        <!-- ================= SLIDE 3: QUESTIONS (Background Loaded from chapter1.html) ================= -->
+        <!-- ================= SLIDE 3: ACTIVE SYSTEM TEST ================= -->
         <div class="slide" id="slide-3">
             <div class="quiz-header">
                 <span id="question-counter" style="font-weight: 600; color: var(--text-muted);">Question Loading...</span>
@@ -359,11 +389,31 @@
         </div>
 
 
-        <!-- ================= SLIDE 4: RATINGS & FEEDBACK ================= -->
+        <!-- ================= SLIDE 4: RESULTS -> RATINGS & DOUBTS CONTROLLER ================= -->
         <div class="slide" id="slide-4">
-            <h2><i class="fa-solid fa-square-poll-horizontal"></i> Assessment Feedback</h2>
-            <p class="subtitle">Your performance matrix is recorded. Please leave a mandatory rating.</p>
+            <h2><i class="fa-solid fa-square-poll-horizontal"></i> Performance Dashboard</h2>
+            <p class="subtitle">Your assessment metrics have been compiled. Please rate and submit feedback below.</p>
             
+            <!-- LIVE RESULTS SECTION SHOWN FIRST -->
+            <div class="score-board">
+                <div class="score-card">
+                    <h4>Total Score</h4>
+                    <p id="res-score" style="color: var(--primary-light);">0 / 0</p>
+                </div>
+                <div class="score-card">
+                    <h4>Accuracy</h4>
+                    <p id="res-accuracy" style="color: var(--success);">0%</p>
+                </div>
+                <div class="score-card">
+                    <h4>Correct Answers</h4>
+                    <p id="res-correct" style="color: var(--success);">0</p>
+                </div>
+                <div class="score-card">
+                    <h4>Wrong Answers</h4>
+                    <p id="res-wrong" style="color: var(--danger);">0</p>
+                </div>
+            </div>
+
             <form id="feedback-form" onsubmit="submitFinalFeedback(event)">
                 <div class="form-group">
                     <label>Overall Experience Rating *</label>
@@ -389,7 +439,7 @@
                     <textarea id="feedback-input" rows="3" placeholder="Tell us how we can optimize your learning ecosystem..."></textarea>
                 </div>
 
-                <button type="submit" class="btn" style="width: 100%; justify-content: center;">
+                <button type="submit" id="submit-all-btn" class="btn" style="width: 100%; justify-content: center;">
                     <i class="fa-solid fa-cloud-arrow-up"></i> Submit & Complete Session
                 </button>
             </form>
@@ -397,25 +447,44 @@
 
     </div>
 
-    <!-- ================= ENGINE CONTROLLER LOGIC ================= -->
-    <script>
+    <!-- ================= FIREBASE & ENGINE CONTROLLER LOGIC ================= -->
+    <script type="module">
+        // Firebase modules imported securely matching your admin panel configuration
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+        // Connecting directly using your production workspace tokens
+        const firebaseConfig = {
+            apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
+            authDomain: "physics-test-series-405c7.firebaseapp.com",
+            projectId: "physics-test-series-405c7",
+            storageBucket: "physics-test-series-405c7.firebasestorage.app",
+            messagingSenderId: "758620061190",
+            appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         let questionsList = [];
         let currentQuestionIndex = 0;
         let selectedAnswers = {}; 
         let timerInterval = null;
         let timeLeft = 60;
         let selectedRating = 0;
+        let currentStudentName = "";
         let currentStudentEmail = "";
+        let finalizedScoreString = "0";
 
-        // Slide Changer Engine
-        function changeSlide(slideNumber) {
+        // Scope globally for HTML inline click hooks
+        window.changeSlide = (slideNumber) => {
             document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
             document.getElementById(`slide-${slideNumber}`).classList.add('active');
-        }
+        };
 
         // Slide 1: Gmail Validation + Check Single Attempt Restriction
-        function validateAndNext(e) {
+        window.validateAndNext = (e) => {
             e.preventDefault();
+            const nameInput = document.getElementById('student-name').value.trim();
             const emailInput = document.getElementById('student-email').value.trim().toLowerCase();
             const emailError = document.getElementById('email-error');
             const duplicateError = document.getElementById('duplicate-error');
@@ -428,46 +497,38 @@
                 return;
             }
 
-            // Check localized secure ledger array
             let attemptedUsers = JSON.parse(localStorage.getItem('attemptedStudents') || "[]");
             if(attemptedUsers.includes(emailInput)) {
                 duplicateError.style.display = 'flex';
                 return;
             }
 
+            currentStudentName = nameInput;
             currentStudentEmail = emailInput;
-            changeSlide(2);
-        }
+            window.changeSlide(2);
+        };
 
-        // Slide 2: Background Data Fetch from chapter1.html
-        async function startTestExam() {
+        // Slide 2: Dynamic Core Background JSON Fetch Parser 
+        window.startTestExam = async () => {
             const startBtn = document.getElementById('start-exam-btn');
             startBtn.disabled = true;
             startBtn.innerText = "Loading Dataset...";
 
             try {
-                // chapter1.html se text content fetch kiya ja raha h takki raw code screen par leak na ho
                 const response = await fetch('chapter1.html');
                 const rawText = await response.text();
                 
-                // Pure array block nikalne ke liye custom wrapper pattern cleaner
                 const jsonString = rawText.substring(rawText.indexOf('['), rawText.lastIndexOf(']') + 1);
                 questionsList = JSON.parse(jsonString);
 
-                // Lock email entry inside the system ledger
-                let attemptedUsers = JSON.parse(localStorage.getItem('attemptedStudents') || "[]");
-                attemptedUsers.push(currentStudentEmail);
-                localStorage.setItem('attemptedStudents', JSON.stringify(attemptedUsers));
-
-                // Switch visually into rendering environment
-                changeSlide(3);
+                window.changeSlide(3);
                 loadQuestion(0);
             } catch (error) {
-                alert("Failed to parse test template background stream safely. Please verify chapter1.html structure.");
+                alert("Failed to parse test template data safely. Please verify structural array in chapter1.html.");
                 startBtn.disabled = false;
                 startBtn.innerText = "Start Examination";
             }
-        }
+        };
 
         // Slide 3: Active Test Engines
         function loadQuestion(index) {
@@ -477,7 +538,7 @@
             document.getElementById('question-counter').innerText = `Question ${index + 1} of ${questionsList.length}`;
             
             const qData = questionsList[index];
-            document.getElementById('q-text').innerText = qData.q; // mapping from JSON 'q' field
+            document.getElementById('q-text').innerText = qData.question || qData.q;
             
             const optionsBlock = document.getElementById('options-block');
             optionsBlock.innerHTML = '';
@@ -494,7 +555,7 @@
             });
 
             document.getElementById('btn-prev').style.visibility = index === 0 ? 'hidden' : 'visible';
-            document.getElementById('btn-next').innerHTML = index === (questionsList.length - 1) ? 'Finish & Review <i class="fa-solid fa-flag-checkered"></i>' : 'Save & Next <i class="fa-solid fa-angle-right"></i>';
+            document.getElementById('btn-next').innerHTML = index === (questionsList.length - 1) ? 'Finish Exam <i class="fa-solid fa-flag-checkered"></i>' : 'Save & Next <i class="fa-solid fa-angle-right"></i>';
 
             timeLeft = 60;
             document.getElementById('timer-display').innerText = `${timeLeft}s`;
@@ -504,35 +565,71 @@
                 document.getElementById('timer-display').innerText = `${timeLeft}s`;
                 if(timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    handleNext();
+                    window.handleNext();
                 }
             }, 1000);
         }
 
-        function selectOption(qIdx, optIdx) {
+        window.selectOption = (qIdx, optIdx) => {
             selectedAnswers[qIdx] = optIdx;
             document.querySelectorAll('.option-label').forEach((el, idx) => {
                 if(idx === optIdx) el.classList.add('selected');
                 else el.classList.remove('selected');
             });
-        }
+        };
 
-        function handleNext() {
+        window.handleNext = () => {
             if(currentQuestionIndex < questionsList.length - 1) {
                 loadQuestion(currentQuestionIndex + 1);
             } else {
                 clearInterval(timerInterval);
-                changeSlide(4);
+                calculateAndShowResults();
             }
-        }
+        };
 
-        function handlePrevious() {
+        window.handlePrevious = () => {
             if(currentQuestionIndex > 0) {
                 loadQuestion(currentQuestionIndex - 1);
             }
+        };
+
+        // Engine Result Calculator Matrix (-0.25 Negative marking logic mapping)
+        function calculateAndShowResults() {
+            let correctCount = 0;
+            let wrongCount = 0;
+
+            questionsList.forEach((q, idx) => {
+                const selected = selectedAnswers[idx];
+                if (selected !== undefined) {
+                    if (selected === q.correct || selected === q.ans) {
+                        correctCount++;
+                    } else {
+                        wrongCount++;
+                    }
+                }
+            });
+
+            let finalMarks = (correctCount * 1) - (wrongCount * 0.25);
+            let totalMaxMarks = questionsList.length * 1;
+            finalizedScoreString = `${finalMarks} / ${totalMaxMarks}`;
+            let accuracy = totalMaxMarks > 0 ? Math.round((correctCount / questionsList.length) * 100) : 0;
+
+            // Update Slide 4 Score Cards text
+            document.getElementById('res-score').innerText = finalizedScoreString;
+            document.getElementById('res-accuracy').innerText = `${accuracy}%`;
+            document.getElementById('res-correct').innerText = correctCount;
+            document.getElementById('res-wrong').innerText = wrongCount;
+
+            // Save state in LocalStorage to block further logging attempts
+            let attemptedUsers = JSON.parse(localStorage.getItem('attemptedStudents') || "[]");
+            attemptedUsers.push(currentStudentEmail);
+            localStorage.setItem('attemptedStudents', JSON.stringify(attemptedUsers));
+
+            // Shift over smoothly to score & review dashboard view
+            window.changeSlide(4);
         }
 
-        // Slide 4: Rating Interactions
+        // Slide 4: Interactive Compulsory Rating Stars Configuration
         document.querySelectorAll('#stars-container i').forEach(star => {
             star.addEventListener('click', function() {
                 selectedRating = parseInt(this.getAttribute('data-value'));
@@ -548,16 +645,41 @@
             });
         });
 
-        function submitFinalFeedback(e) {
+        // Pipeline Submission to Cloud Ledger Collection Database (Pushing into Admin View)
+        window.submitFinalFeedback = async (e) => {
             e.preventDefault();
             if(selectedRating === 0) {
                 document.getElementById('rating-error').style.display = 'flex';
                 return;
             }
-            
-            alert('Thank you! Your test data matrix, mandatory ratings, and doubts have been successfully compiled.');
-            location.reload(); // Session termination resetting
-        }
+
+            const submitBtn = document.getElementById('submit-all-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Transmitting to Admin Dashboard...";
+
+            const doubtText = document.getElementById('doubt-input').value.trim() || "None";
+            const feedbackText = document.getElementById('feedback-input').value.trim();
+
+            try {
+                // Firebase Firestore Write Script Pipeline
+                await addDoc(collection(db, "results"), {
+                    name: currentStudentName,
+                    email: currentStudentEmail,
+                    score: finalizedScoreString,
+                    doubt: doubtText,
+                    feedback: feedbackText,
+                    rating: selectedRating,
+                    timestamp: serverTimestamp()
+                });
+
+                alert('Data successfully pushed! Your scorecard and logs are updated inside the Admin Dashboard Panel.');
+                location.reload();
+            } catch (err) {
+                alert("Database submission failed. Ensure Firebase security rules permit read/writes.");
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Submit & Complete Session";
+            }
+        };
     </script>
 </body>
-</html>
+</html> 
