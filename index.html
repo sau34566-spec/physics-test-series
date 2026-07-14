@@ -146,6 +146,10 @@
             background: #1d4ed8;
             transform: translateY(-1px);
         }
+        .btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
         .btn-secondary {
             background: #e2e8f0;
             color: var(--text-main);
@@ -196,6 +200,62 @@
             color: #b91c1c;
         }
 
+        /* Quiz UI Layout */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 1.5rem;
+        }
+        .timer-box {
+            background: #fef3c7;
+            border: 1px solid var(--accent);
+            color: #b45309;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        .option-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .option-label:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+        .option-label input {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+        .option-label.selected {
+            border-color: var(--primary-light);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
         /* Rating Stars Style */
         .rating-stars {
             display: flex;
@@ -217,7 +277,7 @@
 
     <div class="test-container">
         
-        <!-- ================= SLIDE 1: CREDENTIAL INITIALIZATION ================= -->
+        <!-- ================= SLIDE 1: LOGIN ================= -->
         <div class="slide active" id="slide-1">
             <h2><i class="fa-solid fa-user-shield"></i> Physics Elite</h2>
             <p class="subtitle">Enter your credentials to initialize the test portal</p>
@@ -230,9 +290,13 @@
                 
                 <div class="form-group">
                     <label for="student-email">Gmail Address *</label>
-                    <input type="email" id="student-email" placeholder="username@gmail.com" autocomplete="new-password" required>
+                    <!-- Yahan se example completely clear kar diya hai -->
+                    <input type="email" id="student-email" autocomplete="new-password" required>
                     <div class="error-msg" id="email-error">
                         <i class="fa-solid fa-circle-exclamation"></i> Only official @gmail.com addresses are supported.
+                    </div>
+                    <div class="error-msg" id="duplicate-error">
+                        <i class="fa-solid fa-ban"></i> Access Denied: You have already attempted this test!
                     </div>
                 </div>
 
@@ -243,7 +307,7 @@
         </div>
 
 
-        <!-- ================= SLIDE 2: EXAMINATION INSTRUCTIONS ================= -->
+        <!-- ================= SLIDE 2: INSTRUCTIONS ================= -->
         <div class="slide" id="slide-2">
             <h2><i class="fa-solid fa-clipboard-list"></i> Test Instructions</h2>
             <p class="subtitle">Please read all instructions completely before starting.</p>
@@ -255,7 +319,7 @@
             <ul class="instruction-list">
                 <li>
                     <i class="fa-solid fa-circle-chevron-right" style="color: var(--primary-light);"></i>
-                    <span>Each question is allotted a maximum time of <b>60 seconds</b> on the next portal. If you fail to submit, the system skips automatically.</span>
+                    <span>Each question is allotted a maximum time of <b>60 seconds</b>. If you fail to submit, the system skips automatically.</span>
                 </li>
                 <li>
                     <i class="fa-solid fa-circle-chevron-right" style="color: var(--primary-light);"></i>
@@ -269,15 +333,36 @@
 
             <div class="btn-group">
                 <button class="btn btn-secondary" onclick="changeSlide(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
-                <button class="btn" onclick="startTest()">Start Examination <i class="fa-solid fa-vial"></i></button>
+                <button class="btn" id="start-exam-btn" onclick="startTestExam()">Start Examination <i class="fa-solid fa-vial"></i></button>
             </div>
         </div>
 
 
-        <!-- ================= SLIDE 3: RATINGS, FEEDBACK & DOUBTS (Formally Slide 4) ================= -->
+        <!-- ================= SLIDE 3: QUESTIONS (Background Loaded from chapter1.html) ================= -->
         <div class="slide" id="slide-3">
+            <div class="quiz-header">
+                <span id="question-counter" style="font-weight: 600; color: var(--text-muted);">Question Loading...</span>
+                <div class="timer-box">
+                    <i class="fa-regular fa-clock"></i> <span id="timer-display">60s</span>
+                </div>
+            </div>
+
+            <div id="quiz-body">
+                <div class="question-text" id="q-text">Parsing structural dataset...</div>
+                <div class="option-container" id="options-block"></div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="btn-prev" onclick="handlePrevious()"><i class="fa-solid fa-angle-left"></i> Previous</button>
+                <button class="btn" id="btn-next" onclick="handleNext()">Save & Next <i class="fa-solid fa-angle-right"></i></button>
+            </div>
+        </div>
+
+
+        <!-- ================= SLIDE 4: RATINGS & FEEDBACK ================= -->
+        <div class="slide" id="slide-4">
             <h2><i class="fa-solid fa-square-poll-horizontal"></i> Assessment Feedback</h2>
-            <p class="subtitle">Your portal registration is active. Please leave your structural rating or log any pre-test doubts.</p>
+            <p class="subtitle">Your performance matrix is recorded. Please leave a mandatory rating.</p>
             
             <form id="feedback-form" onsubmit="submitFinalFeedback(event)">
                 <div class="form-group">
@@ -290,7 +375,7 @@
                         <i class="fa-solid fa-star" data-value="5"></i>
                     </div>
                     <div class="error-msg" id="rating-error">
-                        <i class="fa-solid fa-circle-exclamation"></i> Rating is compulsory before final portal submission.
+                        <i class="fa-solid fa-circle-exclamation"></i> Rating is compulsory before closing the session.
                     </div>
                 </div>
 
@@ -305,7 +390,7 @@
                 </div>
 
                 <button type="submit" class="btn" style="width: 100%; justify-content: center;">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Complete & Close Session
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Submit & Complete Session
                 </button>
             </form>
         </div>
@@ -314,7 +399,13 @@
 
     <!-- ================= ENGINE CONTROLLER LOGIC ================= -->
     <script>
+        let questionsList = [];
+        let currentQuestionIndex = 0;
+        let selectedAnswers = {}; 
+        let timerInterval = null;
+        let timeLeft = 60;
         let selectedRating = 0;
+        let currentStudentEmail = "";
 
         // Slide Changer Engine
         function changeSlide(slideNumber) {
@@ -322,26 +413,126 @@
             document.getElementById(`slide-${slideNumber}`).classList.add('active');
         }
 
-        // Slide 1: Strict Gmail Validation
+        // Slide 1: Gmail Validation + Check Single Attempt Restriction
         function validateAndNext(e) {
             e.preventDefault();
-            const emailInput = document.getElementById('student-email').value.trim();
-            const errorDiv = document.getElementById('email-error');
+            const emailInput = document.getElementById('student-email').value.trim().toLowerCase();
+            const emailError = document.getElementById('email-error');
+            const duplicateError = document.getElementById('duplicate-error');
             
-            if(emailInput.toLowerCase().endsWith('@gmail.com')) {
-                errorDiv.style.display = 'none';
-                changeSlide(2);
-            } else {
-                errorDiv.style.display = 'flex';
+            emailError.style.display = 'none';
+            duplicateError.style.display = 'none';
+
+            if(!emailInput.endsWith('@gmail.com')) {
+                emailError.style.display = 'flex';
+                return;
+            }
+
+            // Check localized secure ledger array
+            let attemptedUsers = JSON.parse(localStorage.getItem('attemptedStudents') || "[]");
+            if(attemptedUsers.includes(emailInput)) {
+                duplicateError.style.display = 'flex';
+                return;
+            }
+
+            currentStudentEmail = emailInput;
+            changeSlide(2);
+        }
+
+        // Slide 2: Background Data Fetch from chapter1.html
+        async function startTestExam() {
+            const startBtn = document.getElementById('start-exam-btn');
+            startBtn.disabled = true;
+            startBtn.innerText = "Loading Dataset...";
+
+            try {
+                // chapter1.html se text content fetch kiya ja raha h takki raw code screen par leak na ho
+                const response = await fetch('chapter1.html');
+                const rawText = await response.text();
+                
+                // Pure array block nikalne ke liye custom wrapper pattern cleaner
+                const jsonString = rawText.substring(rawText.indexOf('['), rawText.lastIndexOf(']') + 1);
+                questionsList = JSON.parse(jsonString);
+
+                // Lock email entry inside the system ledger
+                let attemptedUsers = JSON.parse(localStorage.getItem('attemptedStudents') || "[]");
+                attemptedUsers.push(currentStudentEmail);
+                localStorage.setItem('attemptedStudents', JSON.stringify(attemptedUsers));
+
+                // Switch visually into rendering environment
+                changeSlide(3);
+                loadQuestion(0);
+            } catch (error) {
+                alert("Failed to parse test template background stream safely. Please verify chapter1.html structure.");
+                startBtn.disabled = false;
+                startBtn.innerText = "Start Examination";
             }
         }
 
-        // Slide 2: Direct Jump to Feedback/Doubt (Questions are now in chapter1.html)
-        function startTest() {
-            changeSlide(3);
+        // Slide 3: Active Test Engines
+        function loadQuestion(index) {
+            clearInterval(timerInterval);
+            currentQuestionIndex = index;
+            
+            document.getElementById('question-counter').innerText = `Question ${index + 1} of ${questionsList.length}`;
+            
+            const qData = questionsList[index];
+            document.getElementById('q-text').innerText = qData.q; // mapping from JSON 'q' field
+            
+            const optionsBlock = document.getElementById('options-block');
+            optionsBlock.innerHTML = '';
+            
+            qData.options.forEach((opt, idx) => {
+                const isSelected = selectedAnswers[index] === idx;
+                const label = document.createElement('label');
+                label.className = `option-label ${isSelected ? 'selected' : ''}`;
+                label.innerHTML = `
+                    <input type="radio" name="quiz-opt" value="${idx}" ${isSelected ? 'checked' : ''} onchange="selectOption(${index}, ${idx})">
+                    ${opt}
+                `;
+                optionsBlock.appendChild(label);
+            });
+
+            document.getElementById('btn-prev').style.visibility = index === 0 ? 'hidden' : 'visible';
+            document.getElementById('btn-next').innerHTML = index === (questionsList.length - 1) ? 'Finish & Review <i class="fa-solid fa-flag-checkered"></i>' : 'Save & Next <i class="fa-solid fa-angle-right"></i>';
+
+            timeLeft = 60;
+            document.getElementById('timer-display').innerText = `${timeLeft}s`;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-display').innerText = `${timeLeft}s`;
+                if(timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleNext();
+                }
+            }, 1000);
         }
 
-        // Slide 3: Interactive Compulsory Rating Matrix Configuration
+        function selectOption(qIdx, optIdx) {
+            selectedAnswers[qIdx] = optIdx;
+            document.querySelectorAll('.option-label').forEach((el, idx) => {
+                if(idx === optIdx) el.classList.add('selected');
+                else el.classList.remove('selected');
+            });
+        }
+
+        function handleNext() {
+            if(currentQuestionIndex < questionsList.length - 1) {
+                loadQuestion(currentQuestionIndex + 1);
+            } else {
+                clearInterval(timerInterval);
+                changeSlide(4);
+            }
+        }
+
+        function handlePrevious() {
+            if(currentQuestionIndex > 0) {
+                loadQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        // Slide 4: Rating Interactions
         document.querySelectorAll('#stars-container i').forEach(star => {
             star.addEventListener('click', function() {
                 selectedRating = parseInt(this.getAttribute('data-value'));
@@ -357,7 +548,6 @@
             });
         });
 
-        // Final Submission and System Tracking
         function submitFinalFeedback(e) {
             e.preventDefault();
             if(selectedRating === 0) {
@@ -365,9 +555,8 @@
                 return;
             }
             
-            alert('Your registration metadata, rating, and doubts have been successfully captured!');
-            // Yahan se aap user ko direct chapter1.html par redirect kar sakte hain:
-            window.location.href = "chapter1.html";
+            alert('Thank you! Your test data matrix, mandatory ratings, and doubts have been successfully compiled.');
+            location.reload(); // Session termination resetting
         }
     </script>
 </body>
