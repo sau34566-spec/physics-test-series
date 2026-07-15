@@ -451,7 +451,6 @@
             document.getElementById(`slide-${slideNumber}`).classList.add('active');
         };
 
-        // Server check live dynamically from Firebase to allow re-test if admin deleted data
         window.validateAndNext = async (e) => {
             e.preventDefault();
             const nameInput = document.getElementById('student-name').value.trim();
@@ -472,7 +471,6 @@
             proceedBtn.innerText = "Verifying Entry...";
 
             try {
-                // Check direct in Firestore (if data deleted by admin, size will be 0)
                 const qRef = query(collection(db, "results"), where("email", "==", emailInput));
                 const snap = await getDocs(qRef);
                 
@@ -583,25 +581,24 @@
             reviewContainer.innerHTML = '';
 
             questionsList.forEach((q, idx) => {
-                const selected = selectedAnswers[idx];
+                const selectedIdx = selectedAnswers[idx];
                 
-                // Fixed undefined tracking key reference resolution
-                let correctIdx = null;
-                if (q.correct !== undefined) correctIdx = parseInt(q.correct);
-                else if (q.ans !== undefined) correctIdx = parseInt(q.ans);
+                // User ne jo text option select kiya hai wo text nikalein
+                const studentSelectionText = selectedIdx !== undefined ? q.options[selectedIdx] : `<span style="color:var(--danger)">Not Attempted</span>`;
+                
+                // JSON file me se correct answer text fetch karein ("q.a" format se)
+                const correctSelectionText = q.a || q.correct || q.ans || 'N/A';
 
-                const isCorrect = selected === correctIdx;
+                // Ab direct text to text match hoga, jisse string data validation bilkul accurate ho sake
+                const isCorrect = selectedIdx !== undefined && studentSelectionText === correctSelectionText;
                 
-                if (selected !== undefined) {
+                if (selectedIdx !== undefined) {
                     if (isCorrect) correctCount++; else wrongCount++;
                 }
 
                 const reviewItem = document.createElement('div');
-                reviewItem.className = `review-item ${selected === undefined ? '' : (isCorrect ? 'correct-item' : 'wrong-item')}`;
+                reviewItem.className = `review-item ${selectedIdx === undefined ? '' : (isCorrect ? 'correct-item' : 'wrong-item')}`;
                 
-                const studentSelectionText = selected !== undefined ? q.options[selected] : `<span style="color:var(--danger)">Not Attempted</span>`;
-                const correctSelectionText = correctIdx !== null ? q.options[correctIdx] : 'N/A';
-
                 reviewItem.innerHTML = `
                     <h5>Q${idx + 1}. ${q.question || q.q}</h5>
                     <div class="review-ans-info">
