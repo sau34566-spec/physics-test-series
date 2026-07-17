@@ -28,6 +28,7 @@
             font-family: 'Inter', sans-serif;
         }
 
+        /* SECURITY: Isse user website par koi bhi text select nahi kar payega */
         body {
             background-color: var(--bg-dark);
             color: var(--text-main);
@@ -37,6 +38,9 @@
             align-items: center;
             overflow-x: hidden;
             position: relative;
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none;     /* IE 10+ */
+            user-select: none;         /* Standard Syntax */
         }
 
         body::before {
@@ -444,6 +448,61 @@
         let currentStudentName = "";
         let currentStudentEmail = "";
         let finalizedScoreString = "0";
+        let isExamActive = false; // Security checking toggle tracking variable
+
+        // ================= SECURITY SCRIPTS INTEGRATION =================
+        
+        // 1. Disable Right Click Menu
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // 2. Disable Copy-Paste Events
+        document.addEventListener('copy', (e) => {
+            if(isExamActive) {
+                e.preventDefault();
+                alert("Security Warning: Copying test questions/options is strictly disabled!");
+            }
+        });
+        document.addEventListener('paste', (e) => {
+            if(isExamActive) {
+                e.preventDefault();
+                alert("Security Warning: Pasting text content inside test terminal is disabled!");
+            }
+        });
+
+        // 3. Tab Switching Detection Trigger
+        document.addEventListener("visibilitychange", function() {
+            if (document.hidden && isExamActive) {
+                alert("CRITICAL WARNING: Tab switching detected! Cheating protection logs have updated. Switching tabs multiple times might lead to automatic script suspension.");
+            }
+        });
+
+        // 4. Disable Print (Ctrl+P) and DevTools (F12, Ctrl+Shift+I) Keys
+        document.addEventListener("keydown", function(e) {
+            if (!isExamActive) return;
+
+            // Ctrl+P Shortcut Block
+            if (e.ctrlKey && (e.key === 'p' || e.keyCode === 80)) {
+                e.preventDefault();
+                alert("Security Action: Printing operations locked down during active sessions.");
+            }
+            // F12 Core Key Block
+            if (e.key === "F12" || e.keyCode === 123) {
+                e.preventDefault();
+                alert("Security Action: Developer Engine Panel Inspector access denied.");
+            }
+            // Ctrl + Shift + I Developer Portal Entry Link Block
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.keyCode === 73)) {
+                e.preventDefault();
+                alert("Security Action: Network log auditing is suspended.");
+            }
+            // Clear clipboard on PrintScreen key press
+            if (e.key === "PrintScreen") {
+                navigator.clipboard.writeText("");
+                alert("Screenshots are monitored and prohibited!");
+            }
+        });
+
+        // ================= END OF SECURITY SCRIPTS =================
 
         window.changeSlide = (slideNumber) => {
             document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
@@ -502,6 +561,7 @@
                 const jsonString = rawText.substring(rawText.indexOf('['), rawText.lastIndexOf(']') + 1);
                 questionsList = JSON.parse(jsonString);
 
+                isExamActive = true; // Security layer activated once test starts
                 window.changeSlide(3);
                 loadQuestion(0);
             } catch (error) {
@@ -563,6 +623,7 @@
                 loadQuestion(currentQuestionIndex + 1);
             } else {
                 clearInterval(timerInterval);
+                isExamActive = false; // Security rules relaxed during result submission stage
                 calculateAndShowResults();
             }
         };
