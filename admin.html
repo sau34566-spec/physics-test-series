@@ -165,11 +165,11 @@
         const db = getFirestore(app);
         let globalResultsCache = [];
 
-        // Simple explicit credentials matching logic
+        // Updated authentication logic with new custom details
         window.checkLogin = () => {
             const user = document.getElementById('adminUser').value;
             const pass = document.getElementById('adminPass').value;
-            if(user === "admin" && pass === "physics123") {
+            if(user === "saurav" && pass === "saurav123") {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('dashboardPanel').style.display = 'block';
                 initRealtimeSyncs();
@@ -186,12 +186,10 @@
         };
 
         function initRealtimeSyncs() {
-            // Count pool questions
             onSnapshot(collection(db, "questions"), (snap) => {
                 document.getElementById('poolCounter').innerText = `Total questions configured in random shuffle system: ${snap.size} / 100`;
             });
 
-            // Syncing student data streams
             onSnapshot(query(collection(db, "results"), orderBy("timestamp", "desc")), (snap) => {
                 const analysisBody = document.getElementById('analysisBody');
                 const leaderboardBody = document.getElementById('leaderboardBody');
@@ -216,7 +214,6 @@
 
                     globalResultsCache.push({ name: data.name, email: data.email, score: data.score });
 
-                    // Populate Slide 2 (Full analysis data)
                     analysisBody.innerHTML += `
                         <tr>
                             <td><b>${data.name}</b></td>
@@ -227,7 +224,6 @@
                         </tr>
                     `;
 
-                    // Populate Slide 3 (Clean view)
                     leaderboardBody.innerHTML += `
                         <tr>
                             <td><b>${data.name}</b></td>
