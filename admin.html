@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Admin Panel | Physics Elite</title>
+    <title>Secure Admin Panel | Exam Elite</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #6366f1; --accent: #f43f5e; --success: #10b981; --bg: #030712; --card: rgba(17, 24, 39, 0.9); --text: #f9fafb; }
+        :root { --primary: #6366f1; --accent: #f43f5e; --success: #10b981; --bg: #030712; --card: rgba(17, 24, 39, 0.9); --text: #f9fafb; --word-bg: #ffffff; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); padding: 0; margin: 0; min-height: 100vh; }
         
         /* SLIDE 1: LOGIN WALL */
@@ -24,21 +24,27 @@
         .slide-content { display: none; }
         .slide-content.active { display: block; }
         
-        /* FORMS & TABLES */
-        .grid-layout { display: grid; grid-template-columns: 1fr; gap: 30px; }
-        @media(min-width: 900px) { .grid-layout { grid-template-columns: 450px 1fr; } }
-        .form-card, .table-container { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 25px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 6px; color: #94a3b8; }
-        input[type="text"], input[type="password"], select { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.4); color: white; border-radius: 8px; outline: none; box-sizing: border-box; }
-        input:focus, select:focus { border-color: var(--primary); }
+        /* MS WORD STYLE QUESTION DESIGN */
+        .word-container { background: var(--word-bg); color: #2b2b2b; border-radius: 12px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 800px; margin: 0 auto; border-top: 15px solid #107c41; /* Word/Excel theme feel */ }
+        .word-header { border-bottom: 2px solid #e1e1e1; padding-bottom: 15px; margin-bottom: 30px; font-size: 1.4rem; font-weight: bold; color: #107c41; display: flex; align-items: center; gap: 10px; }
         
+        .word-field { margin-bottom: 25px; }
+        .word-label { font-weight: 700; font-size: 0.95rem; color: #444; margin-bottom: 8px; display: block; }
+        .word-input { width: 100%; padding: 12px 15px; border: 1px solid #bfbfbf; background: #fafafa; color: #222; border-radius: 6px; font-size: 1rem; outline: none; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .word-input:focus { border-color: #107c41; background: #fff; box-shadow: 0 0 0 3px rgba(16,124,65,0.1); }
+        .word-select { width: 100%; padding: 12px; border: 1px solid #bfbfbf; background: #fafafa; color: #222; border-radius: 6px; font-size: 1rem; outline: none; font-weight: 600; }
+        
+        /* TABLES */
+        .table-container { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 25px; margin-bottom: 30px; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { background: rgba(255,255,255,0.05); padding: 15px; font-size: 0.85rem; color: var(--primary); text-transform: uppercase; }
         td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
         
-        .btn-action { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.3s; }
+        .btn-action { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; }
         .btn-action:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-word-submit { background: #107c41; color: white; width: 100%; font-size: 1.1rem; padding: 15px; margin-top: 10px; }
+        .btn-word-submit:hover { background: #0b592e; }
+        
         .cheat-badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: rgba(244,63,94,0.15); color: var(--accent); margin-right: 5px; }
         .clean-badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: rgba(16,185,129,0.15); color: var(--success); }
     </style>
@@ -50,61 +56,70 @@
         <div class="login-card">
             <h2 style="margin-top:0; color:var(--primary);"><i class="fa-solid fa-lock"></i> Admin Auth</h2>
             <p style="opacity:0.6; font-size:0.9rem; margin-bottom:25px;">Enter credentials to unlock database logs</p>
-            <div class="form-group">
-                <input type="text" id="adminUser" placeholder="Username" required>
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="adminUser" style="width:100%; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(0,0,0,0.4); color:white;" placeholder="Username" required>
             </div>
-            <div class="form-group">
-                <input type="password" id="adminPass" placeholder="Password" required>
+            <div style="margin-bottom: 15px;">
+                <input type="password" id="adminPass" style="width:100%; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(0,0,0,0.4); color:white;" placeholder="Password" required>
             </div>
-            <button class="btn-action" onclick="checkLogin()">Unlock Dashboard</button>
+            <button class="btn-action" style="width:100%;" onclick="checkLogin()">Unlock Dashboard</button>
         </div>
     </div>
 
     <!-- MAIN DASHBOARD CONTENT -->
     <div class="dashboard" id="dashboardPanel">
         <div style="margin-bottom: 25px;">
-            <h1>Physics Elite Engine</h1>
+            <h1>Exam Elite Engine</h1>
             <p style="opacity: 0.6; font-size: 0.9rem; margin: 5px 0 0 0;">Secure Random Question Pool Management Portal</p>
         </div>
 
         <!-- NAVIGATION TABS -->
         <div class="nav-tabs">
-            <button class="tab-btn active" onclick="switchSlide('upload-slide', this)"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Questions</button>
+            <button class="tab-btn active" onclick="switchSlide('upload-slide', this)"><i class="fa-regular fa-file-word"></i> MS Word Question Entry</button>
             <button class="tab-btn" onclick="switchSlide('analysis-slide', this)"><i class="fa-solid fa-chart-pie"></i> Result Analysis</button>
-            <button class="tab-btn" onclick="switchSlide('leaderboard-slide', this)"><i class="fa-solid fa-trophy"></i> Download Leaderboard</button>
+            <button class="tab-btn" onclick="switchSlide('leaderboard-slide', this)"><i class="fa-solid fa-trophy"></i> Ranks & Doubts Panel</button>
         </div>
 
-        <!-- SLIDE 2: QUESTION UPLOAD -->
+        <!-- SLIDE 2: MS WORD STYLE QUESTION UPLOAD -->
         <div id="upload-slide" class="slide-content active">
-            <div class="grid-layout">
-                <div class="form-card">
-                    <h3>Add Pool Item (Normal Text)</h3>
-                    <form id="qForm" onsubmit="saveToPool(event)">
-                        <div class="form-group">
-                            <label>Question text</label>
-                            <input type="text" id="qText" placeholder="Enter problem statement..." required>
-                        </div>
-                        <div class="form-group"><label>Option A</label><input type="text" id="opt0" required></div>
-                        <div class="form-group"><label>Option B</label><input type="text" id="opt1" required></div>
-                        <div class="form-group"><label>Option C</label><input type="text" id="opt2" required></div>
-                        <div class="form-group"><label>Option D</label><input type="text" id="opt3" required></div>
-                        <div class="form-group">
-                            <label>Sahi Answer</label>
-                            <select id="correctAns" required>
-                                <option value="" disabled selected>Choose exact answer match</option>
-                                <option value="0">Option A</option>
-                                <option value="1">Option B</option>
-                                <option value="2">Option C</option>
-                                <option value="3">Option D</option>
-                            </select>
-                        </div>
-                        <button type="submit" id="submitBtn" class="btn-action">Save to Pool Collection</button>
-                    </form>
+            <div class="word-container">
+                <div class="word-header">
+                    <i class="fa-regular fa-file-word" style="font-size: 1.8rem;"></i> Document1 - Create Exam Question Entry
                 </div>
-                <div class="table-container">
-                    <h3>Current Active Question Pool Size</h3>
-                    <p style="opacity:0.6;" id="poolCounter">Loading counter metrics...</p>
-                </div>
+                <form id="qForm" onsubmit="saveToPool(event)">
+                    <div class="word-field">
+                        <label class="word-label">Type your Question Statement here:</label>
+                        <input type="text" id="qText" class="word-input" placeholder="e.g., What is the dimensional formula of linear momentum?" required>
+                    </div>
+                    <div class="word-field">
+                        <label class="word-label">Option [A]</label>
+                        <input type="text" id="opt0" class="word-input" placeholder="Enter option A" required>
+                    </div>
+                    <div class="word-field">
+                        <label class="word-label">Option [B]</label>
+                        <input type="text" id="opt1" class="word-input" placeholder="Enter option B" required>
+                    </div>
+                    <div class="word-field">
+                        <label class="word-label">Option [C]</label>
+                        <input type="text" id="opt2" class="word-input" placeholder="Enter option C" required>
+                    </div>
+                    <div class="word-field">
+                        <label class="word-label">Option [D]</label>
+                        <input type="text" id="opt3" class="word-input" placeholder="Enter option D" required>
+                    </div>
+                    <div class="word-field">
+                        <label class="word-label">Define Correct Target Key Answer Match:</label>
+                        <select id="correctAns" class="word-select" required>
+                            <option value="" disabled selected>-- Select Sahi Answer Option --</option>
+                            <option value="0">Option [A]</option>
+                            <option value="1">Option [B]</option>
+                            <option value="2">Option [C]</option>
+                            <option value="3">Option [D]</option>
+                        </select>
+                    </div>
+                    <button type="submit" id="submitBtn" class="btn-action btn-word-submit"><i class="fa-solid fa-check"></i> Append & Save Question to Core Pool</button>
+                </form>
+                <p style="color:#666; margin-top:20px; font-size:0.85rem; text-align:center;" id="poolCounter">Loading counter metrics...</p>
             </div>
         </div>
 
@@ -127,30 +142,48 @@
             </div>
         </div>
 
-        <!-- SLIDE 3: LEADERBOARD ONLY DOWNLOAD PORTAL -->
+        <!-- SLIDE 3: LEADERBOARD & DOUBTS SECTION -->
         <div id="leaderboard-slide" class="slide-content">
-            <div class="table-container">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                    <h3>Clean Rank Leaderboard</h3>
-                    <button class="btn-action" style="width:auto; background:var(--success);" onclick="triggerCleanDownload()"><i class="fa-solid fa-file-csv"></i> Download Leaderboard</button>
+            <div style="display: grid; grid-template-columns: 1fr; gap: 25px;">
+                <!-- Section 1: Marks Based Leaderboard View -->
+                <div class="table-container">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <h3>Rank Leaderboard (Sorted by High Marks)</h3>
+                        <button class="btn-action" style="background:var(--success);" onclick="triggerCleanDownload()"><i class="fa-solid fa-file-csv"></i> Download Leaderboard</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rank Position</th>
+                                <th>Student Name</th>
+                                <th>Email Address</th>
+                                <th>Final Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardBody"></tbody>
+                    </table>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Student Name</th>
-                            <th>Email Address</th>
-                            <th>Final Clean Score</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboardBody"></tbody>
-                </table>
+
+                <!-- Section 2: Dedicated Doubts/Queries Box -->
+                <div class="table-container">
+                    <h3>Student Doubts & Queries Desk</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Submitted Query / Feedback</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doubtsBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -165,7 +198,6 @@
         const db = getFirestore(app);
         let globalResultsCache = [];
 
-        // Updated authentication logic with new custom details
         window.checkLogin = () => {
             const user = document.getElementById('adminUser').value;
             const pass = document.getElementById('adminPass').value;
@@ -187,20 +219,33 @@
 
         function initRealtimeSyncs() {
             onSnapshot(collection(db, "questions"), (snap) => {
-                document.getElementById('poolCounter').innerText = `Total questions configured in random shuffle system: ${snap.size} / 100`;
+                document.getElementById('poolCounter').innerText = `Total questions configured in random shuffle system: ${snap.size} / 100 Items`;
             });
 
-            onSnapshot(query(collection(db, "results"), orderBy("timestamp", "desc")), (snap) => {
+            onSnapshot(query(collection(db, "results")), (snap) => {
                 const analysisBody = document.getElementById('analysisBody');
                 const leaderboardBody = document.getElementById('leaderboardBody');
+                const doubtsBody = document.getElementById('doubtsBody');
+                
                 analysisBody.innerHTML = "";
                 leaderboardBody.innerHTML = "";
+                doubtsBody.innerHTML = "";
                 globalResultsCache = [];
 
+                let list = [];
                 snap.forEach(doc => {
-                    const data = doc.data();
+                    const d = doc.data();
+                    // Score ko number format me parsing kar rahe hain accurate sort ke liye
+                    const scoreNum = parseFloat(d.score) || 0;
+                    list.push({ ...d, scoreNum, id: doc.id });
+                });
+
+                // MARKS KE ACCORDING HIGH TO LOW SORTING LOGIC
+                list.sort((a, b) => b.scoreNum - a.scoreNum);
+
+                let rank = 1;
+                list.forEach(data => {
                     const ts = data.timestamp ? data.timestamp.toDate().toLocaleString('en-IN') : "Just now";
-                    
                     const tSwitches = data.tabSwitches || 0;
                     const copies = data.copiesAttempted || 0;
 
@@ -212,8 +257,9 @@
                         if(copies > 0) logs += `<span class="cheat-badge">Copy Blocked: ${copies}</span>`;
                     }
 
-                    globalResultsCache.push({ name: data.name, email: data.email, score: data.score });
+                    globalResultsCache.push({ rank: rank, name: data.name, email: data.email, score: data.score });
 
+                    // Populating Views
                     analysisBody.innerHTML += `
                         <tr>
                             <td><b>${data.name}</b></td>
@@ -226,19 +272,34 @@
 
                     leaderboardBody.innerHTML += `
                         <tr>
+                            <td><b>#${rank}</b></td>
                             <td><b>${data.name}</b></td>
                             <td>${data.email}</td>
                             <td><span style="color:var(--success); font-weight:bold;">${data.score}</span></td>
                         </tr>
                     `;
+
+                    if(data.doubt) {
+                        doubtsBody.innerHTML += `
+                            <tr>
+                                <td style="font-weight:600; width:250px;">${data.name}</td>
+                                <td style="font-style:italic; color:#94a3b8;">${data.doubt}</td>
+                            </tr>
+                        `;
+                    }
+                    rank++;
                 });
+                
+                if(doubtsBody.innerHTML === "") {
+                    doubtsBody.innerHTML = "<tr><td colspan='2' style='text-align:center; opacity:0.5;'>No student questions filed yet.</td></tr>";
+                }
             });
         }
 
         window.saveToPool = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerText = "Saving Question Matrix...";
+            btn.disabled = true; btn.innerText = "Writing Document Stream...";
 
             const opts = [
                 document.getElementById('opt0').value.trim(),
@@ -254,24 +315,24 @@
                     options: opts,
                     a: opts[correctIdx]
                 });
-                alert("Question added to shuffle configuration pool!");
+                alert("Question Appended Successfully!");
                 document.getElementById('qForm').reset();
             } catch (err) {
-                alert("Firestore stream connection error: " + err.message);
+                alert("Error: " + err.message);
             } finally {
-                btn.disabled = false; btn.innerText = "Save to Pool Collection";
+                btn.disabled = false; btn.innerText = "Append & Save Question to Core Pool";
             }
         };
 
         window.triggerCleanDownload = () => {
             if(globalResultsCache.length === 0) return alert("No ranks compiled yet.");
-            let csv = "data:text/csv;charset=utf-8,Student Name,Email Address,Final Clean Score\n";
+            let csv = "data:text/csv;charset=utf-8,Rank,Student Name,Email Address,Final Score\n";
             globalResultsCache.forEach(r => {
-                csv += `"${r.name}",${r.email},${r.score}\n`;
+                csv += `${r.rank},"${r.name}",${r.email},${r.score}\n`;
             });
             const dlAnchor = document.createElement('a');
             dlAnchor.setAttribute("href", encodeURI(csv));
-            dlAnchor.setAttribute("download", "Clean_Rank_Leaderboard.csv");
+            dlAnchor.setAttribute("download", "Exam_Elite_Leaderboard.csv");
             document.body.appendChild(dlAnchor);
             dlAnchor.click();
             document.body.removeChild(dlAnchor);
