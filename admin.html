@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exam Elite | Admin Panel Control Room</title>
+    <title>Exam Elite | Admin Dashboard Panel</title>
     <!-- Google Fonts for Professional Typography -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome for Icons -->
@@ -37,7 +37,7 @@
         }
 
         .admin-container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
         }
 
@@ -66,7 +66,6 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
             border: 1px solid #e2e8f0;
             margin-bottom: 2rem;
-            transition: all 0.3s ease;
         }
 
         h3 {
@@ -171,12 +170,8 @@
         .btn:disabled { background: #cbd5e1; cursor: not-allowed; }
         .btn-success { background: var(--success); }
         .btn-success:hover { background: #059669; }
-
-        .dynamic-section {
-            border-top: 2px dashed #e2e8f0;
-            padding-top: 2rem;
-            margin-top: 2rem;
-        }
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #dc2626; }
 
         .option-input-wrapper {
             display: flex;
@@ -190,6 +185,38 @@
             color: var(--primary-light);
             width: 20px;
         }
+
+        /* Results table styles */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            background: white;
+        }
+
+        th, td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f1f5f9;
+        }
     </style>
 </head>
 <body>
@@ -197,29 +224,29 @@
     <div class="admin-container">
         
         <header>
-            <h1><i class="fa-solid fa-gauge-high"></i> Dashboard Panel</h1>
-            <span style="font-weight: 600; background: #e0e7ff; color: var(--primary); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem;">Admin Authorization Only</span>
+            <h1><i class="fa-solid fa-gauge-high"></i> Admin Dashboard</h1>
+            <span style="font-weight: 600; background: #e0e7ff; color: var(--primary); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem;">Authorized Personnel Only</span>
         </header>
 
-        <!-- ================= SYSTEM CONFIGURATION BOX ================= -->
+        <!-- ================= SECTION 1: EXAM CONFIGURATION SETTINGS ================= -->
         <div class="admin-card">
-            <h3><i class="fa-solid fa-sliders"></i> Document1 - Test Configuration Settings</h3>
-            <p class="subtitle">Yaha se taye karein ki total kitne questions pool mein rahenge aur student ko kitne dikhane hain.</p>
+            <h3><i class="fa-solid fa-sliders"></i> Test Configuration Settings</h3>
+            <p class="subtitle">Set the total question pool size and the number of questions to show on the student screen.</p>
             
             <div class="form-grid">
                 <div class="form-group">
                     <label for="config-total-pool">Total Pool Questions (Database Size) *</label>
-                    <input type="number" id="config-total-pool" placeholder="Eg: 100" min="1">
+                    <input type="number" id="config-total-pool" placeholder="Example: 100" min="1">
                 </div>
                 <div class="form-group">
                     <label for="config-student-limit">Student Question Limit (To Display) *</label>
-                    <input type="number" id="config-student-limit" placeholder="Eg: 20" min="1">
+                    <input type="number" id="config-student-limit" placeholder="Example: 20" min="1">
                 </div>
             </div>
 
-            <!-- Choose Mode / Method Grid -->
+            <!-- Upload Mode Options -->
             <div class="mode-selection-box">
-                <label style="font-weight: 700; color: var(--primary);">Choose Question Upload Method / Mode:</label>
+                <label style="font-weight: 700; color: var(--primary);">Select Question Upload Method:</label>
                 <div class="radio-group">
                     <label class="radio-label">
                         <input type="radio" name="upload-mode" value="form" checked onchange="toggleUploadUI()"> 
@@ -231,21 +258,23 @@
                     </label>
                     <label class="radio-label">
                         <input type="radio" name="upload-mode" value="msword" onchange="toggleUploadUI()"> 
-                        <i class="fa-solid fa-file-word"></i> MS Word Section Parse
+                        <i class="fa-solid fa-file-word"></i> MS Word Document Parse
                     </label>
                 </div>
             </div>
 
             <button type="button" id="save-config-btn" onclick="saveExamSettings()" class="btn btn-success">
-                <i class="fa-solid fa-lock"></i> Save & Lock Settings
+                <i class="fa-solid fa-lock"></i> Save & Apply Configurations
             </button>
         </div>
 
-        <!-- ================= DYNAMIC QUESTION WORKSPACE ================= -->
-        <div class="admin-card dynamic-section" id="workspace-card">
+        <!-- ================= SECTION 2: DYNAMIC QUESTION MANAGEMENT ================= -->
+        <div class="admin-card" id="workspace-card">
+            
+            <!-- VIEW A: LIVE FORM INPUT MODE -->
             <div id="mode-form-view">
                 <h3><i class="fa-solid fa-plus-minus"></i> Create Exam Question Entry</h3>
-                <p class="subtitle">Type and dispatch structural questions directly into the active database stream.</p>
+                <p class="subtitle">Add a new single multiple-choice question directly into the cloud database collection.</p>
                 
                 <form id="question-upload-form" onsubmit="uploadSingleQuestion(event)">
                     <div class="form-group">
@@ -273,43 +302,74 @@
                         </div>
                     </div>
 
-                    <div class="form-grid" style="grid-template-columns: 1fr;">
-                        <div class="form-group">
-                            <label for="correct-answer">Exact Correct Choice Text (Must match chosen option text exactly) *</label>
-                            <input type="text" id="correct-answer" placeholder="Eg: Option A ka exact value text copy karein" required>
-                        </div>
+                    <div class="form-group">
+                        <label for="correct-answer">Exact Correct Choice Text (Must match chosen option text exactly) *</label>
+                        <input type="text" id="correct-answer" placeholder="Copy and paste the correct option text here exactly" required>
                     </div>
 
                     <button type="submit" id="upload-q-btn" class="btn">
-                        <i class="fa-solid fa-paper-plane"></i> Dispatch Question to Cloud
+                        <i class="fa-solid fa-paper-plane"></i> Upload Question to Cloud
                     </button>
                 </form>
             </div>
 
-            <!-- CODE / REPOSITORY MODE VIEW -->
+            <!-- VIEW B: CODE INTEGRATION MODE -->
             <div id="mode-code-view" style="display: none;">
-                <h3><i class="fa-solid fa-square-rss"></i> Code Integration Engine Mode Activated</h3>
-                <p class="subtitle" style="line-height: 1.6;">
-                    Aapne **Custom HTML Code** source select kiya hai. Ab aap code ke zariye direct terminal layout par `chapter1.html` se questions serve aur load kar sakte hain. Is setting ko run karne ke liye local repository file push sync rakhein.
+                <h3><i class="fa-solid fa-square-rss"></i> Code Integration Mode Active</h3>
+                <p class="subtitle">
+                    You have selected the **Custom HTML Code** method. Questions will be fetched directly from your local `chapter1.html` script structures. 
                 </p>
                 <div style="background: #eff6ff; padding: 1rem; border-radius: 8px; border: 1px solid #bfdbfe; color: #1e40af; font-size: 0.95rem;">
-                    <i class="fa-solid fa-circle-info"></i> Form processing disabled dynamically. Core configurations are mapped directly via codebase structures.
+                    <i class="fa-solid fa-circle-info"></i> Manual form input is temporarily disabled. Questions are synchronized from the source repository code.
                 </div>
             </div>
 
-            <!-- MS WORD MODE VIEW -->
+            <!-- VIEW C: MS WORD PARSING MODE -->
             <div id="mode-msword-view" style="display: none;">
-                <h3><i class="fa-solid fa-file-invoice"></i> MS Word Dynamic Parsing Utility</h3>
-                <p class="subtitle">Direct docx raw structures se elements extract karne ka pipeline active hai.</p>
+                <h3><i class="fa-solid fa-file-invoice"></i> MS Word Parsing Utility</h3>
+                <p class="subtitle">Extract multiple choice test components directly from a Microsoft Word file structure.</p>
                 <div class="form-group">
-                    <label>Upload MS Word Document (.docx)</label>
+                    <label>Select MS Word Document (.docx)</label>
                     <input type="file" id="word-file-picker" accept=".docx" style="padding: 0.5rem; border: 2px dashed #cbd5e1; background: #f8fafc; border-radius: 8px; cursor: pointer;">
                 </div>
-                <button type="button" class="btn" onclick="alert('Parsing infrastructure linked successfully!')">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Execute Document Parsing
+                <button type="button" class="btn" onclick="alert('Word parser linked successfully!')">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Execute Document Analysis
                 </button>
             </div>
 
+        </div>
+
+        <!-- ================= SECTION 3: RESTORED LIVE STUDENT TRACKING RESULTS ================= -->
+        <div class="admin-card">
+            <h3><i class="fa-solid fa-square-poll-vertical"></i> Live Student Performance Ledger</h3>
+            <p class="subtitle">Monitor active student performance scores, experience ratings, security alerts, and questions/doubts.</p>
+            
+            <div style="text-align: right; margin-bottom: 1rem;">
+                <button onclick="clearAllResults()" class="btn btn-danger" id="clear-results-btn">
+                    <i class="fa-solid fa-trash-can"></i> Clear All Database Results
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student Details</th>
+                            <th>Score Achieved</th>
+                            <th>Security Alerts</th>
+                            <th>Doubts / Inquiries</th>
+                            <th>Feedback & Stars</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Synchronizing data sheets from cloud system...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
     </div>
@@ -317,7 +377,7 @@
     <!-- ================= FIREBASE CONSOLE INTEGRATION SCRIPT ================= -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -330,7 +390,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ================= RUNTIME LIVE INTERFACE LOGIC =================
+        // UI Management for active modes
         window.toggleUploadUI = () => {
             const currentMode = document.querySelector('input[name="upload-mode"]:checked').value;
             
@@ -347,8 +407,13 @@
             }
         };
 
-        // DOM Load hote hi saved settings fetch karna
+        // Fetch settings and student list rows on load
         window.addEventListener('DOMContentLoaded', async () => {
+            await loadExamSettings();
+            await fetchLiveStudentResults();
+        });
+
+        async function loadExamSettings() {
             try {
                 const docRef = doc(db, "exam_config", "current_test");
                 const docSnap = await getDoc(docRef);
@@ -365,29 +430,28 @@
                     }
                 }
             } catch (e) {
-                console.error("Cloud Configuration pulling issue: ", e);
+                console.error("Configuration system fault: ", e);
             }
-        });
+        }
 
-        // Test configuration numbers update logic
         window.saveExamSettings = async () => {
             const totalPool = parseInt(document.getElementById('config-total-pool').value);
             const studentLimit = parseInt(document.getElementById('config-student-limit').value);
             const uploadMode = document.querySelector('input[name="upload-mode"]:checked').value;
 
             if (!totalPool || !studentLimit) {
-                alert("Kripya dono boxes (Total Pool & Student Limit) mein valid numbers bharein!");
+                alert("Please fill both input parameters with positive integers.");
                 return;
             }
 
             if (studentLimit > totalPool) {
-                alert("Error Warning: Students ke liye question limit size, total base pool size se zyada nahi rakhi ja sakti!");
+                alert("Constraint Error: Student display question limit cannot exceed total configuration pool size.");
                 return;
             }
 
             const saveBtn = document.getElementById('save-config-btn');
             saveBtn.disabled = true;
-            saveBtn.innerText = "Locking Sync Configurations...";
+            saveBtn.innerText = "Applying Constraints...";
 
             try {
                 await setDoc(doc(db, "exam_config", "current_test"), {
@@ -396,22 +460,20 @@
                     uploadMode: uploadMode,
                     updatedAt: new Date()
                 });
-                
-                alert(`Success: Live constraints update completed! Active Student Portal standard configuration set to ${studentLimit} questions.`);
+                alert("Success: Master structural configurations saved and locked down.");
             } catch (error) {
-                alert("Database configuration write stream dropped: " + error.message);
+                alert("Database operations failed to sync: " + error.message);
             } finally {
                 saveBtn.disabled = false;
-                saveBtn.innerText = "Save & Lock Settings";
+                saveBtn.innerText = "Save & Apply Configurations";
             }
         };
 
-        // Form mode single question addition functionality
         window.uploadSingleQuestion = async (e) => {
             e.preventDefault();
             const qBtn = document.getElementById('upload-q-btn');
             qBtn.disabled = true;
-            qBtn.innerText = "Shipping packet to Firestore...";
+            qBtn.innerText = "Dispatching Data...";
 
             const questionStr = document.getElementById('question-text').value.trim();
             const optionsArr = [
@@ -423,9 +485,9 @@
             const correctAnsStr = document.getElementById('correct-answer').value.trim();
 
             if(!optionsArr.includes(correctAnsStr)) {
-                alert("Critical Configuration Fault: Correct answer string text must match at least one input choice element field text parameters exactly!");
+                alert("Verification Warning: The exact string text of the correct answer field parameters must match one of the four options options precisely.");
                 qBtn.disabled = false;
-                qBtn.innerText = "Dispatch Question to Cloud";
+                qBtn.innerText = "Upload Question to Cloud";
                 return;
             }
 
@@ -436,14 +498,92 @@
                     a: correctAnsStr,
                     timestamp: new Date()
                 });
-
-                alert("Question appended inside active Cloud Collection cleanly.");
+                alert("Question appended inside database registry system seamlessly.");
                 document.getElementById('question-upload-form').reset();
             } catch (err) {
-                alert("Question upload stream structural breakdown: " + err.message);
+                alert("Network operational breakdown: " + err.message);
             } finally {
                 qBtn.disabled = false;
-                qBtn.innerText = "Dispatch Question to Cloud";
+                qBtn.innerText = "Upload Question to Cloud";
+            }
+        };
+
+        // Fetch list of submitted scores from Firestore collection
+        async function fetchLiveStudentResults() {
+            const tableBody = document.getElementById('results-table-body');
+            try {
+                const snap = await getDocs(collection(db, "results"));
+                tableBody.innerHTML = '';
+
+                if (snap.empty) {
+                    tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No student submission sheets recorded inside database yet.</td></tr>`;
+                    return;
+                }
+
+                snap.forEach((doc) => {
+                    const r = doc.data();
+                    const row = document.createElement('tr');
+                    
+                    const name = r.name || "Anonymous";
+                    const email = r.email || "No Email linked";
+                    const score = r.score || "0 / 0";
+                    const tabSwitches = r.tabSwitches !== undefined ? r.tabSwitches : 0;
+                    const copies = r.copiesAttempted !== undefined ? r.copiesAttempted : 0;
+                    const doubt = r.doubt || "None";
+                    const feedback = r.feedback || "None";
+                    const rating = r.rating || 0;
+
+                    let starUi = '';
+                    for(let i=1; i<=5; i++) {
+                        starUi += `<i class="fa-solid fa-star" style="color: ${i <= rating ? 'var(--accent)' : '#cbd5e1'}"></i>`;
+                    }
+
+                    row.innerHTML = `
+                        <td>
+                            <strong>${name}</strong><br>
+                            <span style="font-size:0.8rem; color:var(--text-muted)">${email}</span>
+                        </td>
+                        <td><span style="font-weight:700; color:var(--primary-light)">${score}</span></td>
+                        <td>
+                            <span style="color: ${tabSwitches > 0 ? 'var(--danger)' : 'var(--success)'}; font-weight:600">
+                                <i class="fa-solid fa-window-restore"></i> Tab Switches: ${tabSwitches}
+                            </span><br>
+                            <span style="font-size:0.8rem; color: var(--text-muted)">Copy Breaches: ${copies}</span>
+                        </td>
+                        <td><div style="max-width:200px; font-size:0.85rem; max-height:60px; overflow-y:auto;">${doubt}</div></td>
+                        <td>
+                            <div>${starUi}</div>
+                            <span style="font-size:0.8rem; color:var(--text-muted)">${feedback}</span>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (err) {
+                tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--danger);">Failed to pull performance ledger arrays.</td></tr>`;
+            }
+        }
+
+        window.clearAllResults = async () => {
+            if(!confirm("Critical Operation: Are you completely certain you wish to delete all records from the student scoreboard? This cannot be undone!")) return;
+            
+            const clearBtn = document.getElementById('clear-results-btn');
+            clearBtn.disabled = true;
+            clearBtn.innerText = "Purging Database Elements...";
+
+            try {
+                const snap = await getDocs(collection(db, "results"));
+                const promises = [];
+                snap.forEach((documentItem) => {
+                    promises.push(deleteDoc(doc(db, "results", documentItem.id)));
+                });
+                await Promise.all(promises);
+                alert("All record datasets deleted from the database securely.");
+                await fetchLiveStudentResults();
+            } catch (err) {
+                alert("Error encountered during purge: " + err.message);
+            } finally {
+                clearBtn.disabled = false;
+                clearBtn.innerText = "Clear All Database Results";
             }
         };
     </script>
