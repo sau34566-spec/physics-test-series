@@ -3,116 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | Physics Elite</title>
+    <title>Secure Admin Panel | Physics Elite</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #6366f1; --accent: #f43f5e; --success: #10b981; --bg: #030712; --card: rgba(17, 24, 39, 0.8); --text: #f9fafb; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); padding: 40px; margin: 0; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        h1 { font-size: 1.8rem; background: linear-gradient(to right, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
+        :root { --primary: #6366f1; --accent: #f43f5e; --success: #10b981; --bg: #030712; --card: rgba(17, 24, 39, 0.9); --text: #f9fafb; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); padding: 0; margin: 0; min-height: 100vh; }
         
-        .grid-layout { display: grid; grid-template-columns: 1fr; gap: 30px; margin-bottom: 30px; }
-        @media(min-width: 900px) { .grid-layout { grid-template-columns: 400px 1fr; } }
-
-        .controls { display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; }
-        .btn-refresh { background: var(--primary); color: white; }
-        .btn-download { background: var(--success); color: white; }
-        .btn-wipe { background: rgba(244, 63, 94, 0.1); color: var(--accent); border: 1px solid var(--accent); }
-        .btn:hover { transform: translateY(-2px); opacity: 0.9; }
-
-        /* Form Styling */
-        .form-card { background: var(--card); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); padding: 25px; }
-        .form-card h2 { font-size: 1.3rem; margin-top: 0; margin-bottom: 20px; color: var(--primary); }
+        /* SLIDE 1: LOGIN WALL */
+        .login-screen { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-card { background: var(--card); border: 1px solid rgba(255,255,255,0.1); padding: 40px; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; }
+        
+        /* DASHBOARD LAYOUT */
+        .dashboard { display: none; padding: 40px; max-width: 1400px; margin: 0 auto; }
+        .nav-tabs { display: flex; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 30px; padding-bottom: 10px; }
+        .tab-btn { background: none; border: none; color: #94a3b8; font-size: 1rem; font-weight: 600; cursor: pointer; padding: 10px 20px; border-radius: 8px; transition: 0.3s; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        
+        /* SLIDE COMPONENTS */
+        .slide-content { display: none; }
+        .slide-content.active { display: block; }
+        
+        /* FORMS & TABLES */
+        .grid-layout { display: grid; grid-template-columns: 1fr; gap: 30px; }
+        @media(min-width: 900px) { .grid-layout { grid-template-columns: 450px 1fr; } }
+        .form-card, .table-container { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 25px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 6px; color: #94a3b8; }
-        input[type="text"], select { width: 100%; padding: 10px 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.2); color: white; border-radius: 8px; font-size: 0.95rem; outline: none; box-sizing: border-box; }
+        input[type="text"], input[type="password"], select { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.4); color: white; border-radius: 8px; outline: none; box-sizing: border-box; }
         input:focus, select:focus { border-color: var(--primary); }
-        .btn-submit { background: var(--primary); color: white; width: 100%; justify-content: center; margin-top: 10px; }
-
-        /* Table Styling */
-        .table-container { background: var(--card); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; height: fit-content; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background: rgba(255,255,255,0.05); padding: 15px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); }
-        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
-        tr:hover { background: rgba(255,255,255,0.02); }
         
-        .stat-badge { padding: 4px 10px; border-radius: 6px; font-weight: 700; background: rgba(99,102,241,0.15); color: var(--primary); }
-        .date-text { font-size: 0.8rem; opacity: 0.6; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: rgba(255,255,255,0.05); padding: 15px; font-size: 0.85rem; color: var(--primary); text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
+        
+        .btn-action { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.3s; }
+        .btn-action:hover { opacity: 0.9; transform: translateY(-1px); }
+        .cheat-badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: rgba(244,63,94,0.15); color: var(--accent); margin-right: 5px; }
+        .clean-badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: rgba(16,185,129,0.15); color: var(--success); }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div>
-                <h1>Admin Panel</h1>
-                <p style="opacity: 0.6; font-size: 0.9rem; margin: 5px 0 0 0;">Real-time Question Management & Student Analytics</p>
+
+    <!-- SLIDE 1: LOGIN SECURE PANEL -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-card">
+            <h2 style="margin-top:0; color:var(--primary);"><i class="fa-solid fa-lock"></i> Admin Auth</h2>
+            <p style="opacity:0.6; font-size:0.9rem; margin-bottom:25px;">Enter credentials to unlock database logs</p>
+            <div class="form-group">
+                <input type="text" id="adminUser" placeholder="Username" required>
             </div>
-            <div class="controls">
-                <button class="btn btn-refresh" onclick="refreshData()"><i class="fa-solid fa-sync"></i> Refresh</button>
-                <button class="btn btn-download" onclick="downloadLeaderboard()"><i class="fa-solid fa-file-excel"></i> Download Leaderboard</button>
-                <button class="btn btn-wipe" onclick="wipeRecords()"><i class="fa-solid fa-trash-can"></i> Wipe Records</button>
+            <div class="form-group">
+                <input type="password" id="adminPass" placeholder="Password" required>
+            </div>
+            <button class="btn-action" onclick="checkLogin()">Unlock Dashboard</button>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <div class="dashboard" id="dashboardPanel">
+        <div style="margin-bottom: 25px;">
+            <h1>Physics Elite Engine</h1>
+            <p style="opacity: 0.6; font-size: 0.9rem; margin: 5px 0 0 0;">Secure Random Question Pool Management Portal</p>
+        </div>
+
+        <!-- NAVIGATION TABS -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchSlide('upload-slide', this)"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Questions</button>
+            <button class="tab-btn" onclick="switchSlide('analysis-slide', this)"><i class="fa-solid fa-chart-pie"></i> Result Analysis</button>
+            <button class="tab-btn" onclick="switchSlide('leaderboard-slide', this)"><i class="fa-solid fa-trophy"></i> Download Leaderboard</button>
+        </div>
+
+        <!-- SLIDE 2: QUESTION UPLOAD -->
+        <div id="upload-slide" class="slide-content active">
+            <div class="grid-layout">
+                <div class="form-card">
+                    <h3>Add Pool Item (Normal Text)</h3>
+                    <form id="qForm" onsubmit="saveToPool(event)">
+                        <div class="form-group">
+                            <label>Question text</label>
+                            <input type="text" id="qText" placeholder="Enter problem statement..." required>
+                        </div>
+                        <div class="form-group"><label>Option A</label><input type="text" id="opt0" required></div>
+                        <div class="form-group"><label>Option B</label><input type="text" id="opt1" required></div>
+                        <div class="form-group"><label>Option C</label><input type="text" id="opt2" required></div>
+                        <div class="form-group"><label>Option D</label><input type="text" id="opt3" required></div>
+                        <div class="form-group">
+                            <label>Sahi Answer</label>
+                            <select id="correctAns" required>
+                                <option value="" disabled selected>Choose exact answer match</option>
+                                <option value="0">Option A</option>
+                                <option value="1">Option B</option>
+                                <option value="2">Option C</option>
+                                <option value="3">Option D</option>
+                            </select>
+                        </div>
+                        <button type="submit" id="submitBtn" class="btn-action">Save to Pool Collection</button>
+                    </form>
+                </div>
+                <div class="table-container">
+                    <h3>Current Active Question Pool Size</h3>
+                    <p style="opacity:0.6;" id="poolCounter">Loading counter metrics...</p>
+                </div>
             </div>
         </div>
 
-        <div class="grid-layout">
-            <!-- ================= QUESTION UPLOADER FORM ================= -->
-            <div class="form-card">
-                <h2><i class="fa-solid fa-cloud-arrow-up"></i> Upload New Question</h2>
-                <form id="question-form" onsubmit="uploadQuestion(event)">
-                    <div class="form-group">
-                        <label>Question Statement</label>
-                        <input type="text" id="q-text" placeholder="e.g., What is the SI unit of power?" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Option A</label>
-                        <input type="text" id="opt-0" placeholder="Option A" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Option B</label>
-                        <input type="text" id="opt-1" placeholder="Option B" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Option C</label>
-                        <input type="text" id="opt-2" placeholder="Option C" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Option D</label>
-                        <input type="text" id="opt-3" placeholder="Option D" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Correct Answer Selection</label>
-                        <select id="correct-ans" required>
-                            <option value="" disabled selected>Select Sahi Option</option>
-                            <option value="0">Option A</option>
-                            <option value="1">Option B</option>
-                            <option value="2">Option C</option>
-                            <option value="3">Option D</option>
-                        </select>
-                    </div>
-                    <button type="submit" id="btn-upload" class="btn btn-submit">
-                        <i class="fa-solid fa-plus"></i> Save Question to DB
-                    </button>
-                </form>
-            </div>
-
-            <!-- ================= LEADERBOARD REALTIME TABLE ================= -->
+        <!-- SLIDE 2 PART B: RESULT ANALYSIS WITH ANTI-CHEAT LOGS -->
+        <div id="analysis-slide" class="slide-content">
             <div class="table-container">
+                <h3>Live Student Surveillance Monitor</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Email</th>
+                            <th>Live Score Metric</th>
+                            <th>Anti-Cheat Metrics Triggered</th>
+                            <th>Submission Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysisBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: LEADERBOARD ONLY DOWNLOAD PORTAL -->
+        <div id="leaderboard-slide" class="slide-content">
+            <div class="table-container">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3>Clean Rank Leaderboard</h3>
+                    <button class="btn-action" style="width:auto; background:var(--success);" onclick="triggerCleanDownload()"><i class="fa-solid fa-file-csv"></i> Download Leaderboard</button>
+                </div>
                 <table>
                     <thead>
                         <tr>
                             <th>Student Name</th>
-                            <th>Email</th>
-                            <th>Score</th>
-                            <th>Doubt / Query</th>
-                            <th>Submission Date</th>
+                            <th>Email Address</th>
+                            <th>Final Clean Score</th>
                         </tr>
                     </thead>
-                    <tbody id="results-body">
-                        <tr><td colspan="5" style="text-align:center;">Initializing connection...</td></tr>
-                    </tbody>
+                    <tbody id="leaderboardBody"></tbody>
                 </table>
             </div>
         </div>
@@ -120,7 +150,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, collection, query, addDoc, getDocs, deleteDoc, doc, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -133,132 +163,123 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        let leaderboardData = []; // CSV extraction storage cache global object
+        let globalResultsCache = [];
 
-        // REAL-TIME REFRESH LOGIC
-        function listenToResults() {
-            const q = query(collection(db, "results"), orderBy("timestamp", "desc"));
-            
-            onSnapshot(q, (snapshot) => {
-                const tableBody = document.getElementById('results-body');
-                tableBody.innerHTML = "";
-                leaderboardData = []; // array refresh
-                
-                if (snapshot.empty) {
-                    tableBody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No records found.</td></tr>";
-                    return;
-                }
+        // Simple explicit credentials matching logic
+        window.checkLogin = () => {
+            const user = document.getElementById('adminUser').value;
+            const pass = document.getElementById('adminPass').value;
+            if(user === "admin" && pass === "physics123") {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('dashboardPanel').style.display = 'block';
+                initRealtimeSyncs();
+            } else {
+                alert("Incorrect Admin Credentials!");
+            }
+        };
 
-                snapshot.forEach((res) => {
-                    const data = res.data();
-                    const date = data.timestamp ? data.timestamp.toDate().toLocaleString('en-IN') : "Just now";
+        window.switchSlide = (slideId, btnElement) => {
+            document.querySelectorAll('.slide-content').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(slideId).classList.add('active');
+            btnElement.classList.add('active');
+        };
+
+        function initRealtimeSyncs() {
+            // Count pool questions
+            onSnapshot(collection(db, "questions"), (snap) => {
+                document.getElementById('poolCounter').innerText = `Total questions configured in random shuffle system: ${snap.size} / 100`;
+            });
+
+            // Syncing student data streams
+            onSnapshot(query(collection(db, "results"), orderBy("timestamp", "desc")), (snap) => {
+                const analysisBody = document.getElementById('analysisBody');
+                const leaderboardBody = document.getElementById('leaderboardBody');
+                analysisBody.innerHTML = "";
+                leaderboardBody.innerHTML = "";
+                globalResultsCache = [];
+
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const ts = data.timestamp ? data.timestamp.toDate().toLocaleString('en-IN') : "Just now";
                     
-                    // Saving data array for extraction download triggers
-                    leaderboardData.push({
-                        Name: data.name,
-                        Email: data.email,
-                        Score: data.score,
-                        Doubt: data.doubt || "None",
-                        Date: date
-                    });
+                    const tSwitches = data.tabSwitches || 0;
+                    const copies = data.copiesAttempted || 0;
 
-                    tableBody.innerHTML += `
+                    let logs = "";
+                    if(tSwitches === 0 && copies === 0) {
+                        logs = `<span class="clean-badge">Clean Candidate</span>`;
+                    } else {
+                        if(tSwitches > 0) logs += `<span class="cheat-badge">Tab Switched: ${tSwitches}</span>`;
+                        if(copies > 0) logs += `<span class="cheat-badge">Copy Blocked: ${copies}</span>`;
+                    }
+
+                    globalResultsCache.push({ name: data.name, email: data.email, score: data.score });
+
+                    // Populate Slide 2 (Full analysis data)
+                    analysisBody.innerHTML += `
                         <tr>
-                            <td style="font-weight:600;">${data.name}</td>
-                            <td style="opacity:0.8;">${data.email}</td>
-                            <td><span class="stat-badge">${data.score}</span></td>
-                            <td style="max-width:250px; font-style:italic; color:#cbd5e1;">${data.doubt}</td>
-                            <td class="date-text">${date}</td>
+                            <td><b>${data.name}</b></td>
+                            <td>${data.email}</td>
+                            <td><span style="color:var(--primary); font-weight:bold;">${data.score}</span></td>
+                            <td>${logs}</td>
+                            <td>${ts}</td>
+                        </tr>
+                    `;
+
+                    // Populate Slide 3 (Clean view)
+                    leaderboardBody.innerHTML += `
+                        <tr>
+                            <td><b>${data.name}</b></td>
+                            <td>${data.email}</td>
+                            <td><span style="color:var(--success); font-weight:bold;">${data.score}</span></td>
                         </tr>
                     `;
                 });
             });
         }
 
-        // 1. QUESTION UPLOAD FUNCTION (Bina coding normal entry process)
-        window.uploadQuestion = async (e) => {
+        window.saveToPool = async (e) => {
             e.preventDefault();
-            const uploadBtn = document.getElementById('btn-upload');
-            uploadBtn.disabled = true;
-            uploadBtn.innerText = "Uploading to Database...";
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true; btn.innerText = "Saving Question Matrix...";
 
-            const questionText = document.getElementById('q-text').value.trim();
-            const optA = document.getElementById('opt-0').value.trim();
-            const optB = document.getElementById('opt-1').value.trim();
-            const optC = document.getElementById('opt-2').value.trim();
-            const optD = document.getElementById('opt-3').value.trim();
-            const correctIndex = parseInt(document.getElementById('correct-ans').value);
-
-            const optionsArray = [optA, optB, optC, optD];
-            const correctStringAnswer = optionsArray[correctIndex]; // Direct text map matching
+            const opts = [
+                document.getElementById('opt0').value.trim(),
+                document.getElementById('opt1').value.trim(),
+                document.getElementById('opt2').value.trim(),
+                document.getElementById('opt3').value.trim()
+            ];
+            const correctIdx = parseInt(document.getElementById('correctAns').value);
 
             try {
-                // 'questions' collection mein data submit ho raha hai
                 await addDoc(collection(db, "questions"), {
-                    q: questionText,
-                    options: optionsArray,
-                    a: correctStringAnswer,
-                    timestamp: serverTimestamp()
+                    q: document.getElementById('qText').value.trim(),
+                    options: opts,
+                    a: opts[correctIdx]
                 });
-
-                alert("Question Successfully Uploaded!");
-                document.getElementById('question-form').reset();
+                alert("Question added to shuffle configuration pool!");
+                document.getElementById('qForm').reset();
             } catch (err) {
-                alert("Database insertion stream error: " + err.message);
+                alert("Firestore stream connection error: " + err.message);
             } finally {
-                uploadBtn.disabled = false;
-                uploadBtn.innerText = "Save Question to DB";
+                btn.disabled = false; btn.innerText = "Save to Pool Collection";
             }
         };
 
-        // 2. DOWNLOAD LEADERBOARD AS EXCEL-CSV SCRIPT
-        window.downloadLeaderboard = () => {
-            if(leaderboardData.length === 0) {
-                alert("No records to export yet.");
-                return;
-            }
-
-            let csvContent = "data:text/csv;charset=utf-8,";
-            // Header Row
-            csvContent += "Student Name,Email,Score,Doubt / Query,Submission Date\n";
-            
-            // Loop through cache
-            leaderboardData.forEach(row => {
-                // Double quotes wrap string sanitization to escape inner commas breakage
-                const escapedName = `"${row.Name.replace(/"/g, '""')}"`;
-                const escapedDoubt = `"${row.Doubt.replace(/"/g, '""')}"`;
-                csvContent += `${escapedName},${row.Email},${row.Score},${escapedDoubt},${row.Date}\n`;
+        window.triggerCleanDownload = () => {
+            if(globalResultsCache.length === 0) return alert("No ranks compiled yet.");
+            let csv = "data:text/csv;charset=utf-8,Student Name,Email Address,Final Clean Score\n";
+            globalResultsCache.forEach(r => {
+                csv += `"${r.name}",${r.email},${r.score}\n`;
             });
-
-            // Browser virtual direct download processing
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Exam_Elite_Leaderboard_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", encodeURI(csv));
+            dlAnchor.setAttribute("download", "Clean_Rank_Leaderboard.csv");
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            document.body.removeChild(dlAnchor);
         };
-
-        // Manual Refresh Visual Action
-        window.refreshData = () => {
-            const btn = document.querySelector('.btn-refresh');
-            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Syncing...";
-            setTimeout(() => { btn.innerHTML = "<i class='fa-solid fa-sync'></i> Refresh Real-time"; }, 1000);
-        };
-
-        // Wipe Records Logic
-        window.wipeRecords = async () => {
-            if(!confirm("Are you sure? This will delete ALL student results permanently!")) return;
-            const q = query(collection(db, "results"));
-            const snap = await getDocs(q);
-            const deletePromises = snap.docs.map(d => deleteDoc(doc(db, "results", d.id)));
-            await Promise.all(deletePromises);
-            alert("Database cleared.");
-        };
-
-        // Initialize listener
-        listenToResults();
     </script>
 </body>
 </html>
