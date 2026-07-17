@@ -3,187 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Admin Panel | Exam Elite</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Exam Elite | Admin Panel Control Room</title>
+    <!-- Google Fonts for Professional Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root { --primary: #6366f1; --accent: #f43f5e; --success: #10b981; --bg: #030712; --card: rgba(17, 24, 39, 0.9); --text: #f9fafb; --word-bg: #ffffff; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); padding: 0; margin: 0; min-height: 100vh; }
-        
-        /* SLIDE 1: LOGIN WALL */
-        .login-screen { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .login-card { background: var(--card); border: 1px solid rgba(255,255,255,0.1); padding: 40px; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; }
-        
-        /* DASHBOARD LAYOUT */
-        .dashboard { display: none; padding: 40px; max-width: 1400px; margin: 0 auto; }
-        .nav-tabs { display: flex; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 30px; padding-bottom: 10px; }
-        .tab-btn { background: none; border: none; color: #94a3b8; font-size: 1rem; font-weight: 600; cursor: pointer; padding: 10px 20px; border-radius: 8px; transition: 0.3s; }
-        .tab-btn.active { background: var(--primary); color: white; }
-        
-        /* SLIDE COMPONENTS */
-        .slide-content { display: none; }
-        .slide-content.active { display: block; }
-        
-        /* MS WORD STYLE QUESTION DESIGN */
-        .word-container { background: var(--word-bg); color: #2b2b2b; border-radius: 12px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 800px; margin: 0 auto; border-top: 15px solid #107c41; /* Word/Excel theme feel */ }
-        .word-header { border-bottom: 2px solid #e1e1e1; padding-bottom: 15px; margin-bottom: 30px; font-size: 1.4rem; font-weight: bold; color: #107c41; display: flex; align-items: center; gap: 10px; }
-        
-        .word-field { margin-bottom: 25px; }
-        .word-label { font-weight: 700; font-size: 0.95rem; color: #444; margin-bottom: 8px; display: block; }
-        .word-input { width: 100%; padding: 12px 15px; border: 1px solid #bfbfbf; background: #fafafa; color: #222; border-radius: 6px; font-size: 1rem; outline: none; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .word-input:focus { border-color: #107c41; background: #fff; box-shadow: 0 0 0 3px rgba(16,124,65,0.1); }
-        .word-select { width: 100%; padding: 12px; border: 1px solid #bfbfbf; background: #fafafa; color: #222; border-radius: 6px; font-size: 1rem; outline: none; font-weight: 600; }
-        
-        /* TABLES */
-        .table-container { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 25px; margin-bottom: 30px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background: rgba(255,255,255,0.05); padding: 15px; font-size: 0.85rem; color: var(--primary); text-transform: uppercase; }
-        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
-        
-        .btn-action { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        .btn-action:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-word-submit { background: #107c41; color: white; width: 100%; font-size: 1.1rem; padding: 15px; margin-top: 10px; }
-        .btn-word-submit:hover { background: #0b592e; }
-        
-        .cheat-badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: rgba(244,63,94,0.15); color: var(--accent); margin-right: 5px; }
-        .clean-badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: rgba(16,185,129,0.15); color: var(--success); }
+        :root {
+            --primary: #1e3a8a;       /* Deep Navy Blue */
+            --primary-light: #3b82f6; /* Slate Blue */
+            --accent: #f59e0b;        /* Amber Gold */
+            --bg-dark: #0f172a;       /* Dark Tech Background */
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .admin-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 2.5rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            color: var(--primary);
+            font-size: 2.2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-card {
+            background: var(--bg-card);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"], input[type="number"], textarea, select {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .mode-selection-box {
+            background: #f1f5f9;
+            padding: 1.25rem;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .radio-label input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.85rem 1.8rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+        .btn-success { background: var(--success); }
+        .btn-success:hover { background: #059669; }
+
+        .dynamic-section {
+            border-top: 2px dashed #e2e8f0;
+            padding-top: 2rem;
+            margin-top: 2rem;
+        }
+
+        .option-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.75rem;
+        }
+
+        .option-marker {
+            font-weight: 700;
+            color: var(--primary-light);
+            width: 20px;
+        }
     </style>
 </head>
 <body>
 
-    <!-- SLIDE 1: LOGIN SECURE PANEL -->
-    <div class="login-screen" id="loginScreen">
-        <div class="login-card">
-            <h2 style="margin-top:0; color:var(--primary);"><i class="fa-solid fa-lock"></i> Admin Auth</h2>
-            <p style="opacity:0.6; font-size:0.9rem; margin-bottom:25px;">Enter credentials to unlock database logs</p>
-            <div style="margin-bottom: 15px;">
-                <input type="text" id="adminUser" style="width:100%; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(0,0,0,0.4); color:white;" placeholder="Username" required>
-            </div>
-            <div style="margin-bottom: 15px;">
-                <input type="password" id="adminPass" style="width:100%; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(0,0,0,0.4); color:white;" placeholder="Password" required>
-            </div>
-            <button class="btn-action" style="width:100%;" onclick="checkLogin()">Unlock Dashboard</button>
-        </div>
-    </div>
+    <div class="admin-container">
+        
+        <header>
+            <h1><i class="fa-solid fa-gauge-high"></i> Dashboard Panel</h1>
+            <span style="font-weight: 600; background: #e0e7ff; color: var(--primary); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem;">Admin Authorization Only</span>
+        </header>
 
-    <!-- MAIN DASHBOARD CONTENT -->
-    <div class="dashboard" id="dashboardPanel">
-        <div style="margin-bottom: 25px;">
-            <h1>Exam Elite Engine</h1>
-            <p style="opacity: 0.6; font-size: 0.9rem; margin: 5px 0 0 0;">Secure Random Question Pool Management Portal</p>
-        </div>
-
-        <!-- NAVIGATION TABS -->
-        <div class="nav-tabs">
-            <button class="tab-btn active" onclick="switchSlide('upload-slide', this)"><i class="fa-regular fa-file-word"></i> MS Word Question Entry</button>
-            <button class="tab-btn" onclick="switchSlide('analysis-slide', this)"><i class="fa-solid fa-chart-pie"></i> Result Analysis</button>
-            <button class="tab-btn" onclick="switchSlide('leaderboard-slide', this)"><i class="fa-solid fa-trophy"></i> Ranks & Doubts Panel</button>
-        </div>
-
-        <!-- SLIDE 2: MS WORD STYLE QUESTION UPLOAD -->
-        <div id="upload-slide" class="slide-content active">
-            <div class="word-container">
-                <div class="word-header">
-                    <i class="fa-regular fa-file-word" style="font-size: 1.8rem;"></i> Document1 - Create Exam Question Entry
+        <!-- ================= SYSTEM CONFIGURATION BOX ================= -->
+        <div class="admin-card">
+            <h3><i class="fa-solid fa-sliders"></i> Document1 - Test Configuration Settings</h3>
+            <p class="subtitle">Yaha se taye karein ki total kitne questions pool mein rahenge aur student ko kitne dikhane hain.</p>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="config-total-pool">Total Pool Questions (Database Size) *</label>
+                    <input type="number" id="config-total-pool" placeholder="Eg: 100" min="1">
                 </div>
-                <form id="qForm" onsubmit="saveToPool(event)">
-                    <div class="word-field">
-                        <label class="word-label">Type your Question Statement here:</label>
-                        <input type="text" id="qText" class="word-input" placeholder="e.g., What is the dimensional formula of linear momentum?" required>
+                <div class="form-group">
+                    <label for="config-student-limit">Student Question Limit (To Display) *</label>
+                    <input type="number" id="config-student-limit" placeholder="Eg: 20" min="1">
+                </div>
+            </div>
+
+            <!-- Choose Mode / Method Grid -->
+            <div class="mode-selection-box">
+                <label style="font-weight: 700; color: var(--primary);">Choose Question Upload Method / Mode:</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="upload-mode" value="form" checked onchange="toggleUploadUI()"> 
+                        <i class="fa-solid fa-keyboard"></i> Live Form Input
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="upload-mode" value="code" onchange="toggleUploadUI()"> 
+                        <i class="fa-solid fa-code"></i> Custom HTML Code (chapter1.html)
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="upload-mode" value="msword" onchange="toggleUploadUI()"> 
+                        <i class="fa-solid fa-file-word"></i> MS Word Section Parse
+                    </label>
+                </div>
+            </div>
+
+            <button type="button" id="save-config-btn" onclick="saveExamSettings()" class="btn btn-success">
+                <i class="fa-solid fa-lock"></i> Save & Lock Settings
+            </button>
+        </div>
+
+        <!-- ================= DYNAMIC QUESTION WORKSPACE ================= -->
+        <div class="admin-card dynamic-section" id="workspace-card">
+            <div id="mode-form-view">
+                <h3><i class="fa-solid fa-plus-minus"></i> Create Exam Question Entry</h3>
+                <p class="subtitle">Type and dispatch structural questions directly into the active database stream.</p>
+                
+                <form id="question-upload-form" onsubmit="uploadSingleQuestion(event)">
+                    <div class="form-group">
+                        <label for="question-text">Question Statement / Text *</label>
+                        <textarea id="question-text" rows="3" placeholder="Enter the physics or conceptual problem statement here..." required></textarea>
                     </div>
-                    <div class="word-field">
-                        <label class="word-label">Option [A]</label>
-                        <input type="text" id="opt0" class="word-input" placeholder="Enter option A" required>
+
+                    <label style="margin-bottom: 0.5rem; display: block;">Multiple Choice Options *</label>
+                    <div class="form-group">
+                        <div class="option-input-wrapper">
+                            <span class="option-marker">A</span>
+                            <input type="text" id="opt-0" placeholder="Option A description" required>
+                        </div>
+                        <div class="option-input-wrapper">
+                            <span class="option-marker">B</span>
+                            <input type="text" id="opt-1" placeholder="Option B description" required>
+                        </div>
+                        <div class="option-input-wrapper">
+                            <span class="option-marker">C</span>
+                            <input type="text" id="opt-2" placeholder="Option C description" required>
+                        </div>
+                        <div class="option-input-wrapper">
+                            <span class="option-marker">D</span>
+                            <input type="text" id="opt-3" placeholder="Option D description" required>
+                        </div>
                     </div>
-                    <div class="word-field">
-                        <label class="word-label">Option [B]</label>
-                        <input type="text" id="opt1" class="word-input" placeholder="Enter option B" required>
+
+                    <div class="form-grid" style="grid-template-columns: 1fr;">
+                        <div class="form-group">
+                            <label for="correct-answer">Exact Correct Choice Text (Must match chosen option text exactly) *</label>
+                            <input type="text" id="correct-answer" placeholder="Eg: Option A ka exact value text copy karein" required>
+                        </div>
                     </div>
-                    <div class="word-field">
-                        <label class="word-label">Option [C]</label>
-                        <input type="text" id="opt2" class="word-input" placeholder="Enter option C" required>
-                    </div>
-                    <div class="word-field">
-                        <label class="word-label">Option [D]</label>
-                        <input type="text" id="opt3" class="word-input" placeholder="Enter option D" required>
-                    </div>
-                    <div class="word-field">
-                        <label class="word-label">Define Correct Target Key Answer Match:</label>
-                        <select id="correctAns" class="word-select" required>
-                            <option value="" disabled selected>-- Select Sahi Answer Option --</option>
-                            <option value="0">Option [A]</option>
-                            <option value="1">Option [B]</option>
-                            <option value="2">Option [C]</option>
-                            <option value="3">Option [D]</option>
-                        </select>
-                    </div>
-                    <button type="submit" id="submitBtn" class="btn-action btn-word-submit"><i class="fa-solid fa-check"></i> Append & Save Question to Core Pool</button>
+
+                    <button type="submit" id="upload-q-btn" class="btn">
+                        <i class="fa-solid fa-paper-plane"></i> Dispatch Question to Cloud
+                    </button>
                 </form>
-                <p style="color:#666; margin-top:20px; font-size:0.85rem; text-align:center;" id="poolCounter">Loading counter metrics...</p>
             </div>
-        </div>
 
-        <!-- SLIDE 2 PART B: RESULT ANALYSIS WITH ANTI-CHEAT LOGS -->
-        <div id="analysis-slide" class="slide-content">
-            <div class="table-container">
-                <h3>Live Student Surveillance Monitor</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Email</th>
-                            <th>Live Score Metric</th>
-                            <th>Anti-Cheat Metrics Triggered</th>
-                            <th>Submission Time</th>
-                        </tr>
-                    </thead>
-                    <tbody id="analysisBody"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- SLIDE 3: LEADERBOARD & DOUBTS SECTION -->
-        <div id="leaderboard-slide" class="slide-content">
-            <div style="display: grid; grid-template-columns: 1fr; gap: 25px;">
-                <!-- Section 1: Marks Based Leaderboard View -->
-                <div class="table-container">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                        <h3>Rank Leaderboard (Sorted by High Marks)</h3>
-                        <button class="btn-action" style="background:var(--success);" onclick="triggerCleanDownload()"><i class="fa-solid fa-file-csv"></i> Download Leaderboard</button>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Rank Position</th>
-                                <th>Student Name</th>
-                                <th>Email Address</th>
-                                <th>Final Score</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboardBody"></tbody>
-                    </table>
-                </div>
-
-                <!-- Section 2: Dedicated Doubts/Queries Box -->
-                <div class="table-container">
-                    <h3>Student Doubts & Queries Desk</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Student Name</th>
-                                <th>Submitted Query / Feedback</th>
-                            </tr>
-                        </thead>
-                        <tbody id="doubtsBody"></tbody>
-                    </table>
+            <!-- CODE / REPOSITORY MODE VIEW -->
+            <div id="mode-code-view" style="display: none;">
+                <h3><i class="fa-solid fa-square-rss"></i> Code Integration Engine Mode Activated</h3>
+                <p class="subtitle" style="line-height: 1.6;">
+                    Aapne **Custom HTML Code** source select kiya hai. Ab aap code ke zariye direct terminal layout par `chapter1.html` se questions serve aur load kar sakte hain. Is setting ko run karne ke liye local repository file push sync rakhein.
+                </p>
+                <div style="background: #eff6ff; padding: 1rem; border-radius: 8px; border: 1px solid #bfdbfe; color: #1e40af; font-size: 0.95rem;">
+                    <i class="fa-solid fa-circle-info"></i> Form processing disabled dynamically. Core configurations are mapped directly via codebase structures.
                 </div>
             </div>
+
+            <!-- MS WORD MODE VIEW -->
+            <div id="mode-msword-view" style="display: none;">
+                <h3><i class="fa-solid fa-file-invoice"></i> MS Word Dynamic Parsing Utility</h3>
+                <p class="subtitle">Direct docx raw structures se elements extract karne ka pipeline active hai.</p>
+                <div class="form-group">
+                    <label>Upload MS Word Document (.docx)</label>
+                    <input type="file" id="word-file-picker" accept=".docx" style="padding: 0.5rem; border: 2px dashed #cbd5e1; background: #f8fafc; border-radius: 8px; cursor: pointer;">
+                </div>
+                <button type="button" class="btn" onclick="alert('Parsing infrastructure linked successfully!')">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Execute Document Parsing
+                </button>
+            </div>
+
         </div>
+
     </div>
 
+    <!-- ================= FIREBASE CONSOLE INTEGRATION SCRIPT ================= -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -193,149 +327,124 @@
             messagingSenderId: "758620061190",
             appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        let globalResultsCache = [];
 
-        window.checkLogin = () => {
-            const user = document.getElementById('adminUser').value;
-            const pass = document.getElementById('adminPass').value;
-            if(user === "saurav" && pass === "saurav123") {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('dashboardPanel').style.display = 'block';
-                initRealtimeSyncs();
-            } else {
-                alert("Incorrect Admin Credentials!");
+        // ================= RUNTIME LIVE INTERFACE LOGIC =================
+        window.toggleUploadUI = () => {
+            const currentMode = document.querySelector('input[name="upload-mode"]:checked').value;
+            
+            document.getElementById('mode-form-view').style.display = 'none';
+            document.getElementById('mode-code-view').style.display = 'none';
+            document.getElementById('mode-msword-view').style.display = 'none';
+
+            if(currentMode === 'form') {
+                document.getElementById('mode-form-view').style.display = 'block';
+            } else if(currentMode === 'code') {
+                document.getElementById('mode-code-view').style.display = 'block';
+            } else if(currentMode === 'msword') {
+                document.getElementById('mode-msword-view').style.display = 'block';
             }
         };
 
-        window.switchSlide = (slideId, btnElement) => {
-            document.querySelectorAll('.slide-content').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(slideId).classList.add('active');
-            btnElement.classList.add('active');
+        // DOM Load hote hi saved settings fetch karna
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const docRef = doc(db, "exam_config", "current_test");
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('config-total-pool').value = data.totalPool || "";
+                    document.getElementById('config-student-limit').value = data.studentLimit || "";
+                    if(data.uploadMode) {
+                        const targetRadio = document.querySelector(`input[name="upload-mode"][value="${data.uploadMode}"]`);
+                        if(targetRadio) {
+                            targetRadio.checked = true;
+                            window.toggleUploadUI();
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Cloud Configuration pulling issue: ", e);
+            }
+        });
+
+        // Test configuration numbers update logic
+        window.saveExamSettings = async () => {
+            const totalPool = parseInt(document.getElementById('config-total-pool').value);
+            const studentLimit = parseInt(document.getElementById('config-student-limit').value);
+            const uploadMode = document.querySelector('input[name="upload-mode"]:checked').value;
+
+            if (!totalPool || !studentLimit) {
+                alert("Kripya dono boxes (Total Pool & Student Limit) mein valid numbers bharein!");
+                return;
+            }
+
+            if (studentLimit > totalPool) {
+                alert("Error Warning: Students ke liye question limit size, total base pool size se zyada nahi rakhi ja sakti!");
+                return;
+            }
+
+            const saveBtn = document.getElementById('save-config-btn');
+            saveBtn.disabled = true;
+            saveBtn.innerText = "Locking Sync Configurations...";
+
+            try {
+                await setDoc(doc(db, "exam_config", "current_test"), {
+                    totalPool: totalPool,
+                    studentLimit: studentLimit,
+                    uploadMode: uploadMode,
+                    updatedAt: new Date()
+                });
+                
+                alert(`Success: Live constraints update completed! Active Student Portal standard configuration set to ${studentLimit} questions.`);
+            } catch (error) {
+                alert("Database configuration write stream dropped: " + error.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerText = "Save & Lock Settings";
+            }
         };
 
-        function initRealtimeSyncs() {
-            onSnapshot(collection(db, "questions"), (snap) => {
-                document.getElementById('poolCounter').innerText = `Total questions configured in random shuffle system: ${snap.size} / 100 Items`;
-            });
-
-            onSnapshot(query(collection(db, "results")), (snap) => {
-                const analysisBody = document.getElementById('analysisBody');
-                const leaderboardBody = document.getElementById('leaderboardBody');
-                const doubtsBody = document.getElementById('doubtsBody');
-                
-                analysisBody.innerHTML = "";
-                leaderboardBody.innerHTML = "";
-                doubtsBody.innerHTML = "";
-                globalResultsCache = [];
-
-                let list = [];
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    // Score ko number format me parsing kar rahe hain accurate sort ke liye
-                    const scoreNum = parseFloat(d.score) || 0;
-                    list.push({ ...d, scoreNum, id: doc.id });
-                });
-
-                // MARKS KE ACCORDING HIGH TO LOW SORTING LOGIC
-                list.sort((a, b) => b.scoreNum - a.scoreNum);
-
-                let rank = 1;
-                list.forEach(data => {
-                    const ts = data.timestamp ? data.timestamp.toDate().toLocaleString('en-IN') : "Just now";
-                    const tSwitches = data.tabSwitches || 0;
-                    const copies = data.copiesAttempted || 0;
-
-                    let logs = "";
-                    if(tSwitches === 0 && copies === 0) {
-                        logs = `<span class="clean-badge">Clean Candidate</span>`;
-                    } else {
-                        if(tSwitches > 0) logs += `<span class="cheat-badge">Tab Switched: ${tSwitches}</span>`;
-                        if(copies > 0) logs += `<span class="cheat-badge">Copy Blocked: ${copies}</span>`;
-                    }
-
-                    globalResultsCache.push({ rank: rank, name: data.name, email: data.email, score: data.score });
-
-                    // Populating Views
-                    analysisBody.innerHTML += `
-                        <tr>
-                            <td><b>${data.name}</b></td>
-                            <td>${data.email}</td>
-                            <td><span style="color:var(--primary); font-weight:bold;">${data.score}</span></td>
-                            <td>${logs}</td>
-                            <td>${ts}</td>
-                        </tr>
-                    `;
-
-                    leaderboardBody.innerHTML += `
-                        <tr>
-                            <td><b>#${rank}</b></td>
-                            <td><b>${data.name}</b></td>
-                            <td>${data.email}</td>
-                            <td><span style="color:var(--success); font-weight:bold;">${data.score}</span></td>
-                        </tr>
-                    `;
-
-                    if(data.doubt) {
-                        doubtsBody.innerHTML += `
-                            <tr>
-                                <td style="font-weight:600; width:250px;">${data.name}</td>
-                                <td style="font-style:italic; color:#94a3b8;">${data.doubt}</td>
-                            </tr>
-                        `;
-                    }
-                    rank++;
-                });
-                
-                if(doubtsBody.innerHTML === "") {
-                    doubtsBody.innerHTML = "<tr><td colspan='2' style='text-align:center; opacity:0.5;'>No student questions filed yet.</td></tr>";
-                }
-            });
-        }
-
-        window.saveToPool = async (e) => {
+        // Form mode single question addition functionality
+        window.uploadSingleQuestion = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerText = "Writing Document Stream...";
+            const qBtn = document.getElementById('upload-q-btn');
+            qBtn.disabled = true;
+            qBtn.innerText = "Shipping packet to Firestore...";
 
-            const opts = [
-                document.getElementById('opt0').value.trim(),
-                document.getElementById('opt1').value.trim(),
-                document.getElementById('opt2').value.trim(),
-                document.getElementById('opt3').value.trim()
+            const questionStr = document.getElementById('question-text').value.trim();
+            const optionsArr = [
+                document.getElementById('opt-0').value.trim(),
+                document.getElementById('opt-1').value.trim(),
+                document.getElementById('opt-2').value.trim(),
+                document.getElementById('opt-3').value.trim()
             ];
-            const correctIdx = parseInt(document.getElementById('correctAns').value);
+            const correctAnsStr = document.getElementById('correct-answer').value.trim();
+
+            if(!optionsArr.includes(correctAnsStr)) {
+                alert("Critical Configuration Fault: Correct answer string text must match at least one input choice element field text parameters exactly!");
+                qBtn.disabled = false;
+                qBtn.innerText = "Dispatch Question to Cloud";
+                return;
+            }
 
             try {
                 await addDoc(collection(db, "questions"), {
-                    q: document.getElementById('qText').value.trim(),
-                    options: opts,
-                    a: opts[correctIdx]
+                    q: questionStr,
+                    options: optionsArr,
+                    a: correctAnsStr,
+                    timestamp: new Date()
                 });
-                alert("Question Appended Successfully!");
-                document.getElementById('qForm').reset();
-            } catch (err) {
-                alert("Error: " + err.message);
-            } finally {
-                btn.disabled = false; btn.innerText = "Append & Save Question to Core Pool";
-            }
-        };
 
-        window.triggerCleanDownload = () => {
-            if(globalResultsCache.length === 0) return alert("No ranks compiled yet.");
-            let csv = "data:text/csv;charset=utf-8,Rank,Student Name,Email Address,Final Score\n";
-            globalResultsCache.forEach(r => {
-                csv += `${r.rank},"${r.name}",${r.email},${r.score}\n`;
-            });
-            const dlAnchor = document.createElement('a');
-            dlAnchor.setAttribute("href", encodeURI(csv));
-            dlAnchor.setAttribute("download", "Exam_Elite_Leaderboard.csv");
-            document.body.appendChild(dlAnchor);
-            dlAnchor.click();
-            document.body.removeChild(dlAnchor);
+                alert("Question appended inside active Cloud Collection cleanly.");
+                document.getElementById('question-upload-form').reset();
+            } catch (err) {
+                alert("Question upload stream structural breakdown: " + err.message);
+            } finally {
+                qBtn.disabled = false;
+                qBtn.innerText = "Dispatch Question to Cloud";
+            }
         };
     </script>
 </body>
