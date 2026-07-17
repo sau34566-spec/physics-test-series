@@ -5,20 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Physics Elite</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #6366f1; --accent: #f43f5e; --bg: #030712; --card: rgba(17, 24, 39, 0.8); --text: #f9fafb; }
+        :root { --primary: #6366f1; --accent: #f43f5e; --success: #10b981; --bg: #030712; --card: rgba(17, 24, 39, 0.8); --text: #f9fafb; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); padding: 40px; margin: 0; }
         .container { max-width: 1200px; margin: 0 auto; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        h1 { font-size: 1.8rem; background: linear-gradient(to right, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h1 { font-size: 1.8rem; background: linear-gradient(to right, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
         
-        .controls { display: flex; gap: 15px; }
-        .btn { padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .grid-layout { display: grid; grid-template-columns: 1fr; gap: 30px; margin-bottom: 30px; }
+        @media(min-width: 900px) { .grid-layout { grid-template-columns: 400px 1fr; } }
+
+        .controls { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; }
         .btn-refresh { background: var(--primary); color: white; }
+        .btn-download { background: var(--success); color: white; }
         .btn-wipe { background: rgba(244, 63, 94, 0.1); color: var(--accent); border: 1px solid var(--accent); }
         .btn:hover { transform: translateY(-2px); opacity: 0.9; }
 
-        .table-container { background: var(--card); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
+        /* Form Styling */
+        .form-card { background: var(--card); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); padding: 25px; }
+        .form-card h2 { font-size: 1.3rem; margin-top: 0; margin-bottom: 20px; color: var(--primary); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 6px; color: #94a3b8; }
+        input[type="text"], select { width: 100%; padding: 10px 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.2); color: white; border-radius: 8px; font-size: 0.95rem; outline: none; box-sizing: border-box; }
+        input:focus, select:focus { border-color: var(--primary); }
+        .btn-submit { background: var(--primary); color: white; width: 100%; justify-content: center; margin-top: 10px; }
+
+        /* Table Styling */
+        .table-container { background: var(--card); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; height: fit-content; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { background: rgba(255,255,255,0.05); padding: 15px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); }
         td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
@@ -33,35 +48,79 @@
         <div class="header">
             <div>
                 <h1>Admin Panel</h1>
-                <p style="opacity: 0.6; font-size: 0.9rem;">Real-time Student Performance Tracking</p>
+                <p style="opacity: 0.6; font-size: 0.9rem; margin: 5px 0 0 0;">Real-time Question Management & Student Analytics</p>
             </div>
             <div class="controls">
-                <button class="btn btn-refresh" onclick="refreshData()">Refresh Real-time</button>
-                <button class="btn btn-wipe" onclick="wipeRecords()">Wipe All Records</button>
+                <button class="btn btn-refresh" onclick="refreshData()"><i class="fa-solid fa-sync"></i> Refresh</button>
+                <button class="btn btn-download" onclick="downloadLeaderboard()"><i class="fa-solid fa-file-excel"></i> Download Leaderboard</button>
+                <button class="btn btn-wipe" onclick="wipeRecords()"><i class="fa-solid fa-trash-can"></i> Wipe Records</button>
             </div>
         </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Student Name</th>
-                        <th>Email</th>
-                        <th>Score</th>
-                        <th>Doubt / Query</th>
-                        <th>Submission Date</th>
-                    </tr>
-                </thead>
-                <tbody id="results-body">
-                    <tr><td colspan="5" style="text-align:center;">Initializing connection...</td></tr>
-                </tbody>
-            </table>
+        <div class="grid-layout">
+            <!-- ================= QUESTION UPLOADER FORM ================= -->
+            <div class="form-card">
+                <h2><i class="fa-solid fa-cloud-arrow-up"></i> Upload New Question</h2>
+                <form id="question-form" onsubmit="uploadQuestion(event)">
+                    <div class="form-group">
+                        <label>Question Statement</label>
+                        <input type="text" id="q-text" placeholder="e.g., What is the SI unit of power?" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Option A</label>
+                        <input type="text" id="opt-0" placeholder="Option A" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Option B</label>
+                        <input type="text" id="opt-1" placeholder="Option B" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Option C</label>
+                        <input type="text" id="opt-2" placeholder="Option C" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Option D</label>
+                        <input type="text" id="opt-3" placeholder="Option D" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Correct Answer Selection</label>
+                        <select id="correct-ans" required>
+                            <option value="" disabled selected>Select Sahi Option</option>
+                            <option value="0">Option A</option>
+                            <option value="1">Option B</option>
+                            <option value="2">Option C</option>
+                            <option value="3">Option D</option>
+                        </select>
+                    </div>
+                    <button type="submit" id="btn-upload" class="btn btn-submit">
+                        <i class="fa-solid fa-plus"></i> Save Question to DB
+                    </button>
+                </form>
+            </div>
+
+            <!-- ================= LEADERBOARD REALTIME TABLE ================= -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Email</th>
+                            <th>Score</th>
+                            <th>Doubt / Query</th>
+                            <th>Submission Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-body">
+                        <tr><td colspan="5" style="text-align:center;">Initializing connection...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, collection, query, getDocs, deleteDoc, doc, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+        import { getFirestore, collection, query, addDoc, getDocs, deleteDoc, doc, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -74,14 +133,16 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        let leaderboardData = []; // CSV extraction storage cache global object
 
-        // REAL-TIME REFRESH LOGIC (onSnapshot automatically updates the UI)
+        // REAL-TIME REFRESH LOGIC
         function listenToResults() {
             const q = query(collection(db, "results"), orderBy("timestamp", "desc"));
             
             onSnapshot(q, (snapshot) => {
                 const tableBody = document.getElementById('results-body');
                 tableBody.innerHTML = "";
+                leaderboardData = []; // array refresh
                 
                 if (snapshot.empty) {
                     tableBody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No records found.</td></tr>";
@@ -92,6 +153,15 @@
                     const data = res.data();
                     const date = data.timestamp ? data.timestamp.toDate().toLocaleString('en-IN') : "Just now";
                     
+                    // Saving data array for extraction download triggers
+                    leaderboardData.push({
+                        Name: data.name,
+                        Email: data.email,
+                        Score: data.score,
+                        Doubt: data.doubt || "None",
+                        Date: date
+                    });
+
                     tableBody.innerHTML += `
                         <tr>
                             <td style="font-weight:600;">${data.name}</td>
@@ -105,14 +175,76 @@
             });
         }
 
-        // Manual Refresh Button Logic
+        // 1. QUESTION UPLOAD FUNCTION (Bina coding normal entry process)
+        window.uploadQuestion = async (e) => {
+            e.preventDefault();
+            const uploadBtn = document.getElementById('btn-upload');
+            uploadBtn.disabled = true;
+            uploadBtn.innerText = "Uploading to Database...";
+
+            const questionText = document.getElementById('q-text').value.trim();
+            const optA = document.getElementById('opt-0').value.trim();
+            const optB = document.getElementById('opt-1').value.trim();
+            const optC = document.getElementById('opt-2').value.trim();
+            const optD = document.getElementById('opt-3').value.trim();
+            const correctIndex = parseInt(document.getElementById('correct-ans').value);
+
+            const optionsArray = [optA, optB, optC, optD];
+            const correctStringAnswer = optionsArray[correctIndex]; // Direct text map matching
+
+            try {
+                // 'questions' collection mein data submit ho raha hai
+                await addDoc(collection(db, "questions"), {
+                    q: questionText,
+                    options: optionsArray,
+                    a: correctStringAnswer,
+                    timestamp: serverTimestamp()
+                });
+
+                alert("Question Successfully Uploaded!");
+                document.getElementById('question-form').reset();
+            } catch (err) {
+                alert("Database insertion stream error: " + err.message);
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.innerText = "Save Question to DB";
+            }
+        };
+
+        // 2. DOWNLOAD LEADERBOARD AS EXCEL-CSV SCRIPT
+        window.downloadLeaderboard = () => {
+            if(leaderboardData.length === 0) {
+                alert("No records to export yet.");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            // Header Row
+            csvContent += "Student Name,Email,Score,Doubt / Query,Submission Date\n";
+            
+            // Loop through cache
+            leaderboardData.forEach(row => {
+                // Double quotes wrap string sanitization to escape inner commas breakage
+                const escapedName = `"${row.Name.replace(/"/g, '""')}"`;
+                const escapedDoubt = `"${row.Doubt.replace(/"/g, '""')}"`;
+                csvContent += `${escapedName},${row.Email},${row.Score},${escapedDoubt},${row.Date}\n`;
+            });
+
+            // Browser virtual direct download processing
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Exam_Elite_Leaderboard_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // Manual Refresh Visual Action
         window.refreshData = () => {
             const btn = document.querySelector('.btn-refresh');
-            btn.innerText = "Syncing...";
-            setTimeout(() => { 
-                btn.innerText = "Refresh Real-time"; 
-                // onSnapshot handles the data, so we just give visual feedback
-            }, 1000);
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Syncing...";
+            setTimeout(() => { btn.innerHTML = "<i class='fa-solid fa-sync'></i> Refresh Real-time"; }, 1000);
         };
 
         // Wipe Records Logic
@@ -125,7 +257,7 @@
             alert("Database cleared.");
         };
 
-        // Start listening when page loads
+        // Initialize listener
         listenToResults();
     </script>
 </body>
