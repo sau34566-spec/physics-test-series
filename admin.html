@@ -16,7 +16,7 @@
 
         let allStudentResults = [];
 
-        // SLIDE SWITCHER ENGINE LOGIC
+        // SLIDE SWITCHER ENGINE LOGIC (Fixed event crash)
         window.switchSlide = function(slideNumber) {
             document.querySelectorAll('.admin-slide-content').forEach(slide => slide.classList.remove('active'));
             document.querySelectorAll('.slide-tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -24,8 +24,10 @@
             const targetSlide = document.getElementById(`slide-${slideNumber}-content`);
             if (targetSlide) targetSlide.classList.add('active');
             
-            if (window.event && window.event.currentTarget) {
-                window.event.currentTarget.classList.add('active');
+            // Module compatible active tab highlights
+            const tabButtons = document.querySelectorAll('.slide-tab-btn');
+            if (tabButtons[slideNumber - 1]) {
+                tabButtons[slideNumber - 1].classList.add('active');
             }
         };
 
@@ -151,6 +153,8 @@
             const analyticsBody = document.getElementById('analytics-table-body');
             const leaderboardBody = document.getElementById('leaderboard-table-body');
 
+            if (!analyticsBody || !leaderboardBody) return;
+
             onSnapshot(collection(db, "results"), (snap) => {
                 allStudentResults = [];
 
@@ -164,7 +168,7 @@
                         absoluteScore = r.score;
                     }
 
-                    // Epoch fallback parsing for missing timestamps
+                    // Handles submission time correctly
                     let submissionTime = new Date(0); 
                     if (r.timestamp) {
                         if (typeof r.timestamp.toDate === 'function') {
