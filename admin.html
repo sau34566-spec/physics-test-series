@@ -17,16 +17,23 @@
         let allStudentResults = [];
 
         // SLIDE SWITCHER ENGINE LOGIC
-        window.switchSlide = (slideNumber) => {
+        window.switchSlide = function(slideNumber) {
             document.querySelectorAll('.admin-slide-content').forEach(slide => slide.classList.remove('active'));
             document.querySelectorAll('.slide-tab-btn').forEach(btn => btn.classList.remove('active'));
 
-            document.getElementById(`slide-${slideNumber}-content`).classList.add('active');
-            if (event) event.currentTarget.classList.add('active');
+            const targetSlide = document.getElementById(`slide-${slideNumber}-content`);
+            if (targetSlide) targetSlide.classList.add('active');
+            
+            if (window.event && window.event.currentTarget) {
+                window.event.currentTarget.classList.add('active');
+            }
         };
 
-        window.toggleUploadUI = () => {
-            const currentMode = document.querySelector('input[name="upload-mode"]:checked').value;
+        window.toggleUploadUI = function() {
+            const selectedRadio = document.querySelector('input[name="upload-mode"]:checked');
+            if (!selectedRadio) return;
+            
+            const currentMode = selectedRadio.value;
             document.getElementById('mode-form-view').style.display = 'none';
             document.getElementById('mode-code-view').style.display = 'none';
             document.getElementById('mode-msword-view').style.display = 'none';
@@ -36,11 +43,7 @@
             else if(currentMode === 'msword') document.getElementById('mode-msword-view').style.display = 'block';
         };
 
-        window.addEventListener('DOMContentLoaded', async () => {
-            await loadExamSettings();
-            listenToLiveDatabaseRecords(); // Switched to active real-time tracking
-        });
-
+        // LOAD SETTINGS
         async function loadExamSettings() {
             try {
                 const docRef = doc(db, "exam_config", "current_test");
@@ -58,14 +61,20 @@
                     }
                 }
             } catch (e) {
-                console.error("Configuration error: ", e);
+                console.error("Configuration loading error: ", e);
             }
         }
 
-        window.saveExamSettings = async () => {
-            const totalPool = parseInt(document.getElementById('config-total-pool').value, 10);
-            const studentLimit = parseInt(document.getElementById('config-student-limit').value, 10);
-            const uploadMode = document.querySelector('input[name="upload-mode"]:checked').value;
+        // SAVE CONFIGURATIONS
+        window.saveExamSettings = async function() {
+            const totalPoolInput = document.getElementById('config-total-pool').value;
+            const studentLimitInput = document.getElementById('config-student-limit').value;
+            
+            const totalPool = parseInt(totalPoolInput, 10);
+            const studentLimit = parseInt(studentLimitInput, 10);
+            
+            const selectedRadio = document.querySelector('input[name="upload-mode"]:checked');
+            const uploadMode = selectedRadio ? selectedRadio.value : 'form';
 
             if (isNaN(totalPool) || isNaN(studentLimit)) {
                 alert("Please fill both input boxes with valid numbers.");
@@ -87,7 +96,7 @@
                     uploadMode: uploadMode,
                     updatedAt: new Date()
                 });
-                alert("Success: Configuration saved securely. Make sure your student exam page is built to slice questions array by studentLimit variable fetched from this collection.");
+                alert("Success: Configuration saved securely to database.");
             } catch (error) {
                 alert("Database save failed: " + error.message);
             } finally {
@@ -96,8 +105,10 @@
             }
         };
 
-        window.uploadSingleQuestion = async (e) => {
-            e.preventDefault();
+        // UPLOAD SINGLE QUESTION
+        window.uploadSingleQuestion = async function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            
             const qBtn = document.getElementById('upload-q-btn');
             qBtn.disabled = true;
             qBtn.innerText = "Uploading data...";
@@ -135,43 +146,51 @@
             }
         };
 
-        // LISTEN TO ALL RECORDS IN REAL-TIME WITH DYNAMIC ORDERING
+        // REAL-TIME SECURITY AND LEADERBOARD DATA STREAM
         function listenToLiveDatabaseRecords() {
             const analyticsBody = document.getElementById('analytics-table-body');
             const leaderboardBody = document.getElementById('leaderboard-table-body');
 
-            // Using onSnapshot for immediate display when database alters
             onSnapshot(collection(db, "results"), (snap) => {
                 allStudentResults = [];
 
-                snap.forEach((doc) => {
-                    const r = doc.data();
+                snap.forEach((docItem) => {
+                    const r = docItem.data();
                     let absoluteScore = 0;
+                    
                     if (r.score && typeof r.score === 'string') {
                         absoluteScore = parseFloat(r.score.split('/')[0]) || 0;
                     } else if (typeof r.score === 'number') {
                         absoluteScore = r.score;
                     }
 
-                    // Handling system fallback fields safely
+                    // Epoch fallback parsing for missing timestamps
+                    let submissionTime = new Date(0); 
+                    if (r.timestamp) {
+                        if (typeof r.timestamp.toDate === 'function') {
+                            submissionTime = r.timestamp.toDate();
+                        } else {
+                            submissionTime = new Date(r.timestamp);
+                        }
+                    }
+
                     allStudentResults.push({
-                        id: doc.id,
+                        id: docItem.id,
                         name: r.name || "Anonymous",
                         email: r.email || "No Email",
                         scoreText: r.score || "0/0",
                         scoreVal: absoluteScore,
-                        tabSwitches: parseInt(r.tabSwitches) >= 0 ? parseInt(r.tabSwitches) : 0,
-                        copiesAttempted: parseInt(r.copiesAttempted) >= 0 ? parseInt(r.copiesAttempted) : 0,
-                        refreshes: parseInt(r.refreshes) >= 0 ? parseInt(r.refreshes) : 0,
+                        tabSwitches: typeof r.tabSwitches !== 'undefined' ? parseInt(r.tabSwitches, 10) : 0,
+                        copiesAttempted: typeof r.copiesAttempted !== 'undefined' ? parseInt(r.copiesAttempted, 10) : 0,
+                        refreshes: typeof r.refreshes !== 'undefined' ? parseInt(r.refreshes, 10) : 0,
                         feedback: r.feedback || "None",
                         rating: r.rating || 0,
                         doubt: r.doubt || "None",
-                        timestamp: r.timestamp ? r.timestamp.toDate() : new Date(0) // dynamic submit date sorting fallback
+                        timestamp: submissionTime
                     });
                 });
 
-                // --- 1. Render Slide 2: Security & Live Analytics Track (Latest submission on top) ---
-                // Sorting by submission date descending (b.timestamp - a.timestamp)
+                // 1. Render Live Analytics Panel (Sorted by Last Submitted -> Top)
                 const securitySorted = [...allStudentResults].sort((a, b) => b.timestamp - a.timestamp);
                 
                 analyticsBody.innerHTML = '';
@@ -191,8 +210,9 @@
                     });
                 }
 
-                // --- 2. Render Slide 3: Leaderboard (Sorted by highest marks descending) ---
+                // 2. Render Leaderboard Panel (Sorted by Highest Score)
                 const leaderboardSorted = [...allStudentResults].sort((a, b) => b.scoreVal - a.scoreVal);
+                
                 leaderboardBody.innerHTML = '';
                 if(leaderboardSorted.length === 0) {
                     leaderboardBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No logs registered inside the leaderboard.</td></tr>`;
@@ -215,14 +235,14 @@
                     });
                 }
             }, (err) => {
-                console.error("Live streaming failed: ", err);
+                console.error("Live listener connection failed: ", err);
                 analyticsBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--danger);">Failed to sync live datasets.</td></tr>`;
                 leaderboardBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--danger);">Failed to load leaderboard datasets.</td></tr>`;
             });
         }
 
-        // Export data matrix to Excel format (CSV spreadsheet)
-        window.downloadResultsCSV = () => {
+        // CSV GENERATION
+        window.downloadResultsCSV = function() {
             if(allStudentResults.length === 0) {
                 alert("No student data rows available to generate CSV spreadsheet reports.");
                 return;
@@ -231,7 +251,6 @@
             let csvContent = "data:text/csv;charset=utf-8,";
             csvContent += "Rank,Student Name,Email,Score,Tab Switches,Copy Violations,Page Refreshes,Doubt Asked,Feedback,Rating Stars\n";
 
-            // Leaderboard style sort for excel downloads
             const exportData = [...allStudentResults].sort((a, b) => b.scoreVal - a.scoreVal);
 
             exportData.forEach((r, idx) => {
@@ -250,7 +269,8 @@
             document.body.removeChild(element);
         };
 
-        window.clearAllResults = async () => {
+        // PURGE LOGS
+        window.clearAllResults = async function() {
             if(!confirm("Are you entirely sure you want to permanently delete all student submission records? This cannot be undone!")) return;
             
             const clearBtn = document.getElementById('clear-results-btn');
@@ -272,4 +292,10 @@
                 clearBtn.innerText = "Clear All Database Results";
             }
         };
+
+        // INITIALIZATION CALL
+        window.addEventListener('DOMContentLoaded', () => {
+            loadExamSettings();
+            listenToLiveDatabaseRecords();
+        });
     </script>
