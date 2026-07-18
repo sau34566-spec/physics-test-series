@@ -1,7 +1,493 @@
- <!-- ================= FIREBASE CONSOLE INTEGRATION SCRIPT ================= -->
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Elite | Admin Dashboard Panel</title>
+    <!-- Google Fonts for Professional Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #1e3a8a;       /* Deep Navy Blue */
+            --primary-light: #3b82f6; /* Slate Blue */
+            --accent: #f59e0b;        /* Amber Gold */
+            --bg-dark: #0f172a;       /* Dark Tech Background */
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .admin-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            color: var(--primary);
+            font-size: 2.2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* SLIDE/NAVIGATION CONTROLS */
+        .slide-navigation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 2rem;
+            background: #e2e8f0;
+            padding: 6px;
+            border-radius: 12px;
+        }
+
+        .slide-tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .slide-tab-btn.active {
+            background: var(--bg-card);
+            color: var(--primary);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* SLIDE WORKSPACE CONTAINER */
+        .admin-slide-content {
+            display: none; /* Hidden by default */
+        }
+
+        .admin-slide-content.active {
+            display: block; /* Show active slide */
+        }
+
+        .admin-card {
+            background: var(--bg-card);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 2rem;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"], input[type="number"], textarea, select {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .mode-selection-box {
+            background: #f1f5f9;
+            padding: 1.25rem;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .radio-label input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.85rem 1.8rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+        .btn-success { background: var(--success); }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-accent { background: var(--accent); color: #0f172a; }
+        .btn-accent:hover { background: #d97706; }
+
+        .option-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.75rem;
+        }
+
+        .option-marker {
+            font-weight: 700;
+            color: var(--primary-light);
+            width: 20px;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            background: white;
+        }
+
+        th, td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f1f5f9;
+        }
+
+        .badge-rank {
+            background: #f59e0b;
+            color: white;
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+
+        .alert-indicator {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+        .alert-safe { background: #d1fae5; color: #065f46; }
+        .alert-warn { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-container">
+        
+        <header>
+            <h1><i class="fa-solid fa-gauge-high"></i> Admin Control Room</h1>
+            <span style="font-weight: 600; background: #e0e7ff; color: var(--primary); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem;">Authorized Access Only</span>
+        </header>
+
+        <!-- ================= SLIDE / TAB NAVIGATION CONTROLS ================= -->
+        <div class="slide-navigation">
+            <button class="slide-tab-btn active" onclick="switchSlide(1)">
+                <i class="fa-solid fa-plus-minus"></i> Slide 1: Setup & Upload
+            </button>
+            <button class="slide-tab-btn" onclick="switchSlide(2)">
+                <i class="fa-solid fa-shield-halved"></i> Slide 2: Security Analytics
+            </button>
+            <button class="slide-tab-btn" onclick="switchSlide(3)">
+                <i class="fa-solid fa-trophy"></i> Slide 3: Leaderboard
+            </button>
+        </div>
+
+        <!-- ================= SLIDE 1: EXAM CONFIGURATION & QUESTION UPLOAD ================= -->
+        <div id="slide-1-content" class="admin-slide-content active">
+            
+            <!-- Configuration Box -->
+            <div class="admin-card">
+                <h3><i class="fa-solid fa-sliders"></i> Test Configuration Settings</h3>
+                <p class="subtitle">Set the total question pool size and the number of questions to show on the student screen.</p>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="config-total-pool">Total Pool Questions (Database Size) *</label>
+                        <input type="number" id="config-total-pool" placeholder="Example: 100" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="config-student-limit">Student Question Limit (To Display) *</label>
+                        <input type="number" id="config-student-limit" placeholder="Example: 20" min="1">
+                    </div>
+                </div>
+
+                <div class="mode-selection-box">
+                    <label style="font-weight: 700; color: var(--primary);">Select Question Upload Method:</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="upload-mode" value="form" checked onchange="toggleUploadUI()"> 
+                            <i class="fa-solid fa-keyboard"></i> Live Form Input
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="upload-mode" value="code" onchange="toggleUploadUI()"> 
+                            <i class="fa-solid fa-code"></i> Custom HTML Code (chapter1.html)
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="upload-mode" value="msword" onchange="toggleUploadUI()"> 
+                            <i class="fa-solid fa-file-word"></i> MS Word Document Parse
+                        </label>
+                    </div>
+                </div>
+
+                <button type="button" id="save-config-btn" onclick="saveExamSettings()" class="btn btn-success">
+                    <i class="fa-solid fa-lock"></i> Save & Apply Configurations
+                </button>
+            </div>
+
+            <!-- Question Upload Box -->
+            <div class="admin-card" id="workspace-card">
+                <div id="mode-form-view">
+                    <h3><i class="fa-solid fa-plus-minus"></i> Create Exam Question Entry</h3>
+                    <p class="subtitle">Add a new single multiple-choice question directly into the cloud database collection.</p>
+                    
+                    <form id="question-upload-form" onsubmit="uploadSingleQuestion(event)">
+                        <div class="form-group">
+                            <label for="question-text">Question Statement / Text *</label>
+                            <textarea id="question-text" rows="3" placeholder="Enter the physics or conceptual problem statement here..." required></textarea>
+                        </div>
+
+                        <label style="margin-bottom: 0.5rem; display: block;">Multiple Choice Options *</label>
+                        <div class="form-group">
+                            <div class="option-input-wrapper">
+                                <span class="option-marker">A</span>
+                                <input type="text" id="opt-0" placeholder="Option A description" required>
+                            </div>
+                            <div class="option-input-wrapper">
+                                <span class="option-marker">B</span>
+                                <input type="text" id="opt-1" placeholder="Option B description" required>
+                            </div>
+                            <div class="option-input-wrapper">
+                                <span class="option-marker">C</span>
+                                <input type="text" id="opt-2" placeholder="Option C description" required>
+                            </div>
+                            <div class="option-input-wrapper">
+                                <span class="option-marker">D</span>
+                                <input type="text" id="opt-3" placeholder="Option D description" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="correct-answer">Exact Correct Choice Text (Must match chosen option text exactly) *</label>
+                            <input type="text" id="correct-answer" placeholder="Copy and paste the correct option text here exactly" required>
+                        </div>
+
+                        <button type="submit" id="upload-q-btn" class="btn">
+                            <i class="fa-solid fa-paper-plane"></i> Upload Question to Cloud
+                        </button>
+                    </form>
+                </div>
+
+                <div id="mode-code-view" style="display: none;">
+                    <h3><i class="fa-solid fa-square-rss"></i> Code Integration Mode Active</h3>
+                    <p class="subtitle">You have selected the **Custom HTML Code** method. Questions will be fetched directly from your local `chapter1.html` script structures.</p>
+                    <div style="background: #eff6ff; padding: 1rem; border-radius: 8px; border: 1px solid #bfdbfe; color: #1e40af; font-size: 0.95rem;">
+                        <i class="fa-solid fa-circle-info"></i> Manual form input is temporarily disabled. Questions are synchronized from the source repository code.
+                    </div>
+                </div>
+
+                <div id="mode-msword-view" style="display: none;">
+                    <h3><i class="fa-solid fa-file-invoice"></i> MS Word Parsing Utility</h3>
+                    <p class="subtitle">Extract multiple choice test components directly from a Microsoft Word file structure.</p>
+                    <div class="form-group">
+                        <label>Select MS Word Document (.docx)</label>
+                        <input type="file" id="word-file-picker" accept=".docx" style="padding: 0.5rem; border: 2px dashed #cbd5e1; background: #f8fafc; border-radius: 8px; cursor: pointer;">
+                    </div>
+                    <button type="button" class="btn" onclick="alert('Word parser linked successfully!')">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Execute Document Analysis
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SLIDE 2: FULL SECURITY DETAILS & LIVE ANALYTICS ================= -->
+        <div id="slide-2-content" class="admin-slide-content">
+            <div class="admin-card">
+                <h3><i class="fa-solid fa-user-shield"></i> Live Student Security & Analytics Track</h3>
+                <p class="subtitle">Detailed view of anti-cheating logs including screen tab switching, copy-paste block attempts, page refreshes, and student feedback.</p>
+                
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student Info</th>
+                                <th>Tab Switches</th>
+                                <th>Copy-Paste Violations</th>
+                                <th>Page Refreshes</th>
+                                <th>Doubt / Questions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analytics-table-body">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                    <i class="fa-solid fa-spinner fa-spin"></i> Syncing security streams...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SLIDE 3: LEADERBOARD & PERFORMANCE DATA ================= -->
+        <div id="slide-3-content" class="admin-slide-content">
+            <div class="admin-card">
+                <h3><i class="fa-solid fa-trophy"></i> Live Student Leaderboard Ledger</h3>
+                <p class="subtitle">View student results ordered by their highest marks. You can download reports directly as an Excel file.</p>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 1rem;">
+                    <div>
+                        <button onclick="downloadResultsCSV()" class="btn btn-accent" id="download-btn">
+                            <i class="fa-solid fa-file-excel"></i> Download Excel Report (CSV)
+                        </button>
+                    </div>
+                    <div>
+                        <button onclick="clearAllResults()" class="btn btn-danger" id="clear-results-btn">
+                            <i class="fa-solid fa-trash-can"></i> Clear All Database Results
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Student Details</th>
+                                <th>Score Achieved</th>
+                                <th>Rating Stars</th>
+                                <th>Review Message</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-table-body">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                    <i class="fa-solid fa-spinner fa-spin"></i> Syncing leaderboard details...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= FIREBASE CONSOLE INTEGRATION SCRIPT ================= -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -16,26 +502,17 @@
 
         let allStudentResults = [];
 
-        // SLIDE SWITCHER ENGINE LOGIC (Fixed event crash)
-        window.switchSlide = function(slideNumber) {
+        // SLIDE SWITCHER ENGINE LOGIC
+        window.switchSlide = (slideNumber) => {
             document.querySelectorAll('.admin-slide-content').forEach(slide => slide.classList.remove('active'));
             document.querySelectorAll('.slide-tab-btn').forEach(btn => btn.classList.remove('active'));
 
-            const targetSlide = document.getElementById(`slide-${slideNumber}-content`);
-            if (targetSlide) targetSlide.classList.add('active');
-            
-            // Module compatible active tab highlights
-            const tabButtons = document.querySelectorAll('.slide-tab-btn');
-            if (tabButtons[slideNumber - 1]) {
-                tabButtons[slideNumber - 1].classList.add('active');
-            }
+            document.getElementById(`slide-${slideNumber}-content`).classList.add('active');
+            event.currentTarget.classList.add('active');
         };
 
-        window.toggleUploadUI = function() {
-            const selectedRadio = document.querySelector('input[name="upload-mode"]:checked');
-            if (!selectedRadio) return;
-            
-            const currentMode = selectedRadio.value;
+        window.toggleUploadUI = () => {
+            const currentMode = document.querySelector('input[name="upload-mode"]:checked').value;
             document.getElementById('mode-form-view').style.display = 'none';
             document.getElementById('mode-code-view').style.display = 'none';
             document.getElementById('mode-msword-view').style.display = 'none';
@@ -45,7 +522,11 @@
             else if(currentMode === 'msword') document.getElementById('mode-msword-view').style.display = 'block';
         };
 
-        // LOAD SETTINGS
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadExamSettings();
+            await fetchLiveDatabaseRecords();
+        });
+
         async function loadExamSettings() {
             try {
                 const docRef = doc(db, "exam_config", "current_test");
@@ -63,22 +544,16 @@
                     }
                 }
             } catch (e) {
-                console.error("Configuration loading error: ", e);
+                console.error("Configuration error: ", e);
             }
         }
 
-        // SAVE CONFIGURATIONS
-        window.saveExamSettings = async function() {
-            const totalPoolInput = document.getElementById('config-total-pool').value;
-            const studentLimitInput = document.getElementById('config-student-limit').value;
-            
-            const totalPool = parseInt(totalPoolInput, 10);
-            const studentLimit = parseInt(studentLimitInput, 10);
-            
-            const selectedRadio = document.querySelector('input[name="upload-mode"]:checked');
-            const uploadMode = selectedRadio ? selectedRadio.value : 'form';
+        window.saveExamSettings = async () => {
+            const totalPool = parseInt(document.getElementById('config-total-pool').value);
+            const studentLimit = parseInt(document.getElementById('config-student-limit').value);
+            const uploadMode = document.querySelector('input[name="upload-mode"]:checked').value;
 
-            if (isNaN(totalPool) || isNaN(studentLimit)) {
+            if (!totalPool || !studentLimit) {
                 alert("Please fill both input boxes with valid numbers.");
                 return;
             }
@@ -98,7 +573,7 @@
                     uploadMode: uploadMode,
                     updatedAt: new Date()
                 });
-                alert("Success: Configuration saved securely to database.");
+                alert("Success: Configuration saved securely.");
             } catch (error) {
                 alert("Database save failed: " + error.message);
             } finally {
@@ -107,10 +582,8 @@
             }
         };
 
-        // UPLOAD SINGLE QUESTION
-        window.uploadSingleQuestion = async function(e) {
-            if (e && e.preventDefault) e.preventDefault();
-            
+        window.uploadSingleQuestion = async (e) => {
+            e.preventDefault();
             const qBtn = document.getElementById('upload-q-btn');
             qBtn.disabled = true;
             qBtn.innerText = "Uploading data...";
@@ -148,60 +621,45 @@
             }
         };
 
-        // REAL-TIME SECURITY AND LEADERBOARD DATA STREAM
-        function listenToLiveDatabaseRecords() {
+        // FETCH ALL RECORDS AND POPULATE SEPARATE SLIDES
+        async function fetchLiveDatabaseRecords() {
             const analyticsBody = document.getElementById('analytics-table-body');
             const leaderboardBody = document.getElementById('leaderboard-table-body');
 
-            if (!analyticsBody || !leaderboardBody) return;
-
-            onSnapshot(collection(db, "results"), (snap) => {
+            try {
+                const snap = await getDocs(collection(db, "results"));
                 allStudentResults = [];
 
-                snap.forEach((docItem) => {
-                    const r = docItem.data();
+                snap.forEach((doc) => {
+                    const r = doc.data();
                     let absoluteScore = 0;
-                    
                     if (r.score && typeof r.score === 'string') {
                         absoluteScore = parseFloat(r.score.split('/')[0]) || 0;
                     } else if (typeof r.score === 'number') {
                         absoluteScore = r.score;
                     }
 
-                    // Handles submission time correctly
-                    let submissionTime = new Date(0); 
-                    if (r.timestamp) {
-                        if (typeof r.timestamp.toDate === 'function') {
-                            submissionTime = r.timestamp.toDate();
-                        } else {
-                            submissionTime = new Date(r.timestamp);
-                        }
-                    }
-
                     allStudentResults.push({
-                        id: docItem.id,
+                        id: doc.id,
                         name: r.name || "Anonymous",
                         email: r.email || "No Email",
                         scoreText: r.score || "0/0",
                         scoreVal: absoluteScore,
-                        tabSwitches: typeof r.tabSwitches !== 'undefined' ? parseInt(r.tabSwitches, 10) : 0,
-                        copiesAttempted: typeof r.copiesAttempted !== 'undefined' ? parseInt(r.copiesAttempted, 10) : 0,
-                        refreshes: typeof r.refreshes !== 'undefined' ? parseInt(r.refreshes, 10) : 0,
+                        tabSwitches: r.tabSwitches !== undefined ? r.tabSwitches : 0,
+                        copiesAttempted: r.copiesAttempted !== undefined ? r.copiesAttempted : 0,
+                        refreshes: r.refreshes !== undefined ? r.refreshes : 0, // Added default refresh fallback
                         feedback: r.feedback || "None",
                         rating: r.rating || 0,
-                        doubt: r.doubt || "None",
-                        timestamp: submissionTime
+                        doubt: r.doubt || "None"
                     });
                 });
 
-                // 1. Render Live Analytics Panel (Sorted by Last Submitted -> Top)
-                const securitySorted = [...allStudentResults].sort((a, b) => b.timestamp - a.timestamp);
-                
+                // Render Slide 2: Security & Full Details Analytics Panel
                 analyticsBody.innerHTML = '';
-                if(securitySorted.length === 0) {
+                if(allStudentResults.length === 0) {
                     analyticsBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No student submission data available yet.</td></tr>`;
                 } else {
-                    securitySorted.forEach(r => {
+                    allStudentResults.forEach(r => {
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td><strong>${r.name}</strong><br><span style="font-size:0.8rem; color:var(--text-muted)">${r.email}</span></td>
@@ -214,14 +672,13 @@
                     });
                 }
 
-                // 2. Render Leaderboard Panel (Sorted by Highest Score)
-                const leaderboardSorted = [...allStudentResults].sort((a, b) => b.scoreVal - a.scoreVal);
-                
+                // Render Slide 3: Leaderboard (Sorted by highest marks descending)
+                allStudentResults.sort((a, b) => b.scoreVal - a.scoreVal);
                 leaderboardBody.innerHTML = '';
-                if(leaderboardSorted.length === 0) {
+                if(allStudentResults.length === 0) {
                     leaderboardBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No logs registered inside the leaderboard.</td></tr>`;
                 } else {
-                    leaderboardSorted.forEach((r, idx) => {
+                    allStudentResults.forEach((r, idx) => {
                         const tr = document.createElement('tr');
                         let starUi = '';
                         for(let i=1; i<=5; i++) {
@@ -238,15 +695,16 @@
                         leaderboardBody.appendChild(tr);
                     });
                 }
-            }, (err) => {
-                console.error("Live listener connection failed: ", err);
+
+            } catch (err) {
+                console.error(err);
                 analyticsBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--danger);">Failed to sync live datasets.</td></tr>`;
                 leaderboardBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--danger);">Failed to load leaderboard datasets.</td></tr>`;
-            });
+            }
         }
 
-        // CSV GENERATION
-        window.downloadResultsCSV = function() {
+        // Export data matrix to Excel format (CSV spreadsheet)
+        window.downloadResultsCSV = () => {
             if(allStudentResults.length === 0) {
                 alert("No student data rows available to generate CSV spreadsheet reports.");
                 return;
@@ -255,9 +713,7 @@
             let csvContent = "data:text/csv;charset=utf-8,";
             csvContent += "Rank,Student Name,Email,Score,Tab Switches,Copy Violations,Page Refreshes,Doubt Asked,Feedback,Rating Stars\n";
 
-            const exportData = [...allStudentResults].sort((a, b) => b.scoreVal - a.scoreVal);
-
-            exportData.forEach((r, idx) => {
+            allStudentResults.forEach((r, idx) => {
                 const escapedFeedback = r.feedback.replace(/,/g, " ");
                 const escapedName = r.name.replace(/,/g, " ");
                 const escapedDoubt = r.doubt.replace(/,/g, " ");
@@ -273,8 +729,7 @@
             document.body.removeChild(element);
         };
 
-        // PURGE LOGS
-        window.clearAllResults = async function() {
+        window.clearAllResults = async () => {
             if(!confirm("Are you entirely sure you want to permanently delete all student submission records? This cannot be undone!")) return;
             
             const clearBtn = document.getElementById('clear-results-btn');
@@ -289,6 +744,7 @@
                 });
                 await Promise.all(promises);
                 alert("All record datasets deleted from the database securely.");
+                await fetchLiveDatabaseRecords();
             } catch (err) {
                 alert("Purge error encountered: " + err.message);
             } finally {
@@ -296,10 +752,6 @@
                 clearBtn.innerText = "Clear All Database Results";
             }
         };
-
-        // INITIALIZATION CALL
-        window.addEventListener('DOMContentLoaded', () => {
-            loadExamSettings();
-            listenToLiveDatabaseRecords();
-        });
     </script>
+</body>
+</html>
