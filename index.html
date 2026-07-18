@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -222,6 +222,37 @@
         .score-card h4 { font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
         .score-card p { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
 
+        /* SECURITY LOGS VISUAL DASHBOARD */
+        .security-logs-board {
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+        .security-logs-board h4 {
+            color: #c53030;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .security-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            text-align: center;
+        }
+        .security-item {
+            background: white;
+            padding: 0.5rem;
+            border-radius: 6px;
+            border: 1px solid #fed7d7;
+        }
+        .security-item span { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+        .security-item b { font-size: 1.1rem; color: #9b2c2c; }
+
         .review-section {
             margin-bottom: 2rem;
             max-height: 350px;
@@ -378,6 +409,25 @@
                 </div>
             </div>
 
+            <!-- SECURITY AUDIT VIEW IN DASHBOARD -->
+            <div class="security-logs-board">
+                <h4><i class="fa-solid fa-shield-halved"></i> Proctored Integrity Audit Logs</h4>
+                <div class="security-grid">
+                    <div class="security-item">
+                        <span>Tab Switches</span>
+                        <b id="log-tab-switches">0</b>
+                    </div>
+                    <div class="security-item">
+                        <span>Copy/Paste Violations</span>
+                        <b id="log-copy-paste">0</b>
+                    </div>
+                    <div class="security-item">
+                        <span>Refresh Interceptions</span>
+                        <b id="log-refresh">0</b>
+                    </div>
+                </div>
+            </div>
+
             <label style="margin-bottom: 0.5rem; display: block;">Detailed Evaluation Ledger</label>
             <div class="review-section" id="review-ledger-container"></div>
 
@@ -450,6 +500,17 @@
         let finalizedScoreString = "0";
         let isExamActive = false; // Security checking toggle tracking variable
 
+        // CHEATING TELEMETRY COUNTERS
+        let countTabSwitches = 0;
+        let countCopyPastes = 0;
+        let countRefreshes = 0;
+        let tabPenaltyMarks = 0;
+
+        // LOCAL STORAGE SYSTEM TO PERSIST REFRESH EVENTS
+        if(localStorage.getItem('activeExamRefreshTracker') && localStorage.getItem('activeExamEmail') === currentStudentEmail) {
+            countRefreshes = parseInt(localStorage.getItem('activeExamRefreshTracker')) || 0;
+        }
+
         // ================= SECURITY SCRIPTS INTEGRATION =================
         
         // 1. Disable Right Click Menu
@@ -459,12 +520,14 @@
         document.addEventListener('copy', (e) => {
             if(isExamActive) {
                 e.preventDefault();
+                countCopyPastes++;
                 alert("Security Warning: Copying test questions/options is strictly disabled!");
             }
         });
         document.addEventListener('paste', (e) => {
             if(isExamActive) {
                 e.preventDefault();
+                countCopyPastes++;
                 alert("Security Warning: Pasting text content inside test terminal is disabled!");
             }
         });
@@ -472,7 +535,19 @@
         // 3. Tab Switching Detection Trigger
         document.addEventListener("visibilitychange", function() {
             if (document.hidden && isExamActive) {
-                alert("CRITICAL WARNING: Tab switching detected! Cheating protection logs have updated. Switching tabs multiple times might lead to automatic script suspension.");
+                countTabSwitches++;
+                
+                if (countTabSwitches === 1) {
+                    tabPenaltyMarks = 1; // Deduct 1 mark logic setup
+                    alert("CRITICAL WARNING: Tab switching detected! 1 Mark has been deducted as a penalty.");
+                } 
+                else if (countTabSwitches >= 2) {
+                    alert("SECURITY VIOLATION: Second tab switch detected. Your exam is being automatically submitted!");
+                    clearInterval(timerInterval);
+                    isExamActive = false;
+                    localStorage.removeItem('activeExamRefreshTracker');
+                    calculateAndShowResults();
+                }
             }
         });
 
@@ -499,6 +574,16 @@
             if (e.key === "PrintScreen") {
                 navigator.clipboard.writeText("");
                 alert("Screenshots are monitored and prohibited!");
+            }
+        });
+
+        // 5. Page Close / Refresh warning lock
+        window.addEventListener('beforeunload', function (e) {
+            if (isExamActive) {
+                let currentCount = parseInt(localStorage.getItem('activeExamRefreshTracker')) || 0;
+                localStorage.setItem('activeExamRefreshTracker', currentCount + 1);
+                e.preventDefault();
+                e.returnValue = 'Warning: Refreshing or shifting tabs will trigger administrative locks.';
             }
         });
 
@@ -541,6 +626,7 @@
 
                 currentStudentName = nameInput;
                 currentStudentEmail = emailInput;
+                localStorage.setItem('activeExamEmail', emailInput);
                 window.changeSlide(2);
             } catch(err) {
                 alert("Network latency error. Please check internet grid connection.");
@@ -624,6 +710,7 @@
             } else {
                 clearInterval(timerInterval);
                 isExamActive = false; // Security rules relaxed during result submission stage
+                localStorage.removeItem('activeExamRefreshTracker');
                 calculateAndShowResults();
             }
         };
@@ -642,14 +729,8 @@
 
             questionsList.forEach((q, idx) => {
                 const selectedIdx = selectedAnswers[idx];
-                
-                // User ne jo text option select kiya hai wo text nikalein
                 const studentSelectionText = selectedIdx !== undefined ? q.options[selectedIdx] : `<span style="color:var(--danger)">Not Attempted</span>`;
-                
-                // JSON file me se correct answer text fetch karein ("q.a" format se)
                 const correctSelectionText = q.a || q.correct || q.ans || 'N/A';
-
-                // Ab direct text to text match hoga, jisse string data validation bilkul accurate ho sake
                 const isCorrect = selectedIdx !== undefined && studentSelectionText === correctSelectionText;
                 
                 if (selectedIdx !== undefined) {
@@ -669,7 +750,13 @@
                 reviewContainer.appendChild(reviewItem);
             });
 
-            let finalMarks = (correctCount * 1) - (wrongCount * 0.25);
+            // Update refresh values if logged inside localStorage
+            if(localStorage.getItem('activeExamRefreshTracker')) {
+                countRefreshes = parseInt(localStorage.getItem('activeExamRefreshTracker')) || 0;
+            }
+
+            // Calculation considering the tab penalty marks (-1)
+            let finalMarks = (correctCount * 1) - (wrongCount * 0.25) - tabPenaltyMarks;
             let totalMaxMarks = questionsList.length * 1;
             finalizedScoreString = `${finalMarks} / ${totalMaxMarks}`;
             let accuracy = totalMaxMarks > 0 ? Math.round((correctCount / questionsList.length) * 100) : 0;
@@ -678,6 +765,11 @@
             document.getElementById('res-accuracy').innerText = `${accuracy}%`;
             document.getElementById('res-correct').innerText = correctCount;
             document.getElementById('res-wrong').innerText = wrongCount;
+
+            // DISPLAY SECURITY LOGS IN THE RESULT SCREEN
+            document.getElementById('log-tab-switches').innerText = countTabSwitches;
+            document.getElementById('log-copy-paste').innerText = countCopyPastes;
+            document.getElementById('log-refresh').innerText = countRefreshes;
 
             window.changeSlide(4);
         }
@@ -712,6 +804,7 @@
             const feedbackText = document.getElementById('feedback-input').value.trim() || "None";
 
             try {
+                // SAVING SCORES ALONG WITH CHEATING LOGS IN FIREBASE
                 await addDoc(collection(db, "results"), {
                     name: currentStudentName,
                     email: currentStudentEmail,
@@ -719,9 +812,13 @@
                     doubt: doubtText,
                     feedback: feedbackText,
                     rating: selectedRating,
+                    tabSwitchesDetected: countTabSwitches,
+                    copyPasteAttempts: countCopyPastes,
+                    pageRefreshesTriggered: countRefreshes,
                     timestamp: serverTimestamp()
                 });
 
+                localStorage.clear();
                 document.getElementById('success-modal').classList.add('show');
                 
                 setTimeout(() => {
@@ -736,4 +833,4 @@
         };
     </script>
 </body>
-</html>
+</html> 
