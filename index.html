@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -103,7 +103,7 @@
 
     .security-logs-board { background: #fff5f5; border: 1px solid #feb2b2; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; }
     .security-logs-board h4 { color: #c53030; font-size: 0.95rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px; }
-    .security-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
+    .security-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; }
     .security-item { background: white; padding: 0.5rem; border-radius: 6px; border: 1px solid #fed7d7; }
     .security-item span { display: block; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
     .security-item b { font-size: 1.1rem; color: #9b2c2c; }
@@ -222,7 +222,6 @@
         <div class="security-grid">
           <div class="security-item"><span>Tab Switches</span><b id="log-tab-switches">0</b></div>
           <div class="security-item"><span>Copy/Paste</span><b id="log-copy-paste">0</b></div>
-          <div class="security-item"><span>Refreshes</span><b id="log-refresh">0</b></div>
           <div class="security-item"><span>Penalties</span><b id="log-penalty">-0 Marks</b></div>
         </div>
       </div>
@@ -297,13 +296,7 @@
     // Security track
     let tabSwitches = parseInt(sessionStorage.getItem('tabSwitches') || '0');
     let copiesAttempted = parseInt(sessionStorage.getItem('copiesAttempted') || '0');
-    let refreshes = parseInt(sessionStorage.getItem('refreshes') || '0');
     let penaltiesApplied = parseInt(sessionStorage.getItem('penaltiesApplied') || '0');
-
-    if (performance.getEntriesByType("navigation")[0]?.type === "reload") {
-      refreshes++;
-      sessionStorage.setItem('refreshes', refreshes);
-    }
 
     // Tab Switch Handler (1st time = -1 mark penalty & question change, 2nd time = Auto Submit)
     document.addEventListener("visibilitychange", () => {
@@ -584,7 +577,6 @@
 
       document.getElementById('log-tab-switches').innerText = sessionStorage.getItem('tabSwitches') || 0;
       document.getElementById('log-copy-paste').innerText = sessionStorage.getItem('copiesAttempted') || 0;
-      document.getElementById('log-refresh').innerText = sessionStorage.getItem('refreshes') || 0;
       document.getElementById('log-penalty').innerText = `-${penaltyDeduction} Mark(s)`;
 
       window.changeSlide(4);
@@ -616,7 +608,6 @@
         score: finalizedScoreString,
         tabSwitches: parseInt(sessionStorage.getItem('tabSwitches') || '0'),
         copiesAttempted: parseInt(sessionStorage.getItem('copiesAttempted') || '0'),
-        refreshes: parseInt(sessionStorage.getItem('refreshes') || '0'),
         penaltiesApplied: parseInt(sessionStorage.getItem('penaltiesApplied') || '0'),
         feedback: document.getElementById('feedback-input').value.trim() || "None",
         submittedAt: new Date()
