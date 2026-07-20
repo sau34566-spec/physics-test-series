@@ -71,7 +71,7 @@
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 1.5rem; }
     .form-group { margin-bottom: 1.25rem; text-align: left; }
     label { display: block; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-main); margin-bottom: 0.5rem; }
-    input[type="text"], input[type="password"], input[type="number"], textarea, select {
+    input[type="text"], input[type="password"], input[type="number"], input[type="datetime-local"], textarea, select {
       width: 100%; padding: 0.85rem 1rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; outline: none; transition: all 0.2s; background: white;
     }
     input:focus, textarea:focus, select:focus { border-color: var(--primary-light); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
@@ -155,20 +155,31 @@
     <div id="slide-1-content" class="admin-slide-content active">
       <div class="admin-card">
         <h3><i class="fa-solid fa-sliders"></i> Test & Timer Configuration Settings</h3>
-        <p class="subtitle">Manage question limits, upload mode, and set live test duration timer.</p>
+        <p class="subtitle">Set question randomization, test time duration, and fixed exam availability window.</p>
         
         <div class="form-grid">
           <div class="form-group">
             <label for="config-total-pool">Total Pool Questions *</label>
-            <input type="number" id="config-total-pool" placeholder="Example: 100" min="1">
+            <input type="number" id="config-total-pool" placeholder="Example: 10" min="1">
           </div>
           <div class="form-group">
-            <label for="config-student-limit">Student Display Limit *</label>
-            <input type="number" id="config-student-limit" placeholder="Example: 20" min="1">
+            <label for="config-student-limit">Student Display Limit (Randomized) *</label>
+            <input type="number" id="config-student-limit" placeholder="Example: 6" min="1">
           </div>
           <div class="form-group">
-            <label for="config-test-duration">Test Duration (In Minutes) *</label>
-            <input type="number" id="config-test-duration" placeholder="e.g. 60 (for 1 hour)" min="1">
+            <label for="config-test-duration">Per Exam Timer (Minutes) *</label>
+            <input type="number" id="config-test-duration" placeholder="e.g. 30" min="1">
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="config-window-start">Overall Test Window Start Time *</label>
+            <input type="datetime-local" id="config-window-start">
+          </div>
+          <div class="form-group">
+            <label for="config-window-end">Overall Test Window End Time *</label>
+            <input type="datetime-local" id="config-window-end">
           </div>
         </div>
 
@@ -197,7 +208,7 @@
     <div id="slide-2-content" class="admin-slide-content">
       <div class="admin-card">
         <h3><i class="fa-solid fa-user-shield"></i> Anti-Cheating & Security Analytics Tracker</h3>
-        <p class="subtitle">Live records of student activity including screen switching, copy attempts, and page refreshes.</p>
+        <p class="subtitle">Live security logs of tab switches, copy/paste attempts, page refreshes, and penalty marks.</p>
         
         <div class="table-responsive">
           <table>
@@ -208,10 +219,11 @@
                 <th>Tab Switches</th>
                 <th>Copy Violations</th>
                 <th>Page Refreshes</th>
+                <th>Penalty Marks Deduc.</th>
               </tr>
             </thead>
             <tbody id="analytics-table-body">
-              <tr><td colspan="5" style="text-align:center;">Loading analytics data...</td></tr>
+              <tr><td colspan="6" style="text-align:center;">Loading analytics data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -300,7 +312,7 @@
       document.querySelectorAll('.admin-slide-content').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.slide-tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(`slide-${slideNum}-content`).classList.add('active');
-      event.currentTarget.classList.add('active');
+      if (event && event.currentTarget) event.currentTarget.classList.add('active');
     };
 
     async function loadExamSettings() {
@@ -311,7 +323,15 @@
           const data = docSnap.data();
           document.getElementById('config-total-pool').value = data.totalPool || "";
           document.getElementById('config-student-limit').value = data.studentLimit || "";
-          document.getElementById('config-test-duration').value = data.durationMinutes || 60;
+          document.getElementById('config-test-duration').value = data.durationMinutes || 30;
+          
+          if(data.windowStart) {
+            document.getElementById('config-window-start').value = new Date(data.windowStart).toISOString().slice(0, 16);
+          }
+          if(data.windowEnd) {
+            document.getElementById('config-window-end').value = new Date(data.windowEnd).toISOString().slice(0, 16);
+          }
+
           if (data.uploadMode) {
             const radio = document.querySelector(`input[name="upload-mode"][value="${data.uploadMode}"]`);
             if (radio) radio.checked = true;
@@ -326,10 +346,12 @@
       const totalPool = parseInt(document.getElementById('config-total-pool').value);
       const studentLimit = parseInt(document.getElementById('config-student-limit').value);
       const durationMinutes = parseInt(document.getElementById('config-test-duration').value);
+      const windowStartVal = document.getElementById('config-window-start').value;
+      const windowEndVal = document.getElementById('config-window-end').value;
       const uploadMode = document.querySelector('input[name="upload-mode"]:checked').value;
 
-      if (!totalPool || !studentLimit || !durationMinutes) {
-        alert("Please fill all required settings fields.");
+      if (!totalPool || !studentLimit || !durationMinutes || !windowStartVal || !windowEndVal) {
+        alert("Please fill all configuration & window timing fields.");
         return;
       }
 
@@ -338,17 +360,16 @@
       saveBtn.innerText = "Saving Settings...";
 
       try {
-        // Updated: Set test active timestamp for countdown logic
         await setDoc(doc(db, "exam_config", "current_test"), {
           totalPool,
           studentLimit,
           durationMinutes,
+          windowStart: new Date(windowStartVal).getTime(),
+          windowEnd: new Date(windowEndVal).getTime(),
           uploadMode,
-          testStartTime: new Date().getTime(),
-          testActive: true,
           updatedAt: new Date()
         });
-        alert("Configuration & Timer settings saved successfully!");
+        alert("Configuration & Window settings saved successfully!");
       } catch (err) {
         alert("Failed to save configuration: " + err.message);
       } finally {
@@ -361,7 +382,7 @@
       const analyticsBody = document.getElementById('analytics-table-body');
       const leaderboardBody = document.getElementById('leaderboard-table-body');
 
-      analyticsBody.innerHTML = `<tr><td colspan="5" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching records...</td></tr>`;
+      analyticsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching records...</td></tr>`;
       leaderboardBody.innerHTML = `<tr><td colspan="5" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching records...</td></tr>`;
 
       try {
@@ -399,18 +420,18 @@
             tabSwitches: r.tabSwitches !== undefined ? r.tabSwitches : (r.tab_switches || 0),
             copiesAttempted: r.copiesAttempted !== undefined ? r.copiesAttempted : (r.copy_paste || 0),
             refreshes: r.refreshes !== undefined ? r.refreshes : (r.page_refreshes || 0),
+            penaltiesApplied: r.penaltiesApplied || 0,
             submittedAtStr: submitTimeFormatted,
             feedback: r.feedback || "None"
           });
         });
 
-        // 🟢 FIX 3: SORT BY LATEST SUBMISSION FIRST FOR ANALYTICS
         allStudentResults.sort((a, b) => b.rawDate - a.rawDate);
 
         // Render Security Analytics Tab
         analyticsBody.innerHTML = '';
         if (allStudentResults.length === 0) {
-          analyticsBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No submissions found.</td></tr>`;
+          analyticsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No submissions found.</td></tr>`;
         } else {
           allStudentResults.forEach(r => {
             const tr = document.createElement('tr');
@@ -420,12 +441,13 @@
               <td><span class="alert-indicator ${r.tabSwitches > 0 ? 'alert-warn' : 'alert-safe'}">${r.tabSwitches} Times</span></td>
               <td><span class="alert-indicator ${r.copiesAttempted > 0 ? 'alert-warn' : 'alert-safe'}">${r.copiesAttempted} Times</span></td>
               <td><span class="alert-indicator ${r.refreshes > 0 ? 'alert-warn' : 'alert-safe'}">${r.refreshes} Times</span></td>
+              <td><span class="alert-indicator ${r.penaltiesApplied > 0 ? 'alert-warn' : 'alert-safe'}">-${r.penaltiesApplied} Mark(s)</span></td>
             `;
             analyticsBody.appendChild(tr);
           });
         }
 
-        // Render Leaderboard (Ranked by Score, then latest date)
+        // Render Leaderboard
         const leaderboardData = [...allStudentResults].sort((a, b) => b.scoreVal - a.scoreVal || b.rawDate - a.rawDate);
         leaderboardBody.innerHTML = '';
         if (leaderboardData.length === 0) {
@@ -446,7 +468,7 @@
 
       } catch (err) {
         console.error(err);
-        analyticsBody.innerHTML = `<tr><td colspan="5" style="color:var(--danger); text-align:center;">Error loading database data.</td></tr>`;
+        analyticsBody.innerHTML = `<tr><td colspan="6" style="color:var(--danger); text-align:center;">Error loading database data.</td></tr>`;
       }
     };
 
@@ -455,9 +477,9 @@
         alert("No data available to download.");
         return;
       }
-      let csv = "Rank,Name,Email,Score,Submitted At,Tab Switches,Copy Violations,Refreshes\n";
+      let csv = "Rank,Name,Email,Score,Submitted At,Tab Switches,Copy Violations,Refreshes,Penalties Applied\n";
       allStudentResults.forEach((r, i) => {
-        csv += `${i+1},"${r.name}","${r.email}","${r.scoreText}","${r.submittedAtStr}",${r.tabSwitches},${r.copiesAttempted},${r.refreshes}\n`;
+        csv += `${i+1},"${r.name}","${r.email}","${r.scoreText}","${r.submittedAtStr}",${r.tabSwitches},${r.copiesAttempted},${r.refreshes},-${r.penaltiesApplied}\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
