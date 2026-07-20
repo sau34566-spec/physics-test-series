@@ -1,20 +1,19 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exam Elite | Online Test Series</title>
   
-  <!-- Google Fonts for Professional Typography -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- FontAwesome for Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
     :root {
-      --primary: #1e3a8a;       /* Deep Navy Blue */
-      --primary-light: #3b82f6; /* Slate Blue */
-      --accent: #f59e0b;        /* Amber Gold */
-      --bg-dark: #0f172a;       /* Dark Tech Background */
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --accent: #f59e0b;
+      --bg-dark: #0f172a;
       --bg-card: #ffffff;
       --text-main: #1e293b;
       --text-muted: #64748b;
@@ -41,27 +40,20 @@
     body::before {
       content: "";
       position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
+      width: 100%; height: 100%; top: 0; left: 0;
       background-image: radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
                         radial-gradient(circle at 80% 70%, rgba(30, 58, 138, 0.15) 0%, transparent 50%),
-                        linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)),
-                        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><path d="M0 0h60v60H0z" fill="none"/><path d="M60 0v60H0" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="1"/></svg>');
+                        linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95));
       z-index: -1;
     }
 
     .test-container {
       background: var(--bg-card);
-      width: 100%;
-      max-width: 650px;
-      padding: 2.5rem;
-      border-radius: 16px;
+      width: 100%; max-width: 650px;
+      padding: 2.5rem; border-radius: 16px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
       border: 1px solid rgba(255, 255, 255, 0.1);
       position: relative;
-      transition: all 0.3s ease;
     }
 
     .slide { display: none; }
@@ -91,7 +83,6 @@
 
     .instruction-list { list-style: none; margin-bottom: 2rem; color: var(--text-main); }
     .instruction-list li { padding: 0.75rem 0; border-bottom: 1px solid #f1f5f9; display: flex; align-items: flex-start; gap: 10px; font-size: 0.95rem; }
-    .instruction-list li i { margin-top: 3px; }
 
     .negative-marking-box { background: rgba(239, 68, 68, 0.08); border-left: 4px solid var(--danger); padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem; font-weight: 500; color: #b91c1c; }
 
@@ -112,35 +103,30 @@
 
     .security-logs-board { background: #fff5f5; border: 1px solid #feb2b2; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; }
     .security-logs-board h4 { color: #c53030; font-size: 0.95rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px; }
-    .security-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; }
+    .security-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
     .security-item { background: white; padding: 0.5rem; border-radius: 6px; border: 1px solid #fed7d7; }
-    .security-item span { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+    .security-item span { display: block; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
     .security-item b { font-size: 1.1rem; color: #9b2c2c; }
 
     .review-section { margin-bottom: 2rem; max-height: 350px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; background: #f8fafc; }
-    .review-item { background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .review-item { background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #cbd5e1; }
     .review-item.correct-item { border-left-color: var(--success); }
     .review-item.wrong-item { border-left-color: var(--danger); }
-    .review-item h5 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem; }
-    .review-ans-info { font-size: 0.85rem; line-height: 1.5; }
 
     .rating-stars { display: flex; gap: 12px; margin: 1rem 0 1.5rem 0; }
-    .rating-stars i { font-size: 2rem; color: #cbd5e1; cursor: pointer; transition: color 0.2s; }
+    .rating-stars i { font-size: 2rem; color: #cbd5e1; cursor: pointer; }
     .rating-stars i.active { color: var(--accent); }
 
-    .success-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 9999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
-    .success-overlay.show { display: flex; opacity: 1; }
-    .success-popup { background: white; padding: 3rem 2rem; border-radius: 16px; text-align: center; max-width: 450px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); animation: scaleUp 0.3s ease-out; }
-    @keyframes scaleUp { from { transform: scale(0.9); } to { transform: scale(1); } }
+    .success-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 9999; display: none; justify-content: center; align-items: center; }
+    .success-overlay.show { display: flex; }
+    .success-popup { background: white; padding: 3rem 2rem; border-radius: 16px; text-align: center; max-width: 450px; width: 90%; }
     .success-popup i { font-size: 4rem; color: var(--success); margin-bottom: 1.5rem; }
-    .success-popup h3 { font-size: 1.5rem; color: var(--primary); margin-bottom: 1rem; }
-    .success-popup p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
   </style>
 </head>
 <body>
 
   <div class="test-container">
-    <!-- ================= SLIDE 1: LOGIN ================= -->
+    <!-- SLIDE 1: LOGIN -->
     <div class="slide active" id="slide-1">
       <h2><i class="fa-solid fa-user-shield"></i> Exam Elite</h2>
       <p class="subtitle">Enter your credentials to initialize the test portal</p>
@@ -165,21 +151,21 @@
       </form>
     </div>
 
-    <!-- ================= SLIDE 2: INSTRUCTIONS ================= -->
+    <!-- SLIDE 2: INSTRUCTIONS -->
     <div class="slide" id="slide-2">
       <h2><i class="fa-solid fa-clipboard-list"></i> Test Instructions</h2>
       <p class="subtitle">Please read all instructions completely before starting.</p>
       <div class="negative-marking-box">
-        <i class="fa-solid fa-triangle-exclamation"></i> Warning: There is a negative marking of -0.25 marks for every wrong answer.
+        <i class="fa-solid fa-triangle-exclamation"></i> Warning: Negative marking is -0.25 marks per wrong answer. Tab switching causes a -1 mark penalty & question shuffle!
       </div>
       <ul class="instruction-list">
         <li>
           <i class="fa-solid fa-circle-chevron-right" style="color: var(--primary-light);"></i>
-          <span>Each question is allotted a maximum time of <b>60 seconds</b>. If you fail to submit, the system skips automatically.</span>
+          <span>Questions are randomly loaded from total question pool.</span>
         </li>
         <li>
           <i class="fa-solid fa-circle-chevron-right" style="color: var(--primary-light);"></i>
-          <span>Click on <b>Save & Next</b> to securely upload your response. You can navigate backwards using the <b>Previous</b> button.</span>
+          <span><b>Strict Security:</b> Background/Tab Switch 1st time = Question Change & -1 Mark penalty. 2nd time = Auto Submit!</span>
         </li>
       </ul>
       <div class="btn-group">
@@ -188,17 +174,17 @@
       </div>
     </div>
 
-    <!-- ================= SLIDE 3: ACTIVE SYSTEM TEST ================= -->
+    <!-- SLIDE 3: ACTIVE TEST -->
     <div class="slide" id="slide-3">
       <div class="quiz-header">
         <span id="question-counter" style="font-weight: 600; color: var(--text-muted);">Question Loading...</span>
         <div class="timer-box">
           <i class="fa-regular fa-clock"></i>
-          <span id="timer-display">60s</span>
+          <span id="timer-display">30:00</span>
         </div>
       </div>
       <div id="quiz-body">
-        <div class="question-text" id="q-text">Parsing structural dataset...</div>
+        <div class="question-text" id="q-text">Parsing dataset...</div>
         <div class="option-container" id="options-block"></div>
       </div>
       <div class="btn-group">
@@ -207,14 +193,14 @@
       </div>
     </div>
 
-    <!-- ================= SLIDE 4: RESULTS -> RATINGS & DOUBTS ================= -->
+    <!-- SLIDE 4: RESULTS -->
     <div class="slide" id="slide-4">
       <h2><i class="fa-solid fa-square-poll-horizontal"></i> Performance Dashboard</h2>
-      <p class="subtitle">Your metrics and answer-sheet evaluation sheet has been processed.</p>
+      <p class="subtitle">Your metrics and evaluation sheet.</p>
       
       <div class="score-board">
         <div class="score-card">
-          <h4>Total Score</h4>
+          <h4>Final Score</h4>
           <p id="res-score" style="color: var(--primary-light);">0 / 0</p>
         </div>
         <div class="score-card">
@@ -231,26 +217,17 @@
         </div>
       </div>
 
-      <!-- SECURITY AUDIT VIEW IN DASHBOARD -->
       <div class="security-logs-board">
-        <h4><i class="fa-solid fa-shield-halved"></i> Proctored Integrity Audit Logs</h4>
+        <h4><i class="fa-solid fa-shield-halved"></i> Security Audit Logs</h4>
         <div class="security-grid">
-          <div class="security-item">
-            <span>Tab Switches</span>
-            <b id="log-tab-switches">0</b>
-          </div>
-          <div class="security-item">
-            <span>Copy/Paste Violations</span>
-            <b id="log-copy-paste">0</b>
-          </div>
-          <div class="security-item">
-            <span>Refresh Interceptions</span>
-            <b id="log-refresh">0</b>
-          </div>
+          <div class="security-item"><span>Tab Switches</span><b id="log-tab-switches">0</b></div>
+          <div class="security-item"><span>Copy/Paste</span><b id="log-copy-paste">0</b></div>
+          <div class="security-item"><span>Refreshes</span><b id="log-refresh">0</b></div>
+          <div class="security-item"><span>Penalties</span><b id="log-penalty">-0 Marks</b></div>
         </div>
       </div>
 
-      <label style="margin-bottom: 0.5rem; display: block;">Detailed Evaluation Ledger</label>
+      <label style="margin-bottom: 0.5rem; display: block;">Evaluation Ledger</label>
       <div class="review-section" id="review-ledger-container"></div>
 
       <form id="feedback-form" onsubmit="submitFinalFeedback(event)">
@@ -263,35 +240,31 @@
             <i class="fa-solid fa-star" data-value="4"></i>
             <i class="fa-solid fa-star" data-value="5"></i>
           </div>
-          <div class="error-msg" id="rating-error">
-            <i class="fa-solid fa-circle-exclamation"></i> Rating is compulsory before closing the session.
-          </div>
+          <div class="error-msg" id="rating-error"><i class="fa-solid fa-circle-exclamation"></i> Rating required.</div>
         </div>
         <div class="form-group">
-          <label for="doubt-input">Do you have any Doubts / Queries? (Optional)</label>
-          <textarea id="doubt-input" rows="2" placeholder="Describe any conceptual doubt..."></textarea>
+          <label for="doubt-input">Doubts / Queries? (Optional)</label>
+          <textarea id="doubt-input" rows="2" placeholder="Describe doubt..."></textarea>
         </div>
         <div class="form-group">
-          <label for="feedback-input">Valuable Feedback (Optional)</label>
-          <textarea id="feedback-input" rows="3" placeholder="Tell us how we can optimize your learning..."></textarea>
+          <label for="feedback-input">Feedback (Optional)</label>
+          <textarea id="feedback-input" rows="2" placeholder="Your feedback..."></textarea>
         </div>
         <button type="submit" id="submit-all-btn" class="btn" style="width: 100%; justify-content: center;">
-          <i class="fa-solid fa-cloud-arrow-up"></i> Submit & Complete Session
+          <i class="fa-solid fa-cloud-arrow-up"></i> Submit & Complete
         </button>
       </form>
     </div>
   </div>
 
-  <!-- CUSTOM OVERLAY POPUP SUCCESS BLOCK -->
   <div class="success-overlay" id="success-modal">
     <div class="success-popup">
       <i class="fa-solid fa-circle-check"></i>
-      <h3>Thank you for attempting the test!</h3>
-      <p>Your scorecard and performance matrix logs have been successfully secured and updated inside the Admin Dashboard Panel.</p>
+      <h3>Test Submitted Successfully!</h3>
+      <p>Your performance metrics and proctored security log have been securely synced to the Admin Panel.</p>
     </div>
   </div>
 
-  <!-- ================= FIREBASE & ENGINE CONTROLLER LOGIC ================= -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
     import { getFirestore, doc, getDoc, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
@@ -319,34 +292,43 @@
     let calculatedScore = 0;
     let totalScore = 0;
     let isExamActive = false;
+    let examConfigData = null;
 
-    // --- STUDENT SECURITY & TIMER MODULE ---
+    // Security track
     let tabSwitches = parseInt(sessionStorage.getItem('tabSwitches') || '0');
     let copiesAttempted = parseInt(sessionStorage.getItem('copiesAttempted') || '0');
     let refreshes = parseInt(sessionStorage.getItem('refreshes') || '0');
+    let penaltiesApplied = parseInt(sessionStorage.getItem('penaltiesApplied') || '0');
 
-    // 1. Page Refresh Track
     if (performance.getEntriesByType("navigation")[0]?.type === "reload") {
       refreshes++;
       sessionStorage.setItem('refreshes', refreshes);
     }
 
-    // 2. Tab Switch Track
+    // Tab Switch Handler (1st time = -1 mark penalty & question change, 2nd time = Auto Submit)
     document.addEventListener("visibilitychange", () => {
       if (document.hidden && isExamActive) {
         tabSwitches++;
         sessionStorage.setItem('tabSwitches', tabSwitches);
-        alert("CRITICAL WARNING: Tab switching detected!");
+
+        if (tabSwitches === 1) {
+          penaltiesApplied++;
+          sessionStorage.setItem('penaltiesApplied', penaltiesApplied);
+          alert("SECURITY WARNING 1: Tab switch/Background activity detected!\n- Penalty: -1 Mark deducted\n- Question has been auto-changed!");
+          shuffleCurrentQuestion();
+        } else if (tabSwitches >= 2) {
+          alert("SECURITY VIOLATION 2: Multiple tab switches detected!\nYour test is being automatically submitted now.");
+          calculateAndShowResults();
+        }
       }
     });
 
-    // 3. Copy/Paste Track
     document.addEventListener("copy", (e) => {
       if (isExamActive) {
         e.preventDefault();
         copiesAttempted++;
         sessionStorage.setItem('copiesAttempted', copiesAttempted);
-        alert("Security Warning: Copying test questions/options is strictly disabled!");
+        alert("Copying test questions is strictly disabled!");
       }
     });
 
@@ -355,87 +337,52 @@
         e.preventDefault();
         copiesAttempted++;
         sessionStorage.setItem('copiesAttempted', copiesAttempted);
-        alert("Security Warning: Pasting content is disabled!");
+        alert("Pasting content is strictly disabled!");
       }
     });
 
-    // Disable Right Click Menu
     document.addEventListener('contextmenu', event => event.preventDefault());
 
-    // 4. Timer & Expiry Check Function
-    async function checkTestTimerAndStatus() {
+    // Window Schedule & Config Loader
+    async function checkOverallExamWindow() {
       try {
         const docRef = doc(db, "exam_config", "current_test");
         const snap = await getDoc(docRef);
 
-        if (!snap.exists()) return;
-        const data = snap.data();
+        if (!snap.exists()) return true;
+        examConfigData = snap.data();
         
-        const durationMs = (data.durationMinutes || 60) * 60 * 1000;
-        const startTime = data.testStartTime || new Date().getTime();
-        const endTime = startTime + durationMs;
         const now = new Date().getTime();
+        const start = examConfigData.windowStart || 0;
+        const end = examConfigData.windowEnd || Infinity;
 
-        // Test Time Over Check
-        if (now >= endTime) {
-          showTimeOverOverlay();
-          return;
+        if (now < start) {
+          showTimeStatusOverlay("Test has not started yet!", `This test will open at ${new Date(start).toLocaleString('en-IN')}`);
+          return false;
         }
 
-        // Live Timer CountDown
-        const timerIntervalObj = setInterval(() => {
-          const current = new Date().getTime();
-          const remaining = endTime - current;
+        if (now > end) {
+          showTimeStatusOverlay("Sorry for the inconvenience!", "Test window is closed. You can no longer attempt this test.");
+          return false;
+        }
 
-          if (remaining <= 0) {
-            clearInterval(timerIntervalObj);
-            alert("Test time is over! Submitting your answers now...");
-            submitStudentExam();
-          } else {
-            let mins = Math.floor(remaining / (1000 * 60));
-            let secs = Math.floor((remaining % (1000 * 60)) / 1000);
-            let timerDisplay = document.getElementById('timer-display');
-            if (timerDisplay) timerDisplay.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-          }
-        }, 1000);
+        return true;
       } catch (err) {
-        console.error("Timer check error:", err);
+        console.error("Window Check Error:", err);
+        return true;
       }
     }
 
-    function showTimeOverOverlay() {
+    function showTimeStatusOverlay(title, msg) {
       document.body.innerHTML = `
         <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:99999;text-align:center;padding:20px;">
           <i class="fa-solid fa-clock-rotate-left" style="font-size:4rem;color:#ef4444;margin-bottom:1rem;"></i>
-          <h1 style="font-size:2rem;margin-bottom:0.5rem;">Sorry for the inconvenience!</h1>
-          <p style="color:#94a3b8;font-size:1.2rem;">Test time is over.</p>
+          <h1 style="font-size:2rem;margin-bottom:0.5rem;">${title}</h1>
+          <p style="color:#94a3b8;font-size:1.2rem;">${msg}</p>
         </div>
       `;
     }
 
-    // Student Final Submission Payload
-    async function submitStudentExam() {
-      isExamActive = false;
-      const resultPayload = {
-        name: currentStudentName || document.getElementById('student-name').value.trim(),
-        email: currentStudentEmail || document.getElementById('student-email').value.trim().toLowerCase(),
-        score: finalizedScoreString,
-        tabSwitches: parseInt(sessionStorage.getItem('tabSwitches') || '0'),
-        copiesAttempted: parseInt(sessionStorage.getItem('copiesAttempted') || '0'),
-        refreshes: parseInt(sessionStorage.getItem('refreshes') || '0'),
-        submittedAt: new Date()
-      };
-
-      try {
-        await addDoc(collection(db, "results"), resultPayload);
-        sessionStorage.clear();
-        document.getElementById('success-modal').classList.add('show');
-      } catch (e) {
-        alert("Submission error: " + e.message);
-      }
-    }
-
-    // SLIDE NAVIGATOR
     window.changeSlide = (slideNumber) => {
       document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
       document.getElementById(`slide-${slideNumber}`).classList.add('active');
@@ -443,6 +390,9 @@
 
     window.validateAndNext = async (e) => {
       e.preventDefault();
+      const isWindowOpen = await checkOverallExamWindow();
+      if (!isWindowOpen) return;
+
       const nameInput = document.getElementById('student-name').value.trim();
       const emailInput = document.getElementById('student-email').value.trim().toLowerCase();
       const emailError = document.getElementById('email-error');
@@ -475,7 +425,7 @@
         currentStudentEmail = emailInput;
         window.changeSlide(2);
       } catch (err) {
-        alert("Network latency error. Please check internet connection.");
+        alert("Network error. Please check internet connection.");
       } finally {
         proceedBtn.disabled = false;
         proceedBtn.innerText = "Proceed to Instructions";
@@ -491,20 +441,56 @@
         const response = await fetch('chapter1.html');
         const rawText = await response.text();
         const jsonString = rawText.substring(rawText.indexOf('['), rawText.lastIndexOf(']') + 1);
-        questionsList = JSON.parse(jsonString);
+        let fullPool = JSON.parse(jsonString);
+
+        // Randomly pick limit from pool
+        const limit = examConfigData?.studentLimit || fullPool.length;
+        fullPool = fullPool.sort(() => 0.5 - Math.random());
+        questionsList = fullPool.slice(0, limit);
 
         isExamActive = true;
         window.changeSlide(3);
+        startExamTimer(examConfigData?.durationMinutes || 30);
         loadQuestion(0);
       } catch (error) {
-        alert("Failed to fetch test dataset template.");
+        alert("Failed to load test questions.");
         startBtn.disabled = false;
         startBtn.innerText = "Start Examination";
       }
     };
 
+    function startExamTimer(durationMins) {
+      let durationMs = durationMins * 60 * 1000;
+      const endTime = new Date().getTime() + durationMs;
+
+      timerInterval = setInterval(() => {
+        const current = new Date().getTime();
+        const remaining = endTime - current;
+
+        if (remaining <= 0) {
+          clearInterval(timerInterval);
+          alert("Time is up! Submitting exam...");
+          calculateAndShowResults();
+        } else {
+          let mins = Math.floor(remaining / (1000 * 60));
+          let secs = Math.floor((remaining % (1000 * 60)) / 1000);
+          document.getElementById('timer-display').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+      }, 1000);
+    }
+
+    function shuffleCurrentQuestion() {
+      if (questionsList.length > 1) {
+        let currentQ = questionsList[currentQuestionIndex];
+        let remaining = questionsList.filter((_, idx) => idx !== currentQuestionIndex);
+        remaining = remaining.sort(() => 0.5 - Math.random());
+        questionsList[currentQuestionIndex] = remaining[0];
+      }
+      delete selectedAnswers[currentQuestionIndex];
+      loadQuestion(currentQuestionIndex);
+    }
+
     function loadQuestion(index) {
-      clearInterval(timerInterval);
       currentQuestionIndex = index;
       document.getElementById('question-counter').innerText = `Question ${index + 1} of ${questionsList.length}`;
 
@@ -554,6 +540,9 @@
     };
 
     function calculateAndShowResults() {
+      clearInterval(timerInterval);
+      isExamActive = false;
+
       let correctCount = 0;
       let wrongCount = 0;
       const reviewContainer = document.getElementById('review-ledger-container');
@@ -574,7 +563,7 @@
         reviewItem.className = `review-item ${selectedIdx === undefined ? '' : (isCorrect ? 'correct-item' : 'wrong-item')}`;
         reviewItem.innerHTML = `
           <h5>Q${idx + 1}. ${q.question || q.q}</h5>
-          <div class="review-ans-info">
+          <div style="font-size:0.85rem; line-height:1.5;">
             <strong>Your Choice:</strong> ${studentSelectionText} <br>
             <strong>Correct Answer:</strong> <span style="color:var(--success); font-weight:600">${correctSelectionText}</span>
           </div>
@@ -582,7 +571,9 @@
         reviewContainer.appendChild(reviewItem);
       });
 
-      calculatedScore = (correctCount * 1) - (wrongCount * 0.25);
+      const rawScore = (correctCount * 1) - (wrongCount * 0.25);
+      const penaltyDeduction = parseInt(sessionStorage.getItem('penaltiesApplied') || '0');
+      calculatedScore = Math.max(0, rawScore - penaltyDeduction);
       totalScore = questionsList.length;
       finalizedScoreString = `${calculatedScore}/${totalScore}`;
 
@@ -594,11 +585,11 @@
       document.getElementById('log-tab-switches').innerText = sessionStorage.getItem('tabSwitches') || 0;
       document.getElementById('log-copy-paste').innerText = sessionStorage.getItem('copiesAttempted') || 0;
       document.getElementById('log-refresh').innerText = sessionStorage.getItem('refreshes') || 0;
+      document.getElementById('log-penalty').innerText = `-${penaltyDeduction} Mark(s)`;
 
       window.changeSlide(4);
     }
 
-    // Rating Star Logic
     document.querySelectorAll('#stars-container i').forEach(star => {
       star.addEventListener('click', (e) => {
         selectedRating = parseInt(e.target.getAttribute('data-value'));
@@ -618,8 +609,29 @@
       await submitStudentExam();
     };
 
-    // Initialize Timer Logic on Page Load
-    window.addEventListener('DOMContentLoaded', checkTestTimerAndStatus);
+    async function submitStudentExam() {
+      const resultPayload = {
+        name: currentStudentName,
+        email: currentStudentEmail,
+        score: finalizedScoreString,
+        tabSwitches: parseInt(sessionStorage.getItem('tabSwitches') || '0'),
+        copiesAttempted: parseInt(sessionStorage.getItem('copiesAttempted') || '0'),
+        refreshes: parseInt(sessionStorage.getItem('refreshes') || '0'),
+        penaltiesApplied: parseInt(sessionStorage.getItem('penaltiesApplied') || '0'),
+        feedback: document.getElementById('feedback-input').value.trim() || "None",
+        submittedAt: new Date()
+      };
+
+      try {
+        await addDoc(collection(db, "results"), resultPayload);
+        sessionStorage.clear();
+        document.getElementById('success-modal').classList.add('show');
+      } catch (e) {
+        alert("Submission Error: " + e.message);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', checkOverallExamWindow);
   </script>
 </body>
 </html>
