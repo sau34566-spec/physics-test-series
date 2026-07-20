@@ -208,7 +208,7 @@
     <div id="slide-2-content" class="admin-slide-content">
       <div class="admin-card">
         <h3><i class="fa-solid fa-user-shield"></i> Anti-Cheating & Security Analytics Tracker</h3>
-        <p class="subtitle">Live security logs of tab switches, copy/paste attempts, page refreshes, and penalty marks.</p>
+        <p class="subtitle">Live security logs of tab switches, copy/paste attempts, and penalty marks.</p>
         
         <div class="table-responsive">
           <table>
@@ -218,12 +218,11 @@
                 <th>Submit Time</th>
                 <th>Tab Switches</th>
                 <th>Copy Violations</th>
-                <th>Page Refreshes</th>
                 <th>Penalty Marks Deduc.</th>
               </tr>
             </thead>
             <tbody id="analytics-table-body">
-              <tr><td colspan="6" style="text-align:center;">Loading analytics data...</td></tr>
+              <tr><td colspan="5" style="text-align:center;">Loading analytics data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -382,7 +381,7 @@
       const analyticsBody = document.getElementById('analytics-table-body');
       const leaderboardBody = document.getElementById('leaderboard-table-body');
 
-      analyticsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching records...</td></tr>`;
+      analyticsBody.innerHTML = `<tr><td colspan="5" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching records...</td></tr>`;
       leaderboardBody.innerHTML = `<tr><td colspan="5" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching records...</td></tr>`;
 
       try {
@@ -419,7 +418,6 @@
             rawDate: dateObj,
             tabSwitches: r.tabSwitches !== undefined ? r.tabSwitches : (r.tab_switches || 0),
             copiesAttempted: r.copiesAttempted !== undefined ? r.copiesAttempted : (r.copy_paste || 0),
-            refreshes: r.refreshes !== undefined ? r.refreshes : (r.page_refreshes || 0),
             penaltiesApplied: r.penaltiesApplied || 0,
             submittedAtStr: submitTimeFormatted,
             feedback: r.feedback || "None"
@@ -431,7 +429,7 @@
         // Render Security Analytics Tab
         analyticsBody.innerHTML = '';
         if (allStudentResults.length === 0) {
-          analyticsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No submissions found.</td></tr>`;
+          analyticsBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No submissions found.</td></tr>`;
         } else {
           allStudentResults.forEach(r => {
             const tr = document.createElement('tr');
@@ -440,7 +438,6 @@
               <td><span class="time-stamp"><i class="fa-regular fa-clock"></i> ${r.submittedAtStr}</span></td>
               <td><span class="alert-indicator ${r.tabSwitches > 0 ? 'alert-warn' : 'alert-safe'}">${r.tabSwitches} Times</span></td>
               <td><span class="alert-indicator ${r.copiesAttempted > 0 ? 'alert-warn' : 'alert-safe'}">${r.copiesAttempted} Times</span></td>
-              <td><span class="alert-indicator ${r.refreshes > 0 ? 'alert-warn' : 'alert-safe'}">${r.refreshes} Times</span></td>
               <td><span class="alert-indicator ${r.penaltiesApplied > 0 ? 'alert-warn' : 'alert-safe'}">-${r.penaltiesApplied} Mark(s)</span></td>
             `;
             analyticsBody.appendChild(tr);
@@ -468,7 +465,7 @@
 
       } catch (err) {
         console.error(err);
-        analyticsBody.innerHTML = `<tr><td colspan="6" style="color:var(--danger); text-align:center;">Error loading database data.</td></tr>`;
+        analyticsBody.innerHTML = `<tr><td colspan="5" style="color:var(--danger); text-align:center;">Error loading database data.</td></tr>`;
       }
     };
 
@@ -477,9 +474,9 @@
         alert("No data available to download.");
         return;
       }
-      let csv = "Rank,Name,Email,Score,Submitted At,Tab Switches,Copy Violations,Refreshes,Penalties Applied\n";
+      let csv = "Rank,Name,Email,Score,Submitted At,Tab Switches,Copy Violations,Penalties Applied\n";
       allStudentResults.forEach((r, i) => {
-        csv += `${i+1},"${r.name}","${r.email}","${r.scoreText}","${r.submittedAtStr}",${r.tabSwitches},${r.copiesAttempted},${r.refreshes},-${r.penaltiesApplied}\n`;
+        csv += `${i+1},"${r.name}","${r.email}","${r.scoreText}","${r.submittedAtStr}",${r.tabSwitches},${r.copiesAttempted},-${r.penaltiesApplied}\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
