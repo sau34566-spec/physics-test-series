@@ -298,7 +298,7 @@
     let copiesAttempted = parseInt(sessionStorage.getItem('copiesAttempted') || '0');
     let penaltiesApplied = parseInt(sessionStorage.getItem('penaltiesApplied') || '0');
 
-    // Tab Switch Handler (1st time = -1 mark penalty & question change, 2nd time = Auto Submit)
+    // Tab Switch Handler
     document.addEventListener("visibilitychange", () => {
       if (document.hidden && isExamActive) {
         tabSwitches++;
@@ -436,7 +436,6 @@
         const jsonString = rawText.substring(rawText.indexOf('['), rawText.lastIndexOf(']') + 1);
         let fullPool = JSON.parse(jsonString);
 
-        // Randomly pick limit from pool
         const limit = examConfigData?.studentLimit || fullPool.length;
         fullPool = fullPool.sort(() => 0.5 - Math.random());
         questionsList = fullPool.slice(0, limit);
