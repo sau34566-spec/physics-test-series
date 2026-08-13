@@ -6,7 +6,7 @@
   <title>Exam Elite | Admin Dashboard Panel</title>
   
   <!-- Google Fonts & FontAwesome -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
@@ -22,7 +22,7 @@
       --success: #10b981;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Noto Sans Devanagari', sans-serif; }
     body { background-color: #f8fafc; color: var(--text-main); min-height: 100vh; padding: 2rem 1rem; }
     
     #login-overlay {
@@ -38,7 +38,7 @@
     .login-card h2 { color: var(--primary); margin-bottom: 0.5rem; }
     .login-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
     
-    .admin-container { max-width: 1000px; margin: 0 auto; display: none; }
+    .admin-container { max-width: 1050px; margin: 0 auto; display: none; }
     
     header {
       margin-bottom: 2rem; border-bottom: 2px solid #e2e8f0;
@@ -98,6 +98,15 @@
     .alert-safe { background: #d1fae5; color: #065f46; }
     .alert-warn { background: #fee2e2; color: #991b1b; }
     .time-stamp { font-size: 0.8rem; color: #64748b; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+
+    .stats-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 1.5rem; }
+    .stat-card { background: #f1f5f9; padding: 1rem; border-radius: 10px; border: 1px solid #cbd5e1; text-align: center; }
+    .stat-card h4 { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .stat-card p { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+
+    .upload-section-box { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 1.5rem; border-radius: 12px; margin-top: 1rem; }
+    .mode-content { display: none; }
+    .mode-content.active { display: block; }
   </style>
 </head>
 <body>
@@ -155,7 +164,7 @@
     <div id="slide-1-content" class="admin-slide-content active">
       <div class="admin-card">
         <h3><i class="fa-solid fa-sliders"></i> Test & Timer Configuration Settings</h3>
-        <p class="subtitle">Set question randomization, test time duration, and fixed exam availability window.</p>
+        <p class="subtitle">Set question randomization, test time duration, per-question timer, and fixed exam availability window.</p>
         
         <div class="form-grid">
           <div class="form-group">
@@ -170,6 +179,10 @@
             <label for="config-test-duration">Per Exam Timer (Minutes) *</label>
             <input type="number" id="config-test-duration" placeholder="e.g. 30" min="1">
           </div>
+          <div class="form-group">
+            <label for="config-per-question-timer">Per Question Timer (Seconds) *</label>
+            <input type="number" id="config-per-question-timer" placeholder="e.g. 60 (0 to disable)" min="0">
+          </div>
         </div>
 
         <div class="form-grid">
@@ -183,18 +196,82 @@
           </div>
         </div>
 
+        <!-- UPLOAD METHOD SELECTION -->
         <div style="background: #f1f5f9; padding: 1.25rem; border-radius: 10px; margin-bottom: 1.5rem;">
-          <label style="font-weight: 700; color: var(--primary);">Question Upload Method:</label>
-          <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 0.5rem;">
+          <label style="font-weight: 700; color: var(--primary);">Question Upload Method & Options:</label>
+          <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 0.5rem; margin-bottom: 1rem;">
             <label style="cursor:pointer; display:flex; align-items:center; gap:6px;">
-              <input type="radio" name="upload-mode" value="form" checked> Live Form
+              <input type="radio" name="upload-mode" value="form" checked onclick="toggleUploadUI('form')"> Live Form Upload
             </label>
             <label style="cursor:pointer; display:flex; align-items:center; gap:6px;">
-              <input type="radio" name="upload-mode" value="code"> Custom Code
+              <input type="radio" name="upload-mode" value="code" onclick="toggleUploadUI('code')"> Custom Code / JSON
             </label>
             <label style="cursor:pointer; display:flex; align-items:center; gap:6px;">
-              <input type="radio" name="upload-mode" value="msword"> MS Word Parse
+              <input type="radio" name="upload-mode" value="msword" onclick="toggleUploadUI('msword')"> MS Word Parse
             </label>
+          </div>
+
+          <!-- QUESTION LANGUAGE SELECTION -->
+          <div style="display: flex; gap: 20px; align-items: center; border-top: 1px solid #cbd5e1; padding-top: 0.8rem;">
+            <label style="font-weight: 700; font-size: 0.8rem;">Question Language:</label>
+            <label style="cursor:pointer; display:flex; align-items:center; gap:6px;">
+              <input type="radio" name="question-language" value="hindi" checked> Hindi (हिंदी)
+            </label>
+            <label style="cursor:pointer; display:flex; align-items:center; gap:6px;">
+              <input type="radio" name="question-language" value="english"> English
+            </label>
+            <label style="cursor:pointer; display:flex; align-items:center; gap:6px;">
+              <input type="radio" name="question-language" value="bilingual"> Bilingual (Both)
+            </label>
+          </div>
+
+          <!-- UPLOAD SECTIONS -->
+          <div class="upload-section-box">
+            
+            <!-- 1. LIVE FORM UPLOAD -->
+            <div id="mode-form-area" class="mode-content active">
+              <h4 style="margin-bottom: 0.8rem; color: var(--primary);"><i class="fa-solid fa-pen-to-square"></i> Add Single Question Live</h4>
+              <div class="form-group">
+                <label>Question Text *</label>
+                <textarea id="live-q-text" rows="2" placeholder="e.g. प्रकाश-वर्ष किसकी इकाई है? / What is the unit of light year?"></textarea>
+              </div>
+              <div class="form-grid">
+                <div class="form-group"><label>Option A *</label><input type="text" id="live-opt-a" placeholder="e.g. समय"></div>
+                <div class="form-group"><label>Option B *</label><input type="text" id="live-opt-b" placeholder="e.g. दूरी"></div>
+                <div class="form-group"><label>Option C *</label><input type="text" id="live-opt-c" placeholder="e.g. द्रव्यमान"></div>
+                <div class="form-group"><label>Option D *</label><input type="text" id="live-opt-d" placeholder="e.g. तीव्रता"></div>
+              </div>
+              <div class="form-group">
+                <label>Correct Answer *</label>
+                <select id="live-correct-opt">
+                  <option value="A">Option A</option>
+                  <option value="B">Option B</option>
+                  <option value="C">Option C</option>
+                  <option value="D">Option D</option>
+                </select>
+              </div>
+              <button type="button" class="btn btn-accent" onclick="addQuestionToPool()"><i class="fa-solid fa-plus"></i> Add Question To Live Pool</button>
+            </div>
+
+            <!-- 2. CUSTOM CODE / JSON -->
+            <div id="mode-code-area" class="mode-content">
+              <h4 style="margin-bottom: 0.8rem; color: var(--primary);"><i class="fa-solid fa-code"></i> Paste Custom JSON Question Array</h4>
+              <div class="form-group">
+                <label>JSON Data *</label>
+                <textarea id="custom-json-input" rows="5" placeholder='[{"question":"प्रकाश-वर्ष किसकी इकाई है?", "options":["A) समय","B) दूरी","C) द्रव्यमान","D) तीव्रता"], "a":"B) दूरी"}]'></textarea>
+              </div>
+            </div>
+
+            <!-- 3. MS WORD PARSER -->
+            <div id="mode-msword-area" class="mode-content">
+              <h4 style="margin-bottom: 0.8rem; color: var(--primary);"><i class="fa-solid fa-file-word"></i> MS Word Copy-Paste Parser</h4>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.8rem;">Copy text directly from MS Word in formatted pattern (Q1. ... A)... B)... Ans: B)</p>
+              <div class="form-group">
+                <label>Paste MS Word Content *</label>
+                <textarea id="msword-text-input" rows="6" placeholder="Q1. प्रकाश-वर्ष किसकी इकाई है?&#10;A) समय&#10;B) दूरी&#10;C) द्रव्यमान&#10;D) तीव्रता&#10;Ans: B"></textarea>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -208,13 +285,34 @@
     <div id="slide-2-content" class="admin-slide-content">
       <div class="admin-card">
         <h3><i class="fa-solid fa-user-shield"></i> Anti-Cheating & Security Analytics Tracker</h3>
-        <p class="subtitle">Live security logs of tab switches, copy/paste attempts, and penalty marks.</p>
+        <p class="subtitle">Live security logs of tab switches, copy/paste attempts, phone numbers, and penalty marks.</p>
         
+        <!-- STATS NUMBERS BOARD -->
+        <div class="stats-summary">
+          <div class="stat-card">
+            <h4>Total Submissions</h4>
+            <p id="stat-total-students">0</p>
+          </div>
+          <div class="stat-card">
+            <h4>Total Tab Violations</h4>
+            <p id="stat-total-tabs" style="color: var(--danger);">0</p>
+          </div>
+          <div class="stat-card">
+            <h4>Copy Attempts</h4>
+            <p id="stat-total-copies" style="color: var(--danger);">0</p>
+          </div>
+          <div class="stat-card">
+            <h4>Penalties Issued</h4>
+            <p id="stat-total-penalties" style="color: var(--accent);">0</p>
+          </div>
+        </div>
+
         <div class="table-responsive">
           <table>
             <thead>
               <tr>
                 <th>Student Details</th>
+                <th>Phone / Mobile No.</th>
                 <th>Submit Time</th>
                 <th>Tab Switches</th>
                 <th>Copy Violations</th>
@@ -222,7 +320,7 @@
               </tr>
             </thead>
             <tbody id="analytics-table-body">
-              <tr><td colspan="5" style="text-align:center;">Loading analytics data...</td></tr>
+              <tr><td colspan="6" style="text-align:center;">Loading analytics data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -246,13 +344,14 @@
               <tr>
                 <th>Rank</th>
                 <th>Student Details</th>
+                <th>Phone No.</th>
                 <th>Score</th>
                 <th>Submitted At</th>
                 <th>Feedback</th>
               </tr>
             </thead>
             <tbody id="leaderboard-table-body">
-              <tr><td colspan="5" style="text-align:center;">Loading leaderboard data...</td></tr>
+              <tr><td colspan="6" style="text-align:center;">Loading leaderboard data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -276,6 +375,13 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     let allStudentResults = [];
+
+    window.toggleUploadUI = (mode) => {
+      document.querySelectorAll('.mode-content').forEach(m => m.classList.remove('active'));
+      if (document.getElementById(`mode-${mode}-area`)) {
+        document.getElementById(`mode-${mode}-area`).classList.add('active');
+      }
+    };
 
     window.handleLogin = (e) => {
       e.preventDefault();
@@ -323,6 +429,7 @@
           document.getElementById('config-total-pool').value = data.totalPool || "";
           document.getElementById('config-student-limit').value = data.studentLimit || "";
           document.getElementById('config-test-duration').value = data.durationMinutes || 30;
+          document.getElementById('config-per-question-timer').value = data.perQuestionSeconds || 0;
           
           if(data.windowStart) {
             document.getElementById('config-window-start').value = new Date(data.windowStart).toISOString().slice(0, 16);
@@ -333,7 +440,15 @@
 
           if (data.uploadMode) {
             const radio = document.querySelector(`input[name="upload-mode"][value="${data.uploadMode}"]`);
-            if (radio) radio.checked = true;
+            if (radio) {
+              radio.checked = true;
+              toggleUploadUI(data.uploadMode);
+            }
+          }
+
+          if (data.questionLanguage) {
+            const langRadio = document.querySelector(`input[name="question-language"][value="${data.questionLanguage}"]`);
+            if (langRadio) langRadio.checked = true;
           }
         }
       } catch (e) {
@@ -341,13 +456,31 @@
       }
     }
 
+    window.addQuestionToPool = () => {
+      const qText = document.getElementById('live-q-text').value.trim();
+      const optA = document.getElementById('live-opt-a').value.trim();
+      const optB = document.getElementById('live-opt-b').value.trim();
+      const optC = document.getElementById('live-opt-c').value.trim();
+      const optD = document.getElementById('live-opt-d').value.trim();
+      const correct = document.getElementById('live-correct-opt').value;
+
+      if (!qText || !optA || !optB || !optC || !optD) {
+        alert("Please fill all fields of the live question form.");
+        return;
+      }
+
+      alert("Live question processed! Click 'Save & Apply Configurations' to lock changes into database.");
+    };
+
     window.saveExamSettings = async () => {
       const totalPool = parseInt(document.getElementById('config-total-pool').value);
       const studentLimit = parseInt(document.getElementById('config-student-limit').value);
       const durationMinutes = parseInt(document.getElementById('config-test-duration').value);
+      const perQuestionSeconds = parseInt(document.getElementById('config-per-question-timer').value) || 0;
       const windowStartVal = document.getElementById('config-window-start').value;
       const windowEndVal = document.getElementById('config-window-end').value;
       const uploadMode = document.querySelector('input[name="upload-mode"]:checked').value;
+      const questionLanguage = document.querySelector('input[name="question-language"]:checked').value;
 
       if (!totalPool || !studentLimit || !durationMinutes || !windowStartVal || !windowEndVal) {
         alert("Please fill all configuration & window timing fields.");
@@ -363,9 +496,11 @@
           totalPool,
           studentLimit,
           durationMinutes,
+          perQuestionSeconds,
           windowStart: new Date(windowStartVal).getTime(),
           windowEnd: new Date(windowEndVal).getTime(),
           uploadMode,
+          questionLanguage,
           updatedAt: new Date()
         });
         alert("Configuration & Window settings saved successfully!");
@@ -381,12 +516,16 @@
       const analyticsBody = document.getElementById('analytics-table-body');
       const leaderboardBody = document.getElementById('leaderboard-table-body');
 
-      analyticsBody.innerHTML = `<tr><td colspan="5" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching records...</td></tr>`;
-      leaderboardBody.innerHTML = `<tr><td colspan="5" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching records...</td></tr>`;
+      analyticsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching records...</td></tr>`;
+      leaderboardBody.innerHTML = `<tr><td colspan="6" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching records...</td></tr>`;
 
       try {
         const snap = await getDocs(collection(db, "results"));
         allStudentResults = [];
+
+        let totalTabs = 0;
+        let totalCopies = 0;
+        let totalPenalties = 0;
 
         snap.forEach((docSnap) => {
           const r = docSnap.data();
@@ -409,32 +548,48 @@
             timeStyle: 'short'
           }) : "N/A";
 
+          const tabs = r.tabSwitches !== undefined ? r.tabSwitches : (r.tab_switches || 0);
+          const copies = r.copiesAttempted !== undefined ? r.copiesAttempted : (r.copy_paste || 0);
+          const penalties = r.penaltiesApplied || 0;
+
+          totalTabs += tabs;
+          totalCopies += copies;
+          totalPenalties += penalties;
+
           allStudentResults.push({
             id: docSnap.id,
             name: r.name || "Anonymous",
+            phone: r.phone || r.mobile || "N/A",
             email: r.email || "No Email",
             scoreText: r.score || "0/0",
             scoreVal: scoreVal,
             rawDate: dateObj,
-            tabSwitches: r.tabSwitches !== undefined ? r.tabSwitches : (r.tab_switches || 0),
-            copiesAttempted: r.copiesAttempted !== undefined ? r.copiesAttempted : (r.copy_paste || 0),
-            penaltiesApplied: r.penaltiesApplied || 0,
+            tabSwitches: tabs,
+            copiesAttempted: copies,
+            penaltiesApplied: penalties,
             submittedAtStr: submitTimeFormatted,
             feedback: r.feedback || "None"
           });
         });
+
+        // Update Stat Cards Numbers
+        document.getElementById('stat-total-students').innerText = allStudentResults.length;
+        document.getElementById('stat-total-tabs').innerText = totalTabs;
+        document.getElementById('stat-total-copies').innerText = totalCopies;
+        document.getElementById('stat-total-penalties').innerText = `-${totalPenalties}`;
 
         allStudentResults.sort((a, b) => b.rawDate - a.rawDate);
 
         // Render Security Analytics Tab
         analyticsBody.innerHTML = '';
         if (allStudentResults.length === 0) {
-          analyticsBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No submissions found.</td></tr>`;
+          analyticsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No submissions found.</td></tr>`;
         } else {
           allStudentResults.forEach(r => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
               <td><strong>${r.name}</strong><br><span style="font-size:0.8rem; color:var(--text-muted);">${r.email}</span></td>
+              <td><strong>${r.phone}</strong></td>
               <td><span class="time-stamp"><i class="fa-regular fa-clock"></i> ${r.submittedAtStr}</span></td>
               <td><span class="alert-indicator ${r.tabSwitches > 0 ? 'alert-warn' : 'alert-safe'}">${r.tabSwitches} Times</span></td>
               <td><span class="alert-indicator ${r.copiesAttempted > 0 ? 'alert-warn' : 'alert-safe'}">${r.copiesAttempted} Times</span></td>
@@ -448,13 +603,14 @@
         const leaderboardData = [...allStudentResults].sort((a, b) => b.scoreVal - a.scoreVal || b.rawDate - a.rawDate);
         leaderboardBody.innerHTML = '';
         if (leaderboardData.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No leaderboard records.</td></tr>`;
+          leaderboardBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No leaderboard records.</td></tr>`;
         } else {
           leaderboardData.forEach((r, idx) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
               <td><span class="badge-rank">#${idx + 1}</span></td>
               <td><strong>${r.name}</strong><br><span style="font-size:0.8rem; color:var(--text-muted);">${r.email}</span></td>
+              <td><strong>${r.phone}</strong></td>
               <td><strong style="color:var(--primary-light);">${r.scoreText}</strong></td>
               <td><span class="time-stamp"><i class="fa-regular fa-clock"></i> ${r.submittedAtStr}</span></td>
               <td>${r.feedback}</td>
@@ -465,7 +621,7 @@
 
       } catch (err) {
         console.error(err);
-        analyticsBody.innerHTML = `<tr><td colspan="5" style="color:var(--danger); text-align:center;">Error loading database data.</td></tr>`;
+        analyticsBody.innerHTML = `<tr><td colspan="6" style="color:var(--danger); text-align:center;">Error loading database data.</td></tr>`;
       }
     };
 
@@ -474,9 +630,9 @@
         alert("No data available to download.");
         return;
       }
-      let csv = "Rank,Name,Email,Score,Submitted At,Tab Switches,Copy Violations,Penalties Applied\n";
+      let csv = "Rank,Name,Email,Phone,Score,Submitted At,Tab Switches,Copy Violations,Penalties Applied\n";
       allStudentResults.forEach((r, i) => {
-        csv += `${i+1},"${r.name}","${r.email}","${r.scoreText}","${r.submittedAtStr}",${r.tabSwitches},${r.copiesAttempted},-${r.penaltiesApplied}\n`;
+        csv += `${i+1},"${r.name}","${r.email}","${r.phone}","${r.scoreText}","${r.submittedAtStr}",${r.tabSwitches},${r.copiesAttempted},-${r.penaltiesApplied}\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
