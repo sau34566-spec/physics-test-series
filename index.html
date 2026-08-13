@@ -96,6 +96,7 @@
             border-radius: 8px;
             font-size: 0.95rem;
             outline: none;
+            font-family: 'Inter', sans-serif;
         }
 
         .form-group input:focus {
@@ -104,7 +105,7 @@
 
         /* MAIN EXAM CONTAINER LAYOUT */
         .test-wrapper {
-            display: none; /* Hidden until valid login */
+            display: none; /* Hidden until login */
             grid-template-columns: 1fr 340px;
             gap: 20px;
             max-width: 1400px;
@@ -140,6 +141,18 @@
             color: var(--primary);
             font-size: 1.3rem;
             font-weight: 800;
+        }
+
+        .timer-display {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .q-text {
@@ -206,6 +219,7 @@
             gap: 8px;
             transition: all 0.2s;
             font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-primary { background: var(--primary-accent); color: white; width: 100%; justify-content: center; }
@@ -289,6 +303,7 @@
             background: var(--nta-not-visited);
             transition: transform 0.15s ease;
             position: relative;
+            font-family: 'Inter', sans-serif;
         }
 
         .q-btn:hover { transform: scale(1.08); }
@@ -314,20 +329,19 @@
     <div class="login-overlay" id="login-modal">
         <div class="login-box">
             <h2>Candidate Login</h2>
-            <p>Please enter your registration details to start test</p>
+            <p>Please enter your details to start test</p>
             <form id="student-login-form" onsubmit="startExamPortal(event)">
                 <div class="form-group">
                     <label>Full Name *</label>
-                    <input type="text" id="student-name" placeholder="e.g. Rahul Kumar" required>
+                    <input type="text" id="student-name" required>
                 </div>
                 <div class="form-group">
                     <label>Gmail Address *</label>
-                    <input type="email" id="student-email" placeholder="e.g. rahul@gmail.com" required>
+                    <input type="email" id="student-email" required>
                 </div>
-                <!-- BATCH TIME OPTION -->
                 <div class="form-group">
                     <label>Batch Time *</label>
-                    <input type="text" id="student-batch" placeholder="e.g. 08:00 AM - 10:00 AM" required>
+                    <input type="text" id="student-batch" required>
                 </div>
                 <button type="submit" class="btn btn-primary"><i class="fa-solid fa-play"></i> Start Examination</button>
             </form>
@@ -342,7 +356,10 @@
             <div>
                 <div class="q-header">
                     <span class="q-title" id="display-q-num"><i class="fa-solid fa-flask-vial"></i> Question 1</span>
-                    <span style="font-weight: 700; color: #64748b;" id="marking-scheme">Marks: +4 / -1</span>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <span style="font-weight: 700; color: #64748b;" id="marking-scheme">Marks: +1 / -0.25</span>
+                        <div class="timer-display" id="timer-box"><i class="fa-solid fa-clock"></i> <span id="time-left">00:00</span></div>
+                    </div>
                 </div>
 
                 <div id="q-content-box">
@@ -393,6 +410,10 @@
         let isExamActive = false;
         let tabSwitchCount = 0;
 
+        let examDurationMinutes = 15; // Controlled by admin/default
+        let timerInterval = null;
+        let totalSecondsLeft = 0;
+
         let studentData = {
             name: '',
             email: '',
@@ -403,7 +424,7 @@
             e.preventDefault();
             const emailInput = document.getElementById('student-email').value.trim().toLowerCase();
 
-            // SINGLE LOGIN / GMAIL ATTEMPT CHECKER
+            // GMAIL ATTEMPT CHECK
             let attemptedEmails = JSON.parse(localStorage.getItem('attemptedEmails') || '[]');
             
             if (attemptedEmails.includes(emailInput)) {
@@ -428,8 +449,17 @@
 
             try {
                 const response = await fetch(chapterFile);
-                questions = await response.json();
+                const data = await response.json();
+                
+                // Admin dynamic structure sync (Array or Object format)
+                if (Array.isArray(data)) {
+                    questions = data;
+                } else if (data.questions) {
+                    questions = data.questions;
+                    if (data.duration) examDurationMinutes = data.duration;
+                }
             } catch (err) {
+                // Fallback default sample questions
                 questions = [
                     { question: "Vector A and Vector B are perpendicular. Their dot product will be?", options: ["0", "1", "-1", "Infinity"], answer: 0 },
                     { question: "SI unit of acceleration is?", options: ["m/s", "m/s²", "kg m/s", "N/m"], answer: 1 },
@@ -444,6 +474,30 @@
 
             renderPalette();
             loadQuestion(0);
+            startTimer(examDurationMinutes);
+        }
+
+        function startTimer(minutes) {
+            totalSecondsLeft = minutes * 60;
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                if (totalSecondsLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Time's up! Your exam is being automatically submitted.");
+                    submitExam(true);
+                } else {
+                    totalSecondsLeft--;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            let mins = Math.floor(totalSecondsLeft / 60);
+            let secs = totalSecondsLeft % 60;
+            document.getElementById('time-left').innerText = 
+                `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
         }
 
         function loadQuestion(index) {
@@ -530,11 +584,13 @@
             });
         }
 
-        function submitExam() {
+        function submitExam(forceSubmit = false) {
             if (!isExamActive) return;
             let answered = questionStates.filter(s => s.status === 'answered' || s.status === 'review-answered').length;
-            if (confirm(`Candidate: ${studentData.name}\nBatch: ${studentData.batch}\n\nAre you sure you want to submit?\nAttempted: ${answered} / ${questions.length}`)) {
+            
+            if (forceSubmit || confirm(`Candidate: ${studentData.name}\nBatch: ${studentData.batch}\n\nAre you sure you want to submit?\nAttempted: ${answered} / ${questions.length}`)) {
                 isExamActive = false;
+                clearInterval(timerInterval);
 
                 // SAVE EMAIL TO PREVENT RE-ATTEMPT
                 let attemptedEmails = JSON.parse(localStorage.getItem('attemptedEmails') || '[]');
@@ -574,7 +630,7 @@
                     alert("SECURITY WARNING (1/2):\nTab switch or background app detected! Next attempt will result in auto-submission.");
                 } else if (tabSwitchCount >= 2) {
                     alert("CRITICAL SECURITY VIOLATION:\nMultiple tab switches detected! Your exam is being automatically submitted now.");
-                    submitExam();
+                    submitExam(true);
                 }
             }
         });
