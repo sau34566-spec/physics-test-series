@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NTA Examination Portal</title>
+  
+  <!-- FontAwesome & Font Integration -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- External Security Script Integration -->
+  <script src="security.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; user-select: none; }
+    body { background-color: #f4f6f9; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+    /* Header */
+    header { background: #003366; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
+    .timer-box { background: #ff9800; color: #fff; padding: 6px 14px; border-radius: 4px; font-weight: bold; font-size: 16px; }
+
+    /* Main Exam Layout */
+    .exam-container { display: flex; flex: 1; overflow: hidden; }
+    
+    /* Left: Question Area */
+    .question-section { flex: 3; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; background: white; border-right: 2px solid #e0e0e0; overflow-y: auto; }
+    .q-header { font-size: 16px; font-weight: bold; border-bottom: 2px solid #003366; padding-bottom: 8px; margin-bottom: 15px; }
+    .q-text { font-size: 16px; color: #333; margin-bottom: 20px; line-height: 1.5; }
+    .options-list { display: flex; flex-direction: column; gap: 12px; }
+    .option-item { border: 1px solid #ccc; padding: 12px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+    .option-item:hover { background-color: #f0f4f8; }
+    .option-item.selected { background-color: #e3f2fd; border-color: #2196f3; font-weight: bold; }
+
+    /* Right: Question Palette Sidebar */
+    .palette-section { flex: 1; background: #fafafa; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; min-width: 280px; }
+    .student-info { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ddd; }
+    .student-info img { width: 50px; height: 50px; border-radius: 50%; border: 1px solid #ccc; }
+    
+    .status-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; margin-bottom: 15px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .badge { width: 22px; height: 22px; display: inline-flex; justify-content: center; align-items: center; color: white; font-size: 11px; font-weight: bold; border-radius: 3px; }
+    .bg-answered { background: #2e7d32; } /* Green */
+    .bg-not-answered { background: #c62828; } /* Red */
+    .bg-not-visited { background: #e0e0e0; color: #333; border: 1px solid #ccc; } /* White/Gray */
+    .bg-review { background: #6a1b9a; } /* Purple */
+
+    .grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 250px; overflow-y: auto; padding-right: 5px; }
+    .btn-palette { width: 100%; height: 38px; border: 1px solid #ccc; background: white; font-weight: bold; border-radius: 4px; cursor: pointer; }
+    .btn-palette.active { border: 2px solid #000; }
+
+    /* Bottom Action Bar */
+    .action-bar { border-top: 1px solid #ddd; padding: 12px 20px; background: #eee; display: flex; justify-content: space-between; gap: 10px; }
+    .btn { padding: 10px 18px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .btn-save { background: #2e7d32; color: white; }
+    .btn-mark { background: #6a1b9a; color: white; }
+    .btn-clear { background: #d32f2f; color: white; }
+    .btn-submit { background: #003366; color: white; width: 100%; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header>
+    <h1>NTA Online Examination Portal</h1>
+    <div class="timer-box">Time Left: <span id="time-display">00:00:00</span></div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="exam-container">
+    
+    <!-- Question Area -->
+    <div class="question-section">
+      <div>
+        <div class="q-header" id="question-number-title">Question No. 1</div>
+        <div class="q-text" id="question-text">Loading question content...</div>
+        
+        <div class="options-list" id="options-container">
+          <!-- Dynamic Options Rendered via JS -->
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-bar">
+        <div>
+          <button class="btn btn-save" onclick="saveAndNext()">Save & Next</button>
+          <button class="btn btn-mark" onclick="markForReview()">Mark for Review & Next</button>
+          <button class="btn btn-clear" onclick="clearResponse()">Clear Response</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar / Question Palette -->
+    <div class="palette-section">
+      <div>
+        <div class="student-info">
+          <i class="fa-solid fa-user-circle fa-3x" style="color: #003366;"></i>
+          <div>
+            <strong id="student-name">Candidate Name</strong><br>
+            <small id="student-roll">Roll No: N/A</small>
+          </div>
+        </div>
+
+        <!-- Legend Status Indicators -->
+        <div class="status-legend">
+          <div class="legend-item"><span class="badge bg-answered" id="cnt-answered">0</span> Answered</div>
+          <div class="legend-item"><span class="badge bg-not-answered" id="cnt-not-answered">0</span> Not Answered</div>
+          <div class="legend-item"><span class="badge bg-not-visited" id="cnt-not-visited">0</span> Not Visited</div>
+          <div class="legend-item"><span class="badge bg-review" id="cnt-review">0</span> Marked for Review</div>
+        </div>
+
+        <h4 style="margin-bottom: 10px; font-size: 14px;">Choose a Question:</h4>
+        <div class="grid-container" id="question-palette-grid">
+          <!-- Buttons generated dynamically -->
+        </div>
+      </div>
+
+      <button class="btn btn-submit" onclick="confirmSubmitExam()">Submit Test</button>
+    </div>
+
+  </div>
+
+  <!-- NTA Engine Script Integration -->
+  <script type="module">
+    // Verify session
+    const studentInfo = JSON.parse(sessionStorage.getItem("student_info")) || { name: "Student", roll: "1001" };
+    document.getElementById("student-name").innerText = studentInfo.name;
+    document.getElementById("student-roll").innerText = "Roll: " + studentInfo.roll;
+
+    // Direct submit handler
+    window.confirmSubmitExam = function() {
+      if (confirm("Are you sure you want to submit your exam?")) {
+        // Collect security logs if security.js loaded
+        const secReport = window.getSecurityReport ? window.getSecurityReport() : {};
+        alert("Exam Submitted Successfully!");
+        window.location.href = "index.html";
+      }
+    };
+  </script>
+
+</body>
+</html>
