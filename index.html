@@ -372,7 +372,7 @@
             </div>
 
             <div id="quiz-body">
-                <div class="question-text" id="q-text">Fetching dataset from admin portal...</div>
+                <div class="question-text" id="q-text">Fetching dataset...</div>
                 <div class="option-container" id="options-block"></div>
             </div>
 
@@ -620,27 +620,27 @@
             }
         };
 
-        // FETCH QUESTIONS DIRECTLY FROM admin.json
+        // FETCH QUESTIONS DIRECTLY FROM chapter1.json
         window.startTestExam = async () => {
             const startBtn = document.getElementById('start-exam-btn');
             startBtn.disabled = true;
             startBtn.innerText = "Loading Questions...";
 
             try {
-                const response = await fetch('admin.json');
-                if(!response.ok) throw new Error("Could not load admin.json");
+                const response = await fetch('chapter1.json');
+                if(!response.ok) throw new Error("Could not load chapter1.json");
                 
                 questionsList = await response.json();
 
                 if (!Array.isArray(questionsList) || questionsList.length === 0) {
-                    throw new Error("Invalid or empty question list in admin.json");
+                    throw new Error("Invalid or empty question list in chapter1.json");
                 }
 
                 isExamActive = true;
                 window.changeSlide(3);
                 loadQuestion(0);
             } catch (error) {
-                alert("Failed to load questions from admin.json. Make sure the file exists and is valid JSON.");
+                alert("Failed to load questions from chapter1.json. Make sure the file exists and is valid JSON.");
                 startBtn.disabled = false;
                 startBtn.innerText = "Start Examination";
             }
@@ -720,7 +720,6 @@
                 const selectedIdx = selectedAnswers[idx];
                 const studentSelectionText = selectedIdx !== undefined ? q.options[selectedIdx] : `<span style="color:var(--danger)">Not Attempted</span>`;
                 
-                // Matches dynamically with properties: correct, a, ans, or correctIndex
                 let correctSelectionText = q.correct || q.a || q.ans;
                 if(typeof q.correct === 'number') {
                     correctSelectionText = q.options[q.correct];
