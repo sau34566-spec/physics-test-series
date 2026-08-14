@@ -88,7 +88,7 @@
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 1.5rem; }
     .form-group { margin-bottom: 1.2rem; text-align: left; }
     label { display: block; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #334155; margin-bottom: 0.5rem; }
-    input[type="text"], input[type="password"], input[type="number"], input[type="datetime-local"], input[type="file"], textarea, select {
+    input[type="text"], input[type="password"], input[type="number"], input[type="datetime-local"], input[type="file"], input[type="url"], textarea, select {
       width: 100%; padding: 0.85rem 1.1rem; border: 2px solid var(--border-color); border-radius: 10px;
       font-size: 0.95rem; font-weight: 500; outline: none; transition: all 0.2s; background: #f8fafc; color: var(--text-main);
     }
@@ -308,7 +308,10 @@
             <!-- 3. CODE / JSON MODE -->
             <div id="mode-code-area" class="mode-content">
               <h4 style="margin-bottom: 0.5rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-code"></i> JSON / GitHub Repository Upload</h4>
-              <p style="font-size:0.85rem; color:var(--text-muted);">Questions are fetched dynamically from your configured GitHub/JSON repository file.</p>
+              <div class="form-group">
+                <label>External JSON Data Raw URL *</label>
+                <input type="url" id="config-json-url" placeholder="https://raw.githubusercontent.com/.../questions.json">
+              </div>
             </div>
           </div>
         </div>
@@ -460,7 +463,7 @@
     const db = getFirestore(app);
     let allStudentResults = [];
 
-    // Format ISO string to datetime-local field format
+    // Helper format datetime-local
     function formatDateTimeLocal(timestamp) {
       if(!timestamp) return "";
       const d = new Date(timestamp);
@@ -525,10 +528,14 @@
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
-          document.getElementById('config-total-pool').value = data.totalPool || "";
-          document.getElementById('config-student-limit').value = data.studentLimit || "";
+          document.getElementById('config-total-pool').value = data.totalPool || data.total_questions || "";
+          document.getElementById('config-student-limit').value = data.studentLimit || data.questions_per_student || "";
           document.getElementById('config-per-question-timer').value = data.examDurationMinutes ?? (data.perQuestionSeconds ? Math.round(data.perQuestionSeconds / 60) : 60);
           
+          if(data.json_url || data.jsonUrl) {
+            document.getElementById('config-json-url').value = data.json_url || data.jsonUrl || "";
+          }
+
           if(data.windowStart) {
             document.getElementById('config-window-start').value = formatDateTimeLocal(data.windowStart);
           }
@@ -536,11 +543,12 @@
             document.getElementById('config-window-end').value = formatDateTimeLocal(data.windowEnd);
           }
 
-          if (data.uploadMode) {
-            const radio = document.querySelector(`input[name="upload-mode"][value="${data.uploadMode}"]`);
+          if (data.uploadMode || data.questions_source) {
+            const modeVal = data.uploadMode || data.questions_source;
+            const radio = document.querySelector(`input[name="upload-mode"][value="${modeVal}"]`);
             if (radio) {
               radio.checked = true;
-              toggleUploadUI(data.uploadMode);
+              toggleUploadUI(modeVal);
             }
           }
 
@@ -580,8 +588,13 @@
       const examDurationMinutes = parseInt(document.getElementById('config-per-question-timer').value) || 60;
       const windowStartVal = document.getElementById('config-window-start').value;
       const windowEndVal = document.getElementById('config-window-end').value;
-      const uploadMode = document.querySelector('input[name="upload-mode"]:checked').value;
-      const questionLanguage = document.querySelector('input[name="question-language"]:checked').value;
+      const jsonUrlVal = document.getElementById('config-json-url') ? document.getElementById('config-json-url').value.trim() : "";
+      
+      const uploadModeRadio = document.querySelector('input[name="upload-mode"]:checked');
+      const uploadMode = uploadModeRadio ? uploadModeRadio.value : "form";
+
+      const questionLangRadio = document.querySelector('input[name="question-language"]:checked');
+      const questionLanguage = questionLangRadio ? questionLangRadio.value : "hindi";
 
       if (!totalPool || !studentLimit || !windowStartVal || !windowEndVal) {
         alert("Please fill all required configuration & timing fields!");
@@ -595,18 +608,25 @@
       try {
         const configPayload = {
           totalPool,
+          total_questions: totalPool,
           studentLimit,
+          questions_per_student: studentLimit,
           examDurationMinutes,
+          perQuestionSeconds: examDurationMinutes * 60,
           windowStart: new Date(windowStartVal).getTime(),
           windowEnd: new Date(windowEndVal).getTime(),
           uploadMode,
+          questions_source: uploadMode,
+          jsonUrl: jsonUrlVal,
+          json_url: jsonUrlVal,
           questionLanguage,
           updatedAt: new Date().toISOString()
         };
 
-        // Saving into primary config doc as well as fallback test_settings for test page readers
+        // Atomic saves across configuration keys to prevent mismatch in Student Portal
         await setDoc(doc(db, "exam_config", "current_test"), configPayload, { merge: true });
         await setDoc(doc(db, "config", "test_settings"), configPayload, { merge: true });
+        await setDoc(doc(db, "test_config", "latest"), configPayload, { merge: true });
 
         alert("Configurations saved and locked successfully! Test page will now follow these times & parameters.");
       } catch (err) {
@@ -617,14 +637,13 @@
       }
     };
 
-    // REAL-TIME ACTIVE STUDENTS LISTENER
     function listenLiveActiveStudents() {
       onSnapshot(collection(db, "active_sessions"), (snapshot) => {
         let activeCount = 0;
         const now = Date.now();
         snapshot.forEach((doc) => {
           const data = doc.data();
-          if (data.lastPing && (now - data.lastPing) < 30000) { // Student pinged within last 30 sec
+          if (data.lastPing && (now - data.lastPing) < 30000) {
             activeCount++;
           }
         });
@@ -675,7 +694,7 @@
 
           const tabs = r.tabSwitches !== undefined ? r.tabSwitches : (r.tabSwitchesDetected || r.tab_switches || 0);
           const copies = r.copiesAttempted !== undefined ? r.copiesAttempted : (r.copyPasteAttempts || r.copy_paste || 0);
-          const penalties = r.penaltiesApplied !== undefined ? r.penaltiesApplied : tabs; // Penalty = 1 mark per tab switch
+          const penalties = r.penaltiesApplied !== undefined ? r.penaltiesApplied : tabs;
 
           totalTabs += tabs;
           totalCopies += copies;
@@ -697,7 +716,6 @@
           });
         });
 
-        // Update Counter Stats
         document.getElementById('stat-total-students').innerText = allStudentResults.length;
         document.getElementById('stat-total-tabs').innerText = totalTabs;
         document.getElementById('stat-total-copies').innerText = totalCopies;
@@ -705,7 +723,6 @@
 
         allStudentResults.sort((a, b) => b.rawDate - a.rawDate);
 
-        // Render Security Analytics Table
         analyticsBody.innerHTML = '';
         if (allStudentResults.length === 0) {
           analyticsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No submissions recorded yet.</td></tr>`;
@@ -724,7 +741,6 @@
           });
         }
 
-        // Render Leaderboard
         const leaderboardData = [...allStudentResults].sort((a, b) => b.scoreVal - a.scoreVal || a.rawDate - b.rawDate);
         leaderboardBody.innerHTML = '';
         if (leaderboardData.length === 0) {
@@ -743,7 +759,6 @@
           });
         }
 
-        // Render Insights & Advanced Analytics (Slide 4)
         renderAdvancedInsights(allStudentResults);
 
       } catch (err) {
@@ -778,7 +793,6 @@
       document.getElementById('insight-pass-rate').innerText = `${passRate}%`;
       document.getElementById('insight-highest-score').innerText = highestObj.scoreText;
 
-      // Question Analytics Engine
       const qTable = document.getElementById('question-insights-table-body');
       qTable.innerHTML = '';
 
