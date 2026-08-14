@@ -266,46 +266,74 @@
       statusBanner.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info'}"></i> <span>${message}</span>`;
     }
 
-    // 1. Verify Live Exam Timing from Admin Panel Config
+    // Dynamic Admin Configuration Engine with Multi-Source Fallback
     async function checkAdminTimingConfig() {
       let config = null;
 
+      // 1. Try reading from LocalStorage first (Fastest Sync)
       try {
-        if (db) {
+        const rawLocal = localStorage.getItem("exam_config");
+        if (rawLocal) config = JSON.parse(rawLocal);
+      } catch (e) {
+        console.warn("LocalStorage read error", e);
+      }
+
+      // 2. Try Firestore fallback
+      if (!config && typeof db !== "undefined") {
+        try {
           const docRef = doc(db, "exam_config", "current_test");
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             config = docSnap.data();
           }
+        } catch (err) {
+          console.warn("Firestore read error", err);
         }
-      } catch (err) {
-        console.warn("Using LocalStorage fallback config.");
       }
 
+      // 3. Fallback for alternate storage keys used by admin
       if (!config) {
-        config = JSON.parse(localStorage.getItem("exam_config"));
+        try {
+          const altLocal = localStorage.getItem("test_settings") || localStorage.getItem("examSettings");
+          if (altLocal) config = JSON.parse(altLocal);
+        } catch (e) {}
       }
 
-      const now = Date.now();
-
-      if (!config || !config.windowStart || !config.windowEnd) {
+      // If no config found at all
+      if (!config) {
         showStatus("Exam schedule has not been set by Admin yet.", "info");
         return null;
       }
 
-      if (now < config.windowStart) {
-        showStatus("Test window has not started yet. Please check scheduled time.", "error");
+      // Time parsing fix (Support string dates, HTML datetime-local, and Milliseconds)
+      const now = Date.now();
+      
+      let startTimeMs = typeof config.windowStart === 'number' ? config.windowStart : new Date(config.windowStart || config.startTime).getTime();
+      let endTimeMs = typeof config.windowEnd === 'number' ? config.windowEnd : new Date(config.windowEnd || config.endTime).getTime();
+
+      if (isNaN(startTimeMs) || isNaN(endTimeMs)) {
+        showStatus("Invalid exam schedule timing set by Admin.", "error");
+        return null;
+      }
+
+      // Live Timing Conditions Verification
+      if (now < startTimeMs) {
+        const startDateStr = new Date(startTimeMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        showStatus(`Test window has not started yet. Starts at ${startDateStr}.`, "error");
         startBtn.disabled = true;
         return null;
       }
 
-      if (now > config.windowEnd) {
+      if (now > endTimeMs) {
         showStatus("Test window has expired (Closed). Admissions to this test are locked.", "error");
         startBtn.disabled = true;
         startBtn.innerHTML = `<span>Test Closed</span> <i class="fa-solid fa-lock"></i>`;
         return null;
       }
 
+      // Active Window Case
+      statusBanner.style.display = "none";
+      startBtn.disabled = false;
       return config;
     }
 
@@ -342,7 +370,6 @@
       sessionStorage.setItem("student_info", JSON.stringify(studentData));
       sessionStorage.setItem("active_exam_config", JSON.stringify(liveConfig));
 
-      // Security Script will only load and activate inside nta.html
       window.location.href = "nta.html";
     });
   </script>
