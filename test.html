@@ -252,6 +252,61 @@
             font-size: 0.65rem;
             color: #fde047;
         }
+
+        /* RESULT SECTION OVERLAY MODAL */
+        #result-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 99999;
+            overflow-y: auto;
+            padding: 2rem 1rem;
+            backdrop-filter: blur(8px);
+        }
+
+        .result-card {
+            max-width: 850px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            color: var(--text-main);
+        }
+
+        .result-header {
+            text-align: center;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .result-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-bottom: 2rem;
+        }
+
+        .res-stat-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 1.2rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .res-stat-box h4 { font-size: 0.8rem; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+        .res-stat-box p { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
+
+        .analysis-item {
+            border: 1px solid #e2e8f0;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background: #f8fafc;
+        }
     </style>
 </head>
 <body>
@@ -307,23 +362,103 @@
 
     </div>
 
+    <!-- STUDENT RESULT MODAL SECTION -->
+    <div id="result-modal">
+        <div class="result-card">
+            <div class="result-header">
+                <h2 style="color: var(--primary); font-size: 1.8rem; font-weight: 800;"><i class="fa-solid fa-trophy"></i> Test Result & Performance Analysis</h2>
+                <p style="color: #64748b; font-size: 0.9rem; margin-top: 5px;">Exam Submitted Successfully</p>
+            </div>
+
+            <!-- STATS SUMMARY -->
+            <div class="result-stats-grid">
+                <div class="res-stat-box">
+                    <h4>Total Score</h4>
+                    <p id="res-score" style="color: var(--primary-accent);">0 / 0</p>
+                </div>
+                <div class="res-stat-box">
+                    <h4>Accuracy</h4>
+                    <p id="res-accuracy" style="color: #10b981;">0%</p>
+                </div>
+                <div class="res-stat-box">
+                    <h4>Correct</h4>
+                    <p id="res-correct" style="color: #10b981;">0</p>
+                </div>
+                <div class="res-stat-box">
+                    <h4>Incorrect</h4>
+                    <p id="res-wrong" style="color: #ef4444;">0</p>
+                </div>
+                <div class="res-stat-box">
+                    <h4>Unattempted</h4>
+                    <p id="res-unattempted" style="color: #64748b;">0</p>
+                </div>
+            </div>
+
+            <!-- QUESTION-BY-QUESTION REVIEW -->
+            <h3 style="margin-bottom: 1rem; color: var(--primary);"><i class="fa-solid fa-list-check"></i> Detailed Answer Key & Review</h3>
+            <div id="detailed-analysis-container">
+                <!-- Dynamic Breakdown -->
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn btn-submit" onclick="location.reload()"><i class="fa-solid fa-rotate-right"></i> Re-take Test</button>
+            </div>
+        </div>
+    </div>
+
     <!-- DYNAMIC EXAM ENGINE & NTA PALETTE LOGIC -->
     <script>
         let questions = [];
         let currentIndex = 0;
         let questionStates = [];
 
-        // Fetch JSON File Automatically (e.g. chapter1.json or custom URL param)
+        // Helper function to extract options from any JSON format
+        function parseOptions(qObj) {
+            if (Array.isArray(qObj.options) && qObj.options.length > 0) {
+                return qObj.options;
+            }
+            if (qObj.optionA || qObj.optionB) {
+                return [qObj.optionA, qObj.optionB, qObj.optionC, qObj.optionD].filter(Boolean);
+            }
+            if (qObj.optA || qObj.optB) {
+                return [qObj.optA, qObj.optB, qObj.optC, qObj.optD].filter(Boolean);
+            }
+            if (typeof qObj.options === 'object' && qObj.options !== null) {
+                return Object.values(qObj.options);
+            }
+            return ["Option A", "Option B", "Option C", "Option D"];
+        }
+
+        // Helper to extract correct answer index (0, 1, 2, 3 or 'A', 'B', 'C', 'D')
+        function parseCorrectAnswer(qObj) {
+            let ans = qObj.answer !== undefined ? qObj.answer : (qObj.correct !== undefined ? qObj.correct : qObj.correctOption);
+            if (ans === undefined || ans === null) return 0;
+
+            if (typeof ans === 'number') return ans;
+            if (typeof ans === 'string') {
+                let trimmed = ans.trim().toUpperCase();
+                if (trimmed === 'A' || trimmed === 'OPTION A') return 0;
+                if (trimmed === 'B' || trimmed === 'OPTION B') return 1;
+                if (trimmed === 'C' || trimmed === 'OPTION C') return 2;
+                if (trimmed === 'D' || trimmed === 'OPTION D') return 3;
+                let parsedInt = parseInt(trimmed);
+                if (!isNaN(parsedInt)) return parsedInt;
+            }
+            return 0;
+        }
+
+        // Fetch Questions JSON
         async function fetchQuestions() {
             const urlParams = new URLSearchParams(window.location.search);
             const chapterFile = urlParams.get('quiz') || 'chapter1.json';
 
             try {
                 const response = await fetch(chapterFile);
-                questions = await response.json();
+                if (!response.ok) throw new Error("File fetch failed");
+                const rawData = await response.json();
+                questions = Array.isArray(rawData) ? rawData : (rawData.questions || [rawData]);
             } catch (err) {
-                console.warn("Falling back to demo question data...", err);
-                // Fallback default questions if JSON fetch fails
+                console.warn("Falling back to default questions...", err);
                 questions = [
                     { question: "Vector A and Vector B are perpendicular. Their dot product will be?", options: ["0", "1", "-1", "Infinity"], answer: 0 },
                     { question: "SI unit of acceleration is?", options: ["m/s", "m/s²", "kg m/s", "N/m"], answer: 1 },
@@ -331,7 +466,14 @@
                 ];
             }
 
-            // Initialize Question States according to total JSON question count
+            // Normalize Question Structure
+            questions = questions.map(q => ({
+                questionText: q.question || q.text || q.questionText || "Question text not found",
+                optionsList: parseOptions(q),
+                correctAnswerIdx: parseCorrectAnswer(q)
+            }));
+
+            // Initialize Question States
             questionStates = questions.map(() => ({
                 status: 'not-visited',
                 selectedOption: null
@@ -352,13 +494,12 @@
             document.getElementById('display-q-num').innerHTML = `<i class="fa-solid fa-flask-vial"></i> Question ${index + 1} of ${questions.length}`;
             
             const qObj = questions[index];
-            document.getElementById('q-text').innerText = qObj.question || qObj.text || "No Question Text Found";
+            document.getElementById('q-text').innerText = qObj.questionText;
 
             const optsContainer = document.getElementById('options-container');
             optsContainer.innerHTML = '';
 
-            const optsList = qObj.options || [];
-            optsList.forEach((optText, optIdx) => {
+            qObj.optionsList.forEach((optText, optIdx) => {
                 const isSelected = questionStates[index].selectedOption === optIdx;
                 const div = document.createElement('div');
                 div.className = `option-item ${isSelected ? 'selected' : ''}`;
@@ -425,22 +566,72 @@
             });
         }
 
+        // SUBMIT EXAM & GENERATE RESULT SECTION
         function submitExam() {
-            let answered = questionStates.filter(s => s.status === 'answered' || s.status === 'review-answered').length;
-            if (confirm(`Are you sure you want to submit?\nAttempted: ${answered} / ${questions.length}`)) {
-                alert("Exam submitted successfully!");
+            let answeredCount = questionStates.filter(s => s.selectedOption !== null).length;
+            if (!confirm(`Are you sure you want to submit?\nAttempted: ${answeredCount} / ${questions.length}`)) {
+                return;
             }
+
+            let correctCount = 0;
+            let wrongCount = 0;
+            let unattemptedCount = 0;
+            let analysisHTML = '';
+
+            questions.forEach((q, idx) => {
+                const selected = questionStates[idx].selectedOption;
+                const correct = q.correctAnswerIdx;
+
+                let statusBadge = '';
+                if (selected === null) {
+                    unattemptedCount++;
+                    statusBadge = `<span style="color:#64748b; font-weight:700;"><i class="fa-solid fa-minus"></i> Unattempted</span>`;
+                } else if (selected === correct) {
+                    correctCount++;
+                    statusBadge = `<span style="color:#10b981; font-weight:700;"><i class="fa-solid fa-check"></i> Correct (+4)</span>`;
+                } else {
+                    wrongCount++;
+                    statusBadge = `<span style="color:#ef4444; font-weight:700;"><i class="fa-solid fa-xmark"></i> Incorrect (-1)</span>`;
+                }
+
+                const userOptText = selected !== null ? `${String.fromCharCode(65 + selected)}. ${q.optionsList[selected]}` : 'None';
+                const correctOptText = `${String.fromCharCode(65 + correct)}. ${q.optionsList[correct]}`;
+
+                analysisHTML += `
+                    <div class="analysis-item">
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                            <strong>Q${idx + 1}: ${q.questionText}</strong>
+                            ${statusBadge}
+                        </div>
+                        <p style="font-size: 0.88rem; color:#475569;">Your Answer: <strong>${userOptText}</strong></p>
+                        <p style="font-size: 0.88rem; color:#16a34a;">Correct Answer: <strong>${correctOptText}</strong></p>
+                    </div>
+                `;
+            });
+
+            // Calculate Marks (+4 / -1 Scheme)
+            const totalMarks = (correctCount * 4) - (wrongCount * 1);
+            const maxMarks = questions.length * 4;
+            const accuracy = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+
+            document.getElementById('res-score').innerText = `${totalMarks} / ${maxMarks}`;
+            document.getElementById('res-accuracy').innerText = `${accuracy}%`;
+            document.getElementById('res-correct').innerText = correctCount;
+            document.getElementById('res-wrong').innerText = wrongCount;
+            document.getElementById('res-unattempted').innerText = unattemptedCount;
+            document.getElementById('detailed-analysis-container').innerHTML = analysisHTML;
+
+            // Show Result Overlay Screen
+            document.getElementById('result-modal').style.display = 'block';
         }
 
         window.onload = fetchQuestions;
     </script>
 
-    <!-- SECURITY JAVASCRIPT ENGINE (ORIGINAL LOYAL COPIED LOCKS) -->
+    <!-- SECURITY JAVASCRIPT ENGINE -->
     <script>
-        // 1. Right-Click Menu Block
         document.addEventListener('contextmenu', event => event.preventDefault());
 
-        // 2. Copy aur Paste Command Disabled
         document.addEventListener('copy', (e) => {
             e.preventDefault();
             alert("Security Alert: Copying test contents is prohibited!");
@@ -450,31 +641,25 @@
             alert("Security Alert: Pasting functions are locked!");
         });
 
-        // 3. Tab Switching Detection
         document.addEventListener("visibilitychange", function() {
             if (document.hidden) {
                 alert("CRITICAL WARNING: Tab switching detected! This incident has been logged in the system portal.");
             }
         });
 
-        // 4. Keyboard Shortcuts Disable (Print, DevTools, Inspect)
         document.addEventListener("keydown", function(e) {
-            // Ctrl+P (Print Screen / PDF download shortcut block)
             if (e.ctrlKey && (e.key === 'p' || e.keyCode === 80)) {
                 e.preventDefault();
                 alert("Security Action: Page rendering to print is blocked.");
             }
-            // F12 key (Inspect Element shortcut block)
             if (e.key === "F12" || e.keyCode === 123) {
                 e.preventDefault();
                 alert("Security Action: Developer settings access denied.");
             }
-            // Ctrl + Shift + I (Inspect Panel alternative lock)
             if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.keyCode === 73)) {
                 e.preventDefault();
                 alert("Security Action: Debugging tools are offline.");
             }
-            // Clear clipboard buffer on PrintScreen button trigger
             if (e.key === "PrintScreen") {
                 navigator.clipboard.writeText("");
                 alert("Screenshots are restricted on this exam page!");
