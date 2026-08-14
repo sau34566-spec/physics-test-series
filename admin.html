@@ -83,7 +83,7 @@
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 1.5rem; }
     .form-group { margin-bottom: 1.2rem; text-align: left; }
     label { display: block; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #334155; margin-bottom: 0.5rem; }
-    input[type="text"], input[type="password"], input[type="number"], input[type="datetime-local"], input[type="file"], input[type="url"], textarea, select {
+    input[type="text"], input[type="password"], input[type="number"], input[type="datetime-local"], textarea, select {
       width: 100%; padding: 0.85rem 1.1rem; border: 2px solid var(--border-color); border-radius: 10px;
       font-size: 0.95rem; font-weight: 500; outline: none; transition: all 0.2s; background: #f8fafc; color: var(--text-main);
     }
@@ -237,7 +237,7 @@
               <input type="radio" name="upload-mode" value="msword" onclick="toggleUploadUI('msword')"> MS Word Parse
             </label>
             <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600;">
-              <input type="radio" name="upload-mode" value="code" onclick="toggleUploadUI('code')"> JSON / GitHub Code Upload
+              <input type="radio" name="upload-mode" value="code" onclick="toggleUploadUI('code')"> JSON File (chapter1.json)
             </label>
           </div>
 
@@ -288,10 +288,10 @@
             </div>
 
             <div id="mode-code-area" class="mode-content">
-              <h4 style="margin-bottom: 0.5rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-code"></i> JSON / GitHub Repository Upload</h4>
-              <div class="form-group">
-                <label>External JSON Data Raw URL *</label>
-                <input type="url" id="config-json-url" placeholder="https://raw.githubusercontent.com/.../questions.json">
+              <h4 style="margin-bottom: 0.5rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-file-code"></i> Chapter JSON Attachment</h4>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">When selected, questions will be automatically loaded from your <strong>chapter1.json</strong> file.</p>
+              <div style="background: #e2e8f0; padding: 10px 14px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; color: #1e293b;">
+                <i class="fa-solid fa-circle-check" style="color: var(--success);"></i> Attached File: <code>chapter1.json</code>
               </div>
             </div>
           </div>
@@ -513,10 +513,6 @@
           document.getElementById('config-total-pool').value = data.totalPool || data.total_questions || "";
           document.getElementById('config-student-limit').value = data.studentLimit || data.questions_per_student || "";
           document.getElementById('config-per-question-timer').value = data.examDurationMinutes ?? (data.perQuestionSeconds ? Math.round(data.perQuestionSeconds / 60) : 60);
-          
-          if(data.json_url || data.jsonUrl) {
-            document.getElementById('config-json-url').value = data.json_url || data.jsonUrl || "";
-          }
 
           if(data.windowStart || data.startTime) {
             document.getElementById('config-window-start').value = formatDateTimeLocal(data.windowStart || data.startTime);
@@ -570,7 +566,6 @@
       const examDurationMinutes = parseInt(document.getElementById('config-per-question-timer').value) || 60;
       const windowStartVal = document.getElementById('config-window-start').value;
       const windowEndVal = document.getElementById('config-window-end').value;
-      const jsonUrlVal = document.getElementById('config-json-url') ? document.getElementById('config-json-url').value.trim() : "";
       
       const uploadModeRadio = document.querySelector('input[name="upload-mode"]:checked');
       const uploadMode = uploadModeRadio ? uploadModeRadio.value : "form";
@@ -582,6 +577,9 @@
         alert("Please fill all required configuration & timing fields!");
         return;
       }
+
+      // Agar JSON/Code mode select kiya hai toh automatically chapter1.json link attach ho jayegi
+      const jsonUrlVal = uploadMode === "code" ? "chapter1.json" : "";
 
       const startTimeMs = new Date(windowStartVal).getTime();
       const endTimeMs = new Date(windowEndVal).getTime();
@@ -609,7 +607,6 @@
         updatedAt: new Date().toISOString()
       };
 
-      // Direct local storage save for zero lag
       localStorage.setItem("exam_config", JSON.stringify(configPayload));
       localStorage.setItem("test_settings", JSON.stringify(configPayload));
 
@@ -618,7 +615,7 @@
         await setDoc(doc(db, "config", "test_settings"), configPayload, { merge: true });
         await setDoc(doc(db, "test_config", "latest"), configPayload, { merge: true });
 
-        alert("Configurations saved and locked successfully! Test page will now follow these times & parameters.");
+        alert("Configurations saved and locked successfully! chapter1.json attached for student questions.");
       } catch (err) {
         alert("Saved to browser local cache! (Firebase notice: " + err.message + ")");
       } finally {
