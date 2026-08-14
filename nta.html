@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NTA Examination Portal</title>
+  <title>Online Examination Portal</title>
   
   <!-- FontAwesome & Font Integration -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -32,11 +32,11 @@
     .option-item { border: 1px solid #ccc; padding: 12px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
     .option-item:hover { background-color: #f0f4f8; }
     .option-item.selected { background-color: #e3f2fd; border-color: #2196f3; font-weight: bold; }
+    .option-item input { accent-color: #003366; width: 18px; height: 18px; }
 
     /* Right: Question Palette Sidebar */
     .palette-section { flex: 1; background: #fafafa; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; min-width: 280px; }
     .student-info { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ddd; }
-    .student-info img { width: 50px; height: 50px; border-radius: 50%; border: 1px solid #ccc; }
     
     .status-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; margin-bottom: 15px; }
     .legend-item { display: flex; align-items: center; gap: 6px; }
@@ -47,12 +47,15 @@
     .bg-review { background: #6a1b9a; } /* Purple */
 
     .grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 250px; overflow-y: auto; padding-right: 5px; }
-    .btn-palette { width: 100%; height: 38px; border: 1px solid #ccc; background: white; font-weight: bold; border-radius: 4px; cursor: pointer; }
-    .btn-palette.active { border: 2px solid #000; }
+    .btn-palette { width: 100%; height: 38px; border: 1px solid #ccc; background: white; font-weight: bold; border-radius: 4px; cursor: pointer; color: #333; font-size: 13px; }
+    .btn-palette.active { border: 2px solid #000; box-shadow: 0 0 4px rgba(0,0,0,0.3); }
+    .btn-palette.bg-answered { background: #2e7d32; color: white; border-color: #2e7d32; }
+    .btn-palette.bg-not-answered { background: #c62828; color: white; border-color: #c62828; }
+    .btn-palette.bg-review { background: #6a1b9a; color: white; border-color: #6a1b9a; }
 
     /* Bottom Action Bar */
-    .action-bar { border-top: 1px solid #ddd; padding: 12px 20px; background: #eee; display: flex; justify-content: space-between; gap: 10px; }
-    .btn { padding: 10px 18px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .action-bar { border-top: 1px solid #ddd; padding: 12px 20px; background: #eee; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .btn { padding: 10px 14px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; }
     .btn-save { background: #2e7d32; color: white; }
     .btn-mark { background: #6a1b9a; color: white; }
     .btn-clear { background: #d32f2f; color: white; }
@@ -63,8 +66,8 @@
 
   <!-- Top Navigation Bar -->
   <header>
-    <h1>NTA Online Examination Portal</h1>
-    <div class="timer-box">Time Left: <span id="time-display">00:00:00</span></div>
+    <h1>Online Examination Portal</h1>
+    <div class="timer-box">Time Left: <span id="time-display">01:00:00</span></div>
   </header>
 
   <!-- Main Container -->
@@ -123,20 +126,212 @@
 
   <!-- NTA Engine Script Integration -->
   <script type="module">
-    // Verify session
-    const studentInfo = JSON.parse(sessionStorage.getItem("student_info")) || { name: "Student", roll: "1001" };
+    let questionsPool = [];
+    let currentIdx = 0;
+    let studentAnswers = {};
+    let questionStatus = {}; // 'not-visited', 'not-answered', 'answered', 'review'
+    let timerInterval;
+    let timeLeftSeconds = 3600; // 1 hour default
+
+    // Verify session data from login
+    const studentInfo = JSON.parse(sessionStorage.getItem("student_info")) || { name: "Student", roll: "EXAM-1001" };
     document.getElementById("student-name").innerText = studentInfo.name;
     document.getElementById("student-roll").innerText = "Roll: " + studentInfo.roll;
 
-    // Direct submit handler
-    window.confirmSubmitExam = function() {
-      if (confirm("Are you sure you want to submit your exam?")) {
-        // Collect security logs if security.js loaded
-        const secReport = window.getSecurityReport ? window.getSecurityReport() : {};
-        alert("Exam Submitted Successfully!");
-        window.location.href = "index.html";
+    async function loadQuestions() {
+      try {
+        const response = await fetch('chapter1.json');
+        if (!response.ok) throw new Error("Failed to fetch chapter1.json");
+        const data = await response.json();
+        
+        questionsPool = Array.isArray(data) ? data : (data.questions || data.pool || []);
+        if (questionsPool.length === 0) throw new Error("No questions found");
+      } catch (err) {
+        console.warn("Using sample fallback questions:", err);
+        questionsPool = [
+          {
+            question: "What is the dimensional formula of electric permittivity of free space?",
+            options: { A: "M^-1 L^-3 T^4 A^2", B: "M L T^-2", C: "M^-1 L^-2 T^2 A", D: "ML2T-2" },
+            answer: "A"
+          },
+          {
+            question: "Which of the following units represents magnetic induction?",
+            options: { A: "Weber/m²", B: "Tesla", C: "Both A and B", D: "Henry" },
+            answer: "C"
+          }
+        ];
+      }
+
+      initExam();
+    }
+
+    function initExam() {
+      questionStatus = {};
+      questionsPool.forEach((_, idx) => {
+        questionStatus[idx] = 'not-visited';
+      });
+
+      renderQuestion(0);
+      startTimer();
+    }
+
+    function renderQuestion(idx) {
+      currentIdx = idx;
+      
+      // If visiting for the first time, mark as 'not-answered'
+      if (questionStatus[idx] === 'not-visited') {
+        questionStatus[idx] = 'not-answered';
+      }
+
+      const q = questionsPool[idx];
+      document.getElementById("question-number-title").innerText = `Question No. ${idx + 1} of ${questionsPool.length}`;
+      document.getElementById("question-text").innerText = q.question || q.text || "Question content missing";
+
+      const optionsContainer = document.getElementById("options-container");
+      optionsContainer.innerHTML = '';
+
+      const userSelectedOpt = studentAnswers[idx] || '';
+      const optionsObj = q.options || { A: q.optionA, B: q.optionB, C: q.optionC, D: q.optionD };
+
+      Object.keys(optionsObj).forEach(key => {
+        const optText = optionsObj[key];
+        if (!optText) return;
+
+        const isChecked = userSelectedOpt === key ? 'checked' : '';
+        const itemClass = userSelectedOpt === key ? 'option-item selected' : 'option-item';
+
+        const label = document.createElement('label');
+        label.className = itemClass;
+        label.innerHTML = `
+          <input type="radio" name="exam-option" value="${key}" ${isChecked} onclick="selectOption('${key}')">
+          <span><strong>(${key})</strong> ${optText}</span>
+        `;
+        optionsContainer.appendChild(label);
+      });
+
+      renderPalette();
+      updateCounts();
+    }
+
+    window.selectOption = function(key) {
+      studentAnswers[currentIdx] = key;
+      questionStatus[currentIdx] = 'answered';
+      
+      // Update UI styling for options
+      document.querySelectorAll('.option-item').forEach(el => el.classList.remove('selected'));
+      const activeInput = document.querySelector(`input[value="${key}"]`);
+      if (activeInput) activeInput.closest('.option-item').classList.add('selected');
+
+      renderPalette();
+      updateCounts();
+    };
+
+    window.saveAndNext = function() {
+      if (currentIdx < questionsPool.length - 1) {
+        renderQuestion(currentIdx + 1);
+      } else {
+        alert("You are on the last question.");
       }
     };
+
+    window.markForReview = function() {
+      questionStatus[currentIdx] = 'review';
+      renderPalette();
+      updateCounts();
+      if (currentIdx < questionsPool.length - 1) {
+        renderQuestion(currentIdx + 1);
+      }
+    };
+
+    window.clearResponse = function() {
+      delete studentAnswers[currentIdx];
+      questionStatus[currentIdx] = 'not-answered';
+      renderQuestion(currentIdx);
+    };
+
+    function renderPalette() {
+      const grid = document.getElementById("question-palette-grid");
+      grid.innerHTML = '';
+
+      questionsPool.forEach((_, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-palette';
+        btn.innerText = idx + 1;
+
+        const status = questionStatus[idx];
+        if (status === 'answered') btn.classList.add('bg-answered');
+        else if (status === 'review') btn.classList.add('bg-review');
+        else if (status === 'not-answered') btn.classList.add('bg-not-answered');
+        else btn.classList.add('bg-not-visited');
+
+        if (idx === currentIdx) {
+          btn.classList.add('active');
+        }
+
+        btn.onclick = () => renderQuestion(idx);
+        grid.appendChild(btn);
+      });
+    }
+
+    function updateCounts() {
+      let counts = { answered: 0, 'not-answered': 0, 'not-visited': 0, review: 0 };
+      Object.values(questionStatus).forEach(st => {
+        if (counts[st] !== undefined) counts[st]++;
+      });
+
+      document.getElementById("cnt-answered").innerText = counts.answered;
+      document.getElementById("cnt-not-answered").innerText = counts['not-answered'];
+      document.getElementById("cnt-not-visited").innerText = counts['not-visited'];
+      document.getElementById("cnt-review").innerText = counts.review;
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        if (timeLeftSeconds <= 0) {
+          clearInterval(timerInterval);
+          alert("Time is up! Submitting exam automatically.");
+          submitExam();
+          return;
+        }
+        timeLeftSeconds--;
+        const hrs = String(Math.floor(timeLeftSeconds / 3600)).padStart(2, '0');
+        const mins = String(Math.floor((timeLeftSeconds % 3600) / 60)).padStart(2, '0');
+        const secs = String(timeLeftSeconds % 60).padStart(2, '0');
+        document.getElementById("time-display").innerText = `${hrs}:${mins}:${secs}`;
+      }, 1000);
+    }
+
+    window.confirmSubmitExam = function() {
+      if (confirm("Are you sure you want to submit your exam?")) {
+        submitExam();
+      }
+    };
+
+    function submitExam() {
+      let score = 0;
+      let total = questionsPool.length;
+
+      questionsPool.forEach((q, idx) => {
+        const correct = q.answer || q.correctAnswer || "A";
+        if (studentAnswers[idx] && studentAnswers[idx] === correct) {
+          score++;
+        }
+      });
+
+      const finalResult = {
+        name: studentInfo.name,
+        roll: studentInfo.roll,
+        score: `${score}/${total}`,
+        submittedAt: new Date().toISOString()
+      };
+
+      sessionStorage.setItem("exam_submitted_result", JSON.stringify(finalResult));
+      alert(`Exam Submitted Successfully!\nYour Score: ${score}/${total}`);
+      window.location.href = "index.html";
+    }
+
+    // Initialize loading
+    loadQuestions();
   </script>
 
 </body>
