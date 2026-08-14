@@ -53,13 +53,22 @@
     .btn-mark { background: #6a1b9a; color: white; }
     .btn-clear { background: #d32f2f; color: white; }
     .btn-submit { background: #003366; color: white; width: 100%; margin-top: 10px; }
+
+    /* Performance Dashboard Modal/Overlay Styling */
+    #dashboard-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; }
+    .dashboard-card { background: white; padding: 30px; border-radius: 8px; width: 90%; max-width: 600px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: center; }
+    .dashboard-card h2 { color: #003366; margin-bottom: 20px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; text-align: left; }
+    .stat-box { background: #f4f6f9; padding: 15px; border-radius: 6px; border-left: 4px solid #003366; }
+    .stat-box h4 { font-size: 13px; color: #666; margin-bottom: 5px; }
+    .stat-box p { font-size: 18px; font-weight: bold; color: #333; }
   </style>
 </head>
 <body>
 
   <header>
     <h1>Online Examination Portal</h1>
-    <div class="timer-box">Time Left: <span id="time-display">01:00:00</span></div>
+    <div class="timer-box">Time Left: <span id="time-display">00:00:00</span></div>
   </header>
 
   <div class="exam-container">
@@ -105,16 +114,48 @@
     </div>
   </div>
 
+  <!-- Performance Dashboard Overlay -->
+  <div id="dashboard-overlay">
+    <div class="dashboard-card">
+      <h2>Exam Performance Dashboard</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <h4>Candidate Name</h4>
+          <p id="dash-name">-</p>
+        </div>
+        <div class="stat-box">
+          <h4>Total Score</h4>
+          <p id="dash-score">-</p>
+        </div>
+        <div class="stat-box">
+          <h4>Correct Answers</h4>
+          <p id="dash-correct">-</p>
+        </div>
+        <div class="stat-box">
+          <h4>Accuracy</h4>
+          <p id="dash-accuracy">-</p>
+        </div>
+      </div>
+      <button class="btn btn-submit" style="width: auto; padding: 10px 25px;" onclick="window.location.href='index.html'">Back to Home</button>
+    </div>
+  </div>
+
   <script>
     const studentInfo = JSON.parse(sessionStorage.getItem("student_info")) || { name: "Student", roll: "EXAM-1001" };
     document.getElementById("student-name").innerText = studentInfo.name;
     document.getElementById("student-roll").innerText = "Roll: " + studentInfo.roll;
 
+    // Retrieve Admin settings stored via admin panel or use defaults
+    const adminConfig = JSON.parse(localStorage.getItem("admin_test_config")) || {
+      displayLimit: 6,
+      durationMinutes: 5
+    };
+
     let questionsPool = [];
     let currentIdx = 0;
     let studentAnswers = {};
     let questionStatus = {};
-    let timeLeftSeconds = 3600;
+    let timeLeftSeconds = (adminConfig.durationMinutes || 5) * 60;
 
     async function loadQuestions() {
       try {
@@ -122,7 +163,12 @@
         if (!response.ok) throw new Error("Failed to fetch chapter1.json");
         const data = await response.json();
         
-        questionsPool = Array.isArray(data) ? data : (data.questions || []);
+        let allPool = Array.isArray(data) ? data : (data.questions || []);
+        
+        // Apply Admin Student Display Limit (Randomized or sliced as per pool limit)
+        const limit = parseInt(adminConfig.displayLimit) || allPool.length;
+        questionsPool = allPool.slice(0, limit);
+
         if (questionsPool.length === 0) throw new Error("Empty questions");
       } catch (err) {
         console.warn("Fetch error, using default fallback:", err);
@@ -246,8 +292,13 @@
     }
 
     function startTimer() {
-      setInterval(() => {
-        if (timeLeftSeconds <= 0) return;
+      const timerInterval = setInterval(() => {
+        if (timeLeftSeconds <= 0) {
+          clearInterval(timerInterval);
+          alert("Time is up! Your exam will be submitted automatically.");
+          submitExam();
+          return;
+        }
         timeLeftSeconds--;
         const hrs = String(Math.floor(timeLeftSeconds / 3600)).padStart(2, '0');
         const mins = String(Math.floor((timeLeftSeconds % 3600) / 60)).padStart(2, '0');
@@ -258,14 +309,29 @@
 
     window.confirmSubmitExam = function() {
       if (confirm("Are you sure you want to submit your exam?")) {
-        let score = 0;
-        questionsPool.forEach((qObj, idx) => {
-          if (studentAnswers[idx] && studentAnswers[idx] === qObj.a) score++;
-        });
-        alert(`Exam Submitted Successfully!\nYour Score: ${score}/${questionsPool.length}`);
-        window.location.href = "index.html";
+        submitExam();
       }
     };
+
+    function submitExam() {
+      let score = 0;
+      let attempted = 0;
+      questionsPool.forEach((qObj, idx) => {
+        if (studentAnswers[idx]) {
+          attempted++;
+          if (studentAnswers[idx] === qObj.a) score++;
+        }
+      });
+
+      const accuracy = attempted > 0 ? ((score / attempted) * 100).toFixed(1) + '%' : '0%';
+
+      // Populate and show Performance Dashboard
+      document.getElementById("dash-name").innerText = studentInfo.name;
+      document.getElementById("dash-score").innerText = `${score} / ${questionsPool.length}`;
+      document.getElementById("dash-correct").innerText = `${score} Correct`;
+      document.getElementById("dash-accuracy").innerText = accuracy;
+      document.getElementById("dashboard-overlay").style.display = 'flex';
+    }
 
     loadQuestions();
   </script>
