@@ -42,8 +42,8 @@
             user-select: none;
         }
 
-        /* LOGIN MODAL STYLES */
-        .login-overlay {
+        /* LOGIN & RESULT MODAL OVERLAYS */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -54,6 +54,8 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            overflow-y: auto;
+            padding: 1rem;
         }
 
         .login-box {
@@ -65,30 +67,11 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        .login-box h2 {
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-            font-weight: 800;
-        }
+        .login-box h2 { color: var(--primary); margin-bottom: 0.5rem; font-weight: 800; }
+        .login-box p { color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem; }
 
-        .login-box p {
-            color: #64748b;
-            font-size: 0.9rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.2rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 700;
-            margin-bottom: 0.4rem;
-            color: #334155;
-        }
-
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; color: #334155; }
         .form-group input {
             width: 100%;
             padding: 0.75rem 1rem;
@@ -96,16 +79,11 @@
             border-radius: 8px;
             font-size: 0.95rem;
             outline: none;
-            font-family: 'Inter', sans-serif;
         }
 
-        .form-group input:focus {
-            border-color: var(--primary-accent);
-        }
-
-        /* MAIN EXAM CONTAINER LAYOUT */
+        /* EXAM INTERFACE */
         .test-wrapper {
-            display: none; /* Hidden until login */
+            display: none;
             grid-template-columns: 1fr 340px;
             gap: 20px;
             max-width: 1400px;
@@ -113,9 +91,7 @@
         }
 
         @media (max-width: 992px) {
-            .test-wrapper {
-                grid-template-columns: 1fr;
-            }
+            .test-wrapper { grid-template-columns: 1fr; }
         }
 
         .question-card {
@@ -137,11 +113,7 @@
             margin-bottom: 1.5rem;
         }
 
-        .q-title {
-            color: var(--primary);
-            font-size: 1.3rem;
-            font-weight: 800;
-        }
+        .q-title { color: var(--primary); font-size: 1.3rem; font-weight: 800; }
 
         .timer-display {
             background: #fee2e2;
@@ -163,12 +135,7 @@
             color: var(--text-main);
         }
 
-        .options-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 2rem;
-        }
+        .options-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 2rem; }
 
         .option-item {
             display: flex;
@@ -182,22 +149,9 @@
             transition: all 0.2s ease;
         }
 
-        .option-item:hover {
-            border-color: var(--primary-accent);
-            background: #eff6ff;
-        }
-
-        .option-item.selected {
-            border-color: var(--primary-accent);
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .option-item input {
-            cursor: pointer;
-            width: 18px;
-            height: 18px;
-        }
+        .option-item:hover { border-color: var(--primary-accent); background: #eff6ff; }
+        .option-item.selected { border-color: var(--primary-accent); background: #dbeafe; color: #1e40af; }
+        .option-item input { width: 18px; height: 18px; }
 
         .action-buttons {
             display: flex;
@@ -219,22 +173,15 @@
             gap: 8px;
             transition: all 0.2s;
             font-size: 0.9rem;
-            font-family: 'Inter', sans-serif;
         }
 
         .btn-primary { background: var(--primary-accent); color: white; width: 100%; justify-content: center; }
         .btn-save { background: var(--nta-answered); color: white; }
-        .btn-save:hover { background: #15803d; }
-
         .btn-review { background: var(--nta-review); color: white; }
-        .btn-review:hover { background: #7e22ce; }
-
         .btn-clear { background: #e2e8f0; color: #334155; }
-        .btn-clear:hover { background: #cbd5e1; }
-
         .btn-submit { background: var(--primary); color: white; }
-        .btn-submit:hover { background: #1e40af; }
 
+        /* PALETTE SIDEBAR */
         .palette-sidebar {
             background: var(--bg-card);
             border-radius: 16px;
@@ -250,9 +197,6 @@
             margin-bottom: 1rem;
             border-bottom: 2px solid #f1f5f9;
             padding-bottom: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .legend-grid {
@@ -289,7 +233,6 @@
             gap: 10px;
             max-height: 350px;
             overflow-y: auto;
-            padding-right: 5px;
         }
 
         .q-btn {
@@ -301,32 +244,56 @@
             cursor: pointer;
             color: white;
             background: var(--nta-not-visited);
-            transition: transform 0.15s ease;
             position: relative;
-            font-family: 'Inter', sans-serif;
         }
 
-        .q-btn:hover { transform: scale(1.08); }
         .q-btn.active-current { outline: 3px solid var(--primary); outline-offset: 2px; }
-
         .q-btn.status-answered { background: var(--nta-answered); }
         .q-btn.status-not-answered { background: var(--nta-not-answered); }
         .q-btn.status-review { background: var(--nta-review); }
         .q-btn.status-review-answered { background: var(--nta-review); }
-        .q-btn.status-review-answered::after {
-            content: '★';
-            position: absolute;
-            top: 1px;
-            right: 3px;
-            font-size: 0.65rem;
-            color: #fde047;
+
+        /* ANALYSIS REPORT MODAL */
+        .result-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .score-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin: 1.5rem 0;
+        }
+
+        .stat-box {
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-box h3 { font-size: 1.4rem; margin-top: 5px; color: var(--primary); }
+
+        .analysis-item {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 12px;
         }
     </style>
 </head>
 <body>
 
     <!-- STUDENT LOGIN MODAL -->
-    <div class="login-overlay" id="login-modal">
+    <div class="modal-overlay" id="login-modal">
         <div class="login-box">
             <h2>Candidate Login</h2>
             <p>Please enter your details to start test</p>
@@ -350,28 +317,22 @@
 
     <!-- EXAM INTERFACE -->
     <div class="test-wrapper" id="exam-wrapper">
-        
-        <!-- LEFT: QUESTION DISPLAY AREA -->
         <div class="question-card">
             <div>
                 <div class="q-header">
                     <span class="q-title" id="display-q-num"><i class="fa-solid fa-flask-vial"></i> Question 1</span>
                     <div style="display: flex; gap: 15px; align-items: center;">
                         <span style="font-weight: 700; color: #64748b;" id="marking-scheme">Marks: +1 / -0.25</span>
-                        <div class="timer-display" id="timer-box"><i class="fa-solid fa-clock"></i> <span id="time-left">00:00</span></div>
+                        <div class="timer-display"><i class="fa-solid fa-clock"></i> <span id="time-left">00:00</span></div>
                     </div>
                 </div>
 
                 <div id="q-content-box">
                     <p class="q-text" id="q-text">Loading question content...</p>
-
-                    <div class="options-list" id="options-container">
-                        <!-- Options Rendered Dynamically -->
-                    </div>
+                    <div class="options-list" id="options-container"></div>
                 </div>
             </div>
 
-            <!-- ACTION CONTROL BUTTONS -->
             <div class="action-buttons">
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <button class="btn btn-save" onclick="saveAndNext()"><i class="fa-solid fa-check"></i> Save & Next</button>
@@ -382,51 +343,59 @@
             </div>
         </div>
 
-        <!-- RIGHT: NTA QUESTION PALETTE SIDEBAR -->
+        <!-- PALETTE SIDEBAR -->
         <div class="palette-sidebar">
             <div class="palette-title"><i class="fa-solid fa-border-all"></i> Question Palette</div>
-
-            <!-- PALETTE LEGEND GUIDE -->
             <div class="legend-grid">
                 <div class="legend-item"><div class="badge-icon badge-answered"><i class="fa-solid fa-check"></i></div> Answered</div>
                 <div class="legend-item"><div class="badge-icon badge-not-answered"><i class="fa-solid fa-xmark"></i></div> Not Answered</div>
                 <div class="legend-item"><div class="badge-icon badge-review"><i class="fa-solid fa-bookmark"></i></div> Review</div>
                 <div class="legend-item"><div class="badge-icon badge-not-visited"></div> Not Visited</div>
             </div>
-
-            <!-- PALETTE GRID BUTTONS -->
-            <div class="question-grid" id="palette-grid">
-                <!-- Dynamically Generated Buttons -->
-            </div>
+            <div class="question-grid" id="palette-grid"></div>
         </div>
-
     </div>
 
-    <!-- EXAM ENGINE & PALETTE LOGIC -->
+    <!-- STUDENT PERFORMANCE ANALYSIS MODAL -->
+    <div class="modal-overlay" id="result-modal" style="display: none;">
+        <div class="result-card">
+            <h2 style="color: var(--primary); text-align: center;"><i class="fa-solid fa-chart-line"></i> Test Result & Performance Analysis</h2>
+            <p style="text-align: center; color: #64748b; margin-top: 5px;" id="result-student-info"></p>
+
+            <div class="score-summary-grid">
+                <div class="stat-box"><span>Total Score</span><h3 id="res-score">0</h3></div>
+                <div class="stat-box"><span>Correct</span><h3 id="res-correct" style="color: var(--nta-answered);">0</h3></div>
+                <div class="stat-box"><span>Incorrect</span><h3 id="res-wrong" style="color: var(--nta-not-answered);">0</h3></div>
+                <div class="stat-box"><span>Unattempted</span><h3 id="res-skipped">0</h3></div>
+                <div class="stat-box"><span>Accuracy</span><h3 id="res-accuracy">0%</h3></div>
+            </div>
+
+            <h3 style="margin-top: 1.5rem; margin-bottom: 1rem; color: var(--primary);">Detailed Question Analysis</h3>
+            <div id="detailed-analysis-list"></div>
+
+            <button class="btn btn-primary" style="margin-top: 1rem;" onclick="window.location.reload()"><i class="fa-solid fa-rotate-right"></i> Close / Restart</button>
+        </div>
+    </div>
+
     <script>
         let questions = [];
         let currentIndex = 0;
         let questionStates = [];
         let isExamActive = false;
-        let tabSwitchCount = 0;
 
-        let examDurationMinutes = 15; // Controlled by admin/default
+        let examDurationMinutes = 15;
+        let posMark = 1;
+        let negMark = 0.25;
         let timerInterval = null;
         let totalSecondsLeft = 0;
 
-        let studentData = {
-            name: '',
-            email: '',
-            batch: ''
-        };
+        let studentData = { name: '', email: '', batch: '' };
 
         function startExamPortal(e) {
             e.preventDefault();
             const emailInput = document.getElementById('student-email').value.trim().toLowerCase();
 
-            // GMAIL ATTEMPT CHECK
             let attemptedEmails = JSON.parse(localStorage.getItem('attemptedEmails') || '[]');
-            
             if (attemptedEmails.includes(emailInput)) {
                 alert("You have already attempted this test");
                 return;
@@ -440,26 +409,24 @@
             document.getElementById('exam-wrapper').style.display = 'grid';
 
             isExamActive = true;
-            fetchQuestions();
+            fetchAdminQuestionsAndConfig();
         }
 
-        async function fetchQuestions() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const chapterFile = urlParams.get('quiz') || 'chapter1.json';
+        function fetchAdminQuestionsAndConfig() {
+            // Load Admin Settings
+            const savedSettings = JSON.parse(localStorage.getItem('adminExamSettings') || '{}');
+            if (savedSettings.duration) examDurationMinutes = parseFloat(savedSettings.duration);
+            if (savedSettings.pos) posMark = parseFloat(savedSettings.pos);
+            if (savedSettings.neg) negMark = parseFloat(savedSettings.neg);
 
-            try {
-                const response = await fetch(chapterFile);
-                const data = await response.json();
-                
-                // Admin dynamic structure sync (Array or Object format)
-                if (Array.isArray(data)) {
-                    questions = data;
-                } else if (data.questions) {
-                    questions = data.questions;
-                    if (data.duration) examDurationMinutes = data.duration;
-                }
-            } catch (err) {
-                // Fallback default sample questions
+            document.getElementById('marking-scheme').innerText = `Marks: +${posMark} / -${negMark}`;
+
+            // Load Admin Question Bank
+            const adminBank = JSON.parse(localStorage.getItem('adminQuestionBank') || '[]');
+            if (adminBank.length > 0) {
+                questions = adminBank;
+            } else {
+                // Fallback Sample
                 questions = [
                     { question: "Vector A and Vector B are perpendicular. Their dot product will be?", options: ["0", "1", "-1", "Infinity"], answer: 0 },
                     { question: "SI unit of acceleration is?", options: ["m/s", "m/s²", "kg m/s", "N/m"], answer: 1 },
@@ -480,7 +447,6 @@
         function startTimer(minutes) {
             totalSecondsLeft = minutes * 60;
             updateTimerDisplay();
-
             timerInterval = setInterval(() => {
                 if (totalSecondsLeft <= 0) {
                     clearInterval(timerInterval);
@@ -496,8 +462,7 @@
         function updateTimerDisplay() {
             let mins = Math.floor(totalSecondsLeft / 60);
             let secs = totalSecondsLeft % 60;
-            document.getElementById('time-left').innerText = 
-                `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            document.getElementById('time-left').innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
         }
 
         function loadQuestion(index) {
@@ -509,15 +474,12 @@
             }
 
             document.getElementById('display-q-num').innerHTML = `<i class="fa-solid fa-flask-vial"></i> Question ${index + 1} of ${questions.length}`;
-            
-            const qObj = questions[index];
-            document.getElementById('q-text').innerText = qObj.question || qObj.text || "No Question Text Found";
+            document.getElementById('q-text').innerText = questions[index].question;
 
             const optsContainer = document.getElementById('options-container');
             optsContainer.innerHTML = '';
 
-            const optsList = qObj.options || [];
-            optsList.forEach((optText, optIdx) => {
+            questions[index].options.forEach((optText, optIdx) => {
                 const isSelected = questionStates[index].selectedOption === optIdx;
                 const div = document.createElement('div');
                 div.className = `option-item ${isSelected ? 'selected' : ''}`;
@@ -538,31 +500,15 @@
         }
 
         function saveAndNext() {
-            if (questionStates[currentIndex].selectedOption !== null) {
-                questionStates[currentIndex].status = 'answered';
-            } else {
-                questionStates[currentIndex].status = 'not-answered';
-            }
-
-            if (currentIndex < questions.length - 1) {
-                loadQuestion(currentIndex + 1);
-            } else {
-                renderPalette();
-            }
+            questionStates[currentIndex].status = (questionStates[currentIndex].selectedOption !== null) ? 'answered' : 'not-answered';
+            if (currentIndex < questions.length - 1) loadQuestion(currentIndex + 1);
+            else renderPalette();
         }
 
         function markForReview() {
-            if (questionStates[currentIndex].selectedOption !== null) {
-                questionStates[currentIndex].status = 'review-answered';
-            } else {
-                questionStates[currentIndex].status = 'review';
-            }
-
-            if (currentIndex < questions.length - 1) {
-                loadQuestion(currentIndex + 1);
-            } else {
-                renderPalette();
-            }
+            questionStates[currentIndex].status = (questionStates[currentIndex].selectedOption !== null) ? 'review-answered' : 'review';
+            if (currentIndex < questions.length - 1) loadQuestion(currentIndex + 1);
+            else renderPalette();
         }
 
         function clearResponse() {
@@ -574,7 +520,6 @@
         function renderPalette() {
             const grid = document.getElementById('palette-grid');
             grid.innerHTML = '';
-
             questionStates.forEach((st, idx) => {
                 const btn = document.createElement('button');
                 btn.className = `q-btn status-${st.status} ${idx === currentIndex ? 'active-current' : ''}`;
@@ -586,74 +531,79 @@
 
         function submitExam(forceSubmit = false) {
             if (!isExamActive) return;
-            let answered = questionStates.filter(s => s.status === 'answered' || s.status === 'review-answered').length;
-            
-            if (forceSubmit || confirm(`Candidate: ${studentData.name}\nBatch: ${studentData.batch}\n\nAre you sure you want to submit?\nAttempted: ${answered} / ${questions.length}`)) {
+            let answeredCount = questionStates.filter(s => s.status === 'answered' || s.status === 'review-answered').length;
+
+            if (forceSubmit || confirm(`Candidate: ${studentData.name}\nBatch: ${studentData.batch}\n\nAre you sure you want to submit?\nAttempted: ${answeredCount} / ${questions.length}`)) {
                 isExamActive = false;
                 clearInterval(timerInterval);
 
-                // SAVE EMAIL TO PREVENT RE-ATTEMPT
+                // Lock Email Attempt
                 let attemptedEmails = JSON.parse(localStorage.getItem('attemptedEmails') || '[]');
                 attemptedEmails.push(studentData.email);
                 localStorage.setItem('attemptedEmails', JSON.stringify(attemptedEmails));
 
-                alert("Exam submitted successfully!");
+                // Calculate Results
+                let correct = 0, wrong = 0, unattempted = 0;
+                questions.forEach((q, i) => {
+                    const sel = questionStates[i].selectedOption;
+                    if (sel === null) {
+                        unattempted++;
+                    } else if (sel === q.answer) {
+                        correct++;
+                    } else {
+                        wrong++;
+                    }
+                });
+
+                let totalScore = (correct * posMark) - (wrong * negMark);
+                let accuracy = (correct + wrong) > 0 ? Math.round((correct / (correct + wrong)) * 100) : 0;
+
+                // Save Result to Admin Panel
+                let studentResults = JSON.parse(localStorage.getItem('studentResults') || '[]');
+                studentResults.push({
+                    name: studentData.name,
+                    email: studentData.email,
+                    batch: studentData.batch,
+                    score: totalScore,
+                    correct: correct,
+                    wrong: wrong,
+                    unattempted: unattempted,
+                    date: new Date().toLocaleString()
+                });
+                localStorage.setItem('studentResults', JSON.stringify(studentResults));
+
+                // Show Analysis Screen Modal
+                displayAnalysisModal(totalScore, correct, wrong, unattempted, accuracy);
             }
         }
-    </script>
 
-    <!-- FIXED SECURITY & PROCTORING ENGINE -->
-    <script>
-        // Disable Right-Click
-        document.addEventListener('contextmenu', event => event.preventDefault());
+        function displayAnalysisModal(score, correct, wrong, unattempted, accuracy) {
+            document.getElementById('exam-wrapper').style.display = 'none';
+            document.getElementById('result-modal').style.display = 'flex';
 
-        // Disable Copy & Paste
-        document.addEventListener('copy', (e) => {
-            if (isExamActive) {
-                e.preventDefault();
-                alert("Security Alert: Copying test contents is prohibited!");
-            }
-        });
+            document.getElementById('result-student-info').innerText = `${studentData.name} | ${studentData.batch} | ${studentData.email}`;
+            document.getElementById('res-score').innerText = score;
+            document.getElementById('res-correct').innerText = correct;
+            document.getElementById('res-wrong').innerText = wrong;
+            document.getElementById('res-skipped').innerText = unattempted;
+            document.getElementById('res-accuracy').innerText = `${accuracy}%`;
 
-        document.addEventListener('paste', (e) => {
-            if (isExamActive) {
-                e.preventDefault();
-                alert("Security Alert: Pasting functions are locked!");
-            }
-        });
+            const analysisContainer = document.getElementById('detailed-analysis-list');
+            analysisContainer.innerHTML = '';
 
-        // Tab Switch & App Background Monitoring
-        document.addEventListener("visibilitychange", function() {
-            if (document.hidden && isExamActive) {
-                tabSwitchCount++;
-                if (tabSwitchCount === 1) {
-                    alert("SECURITY WARNING (1/2):\nTab switch or background app detected! Next attempt will result in auto-submission.");
-                } else if (tabSwitchCount >= 2) {
-                    alert("CRITICAL SECURITY VIOLATION:\nMultiple tab switches detected! Your exam is being automatically submitted now.");
-                    submitExam(true);
-                }
-            }
-        });
-
-        // Keyboard Shortcuts Lock
-        document.addEventListener("keydown", function(e) {
-            if (!isExamActive) return;
-
-            // Ctrl+P / Inspect Element Block
-            if (e.ctrlKey && (e.key === 'p' || e.keyCode === 80)) {
-                e.preventDefault();
-            }
-            if (e.key === "F12" || e.keyCode === 123) {
-                e.preventDefault();
-            }
-            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.keyCode === 73)) {
-                e.preventDefault();
-            }
-            if (e.key === "PrintScreen") {
-                navigator.clipboard.writeText("");
-                alert("Screenshots are restricted on this exam page!");
-            }
-        });
+            questions.forEach((q, i) => {
+                const sel = questionStates[i].selectedOption;
+                const isCorr = sel === q.answer;
+                const div = document.createElement('div');
+                div.className = 'analysis-item';
+                div.innerHTML = `
+                    <div style="font-weight: 700; margin-bottom: 5px;">Q${i + 1}. ${q.question}</div>
+                    <div style="font-size: 0.85rem;">Your Answer: <span style="font-weight:700; color:${sel === null ? '#64748b' : (isCorr ? '#16a34a' : '#dc2626')}">${sel === null ? 'Not Attempted' : q.options[sel]}</span></div>
+                    <div style="font-size: 0.85rem; color:#16a34a; font-weight:700;">Correct Answer: ${q.options[q.answer]}</div>
+                `;
+                analysisContainer.appendChild(div);
+            });
+        }
     </script>
 </body>
 </html>
