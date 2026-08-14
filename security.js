@@ -1,33 +1,92 @@
-// 1. Text Selection aur Right-Click Disable Karna
-document.addEventListener('contextmenu', event => event.preventDefault());
+ // ==========================================
+// ADVANCED EXAM SECURITY & ANTI-CHEATING SCRIPT
+// ==========================================
+
+let tabSwitchCount = 0;
+let copyPasteAttempts = 0;
+
+// 1. Right Click, Text Selection, Copy & Paste Block
+document.addEventListener('contextmenu', (e) => e.preventDefault());
 
 document.addEventListener('copy', (e) => {
     e.preventDefault();
-    alert("Copying content is disabled!");
+    copyPasteAttempts++;
+    alert("Warning: Copying test content is strictly prohibited!");
 });
 
 document.addEventListener('paste', (e) => {
     e.preventDefault();
+    copyPasteAttempts++;
+    alert("Warning: Pasting external text is not allowed!");
 });
 
-// 2. Tab Switching Detect Karna
-document.addEventListener("visibilitychange", function() {
+document.addEventListener('cut', (e) => e.preventDefault());
+
+// 2. Refresh & Page Reload Lock (Accidental Exit Protection)
+window.addEventListener('beforeunload', (e) => {
+    e.preventDefault();
+    e.returnValue = "Warning: Refreshing or leaving the page will auto-submit your test!";
+    return e.returnValue;
+});
+
+// 3. Tab Switch Detection
+document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-        alert("Warning: Aapne tab switch kiya hai! Aapka test submit ho sakta hai.");
-        // Agar auto-submit karna hai toh yahan function call karein
+        tabSwitchCount++;
+        alert(`SECURITY WARNING #${tabSwitchCount}: You switched tabs or minimized the browser! This violation is logged.`);
     }
 });
 
-// 3. Print (Ctrl+P) aur Kuch Keys Block Karna
-document.addEventListener("keydown", function(e) {
-    // Ctrl+P block karne ke liye
-    if (e.ctrlKey && (e.key === 'p' || e.keyCode === 80)) {
+// 4. Advanced Keyboard Shortcuts & Screenshot Lock
+document.addEventListener('keydown', (e) => {
+    // Prevent Refresh Keys (F5 & Ctrl+R / Cmd+R)
+    if (e.key === 'F5' || (e.ctrlKey && e.key === 'r') || (e.metaKey && e.key === 'r')) {
         e.preventDefault();
-        alert("Printing is disabled!");
+        alert("Action Blocked: Page reload is disabled during the exam!");
+        return;
     }
-    // F12 (DevTools) block karne ki koshish
-    if (e.key === "F12") {
+
+    // Prevent PrintScreen (PrtScn Key / Windows + Shift + S)
+    if (e.key === 'PrintScreen' || (e.key === 'S' && e.shiftKey && (e.metaKey || e.ctrlKey))) {
         e.preventDefault();
-        alert("Developer tools are disabled!");
+        alert("Action Blocked: Screenshots are disabled during the test!");
+        // Clear Clipboard data if screenshot was attempted
+        navigator.clipboard.writeText('');
+        return;
+    }
+
+    // Prevent Print (Ctrl+P / Cmd+P)
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.keyCode === 80)) {
+        e.preventDefault();
+        alert("Action Blocked: Printing is disabled!");
+        return;
+    }
+
+    // Block F12 & Developer Tools Shortcuts (Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U)
+    if (
+        e.key === 'F12' ||
+        ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+        ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U'))
+    ) {
+        e.preventDefault();
+        alert("Action Blocked: Developer tools and source code viewing are locked!");
+        return;
     }
 });
+
+// 5. Screenshot Protection via Clipboard Clearing
+window.addEventListener('keyup', (e) => {
+    if (e.key === 'PrintScreen') {
+        navigator.clipboard.writeText('');
+        alert("Screenshot captured erased for security reasons!");
+    }
+});
+
+// Global Function to send report to Admin Panel during test submit
+window.getSecurityReport = function() {
+    return {
+        tabSwitches: tabSwitchCount,
+        copyAttempts: copyPasteAttempts,
+        penaltiesApplied: tabSwitchCount * 1 // 1 mark deduction per tab switch
+    };
+};
