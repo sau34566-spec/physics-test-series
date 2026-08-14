@@ -1,9 +1,9 @@
-  <!DOCTYPE html>
-<html>
+ <!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Physics Test</title>
-    <!-- Google Fonts aur FontAwesome Icons aapke website ki design match karne ke liye -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -13,6 +13,7 @@
             --bg-dark: #0f172a;
             --bg-card: #ffffff;
             --text-main: #1e293b;
+            --danger: #ef4444;
         }
 
         * {
@@ -22,7 +23,6 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* SECURITY: Text Selection Block Karna */
         body {
             background-color: var(--bg-dark);
             color: var(--text-main);
@@ -44,6 +44,7 @@
             border-radius: 16px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             text-align: center;
+            position: relative;
         }
 
         h1 {
@@ -56,59 +57,88 @@
             color: #64748b;
             font-size: 1rem;
         }
+
+        /* Custom Warning Box (Alert ka replacement) */
+        #warning-banner {
+            display: none;
+            background-color: #fee2e2;
+            border: 1px solid var(--danger);
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
 
     <div class="test-container">
+        <div id="warning-banner"><i class="fa-solid fa-triangle-exclamation"></i> <span id="warning-msg"></span></div>
+        
         <h1><i class="fa-solid fa-flask-vial"></i> Physics Test Started!</h1>
         <p>Your environment is securely locked. Do not attempt to switch tabs or copy content.</p>
-        <!-- Aapka baaki questions ka code ya portal content yahan aayega -->
     </div>
 
-    <!-- SECURITY JAVASCRIPT ENGINE -->
     <script>
-        // 1. Right-Click Menu Block
+        let warningCount = 0;
+        const maxWarnings = 3;
+
+        function showWarning(message) {
+            const banner = document.getElementById('warning-banner');
+            const msgSpan = document.getElementById('warning-msg');
+            msgSpan.innerText = message;
+            banner.style.display = 'block';
+
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, 4000);
+        }
+
+        // 1. Context Menu Disable
         document.addEventListener('contextmenu', event => event.preventDefault());
 
-        // 2. Copy aur Paste Command Disabled
+        // 2. Copy/Paste Disable
         document.addEventListener('copy', (e) => {
             e.preventDefault();
-            alert("Security Alert: Copying test contents is prohibited!");
+            showWarning("Copying text is prohibited!");
         });
         document.addEventListener('paste', (e) => {
             e.preventDefault();
-            alert("Security Alert: Pasting functions are locked!");
+            showWarning("Pasting functions are locked!");
         });
 
-        // 3. Tab Switching Detection
+        // 3. Tab Switching Detection (Safe Way)
         document.addEventListener("visibilitychange", function() {
             if (document.hidden) {
-                alert("CRITICAL WARNING: Tab switching detected! This incident has been logged in the system portal.");
+                warningCount++;
+                if (warningCount >= maxWarnings) {
+                    alert("Test Auto-Submitted due to multiple tab switching violations!");
+                    // Yahan test submit karne ka function call karein
+                } else {
+                    showWarning(`Tab switch detected! Warning ${warningCount}/${maxWarnings}`);
+                }
             }
         });
 
-        // 4. Keyboard Shortcuts Disable (Print, DevTools, Inspect)
+        // 4. Keyboard Shortcuts Disable
         document.addEventListener("keydown", function(e) {
-            // Ctrl+P (Print Screen / PDF download shortcut block)
-            if (e.ctrlKey && (e.key === 'p' || e.keyCode === 80)) {
+            // Ctrl+P / Ctrl+S / Ctrl+U / F12 / Ctrl+Shift+I
+            if (
+                (e.ctrlKey && ['p', 's', 'u'].includes(e.key.toLowerCase())) ||
+                e.key === "F12" ||
+                (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase()))
+            ) {
                 e.preventDefault();
-                alert("Security Action: Page rendering to print is blocked.");
+                showWarning("Developer Tools and Shortcuts are disabled!");
             }
-            // F12 key (Inspect Element shortcut block)
-            if (e.key === "F12" || e.keyCode === 123) {
-                e.preventDefault();
-                alert("Security Action: Developer settings access denied.");
-            }
-            // Ctrl + Shift + I (Inspect Panel alternative lock)
-            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.keyCode === 73)) {
-                e.preventDefault();
-                alert("Security Action: Debugging tools are offline.");
-            }
-            // Clear clipboard buffer on PrintScreen button trigger
+
+            // PrintScreen Clear
             if (e.key === "PrintScreen") {
-                navigator.clipboard.writeText("");
-                alert("Screenshots are restricted on this exam page!");
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText("");
+                }
+                showWarning("Screenshots are restricted on this exam page!");
             }
         });
     </script>
