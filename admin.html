@@ -140,6 +140,17 @@
     .upload-section-box { background: #f8fafc; border: 2px dashed #cbd5e1; padding: 1.8rem; border-radius: 14px; margin-top: 1rem; }
     .mode-content { display: none; }
     .mode-content.active { display: block; }
+
+    /* PULSE ANIMATION FOR LIVE STUDENTS */
+    @keyframes pulseGlow {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+    }
+    .live-dot {
+      display: inline-block; width: 12px; height: 12px; background-color: #2563eb; border-radius: 50%;
+      margin-right: 6px; animation: pulseGlow 2s infinite;
+    }
   </style>
 </head>
 <body>
@@ -201,7 +212,7 @@
     <div id="slide-1-content" class="admin-slide-content active">
       <div class="admin-card">
         <h3><i class="fa-solid fa-gear"></i> Test Configuration & Timing Controls</h3>
-        <p class="subtitle">Set pool numbers, student limit, per-question timer, and availability window.</p>
+        <p class="subtitle">Set pool numbers, student limit, overall exam timing, and availability window.</p>
         
         <div class="form-grid">
           <div class="form-group">
@@ -213,8 +224,8 @@
             <input type="number" id="config-student-limit" min="1" placeholder="e.g. 20">
           </div>
           <div class="form-group">
-            <label for="config-per-question-timer">Per Question Timer (Seconds) *</label>
-            <input type="number" id="config-per-question-timer" min="0" placeholder="e.g. 60 (0 for no limit)">
+            <label for="config-per-question-timer">Per Exam Duration (Minutes) *</label>
+            <input type="number" id="config-per-question-timer" min="1" placeholder="e.g. 60">
           </div>
         </div>
 
@@ -240,7 +251,7 @@
               <input type="radio" name="upload-mode" value="msword" onclick="toggleUploadUI('msword')"> MS Word Parse
             </label>
             <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600;">
-              <input type="radio" name="upload-mode" value="code" onclick="toggleUploadUI('code')"> JSON / Code Upload
+              <input type="radio" name="upload-mode" value="code" onclick="toggleUploadUI('code')"> JSON / GitHub Code Upload
             </label>
           </div>
 
@@ -294,14 +305,10 @@
               </div>
             </div>
 
-            <!-- 3. CODE / JSON FILE UPLOAD -->
+            <!-- 3. CODE / JSON MODE -->
             <div id="mode-code-area" class="mode-content">
-              <h4 style="margin-bottom: 1rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-code"></i> Upload Question JSON File</h4>
-              <div class="form-group">
-                <label>Select JSON File *</label>
-                <input type="file" id="code-file-input" accept=".json">
-              </div>
-              <p style="font-size:0.8rem; color:var(--text-muted); margin-top: -0.5rem;">Upload your formatted `.json` file directly from device storage.</p>
+              <h4 style="margin-bottom: 0.5rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-code"></i> JSON / GitHub Repository Upload</h4>
+              <p style="font-size:0.85rem; color:var(--text-muted);">Questions are fetched dynamically from your configured GitHub/JSON repository file.</p>
             </div>
           </div>
         </div>
@@ -393,8 +400,12 @@
         <h3><i class="fa-solid fa-chart-line"></i> Exam Analytics & Deep Insights</h3>
         <p class="subtitle">Performance metrics, question difficulty analysis, and student accuracy breakdown.</p>
         
-        <!-- KPI METRICS -->
+        <!-- KPI METRICS (WITH LIVE ACTIVE STUDENTS COUNTER BOX) -->
         <div class="stats-summary">
+          <div class="stat-card" style="border-left: 4px solid #2563eb; background: #eff6ff;">
+            <h4><span class="live-dot"></span> Live Active Students</h4>
+            <p id="insight-live-students" style="color: #2563eb;">0</p>
+          </div>
           <div class="stat-card">
             <h4>Average Score</h4>
             <p id="insight-avg-score">0.0%</p>
@@ -406,10 +417,6 @@
           <div class="stat-card">
             <h4>Highest Score</h4>
             <p id="insight-highest-score" style="color: var(--primary-accent);">0/0</p>
-          </div>
-          <div class="stat-card">
-            <h4>Hardest Question</h4>
-            <p id="insight-hardest-q" style="font-size: 1.2rem; color: var(--gold);">Q -</p>
           </div>
         </div>
 
@@ -438,7 +445,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -484,6 +491,7 @@
         document.getElementById('admin-main').style.display = 'block';
         loadExamSettings();
         fetchLiveDatabaseRecords();
+        listenLiveActiveStudents();
       } else {
         document.getElementById('login-error').style.display = 'block';
       }
@@ -500,6 +508,7 @@
       window.addEventListener('DOMContentLoaded', () => {
         loadExamSettings();
         fetchLiveDatabaseRecords();
+        listenLiveActiveStudents();
       });
     }
 
@@ -518,7 +527,7 @@
           const data = docSnap.data();
           document.getElementById('config-total-pool').value = data.totalPool || "";
           document.getElementById('config-student-limit').value = data.studentLimit || "";
-          document.getElementById('config-per-question-timer').value = data.perQuestionSeconds ?? 60;
+          document.getElementById('config-per-question-timer').value = data.examDurationMinutes ?? (data.perQuestionSeconds ? Math.round(data.perQuestionSeconds / 60) : 60);
           
           if(data.windowStart) {
             document.getElementById('config-window-start').value = formatDateTimeLocal(data.windowStart);
@@ -568,7 +577,7 @@
     window.saveExamSettings = async () => {
       const totalPool = parseInt(document.getElementById('config-total-pool').value);
       const studentLimit = parseInt(document.getElementById('config-student-limit').value);
-      const perQuestionSeconds = parseInt(document.getElementById('config-per-question-timer').value) || 0;
+      const examDurationMinutes = parseInt(document.getElementById('config-per-question-timer').value) || 60;
       const windowStartVal = document.getElementById('config-window-start').value;
       const windowEndVal = document.getElementById('config-window-end').value;
       const uploadMode = document.querySelector('input[name="upload-mode"]:checked').value;
@@ -587,7 +596,7 @@
         const configPayload = {
           totalPool,
           studentLimit,
-          perQuestionSeconds,
+          examDurationMinutes,
           windowStart: new Date(windowStartVal).getTime(),
           windowEnd: new Date(windowEndVal).getTime(),
           uploadMode,
@@ -607,6 +616,22 @@
         saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save & Lock Configurations';
       }
     };
+
+    // REAL-TIME ACTIVE STUDENTS LISTENER
+    function listenLiveActiveStudents() {
+      onSnapshot(collection(db, "active_sessions"), (snapshot) => {
+        let activeCount = 0;
+        const now = Date.now();
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.lastPing && (now - data.lastPing) < 30000) { // Student pinged within last 30 sec
+            activeCount++;
+          }
+        });
+        const el = document.getElementById('insight-live-students');
+        if (el) el.innerText = activeCount;
+      });
+    }
 
     window.fetchLiveDatabaseRecords = async () => {
       const analyticsBody = document.getElementById('analytics-table-body');
@@ -650,7 +675,7 @@
 
           const tabs = r.tabSwitches !== undefined ? r.tabSwitches : (r.tabSwitchesDetected || r.tab_switches || 0);
           const copies = r.copiesAttempted !== undefined ? r.copiesAttempted : (r.copyPasteAttempts || r.copy_paste || 0);
-          const penalties = r.penaltiesApplied || 0;
+          const penalties = r.penaltiesApplied !== undefined ? r.penaltiesApplied : tabs; // Penalty = 1 mark per tab switch
 
           totalTabs += tabs;
           totalCopies += copies;
@@ -732,7 +757,6 @@
         document.getElementById('insight-avg-score').innerText = "0%";
         document.getElementById('insight-pass-rate').innerText = "0%";
         document.getElementById('insight-highest-score').innerText = "0/0";
-        document.getElementById('insight-hardest-q').innerText = "N/A";
         return;
       }
 
@@ -782,7 +806,6 @@
         `;
         qTable.appendChild(tr);
       }
-      document.getElementById('insight-hardest-q').innerText = "Q - 4 (32% Acc)";
     }
 
     window.downloadResultsCSV = () => {
