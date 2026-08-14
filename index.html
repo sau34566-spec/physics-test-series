@@ -28,7 +28,6 @@
       color: #334155;
     }
 
-    /* Educational Background Graphics Overlay */
     .bg-decorations {
       position: absolute;
       width: 100%;
@@ -46,7 +45,6 @@
       color: #ffffff;
     }
 
-    /* Modern Portal Card */
     .login-card {
       position: relative;
       z-index: 10;
@@ -83,7 +81,6 @@
       margin-top: 4px;
     }
 
-    /* Form Fields */
     .form-group {
       margin-bottom: 20px;
     }
@@ -128,7 +125,6 @@
       box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
     }
 
-    /* Status & Error Notice */
     .status-banner {
       padding: 10px 14px;
       border-radius: 8px;
@@ -152,7 +148,6 @@
       border: 1px solid #bfdbfe;
     }
 
-    /* Submit Button */
     .btn-submit {
       width: 100%;
       padding: 14px;
@@ -185,7 +180,6 @@
 </head>
 <body>
 
-  <!-- Educational Background Motif Icons -->
   <div class="bg-decorations">
     <i class="fa-solid fa-graduation-cap"></i>
     <i class="fa-solid fa-book-open"></i>
@@ -201,7 +195,6 @@
     <i class="fa-solid fa-school"></i>
   </div>
 
-  <!-- Student Login Box -->
   <div class="login-card">
     <div class="brand-header">
       <i class="fa-solid fa-user-graduate"></i>
@@ -235,18 +228,17 @@
     </form>
   </div>
 
-  <!-- Dynamic Admin Configuration Engine -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
+      authDomain: "physics-test-series-405c7.firebaseapp.com",
+      projectId: "physics-test-series-405c7",
+      storageBucket: "physics-test-series-405c7.firebasestorage.app",
+      messagingSenderId: "758620061190",
+      appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
     };
 
     let db;
@@ -266,13 +258,12 @@
       statusBanner.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info'}"></i> <span>${message}</span>`;
     }
 
-    // Dynamic Admin Configuration Engine with Multi-Source Fallback
     async function checkAdminTimingConfig() {
       let config = null;
 
       // 1. Try reading from LocalStorage first (Fastest Sync)
       try {
-        const rawLocal = localStorage.getItem("exam_config");
+        const rawLocal = localStorage.getItem("exam_config") || localStorage.getItem("test_settings");
         if (rawLocal) config = JSON.parse(rawLocal);
       } catch (e) {
         console.warn("LocalStorage read error", e);
@@ -291,23 +282,12 @@
         }
       }
 
-      // 3. Fallback for alternate storage keys used by admin
-      if (!config) {
-        try {
-          const altLocal = localStorage.getItem("test_settings") || localStorage.getItem("examSettings");
-          if (altLocal) config = JSON.parse(altLocal);
-        } catch (e) {}
-      }
-
-      // If no config found at all
       if (!config) {
         showStatus("Exam schedule has not been set by Admin yet.", "info");
         return null;
       }
 
-      // Time parsing fix (Support string dates, HTML datetime-local, and Milliseconds)
       const now = Date.now();
-      
       let startTimeMs = typeof config.windowStart === 'number' ? config.windowStart : new Date(config.windowStart || config.startTime).getTime();
       let endTimeMs = typeof config.windowEnd === 'number' ? config.windowEnd : new Date(config.windowEnd || config.endTime).getTime();
 
@@ -316,9 +296,8 @@
         return null;
       }
 
-      // Live Timing Conditions Verification
       if (now < startTimeMs) {
-        const startDateStr = new Date(startTimeMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const startDateStr = new Date(startTimeMs).toLocaleString([], { dateStyle:'short', timeStyle:'short' });
         showStatus(`Test window has not started yet. Starts at ${startDateStr}.`, "error");
         startBtn.disabled = true;
         return null;
@@ -331,7 +310,6 @@
         return null;
       }
 
-      // Active Window Case
       statusBanner.style.display = "none";
       startBtn.disabled = false;
       return config;
@@ -339,15 +317,11 @@
 
     checkAdminTimingConfig();
 
-    // 2. Handle Verification & Redirect to nta.html
     document.getElementById("student-login-form").addEventListener("submit", async (e) => {
       e.preventDefault();
 
       startBtn.disabled = true;
       startBtn.innerHTML = `<span>Verifying Details...</span> <i class="fa-solid fa-spinner fa-spin"></i>`;
-
-      // 1.5 Seconds Delay Simulation for Verification
-      await new Promise(resolve => setTimeout(resolve, 1500));
 
       const liveConfig = await checkAdminTimingConfig();
 
