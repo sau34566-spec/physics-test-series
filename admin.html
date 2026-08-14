@@ -453,6 +453,19 @@
     const db = getFirestore(app);
     let allStudentResults = [];
 
+    // Format ISO string to datetime-local field format
+    function formatDateTimeLocal(timestamp) {
+      if(!timestamp) return "";
+      const d = new Date(timestamp);
+      if(isNaN(d.getTime())) return "";
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
     window.toggleUploadUI = (mode) => {
       document.querySelectorAll('.mode-content').forEach(m => m.classList.remove('active'));
       if (document.getElementById(`mode-${mode}-area`)) {
@@ -505,13 +518,13 @@
           const data = docSnap.data();
           document.getElementById('config-total-pool').value = data.totalPool || "";
           document.getElementById('config-student-limit').value = data.studentLimit || "";
-          document.getElementById('config-per-question-timer').value = data.perQuestionSeconds || 0;
+          document.getElementById('config-per-question-timer').value = data.perQuestionSeconds ?? 60;
           
           if(data.windowStart) {
-            document.getElementById('config-window-start').value = new Date(data.windowStart).toISOString().slice(0, 16);
+            document.getElementById('config-window-start').value = formatDateTimeLocal(data.windowStart);
           }
           if(data.windowEnd) {
-            document.getElementById('config-window-end').value = new Date(data.windowEnd).toISOString().slice(0, 16);
+            document.getElementById('config-window-end').value = formatDateTimeLocal(data.windowEnd);
           }
 
           if (data.uploadMode) {
@@ -562,7 +575,7 @@
       const questionLanguage = document.querySelector('input[name="question-language"]:checked').value;
 
       if (!totalPool || !studentLimit || !windowStartVal || !windowEndVal) {
-        alert("Please fill all configuration fields!");
+        alert("Please fill all required configuration & timing fields!");
         return;
       }
 
@@ -571,7 +584,7 @@
       saveBtn.innerText = "Saving Configuration...";
 
       try {
-        await setDoc(doc(db, "exam_config", "current_test"), {
+        const configPayload = {
           totalPool,
           studentLimit,
           perQuestionSeconds,
@@ -579,14 +592,19 @@
           windowEnd: new Date(windowEndVal).getTime(),
           uploadMode,
           questionLanguage,
-          updatedAt: new Date()
-        });
-        alert("Configurations saved and locked successfully!");
+          updatedAt: new Date().toISOString()
+        };
+
+        // Saving into primary config doc as well as fallback test_settings for test page readers
+        await setDoc(doc(db, "exam_config", "current_test"), configPayload, { merge: true });
+        await setDoc(doc(db, "config", "test_settings"), configPayload, { merge: true });
+
+        alert("Configurations saved and locked successfully! Test page will now follow these times & parameters.");
       } catch (err) {
         alert("Error saving settings: " + err.message);
       } finally {
         saveBtn.disabled = false;
-        saveBtn.innerText = "Save & Lock Configurations";
+        saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save & Lock Configurations';
       }
     };
 
@@ -609,6 +627,7 @@
           const r = docSnap.data();
           let scoreVal = 0;
           let maxScore = 10;
+          
           if (typeof r.score === 'string') {
             const parts = r.score.split('/');
             scoreVal = parseFloat(parts[0]) || 0;
@@ -629,8 +648,8 @@
             timeStyle: 'short'
           }) : "N/A";
 
-          const tabs = r.tabSwitches !== undefined ? r.tabSwitches : (r.tab_switches || 0);
-          const copies = r.copiesAttempted !== undefined ? r.copiesAttempted : (r.copy_paste || 0);
+          const tabs = r.tabSwitches !== undefined ? r.tabSwitches : (r.tabSwitchesDetected || r.tab_switches || 0);
+          const copies = r.copiesAttempted !== undefined ? r.copiesAttempted : (r.copyPasteAttempts || r.copy_paste || 0);
           const penalties = r.penaltiesApplied || 0;
 
           totalTabs += tabs;
@@ -641,7 +660,7 @@
             id: docSnap.id,
             name: r.name || "Anonymous Student",
             email: r.email || "No Email",
-            scoreText: r.score || "0/0",
+            scoreText: r.score !== undefined ? String(r.score) : "0/0",
             scoreVal: scoreVal,
             maxScore: maxScore,
             rawDate: dateObj,
@@ -649,7 +668,7 @@
             copiesAttempted: copies,
             penaltiesApplied: penalties,
             submittedAtStr: submitTimeFormatted,
-            feedback: r.feedback || "None"
+            feedback: r.feedback || r.doubt || "None"
           });
         });
 
@@ -722,7 +741,7 @@
       let highestObj = data[0];
 
       data.forEach(r => {
-        let perc = (r.scoreVal / r.maxScore) * 100;
+        let perc = r.maxScore > 0 ? (r.scoreVal / r.maxScore) * 100 : 0;
         totalPerc += perc;
         if (perc >= 50) passCount++;
         if (r.scoreVal > highestObj.scoreVal) highestObj = r;
