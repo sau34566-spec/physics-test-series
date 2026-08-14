@@ -3,577 +3,312 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exam Elite | Professional Admin Portal</title>
-    
-    <!-- Google Fonts & FontAwesome Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Admin Panel - Physics Online Test</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            --primary: #0f172a;
-            --primary-accent: #3b82f6;
-            --secondary-accent: #6366f1;
-            --gold: #f59e0b;
-            --bg-body: #f1f5f9;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --danger: #ef4444;
-            --success: #10b981;
-            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 10px 10px -5px rgba(15, 23, 42, 0.04);
+            --primary: #1e3a8a;
+            --primary-accent: #2563eb;
+            --bg-dark: #0f172a;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --border-color: #cbd5e1;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
         }
 
         body {
-            background-color: var(--bg-body);
+            background-color: var(--bg-dark);
             color: var(--text-main);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            padding: 2rem;
         }
 
-        /* HEADER & NAVBAR */
-        .navbar {
-            background: var(--primary);
-            color: white;
-            padding: 1rem 2rem;
+        .admin-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .navbar .brand {
-            font-size: 1.4rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .navbar .brand i {
-            color: var(--primary-accent);
-        }
-
-        /* MAIN LAYOUT */
-        .container {
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 1.5rem;
-            width: 100%;
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 2rem;
-        }
-
-        @media (max-width: 992px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* CARDS & PANELS */
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 1.8rem;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 1rem;
             margin-bottom: 1.5rem;
         }
 
-        .card-title {
-            font-size: 1.15rem;
-            font-weight: 800;
+        .header h2 {
             color: var(--primary);
-            margin-bottom: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 2px solid var(--bg-body);
-            padding-bottom: 0.8rem;
+            font-weight: 800;
         }
 
-        /* FORM ELEMENTS */
         .form-group {
             margin-bottom: 1.2rem;
         }
 
         .form-group label {
             display: block;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 700;
             margin-bottom: 0.4rem;
-            color: var(--text-main);
+            color: #334155;
         }
 
         .form-control {
             width: 100%;
             padding: 0.75rem 1rem;
             border: 2px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 0.95rem;
             outline: none;
-            transition: border-color 0.2s;
+            font-family: 'Inter', sans-serif;
         }
 
         .form-control:focus {
             border-color: var(--primary-accent);
         }
 
-        textarea.form-control {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        /* CODE EDITOR TEXTAREA */
-        .code-textarea {
-            font-family: 'Courier New', Courier, monospace;
-            background: #0f172a;
-            color: #38bdf8;
-            min-height: 220px;
-            border-radius: 10px;
-            padding: 1rem;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        /* TABS STYLING */
-        .tab-buttons {
+        /* CHECKBOX OPTION STYLING */
+        .checkbox-option {
             display: flex;
+            align-items: center;
             gap: 10px;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 0.5rem;
-        }
-
-        .tab-btn {
-            padding: 0.6rem 1.2rem;
-            border: none;
-            background: transparent;
-            font-weight: 700;
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            cursor: pointer;
+            background: #f8fafc;
+            padding: 0.8rem 1rem;
+            border: 2px dashed var(--border-color);
             border-radius: 8px;
-            transition: all 0.2s;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--primary);
         }
 
-        .tab-btn.active {
-            background: var(--primary-accent);
-            color: white;
+        .checkbox-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
         }
 
-        .tab-content {
-            display: none;
+        #json-box-wrapper {
+            display: none; /* Hidden by default, toggles on tick */
+            margin-bottom: 1.5rem;
         }
 
-        .tab-content.active {
-            display: block;
+        textarea.code-box {
+            font-family: monospace;
+            background: #1e293b;
+            color: #38bdf8;
+            min-height: 150px;
         }
 
-        /* BUTTONS */
         .btn {
             padding: 0.75rem 1.4rem;
-            border-radius: 10px;
+            border-radius: 8px;
             font-weight: 700;
             border: none;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 8px;
             transition: all 0.2s;
             font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-primary { background: var(--primary-accent); color: white; }
-        .btn-primary:hover { background: #2563eb; }
+        .btn-primary:hover { background: #1d4ed8; }
 
-        .btn-success { background: var(--success); color: white; }
-        .btn-success:hover { background: #059669; }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn-danger:hover { background: #b91c1c; }
 
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-danger:hover { background: #dc2626; }
-
-        .btn-dark { background: var(--primary); color: white; }
-        .btn-dark:hover { background: #1e293b; }
-
-        .btn-block { width: 100%; }
-
-        /* QUESTION PREVIEW LIST */
-        .q-preview-item {
-            background: var(--bg-body);
-            border-radius: 12px;
-            padding: 1rem 1.2rem;
-            margin-bottom: 1rem;
+        .q-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            border-left: 4px solid var(--primary-accent);
+            align-items: center;
         }
-
-        .q-preview-details h4 {
-            font-size: 0.95rem;
-            color: var(--text-main);
-            margin-bottom: 0.5rem;
-        }
-
-        .q-preview-details p {
-            font-size: 0.82rem;
-            color: var(--text-muted);
-        }
-
-        .q-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-btn {
-            background: white;
-            border: 1px solid var(--border-color);
-            padding: 0.4rem 0.6rem;
-            border-radius: 6px;
-            cursor: pointer;
-            color: var(--text-main);
-        }
-
-        .action-btn:hover { background: #f8fafc; }
     </style>
 </head>
 <body>
 
-    <!-- NAVBAR -->
-    <div class="navbar">
-        <div class="brand">
-            <i class="fa-solid fa-sliders"></i> Exam Elite Admin Portal
-        </div>
-        <div>
-            <button class="btn btn-danger" onclick="resetAttemptedEmails()">
-                <i class="fa-solid fa-rotate-left"></i> Clear Student Attempts
+    <div class="admin-container">
+        <div class="header">
+            <h2><i class="fa-solid fa-user-gear"></i> Admin Test Portal</h2>
+            <button class="btn btn-danger" onclick="resetAttempts()">
+                <i class="fa-solid fa-rotate-left"></i> Reset Student Attempts
             </button>
         </div>
-    </div>
 
-    <!-- MAIN CONTAINER -->
-    <div class="container">
-        
-        <!-- LEFT SIDEBAR: TEST CONFIGURATION -->
-        <div>
-            <div class="card">
-                <div class="card-title">
-                    <i class="fa-solid fa-gear"></i> Test Settings
-                </div>
-
-                <div class="form-group">
-                    <label>Test Title / Chapter Name</label>
-                    <input type="text" id="cfg-title" class="form-control" value="Physics Chapter Test">
-                </div>
-
-                <div class="form-group">
-                    <label>Total Duration (Minutes)</label>
-                    <input type="number" id="cfg-duration" class="form-control" value="15">
-                </div>
-
-                <div class="form-group">
-                    <label>Total Questions to Serve</label>
-                    <input type="number" id="cfg-total-q" class="form-control" value="10">
-                </div>
-
-                <div class="form-group">
-                    <label>Positive Marks (per question)</label>
-                    <input type="number" id="cfg-pos-marks" class="form-control" value="1" step="0.25">
-                </div>
-
-                <div class="form-group">
-                    <label>Negative Marks (per question)</label>
-                    <input type="number" id="cfg-neg-marks" class="form-control" value="0.25" step="0.25">
-                </div>
-
-                <button class="btn btn-primary btn-block" onclick="saveSettings()">
-                    <i class="fa-solid fa-floppy-disk"></i> Save Settings
-                </button>
+        <!-- TEST CONFIGURATION -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 1.5rem;">
+            <div class="form-group">
+                <label>Total Questions</label>
+                <input type="number" id="cfg-total" class="form-control" value="10">
+            </div>
+            <div class="form-group">
+                <label>Time Duration (Mins)</label>
+                <input type="number" id="cfg-time" class="form-control" value="15">
+            </div>
+            <div class="form-group">
+                <label>Positive Mark</label>
+                <input type="number" id="cfg-pos" class="form-control" value="1" step="0.25">
+            </div>
+            <div class="form-group">
+                <label>Negative Mark</label>
+                <input type="number" id="cfg-neg" class="form-control" value="0.25" step="0.25">
             </div>
         </div>
 
-        <!-- RIGHT AREA: QUESTION MANAGEMENT & CODE UPLOAD -->
-        <div>
-            <div class="card">
-                <div class="tab-buttons">
-                    <button class="tab-btn active" onclick="switchTab('code-upload-tab', this)">
-                        <i class="fa-solid fa-code"></i> Code / JSON Upload
-                    </button>
-                    <button class="tab-btn" onclick="switchTab('manual-tab', this)">
-                        <i class="fa-solid fa-plus"></i> Manual Add Question
-                    </button>
-                </div>
+        <hr style="margin-bottom: 1.5rem; border: none; border-top: 2px solid #f1f5f9;">
 
-                <!-- TAB 1: CODE / JSON UPLOAD OPTION -->
-                <div id="code-upload-tab" class="tab-content active">
-                    <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
-                        Paste your questions in standard JSON code format or click below to upload a <code>.json</code> file.
-                    </p>
+        <!-- QUESTION UPLOAD & JSON CODE OPTION -->
+        <h3 style="margin-bottom: 1rem; color: var(--primary);"><i class="fa-solid fa-file-circle-plus"></i> Upload Questions</h3>
 
-                    <div class="form-group">
-                        <label>Upload JSON File</label>
-                        <input type="file" id="json-file-input" accept=".json" class="form-control" onchange="handleFileUpload(event)">
-                    </div>
+        <!-- TICK BOX FOR JSON CODE MODE -->
+        <label class="checkbox-option">
+            <input type="checkbox" id="json-toggle-checkbox" onchange="toggleJsonMode()">
+            <span><i class="fa-solid fa-code"></i> Upload via JSON / Code Mode</span>
+        </label>
 
-                    <div class="form-group">
-                        <label>JSON Code Editor / Paste Box</label>
-                        <textarea id="json-code-box" class="form-control code-textarea" placeholder='[
-  {
-    "question": "What is the SI unit of Force?",
-    "options": ["Joule", "Newton", "Watt", "Pascal"],
-    "answer": 1
-  }
-]'></textarea>
-                    </div>
-
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button class="btn btn-success" onclick="loadQuestionsFromCode()">
-                            <i class="fa-solid fa-file-import"></i> Load Questions from Code
-                        </button>
-                        <button class="btn btn-dark" onclick="copyJSONCode()">
-                            <i class="fa-solid fa-copy"></i> Copy Current JSON Code
-                        </button>
-                    </div>
-                </div>
-
-                <!-- TAB 2: MANUAL QUESTION ADDITION -->
-                <div id="manual-tab" class="tab-content">
-                    <div class="form-group">
-                        <label>Question Text</label>
-                        <textarea id="mq-text" class="form-control" placeholder="Enter question statement..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Option A</label>
-                        <input type="text" id="mq-opt-0" class="form-control" placeholder="Option A">
-                    </div>
-                    <div class="form-group">
-                        <label>Option B</label>
-                        <input type="text" id="mq-opt-1" class="form-control" placeholder="Option B">
-                    </div>
-                    <div class="form-group">
-                        <label>Option C</label>
-                        <input type="text" id="mq-opt-2" class="form-control" placeholder="Option C">
-                    </div>
-                    <div class="form-group">
-                        <label>Option D</label>
-                        <input type="text" id="mq-opt-3" class="form-control" placeholder="Option D">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Correct Answer Index</label>
-                        <select id="mq-correct" class="form-control">
-                            <option value="0">Option A (Index 0)</option>
-                            <option value="1">Option B (Index 1)</option>
-                            <option value="2">Option C (Index 2)</option>
-                            <option value="3">Option D (Index 3)</option>
-                        </select>
-                    </div>
-
-                    <button class="btn btn-primary" onclick="addManualQuestion()">
-                        <i class="fa-solid fa-plus-circle"></i> Add Question
-                    </button>
-                </div>
+        <!-- JSON CODE AREA (SHOWS ON TICK) -->
+        <div id="json-box-wrapper">
+            <div class="form-group">
+                <label>Paste JSON Code Here</label>
+                <textarea id="json-code" class="form-control code-box" placeholder='[{"question": "SI Unit of Force?", "options": ["N", "J", "W", "Pa"], "answer": 0}]'></textarea>
             </div>
-
-            <!-- QUESTION BANK PREVIEW CARD -->
-            <div class="card">
-                <div class="card-title" style="justify-content: space-between;">
-                    <span><i class="fa-solid fa-database"></i> Loaded Question Bank (<span id="q-count">0</span>)</span>
-                    <button class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="clearAllQuestions()">
-                        <i class="fa-solid fa-trash"></i> Clear All
-                    </button>
-                </div>
-
-                <div id="q-list-container">
-                    <!-- Dynamic Questions Render Here -->
-                </div>
-            </div>
+            <button class="btn btn-primary" onclick="loadFromJSONCode()"><i class="fa-solid fa-upload"></i> Load Code Questions</button>
         </div>
 
+        <!-- NORMAL / MANUAL ADD FORM -->
+        <div id="manual-form-wrapper">
+            <div class="form-group">
+                <label>Question Statement</label>
+                <input type="text" id="q-text" class="form-control" placeholder="Enter question...">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group"><label>Option A</label><input type="text" id="opt-0" class="form-control"></div>
+                <div class="form-group"><label>Option B</label><input type="text" id="opt-1" class="form-control"></div>
+                <div class="form-group"><label>Option C</label><input type="text" id="opt-2" class="form-control"></div>
+                <div class="form-group"><label>Option D</label><input type="text" id="opt-3" class="form-control"></div>
+            </div>
+            <div class="form-group">
+                <label>Correct Answer Index (0 = A, 1 = B, 2 = C, 3 = D)</label>
+                <select id="correct-opt" class="form-control">
+                    <option value="0">Option A</option>
+                    <option value="1">Option B</option>
+                    <option value="2">Option C</option>
+                    <option value="3">Option D</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="addSingleQuestion()"><i class="fa-solid fa-plus"></i> Add Question</button>
+        </div>
+
+        <!-- LOADED QUESTIONS LIST -->
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--primary);">Question Bank (<span id="q-count">0</span>)</h3>
+        <div id="questions-list"></div>
     </div>
 
-    <!-- ADMIN SCRIPTS -->
     <script>
-        let questionBank = [];
+        let questionBank = JSON.parse(localStorage.getItem('adminQuestionBank') || '[]');
 
-        // Load saved state on start
         window.onload = function() {
-            const savedBank = localStorage.getItem('adminQuestionBank');
-            if (savedBank) {
-                try {
-                    questionBank = JSON.parse(savedBank);
-                    updateCodeBox();
-                    renderQuestionList();
-                } catch(e) {}
-            }
+            renderQuestions();
         };
 
-        function switchTab(tabId, element) {
-            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(tb => tb.classList.remove('active'));
-
-            document.getElementById(tabId).classList.add('active');
-            element.classList.add('active');
+        function toggleJsonMode() {
+            const isChecked = document.getElementById('json-toggle-checkbox').checked;
+            document.getElementById('json-box-wrapper').style.display = isChecked ? 'block' : 'none';
         }
 
-        // 1. CODE / JSON UPLOAD LOGIC
-        function loadQuestionsFromCode() {
-            const rawCode = document.getElementById('json-code-box').value.trim();
-            if (!rawCode) {
-                alert("Please paste valid JSON code in the editor box!");
-                return;
-            }
-
+        function loadFromJSONCode() {
+            const code = document.getElementById('json-code').value.trim();
+            if (!code) return alert("Please paste valid JSON code!");
             try {
-                const parsed = JSON.parse(rawCode);
+                const parsed = JSON.parse(code);
                 if (Array.isArray(parsed)) {
                     questionBank = parsed;
-                    saveQuestionBank();
-                    renderQuestionList();
-                    alert(`Successfully imported ${parsed.length} questions from code!`);
-                } else {
-                    alert("JSON code must be an array of questions!");
+                    saveAndRender();
+                    alert("Questions loaded successfully!");
                 }
-            } catch (err) {
-                alert("Invalid JSON Code format! Please check brackets and quotes.\nError: " + err.message);
+            } catch(e) {
+                alert("Invalid JSON format!");
             }
         }
 
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        function addSingleQuestion() {
+            const text = document.getElementById('q-text').value.trim();
+            const o0 = document.getElementById('opt-0').value.trim();
+            const o1 = document.getElementById('opt-1').value.trim();
+            const o2 = document.getElementById('opt-2').value.trim();
+            const o3 = document.getElementById('opt-3').value.trim();
+            const ans = parseInt(document.getElementById('correct-opt').value);
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('json-code-box').value = e.target.result;
-                loadQuestionsFromCode();
-            };
-            reader.readAsText(file);
-        }
+            if (!text || !o0 || !o1 || !o2 || !o3) return alert("Fill all fields!");
 
-        function copyJSONCode() {
-            const codeBox = document.getElementById('json-code-box');
-            codeBox.select();
-            document.execCommand('copy');
-            alert("JSON Code copied to clipboard!");
-        }
-
-        // 2. MANUAL QUESTION ADDITION
-        function addManualQuestion() {
-            const qText = document.getElementById('mq-text').value.trim();
-            const o0 = document.getElementById('mq-opt-0').value.trim();
-            const o1 = document.getElementById('mq-opt-1').value.trim();
-            const o2 = document.getElementById('mq-opt-2').value.trim();
-            const o3 = document.getElementById('mq-opt-3').value.trim();
-            const correctIdx = parseInt(document.getElementById('mq-correct').value);
-
-            if (!qText || !o0 || !o1 || !o2 || !o3) {
-                alert("Please fill all fields for the question and options!");
-                return;
-            }
-
-            const newQ = {
-                question: qText,
+            questionBank.push({
+                question: text,
                 options: [o0, o1, o2, o3],
-                answer: correctIdx
-            };
+                answer: ans
+            });
 
-            questionBank.push(newQ);
-            saveQuestionBank();
-            updateCodeBox();
-            renderQuestionList();
-
-            // Reset manual form fields
-            document.getElementById('mq-text').value = '';
-            document.getElementById('mq-opt-0').value = '';
-            document.getElementById('mq-opt-1').value = '';
-            document.getElementById('mq-opt-2').value = '';
-            document.getElementById('mq-opt-3').value = '';
-            alert("Question added successfully!");
+            saveAndRender();
+            document.getElementById('q-text').value = '';
+            document.getElementById('opt-0').value = '';
+            document.getElementById('opt-1').value = '';
+            document.getElementById('opt-2').value = '';
+            document.getElementById('opt-3').value = '';
         }
 
-        // 3. RENDER & UI UPDATES
-        function renderQuestionList() {
-            const container = document.getElementById('q-list-container');
+        function renderQuestions() {
+            const container = document.getElementById('questions-list');
             document.getElementById('q-count').innerText = questionBank.length;
             container.innerHTML = '';
 
-            if (questionBank.length === 0) {
-                container.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No questions loaded in bank yet.</p>`;
-                return;
-            }
-
             questionBank.forEach((q, idx) => {
-                const item = document.createElement('div');
-                item.className = 'q-preview-item';
-                item.innerHTML = `
-                    <div class="q-preview-details">
-                        <h4>Q${idx + 1}. ${q.question}</h4>
-                        <p><strong>Options:</strong> A. ${q.options[0]} | B. ${q.options[1]} | C. ${q.options[2]} | D. ${q.options[3]}</p>
-                        <p><span style="color: var(--success); font-weight:700;">Correct Answer:</span> ${String.fromCharCode(65 + q.answer)} (${q.options[q.answer]})</p>
+                const div = document.createElement('div');
+                div.className = 'q-card';
+                div.innerHTML = `
+                    <div>
+                        <strong>Q${idx + 1}: ${q.question}</strong>
+                        <div style="font-size:0.85rem; color:#64748b;">Ans: ${q.options[q.answer]}</div>
                     </div>
-                    <div class="q-actions">
-                        <button class="action-btn" style="color: var(--danger);" onclick="deleteQuestion(${idx})"><i class="fa-solid fa-trash"></i></button>
-                    </div>
+                    <button class="btn btn-danger" onclick="deleteQuestion(${idx})"><i class="fa-solid fa-trash"></i></button>
                 `;
-                container.appendChild(item);
+                container.appendChild(div);
             });
         }
 
         function deleteQuestion(index) {
             questionBank.splice(index, 1);
-            saveQuestionBank();
-            updateCodeBox();
-            renderQuestionList();
+            saveAndRender();
         }
 
-        function clearAllQuestions() {
-            if (confirm("Are you sure you want to clear all loaded questions?")) {
-                questionBank = [];
-                saveQuestionBank();
-                updateCodeBox();
-                renderQuestionList();
-            }
-        }
-
-        function updateCodeBox() {
-            document.getElementById('json-code-box').value = JSON.stringify(questionBank, null, 2);
-        }
-
-        function saveQuestionBank() {
+        function saveAndRender() {
             localStorage.setItem('adminQuestionBank', JSON.stringify(questionBank));
+            renderQuestions();
         }
 
-        function saveSettings() {
-            const settings = {
-                title: document.getElementById('cfg-title').value,
-                duration: document.getElementById('cfg-duration').value,
-                totalQuestions: document.getElementById('cfg-total-q').value,
-                posMarks: document.getElementById('cfg-pos-marks').value,
-                negMarks: document.getElementById('cfg-neg-marks').value
-            };
-            localStorage.setItem('adminExamSettings', JSON.stringify(settings));
-            alert("Settings saved successfully!");
-        }
-
-        function resetAttemptedEmails() {
-            if (confirm("Are you sure you want to reset all recorded student exam attempts? Students will be able to re-attempt the test.")) {
+        function resetAttempts() {
+            if (confirm("Reset all student email attempts?")) {
                 localStorage.removeItem('attemptedEmails');
-                alert("Student exam attempts reset successfully!");
+                alert("Attempts reset!");
             }
         }
     </script>
