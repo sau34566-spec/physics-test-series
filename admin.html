@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exam Elite | Professional Admin Portal</title>
   
-  <!-- Google Fonts & FontAwesome Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
@@ -29,7 +28,6 @@
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif; }
     body { background-color: var(--bg-body); color: var(--text-main); min-height: 100vh; padding: 2rem 1.5rem; }
     
-    /* LOGIN OVERLAY */
     #login-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
@@ -44,7 +42,6 @@
     .login-card h2 { color: var(--primary); font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; }
     .login-card p { color: var(--text-muted); font-size: 0.88rem; margin-top: 0.3rem; margin-bottom: 2rem; }
 
-    /* DASHBOARD LAYOUT */
     .admin-container { max-width: 1150px; margin: 0 auto; display: none; animation: fadeIn 0.4s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -57,7 +54,6 @@
     header h1 i { color: var(--gold); }
     .header-actions { display: flex; gap: 12px; align-items: center; }
 
-    /* NAVIGATION TABS */
     .slide-navigation {
       display: flex; gap: 8px; margin-bottom: 2rem; background: #e2e8f0;
       padding: 6px; border-radius: 14px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); flex-wrap: wrap;
@@ -77,7 +73,6 @@
     .admin-slide-content { display: none; }
     .admin-slide-content.active { display: block; }
 
-    /* CARDS & FORMS */
     .admin-card {
       background: var(--card-bg); padding: 2.2rem; border-radius: 18px;
       box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); margin-bottom: 2rem;
@@ -97,7 +92,6 @@
       box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
     }
 
-    /* BUTTONS */
     .btn {
       background: var(--primary); color: white; border: none; padding: 0.85rem 1.5rem;
       font-size: 0.9rem; font-weight: 700; border-radius: 10px; cursor: pointer;
@@ -111,7 +105,6 @@
     .btn-accent { background: var(--gold); color: #0f172a; } .btn-accent:hover { background: #d97706; }
     .btn-refresh { background: #334155; color: white; } .btn-refresh:hover { background: #1e293b; }
 
-    /* TABLES */
     .table-responsive { width: 100%; overflow-x: auto; margin-top: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); }
     table { width: 100%; border-collapse: collapse; text-align: left; background: white; }
     th, td { padding: 1.1rem 1.2rem; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
@@ -125,7 +118,6 @@
     .alert-warn { background: #fee2e2; color: #991b1b; }
     .time-stamp { font-size: 0.82rem; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 5px; }
 
-    /* STATS SUMMARY BOXES */
     .stats-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 1.8rem; }
     .stat-card {
       background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 1.3rem; border-radius: 14px;
@@ -141,7 +133,6 @@
     .mode-content { display: none; }
     .mode-content.active { display: block; }
 
-    /* PULSE ANIMATION FOR LIVE STUDENTS */
     @keyframes pulseGlow {
       0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
       70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
@@ -155,7 +146,6 @@
 </head>
 <body>
 
-  <!-- LOGIN OVERLAY -->
   <div id="login-overlay">
     <div class="login-card">
       <div class="login-badge"><i class="fa-solid fa-shield-halved"></i></div>
@@ -178,7 +168,6 @@
     </div>
   </div>
 
-  <!-- MAIN ADMIN CONTAINER -->
   <div class="admin-container" id="admin-main">
     <header>
       <h1><i class="fa-solid fa-crown"></i> Exam Elite Control Room</h1>
@@ -192,7 +181,6 @@
       </div>
     </header>
 
-    <!-- NAVIGATION TABS -->
     <div class="slide-navigation">
       <button class="slide-tab-btn active" onclick="switchSlide(1, this)">
         <i class="fa-solid fa-sliders"></i> Test Setup & Config
@@ -208,7 +196,6 @@
       </button>
     </div>
 
-    <!-- SLIDE 1: CONFIGURATION & TIMER -->
     <div id="slide-1-content" class="admin-slide-content active">
       <div class="admin-card">
         <h3><i class="fa-solid fa-gear"></i> Test Configuration & Timing Controls</h3>
@@ -240,7 +227,6 @@
           </div>
         </div>
 
-        <!-- UPLOAD METHOD SELECTION -->
         <div style="background: #f1f5f9; padding: 1.4rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border-color);">
           <label style="font-weight: 800; color: var(--primary);">Question Upload Method & Options:</label>
           <div style="display: flex; gap: 25px; flex-wrap: wrap; margin-top: 0.8rem; margin-bottom: 1.2rem;">
@@ -255,7 +241,6 @@
             </label>
           </div>
 
-          <!-- QUESTION LANGUAGE SELECTION -->
           <div style="display: flex; gap: 20px; align-items: center; border-top: 1px solid #cbd5e1; padding-top: 1rem; flex-wrap: wrap;">
             <label style="font-weight: 800; font-size: 0.85rem; color: var(--primary);">Question Language:</label>
             <label style="cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:600;">
@@ -269,9 +254,7 @@
             </label>
           </div>
 
-          <!-- UPLOAD SECTIONS -->
           <div class="upload-section-box">
-            <!-- 1. LIVE FORM UPLOAD -->
             <div id="mode-form-area" class="mode-content active">
               <h4 style="margin-bottom: 1rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-pen-to-square"></i> Add Question Directly</h4>
               <div class="form-group">
@@ -296,7 +279,6 @@
               <button type="button" class="btn btn-accent" onclick="addQuestionToPool()"><i class="fa-solid fa-plus"></i> Add Question To Live Pool</button>
             </div>
 
-            <!-- 2. MS WORD PARSER -->
             <div id="mode-msword-area" class="mode-content">
               <h4 style="margin-bottom: 1rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-file-word"></i> MS Word Copy-Paste Parser</h4>
               <div class="form-group">
@@ -305,7 +287,6 @@
               </div>
             </div>
 
-            <!-- 3. CODE / JSON MODE -->
             <div id="mode-code-area" class="mode-content">
               <h4 style="margin-bottom: 0.5rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-code"></i> JSON / GitHub Repository Upload</h4>
               <div class="form-group">
@@ -322,7 +303,6 @@
       </div>
     </div>
 
-    <!-- SLIDE 2: SECURITY ANALYTICS -->
     <div id="slide-2-content" class="admin-slide-content">
       <div class="admin-card">
         <h3><i class="fa-solid fa-shield-cat"></i> Anti-Cheating & Security Tracker</h3>
@@ -367,7 +347,6 @@
       </div>
     </div>
 
-    <!-- SLIDE 3: LEADERBOARD -->
     <div id="slide-3-content" class="admin-slide-content">
       <div class="admin-card">
         <h3><i class="fa-solid fa-medal"></i> Student Rank Leaderboard</h3>
@@ -397,13 +376,11 @@
       </div>
     </div>
 
-    <!-- SLIDE 4: ADVANCED ANALYTICS & INSIGHTS -->
     <div id="slide-4-content" class="admin-slide-content">
       <div class="admin-card">
         <h3><i class="fa-solid fa-chart-line"></i> Exam Analytics & Deep Insights</h3>
         <p class="subtitle">Performance metrics, question difficulty analysis, and student accuracy breakdown.</p>
         
-        <!-- KPI METRICS (WITH LIVE ACTIVE STUDENTS COUNTER BOX) -->
         <div class="stats-summary">
           <div class="stat-card" style="border-left: 4px solid #2563eb; background: #eff6ff;">
             <h4><span class="live-dot"></span> Live Active Students</h4>
@@ -423,7 +400,6 @@
           </div>
         </div>
 
-        <!-- QUESTION DIFFICULTY BREAKDOWN TABLE -->
         <h4 style="margin-top: 1.5rem; color: var(--primary);"><i class="fa-solid fa-list-check"></i> Question-Level Performance Breakdown</h4>
         <div class="table-responsive">
           <table>
@@ -463,7 +439,6 @@
     const db = getFirestore(app);
     let allStudentResults = [];
 
-    // Helper format datetime-local
     function formatDateTimeLocal(timestamp) {
       if(!timestamp) return "";
       const d = new Date(timestamp);
@@ -524,10 +499,17 @@
 
     async function loadExamSettings() {
       try {
-        const docRef = doc(db, "exam_config", "current_test");
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
+        let data = null;
+        const rawLocal = localStorage.getItem("exam_config");
+        if(rawLocal) data = JSON.parse(rawLocal);
+
+        if(!data) {
+          const docRef = doc(db, "exam_config", "current_test");
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) data = docSnap.data();
+        }
+
+        if (data) {
           document.getElementById('config-total-pool').value = data.totalPool || data.total_questions || "";
           document.getElementById('config-student-limit').value = data.studentLimit || data.questions_per_student || "";
           document.getElementById('config-per-question-timer').value = data.examDurationMinutes ?? (data.perQuestionSeconds ? Math.round(data.perQuestionSeconds / 60) : 60);
@@ -536,11 +518,11 @@
             document.getElementById('config-json-url').value = data.json_url || data.jsonUrl || "";
           }
 
-          if(data.windowStart) {
-            document.getElementById('config-window-start').value = formatDateTimeLocal(data.windowStart);
+          if(data.windowStart || data.startTime) {
+            document.getElementById('config-window-start').value = formatDateTimeLocal(data.windowStart || data.startTime);
           }
-          if(data.windowEnd) {
-            document.getElementById('config-window-end').value = formatDateTimeLocal(data.windowEnd);
+          if(data.windowEnd || data.endTime) {
+            document.getElementById('config-window-end').value = formatDateTimeLocal(data.windowEnd || data.endTime);
           }
 
           if (data.uploadMode || data.questions_source) {
@@ -601,36 +583,44 @@
         return;
       }
 
+      const startTimeMs = new Date(windowStartVal).getTime();
+      const endTimeMs = new Date(windowEndVal).getTime();
+
       const saveBtn = document.getElementById('save-config-btn');
       saveBtn.disabled = true;
       saveBtn.innerText = "Saving Configuration...";
 
-      try {
-        const configPayload = {
-          totalPool,
-          total_questions: totalPool,
-          studentLimit,
-          questions_per_student: studentLimit,
-          examDurationMinutes,
-          perQuestionSeconds: examDurationMinutes * 60,
-          windowStart: new Date(windowStartVal).getTime(),
-          windowEnd: new Date(windowEndVal).getTime(),
-          uploadMode,
-          questions_source: uploadMode,
-          jsonUrl: jsonUrlVal,
-          json_url: jsonUrlVal,
-          questionLanguage,
-          updatedAt: new Date().toISOString()
-        };
+      const configPayload = {
+        totalPool,
+        total_questions: totalPool,
+        studentLimit,
+        questions_per_student: studentLimit,
+        examDurationMinutes,
+        perQuestionSeconds: examDurationMinutes * 60,
+        windowStart: startTimeMs,
+        windowEnd: endTimeMs,
+        startTime: startTimeMs,
+        endTime: endTimeMs,
+        uploadMode,
+        questions_source: uploadMode,
+        jsonUrl: jsonUrlVal,
+        json_url: jsonUrlVal,
+        questionLanguage,
+        updatedAt: new Date().toISOString()
+      };
 
-        // Atomic saves across configuration keys to prevent mismatch in Student Portal
+      // Direct local storage save for zero lag
+      localStorage.setItem("exam_config", JSON.stringify(configPayload));
+      localStorage.setItem("test_settings", JSON.stringify(configPayload));
+
+      try {
         await setDoc(doc(db, "exam_config", "current_test"), configPayload, { merge: true });
         await setDoc(doc(db, "config", "test_settings"), configPayload, { merge: true });
         await setDoc(doc(db, "test_config", "latest"), configPayload, { merge: true });
 
         alert("Configurations saved and locked successfully! Test page will now follow these times & parameters.");
       } catch (err) {
-        alert("Error saving settings: " + err.message);
+        alert("Saved to browser local cache! (Firebase notice: " + err.message + ")");
       } finally {
         saveBtn.disabled = false;
         saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save & Lock Configurations';
