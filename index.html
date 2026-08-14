@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -8,9 +8,6 @@
   <!-- Font Awesome Icons & Google Fonts -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- External Security Integration -->
-  <script src="security.js"></script>
 
   <style>
     * {
@@ -184,17 +181,6 @@
       cursor: not-allowed;
       box-shadow: none;
     }
-
-    /* Penalty Reason Section in Result Dashboard */
-    .penalty-info-box {
-      margin-top: 15px;
-      padding: 12px 16px;
-      background-color: #fff1f2;
-      border-left: 4px solid #f43f5e;
-      border-radius: 6px;
-      color: #9f1239;
-      font-size: 0.85rem;
-    }
   </style>
 </head>
 <body>
@@ -238,23 +224,22 @@
         <label for="student-email">Email Address</label>
         <div class="input-wrapper">
           <i class="fa-solid fa-envelope"></i>
-          <input type="email" id="student-email" placeholder="name@domain.com" required>
+          <input type="email" id="student-email" placeholder="Enter your email address" required>
         </div>
       </div>
 
       <button type="submit" id="start-btn" class="btn-submit">
-        <span>Proceed to NTA Portal</span>
-        <i class="fa-solid fa-arrow-right"></i>
+        <span>Verify Eligibility</span>
+        <i class="fa-solid fa-circle-check"></i>
       </button>
     </form>
   </div>
 
-  <!-- Dynamic Admin Configuration & NTA Bridge Engine Script -->
+  <!-- Dynamic Admin Configuration Engine -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Standard Firebase Config Initialization (Read from Admin Shared State)
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_AUTH_DOMAIN",
@@ -269,7 +254,7 @@
       const app = initializeApp(firebaseConfig);
       db = getFirestore(app);
     } catch (e) {
-      console.warn("Firebase fallback initialized from LocalStorage mode.");
+      console.warn("Firebase fallback mode.");
     }
 
     const statusBanner = document.getElementById("status-message");
@@ -308,7 +293,6 @@
         return null;
       }
 
-      // Check Timing Constraints Set by Admin Panel
       if (now < config.windowStart) {
         showStatus("Test window has not started yet. Please check scheduled time.", "error");
         startBtn.disabled = true;
@@ -325,21 +309,23 @@
       return config;
     }
 
-    // Initial Timing Check
     checkAdminTimingConfig();
 
-    // 2. Handle Login & Redirect to nta.html
+    // 2. Handle Verification & Redirect to nta.html
     document.getElementById("student-login-form").addEventListener("submit", async (e) => {
       e.preventDefault();
 
       startBtn.disabled = true;
       startBtn.innerHTML = `<span>Verifying Details...</span> <i class="fa-solid fa-spinner fa-spin"></i>`;
 
+      // 1.5 Seconds Delay Simulation for Verification
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
       const liveConfig = await checkAdminTimingConfig();
 
       if (!liveConfig) {
         startBtn.disabled = false;
-        startBtn.innerHTML = `<span>Proceed to NTA Portal</span> <i class="fa-solid fa-arrow-right"></i>`;
+        startBtn.innerHTML = `<span>Verify Eligibility</span> <i class="fa-solid fa-circle-check"></i>`;
         return;
       }
 
@@ -353,10 +339,10 @@
         startTime: Date.now()
       };
 
-      // Store in Session and Redirect to NTA Portal
       sessionStorage.setItem("student_info", JSON.stringify(studentData));
       sessionStorage.setItem("active_exam_config", JSON.stringify(liveConfig));
 
+      // Security Script will only load and activate inside nta.html
       window.location.href = "nta.html";
     });
   </script>
