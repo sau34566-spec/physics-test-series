@@ -3,335 +3,521 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Online Examination Portal</title>
+  <title>Exam Elite | CBT Portal</title>
   
+  <!-- Font Awesome & Professional Fonts (Inter / Poppins) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  
-  <script src="security.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; user-select: none; }
-    body { background-color: #f4f6f9; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
 
-    header { background: #003366; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
-    header h1 { font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
-    .timer-box { background: #ff9800; color: #fff; padding: 6px 14px; border-radius: 4px; font-weight: bold; font-size: 16px; }
+    body {
+      background-color: #f1f5f9;
+      color: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-    .exam-container { display: flex; flex: 1; overflow: hidden; }
-    
-    .question-section { flex: 3; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; background: white; border-right: 2px solid #e0e0e0; overflow-y: auto; }
-    .q-header { font-size: 16px; font-weight: bold; border-bottom: 2px solid #003366; padding-bottom: 8px; margin-bottom: 15px; }
-    .q-text { font-size: 16px; color: #333; margin-bottom: 20px; line-height: 1.5; }
-    .options-list { display: flex; flex-direction: column; gap: 12px; }
-    .option-item { border: 1px solid #ccc; padding: 12px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
-    .option-item:hover { background-color: #f0f4f8; }
-    .option-item.selected { background-color: #e3f2fd; border-color: #2196f3; font-weight: bold; }
-    .option-item input { accent-color: #003366; width: 18px; height: 18px; }
+    header {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
 
-    .palette-section { flex: 1; background: #fafafa; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; min-width: 280px; }
-    .student-info { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ddd; }
-    
-    .status-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; margin-bottom: 15px; }
-    .legend-item { display: flex; align-items: center; gap: 6px; }
-    .badge { width: 22px; height: 22px; display: inline-flex; justify-content: center; align-items: center; color: white; font-size: 11px; font-weight: bold; border-radius: 3px; }
-    .bg-answered { background: #2e7d32; }
-    .bg-not-answered { background: #c62828; }
-    .bg-not-visited { background: #e0e0e0; color: #333; border: 1px solid #ccc; }
-    .bg-review { background: #6a1b9a; }
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
 
-    .grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 250px; overflow-y: auto; padding-right: 5px; }
-    .btn-palette { width: 100%; height: 38px; border: 1px solid #ccc; background: white; font-weight: bold; border-radius: 4px; cursor: pointer; color: #333; font-size: 13px; }
-    .btn-palette.active { border: 2px solid #000; box-shadow: 0 0 4px rgba(0,0,0,0.3); }
-    .btn-palette.bg-answered { background: #2e7d32; color: white; border-color: #2e7d32; }
-    .btn-palette.bg-not-answered { background: #c62828; color: white; border-color: #c62828; }
-    .btn-palette.bg-review { background: #6a1b9a; color: white; border-color: #6a1b9a; }
+    .timer-badge {
+      background: #dc2626;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
 
-    .action-bar { border-top: 1px solid #ddd; padding: 12px 20px; background: #eee; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-    .btn { padding: 10px 14px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; }
-    .btn-save { background: #2e7d32; color: white; }
-    .btn-mark { background: #6a1b9a; color: white; }
-    .btn-clear { background: #d32f2f; color: white; }
-    .btn-submit { background: #003366; color: white; width: 100%; margin-top: 10px; }
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      background: #ffffff;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      flex: 1;
+      width: 92%;
+    }
 
-    /* Performance Dashboard Overlay */
-    #dashboard-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; }
-    .dashboard-card { background: white; padding: 30px; border-radius: 8px; width: 90%; max-width: 600px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: center; }
-    .dashboard-card h2 { color: #003366; margin-bottom: 20px; }
-    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; text-align: left; }
-    .stat-box { background: #f4f6f9; padding: 15px; border-radius: 6px; border-left: 4px solid #003366; }
-    .stat-box h4 { font-size: 13px; color: #666; margin-bottom: 5px; }
-    .stat-box p { font-size: 18px; font-weight: bold; color: #333; }
+    /* Professional Question Typography */
+    .question-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #0f172a;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .options-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .option-label {
+      display: flex;
+      align-items: center;
+      padding: 14px 18px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #334155;
+      background: #f8fafc;
+      transition: all 0.2s ease;
+    }
+
+    .option-label:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    .option-label input {
+      margin-right: 14px;
+      accent-color: #2563eb;
+      transform: scale(1.1);
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 20px;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #475569;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .btn-submit {
+      background: #16a34a;
+      color: #fff;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    /* Result Dashboard Styling */
+    #dashboard-view {
+      display: none;
+    }
+
+    .score-summary-card {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      color: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      text-align: center;
+    }
+
+    .summary-box h3 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    .summary-box p {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .review-list {
+      margin-top: 20px;
+    }
+
+    .review-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 16px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+
+    .review-item.correct { border-left: 5px solid #16a34a; }
+    .review-item.incorrect { border-left: 5px solid #dc2626; }
+    .review-item.unattempted { border-left: 5px solid #ca8a04; }
+
+    /* Feedback & Doubt Form */
+    .feedback-section {
+      background: #f8fafc;
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      margin-top: 30px;
+    }
+
+    .star-rating {
+      display: flex;
+      gap: 8px;
+      font-size: 1.8rem;
+      color: #cbd5e1;
+      cursor: pointer;
+      margin: 10px 0 20px 0;
+    }
+
+    .star-rating .fa-star.active {
+      color: #f59e0b;
+    }
+
+    .textarea-box {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      resize: vertical;
+      min-height: 90px;
+      margin-bottom: 16px;
+      outline: none;
+    }
+
+    .textarea-box:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+
+    /* Thank You Popup Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-card {
+      background: #ffffff;
+      padding: 32px;
+      border-radius: 16px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 25px rgba(0,0,0,0.15);
+    }
+
+    .modal-card i {
+      font-size: 3.5rem;
+      color: #16a34a;
+      margin-bottom: 16px;
+    }
+
+    .modal-card h3 {
+      font-size: 1.4rem;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+
+    .modal-card p {
+      font-size: 0.95rem;
+      color: #64748b;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Online Examination Portal</h1>
-    <div class="timer-box">Time Left: <span id="time-display">00:00:00</span></div>
+    <h1><i class="fa-solid fa-atom"></i> Exam Elite Test Portal</h1>
+    <div id="timer" class="timer-badge">00:00</div>
   </header>
 
-  <div class="exam-container">
-    <div class="question-section">
-      <div>
-        <div class="q-header" id="question-number-title">Question No. 1</div>
-        <div class="q-text" id="question-text">Loading question content...</div>
-        
-        <div class="options-list" id="options-container"></div>
+  <div class="container">
+    <!-- Test Quiz View -->
+    <div id="quiz-view">
+      <div id="question-container">
+        <!-- Question dynamically injected -->
       </div>
-
-      <div class="action-bar">
-        <div>
-          <button class="btn btn-save" onclick="saveAndNext()">Save & Next</button>
-          <button class="btn btn-mark" onclick="markForReview()">Mark for Review & Next</button>
-          <button class="btn btn-clear" onclick="clearResponse()">Clear Response</button>
-        </div>
+      <div class="nav-buttons">
+        <button id="prev-btn" class="btn btn-secondary" onclick="prevQuestion()">Previous</button>
+        <button id="next-btn" class="btn btn-primary" onclick="nextQuestion()">Save & Next</button>
+        <button id="submit-btn" class="btn btn-submit" style="display:none;" onclick="confirmSubmit()">Submit Test</button>
       </div>
     </div>
 
-    <div class="palette-section">
-      <div>
-        <div class="student-info">
-          <i class="fa-solid fa-user-circle fa-3x" style="color: #003366;"></i>
-          <div>
-            <strong id="student-name">Candidate Name</strong><br>
-            <small id="student-roll">Roll No: N/A</small>
-          </div>
+    <!-- Performance Dashboard View -->
+    <div id="dashboard-view">
+      <div class="score-summary-card">
+        <div class="summary-box">
+          <h3 id="res-score">0</h3>
+          <p>Total Score</p>
         </div>
-
-        <div class="status-legend">
-          <div class="legend-item"><span class="badge bg-answered" id="cnt-answered">0</span> Answered</div>
-          <div class="legend-item"><span class="badge bg-not-answered" id="cnt-not-answered">0</span> Not Answered</div>
-          <div class="legend-item"><span class="badge bg-not-visited" id="cnt-not-visited">0</span> Not Visited</div>
-          <div class="legend-item"><span class="badge bg-review" id="cnt-review">0</span> Marked for Review</div>
+        <div class="summary-box">
+          <h3 id="res-accuracy">0%</h3>
+          <p>Accuracy</p>
         </div>
-
-        <h4 style="margin-bottom: 10px; font-size: 14px;">Choose a Question:</h4>
-        <div class="grid-container" id="question-palette-grid"></div>
+        <div class="summary-box">
+          <h3 id="res-correct">0</h3>
+          <p>Correct</p>
+        </div>
+        <div class="summary-box">
+          <h3 id="res-wrong">0</h3>
+          <p>Incorrect</p>
+        </div>
+        <div class="summary-box">
+          <h3 id="res-penalty" style="color: #f87171;">0</h3>
+          <p>Penalty Marks</p>
+        </div>
       </div>
 
-      <button class="btn btn-submit" onclick="confirmSubmitExam()">Submit Test</button>
+      <div style="margin-bottom: 15px; font-size: 0.85rem; color: #dc2626; font-weight: 500;" id="penalty-reason-box"></div>
+
+      <h3 style="font-size: 1.1rem; margin-bottom: 15px; color: #0f172a;">Question-wise Detailed Review</h3>
+      <div id="review-container" class="review-list"></div>
+
+      <!-- Mandatory Feedback & Doubts Section -->
+      <div class="feedback-section">
+        <h3 style="font-size: 1.1rem; color: #0f172a; margin-bottom: 4px;">Test Feedback & Queries</h3>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">Please rate your test experience (Mandatory) and share any doubts.</p>
+        
+        <label style="font-size: 0.85rem; font-weight: 600; color: #475569;">Star Rating *</label>
+        <div class="star-rating" id="star-container">
+          <i class="fa-solid fa-star" data-value="1"></i>
+          <i class="fa-solid fa-star" data-value="2"></i>
+          <i class="fa-solid fa-star" data-value="3"></i>
+          <i class="fa-solid fa-star" data-value="4"></i>
+          <i class="fa-solid fa-star" data-value="5"></i>
+        </div>
+
+        <label style="font-size: 0.85rem; font-weight: 600; color: #475569; display: block; margin-bottom: 6px;">Your Doubts / Queries</label>
+        <textarea id="student-doubt" class="textarea-box" placeholder="Write any question query or doubt here..."></textarea>
+
+        <button class="btn btn-primary" style="width: 100%; padding: 12px;" onclick="submitFeedbackAndFinish()">Submit Feedback & Complete</button>
+      </div>
     </div>
   </div>
 
-  <!-- Performance Dashboard Overlay -->
-  <div id="dashboard-overlay">
-    <div class="dashboard-card">
-      <h2>Exam Performance Dashboard</h2>
-      <div class="stats-grid">
-        <div class="stat-box">
-          <h4>Candidate Name</h4>
-          <p id="dash-name">-</p>
-        </div>
-        <div class="stat-box">
-          <h4>Total Score</h4>
-          <p id="dash-score">-</p>
-        </div>
-        <div class="stat-box">
-          <h4>Correct Answers</h4>
-          <p id="dash-correct">-</p>
-        </div>
-        <div class="stat-box">
-          <h4>Accuracy</h4>
-          <p id="dash-accuracy">-</p>
-        </div>
-      </div>
-      <button class="btn btn-submit" style="width: auto; padding: 10px 25px;" onclick="window.location.href='index.html'">Back to Home</button>
+  <!-- Thank You Popup Modal -->
+  <div id="thankyou-modal" class="modal-overlay">
+    <div class="modal-card">
+      <i class="fa-solid fa-circle-check"></i>
+      <h3>Thank You!</h3>
+      <p>Thank you for attempting the test! Your response has been recorded successfully and securely saved.</p>
+      <button class="btn btn-primary" style="width: 100%;" onclick="window.location.href='index.html'">Back to Login</button>
     </div>
   </div>
 
   <script>
-    const studentInfo = JSON.parse(sessionStorage.getItem("student_info")) || { name: "Student", roll: "EXAM-1001" };
-    document.getElementById("student-name").innerText = studentInfo.name;
-    document.getElementById("student-roll").innerText = "Roll: " + studentInfo.roll;
+    // Sample Questions Data (Yahan aap apna JSON/Questions array load kar sakte hain)
+    let questions = [
+      {
+        question: "What is the SI unit of electric potential?",
+        options: ["Joule", "Volt", "Ampere", "Watt"],
+        correct: 1 // index of correct option (Volt)
+      },
+      {
+        question: "Which of the following has maximum penetrating power?",
+        options: ["Alpha rays", "Beta rays", "Gamma rays", "Cathode rays"],
+        correct: 2
+      },
+      {
+        question: "The dimensional formula of Planck's constant is:",
+        options: ["[MLT^-1]", "[ML^2T^-1]", "[ML^2T^-2]", "[MLT^-2]"],
+        correct: 1
+      }
+    ];
 
-    // Directly read exact keys typically used by your Admin panel in localStorage
-    const savedDuration = localStorage.getItem("examDuration") || localStorage.getItem("test_duration") || 5;
-    const savedLimit = localStorage.getItem("questionLimit") || localStorage.getItem("display_limit") || 5;
-
-    let questionsPool = [];
     let currentIdx = 0;
-    let studentAnswers = {};
-    let questionStatus = {};
-    let timeLeftSeconds = parseInt(savedDuration) * 60;
+    let userAnswers = {};
+    let selectedRating = 0;
 
-    async function loadQuestions() {
-      try {
-        const response = await fetch('chapter1.json');
-        if (!response.ok) throw new Error("Failed to fetch chapter1.json");
-        const data = await response.json();
-        
-        let allPool = Array.isArray(data) ? data : (data.questions || []);
-        
-        // Slice the questions array as per Admin limit setting
-        const limit = parseInt(savedLimit);
-        questionsPool = allPool.slice(0, limit);
-
-        if (questionsPool.length === 0) throw new Error("Empty questions");
-      } catch (err) {
-        console.warn("Fetch error, using default fallback:", err);
-        questionsPool = [
-          {
-            q: "How do plants make their own food?",
-            options: ["Respiration", "Photosynthesis", "Digestion", "Transpiration"],
-            a: "Photosynthesis"
-          }
-        ];
-      }
-      initExam();
-    }
-
-    function initExam() {
-      questionStatus = {};
-      questionsPool.forEach((_, idx) => { questionStatus[idx] = 'not-visited'; });
-      renderQuestion(0);
-      startTimer();
-    }
-
-    function renderQuestion(idx) {
-      currentIdx = idx;
-      if (questionStatus[idx] === 'not-visited') {
-        questionStatus[idx] = 'not-answered';
-      }
-
-      const qObj = questionsPool[idx];
-      document.getElementById("question-number-title").innerText = `Question No. ${idx + 1} of ${questionsPool.length}`;
-      document.getElementById("question-text").innerText = qObj.q;
-
-      const optionsContainer = document.getElementById("options-container");
-      optionsContainer.innerHTML = '';
-
-      const userSelectedOpt = studentAnswers[idx] || '';
-
-      qObj.options.forEach((optText) => {
-        const isChecked = userSelectedOpt === optText ? 'checked' : '';
-        const itemClass = userSelectedOpt === optText ? 'option-item selected' : 'option-item';
-
-        const label = document.createElement('label');
-        label.className = itemClass;
-        label.innerHTML = `
-          <input type="radio" name="exam-option" value="${optText}" ${isChecked} onclick="selectOption('${optText.replace(/'/g, "\\'")}')">
-          <span>${optText}</span>
-        `;
-        optionsContainer.appendChild(label);
-      });
-
-      renderPalette();
-      updateCounts();
-    }
-
-    window.selectOption = function(optText) {
-      studentAnswers[currentIdx] = optText;
-      questionStatus[currentIdx] = 'answered';
+    // Load Questions on init
+    function loadQuestion() {
+      const q = questions[currentIdx];
+      let html = `<div class="question-title">Q${currentIdx + 1}. ${q.question}</div><div class="options-group">`;
       
-      document.querySelectorAll('.option-item').forEach(el => el.classList.remove('selected'));
-      const activeInput = document.querySelector(`input[value="${optText}"]`);
-      if (activeInput) activeInput.closest('.option-item').classList.add('selected');
-
-      renderPalette();
-      updateCounts();
-    };
-
-    window.saveAndNext = function() {
-      if (currentIdx < questionsPool.length - 1) {
-        renderQuestion(currentIdx + 1);
-      } else {
-        alert("You are on the last question.");
-      }
-    };
-
-    window.markForReview = function() {
-      questionStatus[currentIdx] = 'review';
-      renderPalette();
-      updateCounts();
-      if (currentIdx < questionsPool.length - 1) {
-        renderQuestion(currentIdx + 1);
-      }
-    };
-
-    window.clearResponse = function() {
-      delete studentAnswers[currentIdx];
-      questionStatus[currentIdx] = 'not-answered';
-      renderQuestion(currentIdx);
-    };
-
-    function renderPalette() {
-      const grid = document.getElementById("question-palette-grid");
-      grid.innerHTML = '';
-
-      questionsPool.forEach((_, idx) => {
-        const btn = document.createElement('button');
-        btn.className = 'btn-palette';
-        btn.innerText = idx + 1;
-
-        const status = questionStatus[idx];
-        if (status === 'answered') btn.classList.add('bg-answered');
-        else if (status === 'review') btn.classList.add('bg-review');
-        else if (status === 'not-answered') btn.classList.add('bg-not-answered');
-        else btn.classList.add('bg-not-visited');
-
-        if (idx === currentIdx) btn.classList.add('active');
-
-        btn.onclick = () => renderQuestion(idx);
-        grid.appendChild(btn);
+      q.options.forEach((opt, idx) => {
+        let checked = userAnswers[currentIdx] === idx ? 'checked' : '';
+        html += `<label class="option-label"><input type="radio" name="quiz-opt" value="${idx}" ${checked} onclick="userAnswers[currentIdx] = ${idx}"> ${opt}</label>`;
       });
+      html += `</div>`;
+
+      document.getElementById("question-container").innerHTML = html;
+
+      document.getElementById("prev-btn").style.display = currentIdx === 0 ? 'none' : 'inline-block';
+      document.getElementById("next-btn").style.display = currentIdx === questions.length - 1 ? 'none' : 'inline-block';
+      document.getElementById("submit-btn").style.display = currentIdx === questions.length - 1 ? 'inline-block' : 'none';
     }
 
-    function updateCounts() {
-      let counts = { answered: 0, 'not-answered': 0, 'not-visited': 0, review: 0 };
-      Object.values(questionStatus).forEach(st => {
-        if (counts[st] !== undefined) counts[st]++;
-      });
-
-      document.getElementById("cnt-answered").innerText = counts.answered;
-      document.getElementById("cnt-not-answered").innerText = counts['not-answered'];
-      document.getElementById("cnt-not-visited").innerText = counts['not-visited'];
-      document.getElementById("cnt-review").innerText = counts.review;
-    }
-
-    function startTimer() {
-      const timerInterval = setInterval(() => {
-        if (timeLeftSeconds <= 0) {
-          clearInterval(timerInterval);
-          alert("Time is up! Your exam will be submitted automatically.");
-          submitExam();
-          return;
-        }
-        timeLeftSeconds--;
-        const hrs = String(Math.floor(timeLeftSeconds / 3600)).padStart(2, '0');
-        const mins = String(Math.floor((timeLeftSeconds % 3600) / 60)).padStart(2, '0');
-        const secs = String(timeLeftSeconds % 60).padStart(2, '0');
-        document.getElementById("time-display").innerText = `${hrs}:${mins}:${secs}`;
-      }, 1000);
-    }
-
-    window.confirmSubmitExam = function() {
-      if (confirm("Are you sure you want to submit your exam?")) {
-        submitExam();
+    function nextQuestion() {
+      if (currentIdx < questions.length - 1) {
+        currentIdx++;
+        loadQuestion();
       }
-    };
+    }
 
-    function submitExam() {
-      let score = 0;
-      let attempted = 0;
-      questionsPool.forEach((qObj, idx) => {
-        if (studentAnswers[idx]) {
-          attempted++;
-          if (studentAnswers[idx] === qObj.a) score++;
+    function prevQuestion() {
+      if (currentIdx > 0) {
+        currentIdx--;
+        loadQuestion();
+      }
+    }
+
+    function confirmSubmit() {
+      if (confirm("Are you sure you want to submit the test?")) {
+        calculateResult();
+      }
+    }
+
+    function calculateResult() {
+      let correctCount = 0;
+      let wrongCount = 0;
+      let unattempted = 0;
+
+      questions.forEach((q, idx) => {
+        if (userAnswers[idx] === undefined) {
+          unattempted++;
+        } else if (userAnswers[idx] === q.correct) {
+          correctCount++;
+        } else {
+          wrongCount++;
         }
       });
 
-      const accuracy = attempted > 0 ? ((score / attempted) * 100).toFixed(1) + '%' : '0%';
+      // Marking scheme: +4 for correct, -1 for wrong penalty
+      let totalScore = (correctCount * 4) - (wrongCount * 1);
+      let penaltyMarks = wrongCount * 1;
+      let accuracy = ((correctCount / (correctCount + wrongCount || 1)) * 100).toFixed(1);
 
-      // Display Performance Dashboard Popup
-      document.getElementById("dash-name").innerText = studentInfo.name;
-      document.getElementById("dash-score").innerText = `${score} / ${questionsPool.length}`;
-      document.getElementById("dash-correct").innerText = `${score} Correct`;
-      document.getElementById("dash-accuracy").innerText = accuracy;
-      document.getElementById("dashboard-overlay").style.display = 'flex';
+      // Populate dashboard values
+      document.getElementById("res-score").innerText = totalScore;
+      document.getElementById("res-accuracy").innerText = accuracy + "%";
+      document.getElementById("res-correct").innerText = correctCount;
+      document.getElementById("res-wrong").innerText = wrongCount;
+      document.getElementById("res-penalty").innerText = "-" + penaltyMarks;
+      document.getElementById("penalty-reason-box").innerText = `* Note: Penalty of ${penaltyMarks} marks applied due to ${wrongCount} incorrect answers (-1 mark per wrong attempt).`;
+
+      // Build Review HTML
+      let reviewHtml = "";
+      questions.forEach((q, idx) => {
+        let userAns = userAnswers[idx];
+        let statusClass = userAns === undefined ? "unattempted" : (userAns === q.correct ? "correct" : "incorrect");
+        let userOptText = userAns !== undefined ? q.options[userAns] : "Not Attempted";
+        let correctOptText = q.options[q.correct];
+
+        reviewHtml += `
+          <div class="review-item ${statusClass}">
+            <p style="font-weight: 600; margin-bottom: 6px;">Q${idx + 1}. ${q.question}</p>
+            <p style="font-size: 0.9rem; color: #475569;">Your Answer: <span style="font-weight:600;">${userOptText}</span></p>
+            <p style="font-size: 0.9rem; color: #16a34a;">Correct Answer: <span style="font-weight:600;">${correctOptText}</span></p>
+          </div>
+        `;
+      });
+      document.getElementById("review-container").innerHTML = reviewHtml;
+
+      // Switch views
+      document.getElementById("quiz-view").style.display = "none";
+      document.getElementById("dashboard-view").style.display = "block";
+      document.getElementById("timer").style.display = "none";
     }
 
-    loadQuestions();
+    // Star Rating Interactivity
+    const stars = document.querySelectorAll(".star-rating i");
+    stars.forEach(star => {
+      star.addEventListener("click", function() {
+        selectedRating = parseInt(this.getAttribute("data-value"));
+        stars.forEach(s => {
+          if (parseInt(s.getAttribute("data-value")) <= selectedRating) {
+            s.classList.add("active");
+          } else {
+            s.classList.remove("active");
+          }
+        });
+      });
+    });
+
+    function submitFeedbackAndFinish() {
+      if (selectedRating === 0) {
+        alert("Please provide a star rating before submitting feedback!");
+        return;
+      }
+
+      let doubtText = document.getElementById("student-doubt").value.trim();
+
+      // Here you can push data to Firebase or local storage for the Admin panel
+      let studentInfo = JSON.parse(sessionStorage.getItem("student_info") || '{"name": "Guest Student"}');
+      let submissionRecord = {
+        studentName: studentInfo.name,
+        score: document.getElementById("res-score").innerText,
+        accuracy: document.getElementById("res-accuracy").innerText,
+        correct: document.getElementById("res-correct").innerText,
+        wrong: document.getElementById("res-wrong").innerText,
+        rating: selectedRating,
+        doubt: doubtText,
+        submittedAt: new Date().toISOString()
+      };
+
+      // Save to localStorage so Admin panel can view it permanently
+      let allSubmissions = JSON.parse(localStorage.getItem("admin_student_submissions") || "[]");
+      allSubmissions.push(submissionRecord);
+      localStorage.setItem("admin_student_submissions", JSON.stringify(allSubmissions));
+
+      // Show Thank You Popup Modal
+      document.getElementById("thankyou-modal").style.display = "flex";
+    }
+
+    // Simple Timer Count
+    let timeSeconds = 1200; // 20 mins
+    setInterval(() => {
+      if (timeSeconds > 0) {
+        timeSeconds--;
+        let m = Math.floor(timeSeconds / 60).toString().padStart(2, '0');
+        let s = (timeSeconds % 60).toString().padStart(2, '0');
+        document.getElementById("timer").innerText = `${m}:${s}`;
+      }
+    }, 1000);
+
+    loadQuestion();
   </script>
 </body>
 </html>
