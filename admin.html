@@ -88,7 +88,7 @@
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 1.5rem; }
     .form-group { margin-bottom: 1.2rem; text-align: left; }
     label { display: block; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #334155; margin-bottom: 0.5rem; }
-    input[type="text"], input[type="password"], input[type="number"], input[type="datetime-local"], textarea, select {
+    input[type="text"], input[type="password"], input[type="number"], input[type="datetime-local"], input[type="file"], textarea, select {
       width: 100%; padding: 0.85rem 1.1rem; border: 2px solid var(--border-color); border-radius: 10px;
       font-size: 0.95rem; font-weight: 500; outline: none; transition: all 0.2s; background: #f8fafc; color: var(--text-main);
     }
@@ -239,6 +239,9 @@
             <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600;">
               <input type="radio" name="upload-mode" value="msword" onclick="toggleUploadUI('msword')"> MS Word Parse
             </label>
+            <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600;">
+              <input type="radio" name="upload-mode" value="code" onclick="toggleUploadUI('code')"> JSON / Code Upload
+            </label>
           </div>
 
           <!-- QUESTION LANGUAGE SELECTION -->
@@ -289,6 +292,16 @@
                 <label>Paste MS Word Content *</label>
                 <textarea id="msword-text-input" rows="6"></textarea>
               </div>
+            </div>
+
+            <!-- 3. CODE / JSON FILE UPLOAD -->
+            <div id="mode-code-area" class="mode-content">
+              <h4 style="margin-bottom: 1rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-code"></i> Upload Question JSON File</h4>
+              <div class="form-group">
+                <label>Select JSON File *</label>
+                <input type="file" id="code-file-input" accept=".json">
+              </div>
+              <p style="font-size:0.8rem; color:var(--text-muted); margin-top: -0.5rem;">Upload your formatted `.json` file directly from device storage.</p>
             </div>
           </div>
         </div>
@@ -374,7 +387,7 @@
       </div>
     </div>
 
-    <!-- SLIDE 4: ADVANCED ANALYTICS & INSIGHTS (NEW) -->
+    <!-- SLIDE 4: ADVANCED ANALYTICS & INSIGHTS -->
     <div id="slide-4-content" class="admin-slide-content">
       <div class="admin-card">
         <h3><i class="fa-solid fa-chart-line"></i> Exam Analytics & Deep Insights</h3>
