@@ -1,782 +1,581 @@
  <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Exam Elite | Professional Admin Portal</title>
-  
-  <!-- Google Fonts & FontAwesome Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <style>
-    :root {
-      --primary: #0f172a;
-      --primary-accent: #3b82f6;
-      --secondary-accent: #6366f1;
-      --gold: #f59e0b;
-      --bg-body: #f1f5f9;
-      --card-bg: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --border-color: #e2e8f0;
-      --danger: #ef4444;
-      --success: #10b981;
-      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-      --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 10px 10px -5px rgba(15, 23, 42, 0.04);
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif; }
-    body { background-color: var(--bg-body); color: var(--text-main); min-height: 100vh; padding: 2rem 1.5rem; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Elite | Professional Admin Portal</title>
     
-    /* LOGIN OVERLAY */
-    #login-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-      z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px);
-    }
-    .login-card {
-      background: rgba(255, 255, 255, 0.98); padding: 3rem 2.5rem; border-radius: 20px;
-      width: 100%; max-width: 420px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
-      text-align: center; border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .login-badge { width: 70px; height: 70px; background: rgba(59, 130, 246, 0.1); color: var(--primary-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.2rem; }
-    .login-card h2 { color: var(--primary); font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; }
-    .login-card p { color: var(--text-muted); font-size: 0.88rem; margin-top: 0.3rem; margin-bottom: 2rem; }
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    /* DASHBOARD LAYOUT */
-    .admin-container { max-width: 1150px; margin: 0 auto; display: none; animation: fadeIn 0.4s ease-in-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    <style>
+        :root {
+            --primary: #0f172a;
+            --primary-accent: #3b82f6;
+            --secondary-accent: #6366f1;
+            --gold: #f59e0b;
+            --bg-body: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --danger: #ef4444;
+            --success: #10b981;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 10px 10px -5px rgba(15, 23, 42, 0.04);
+        }
 
-    header {
-      background: var(--primary); color: white; padding: 1.5rem 2rem; border-radius: 16px;
-      margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;
-      box-shadow: var(--shadow-lg); border: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap; gap: 15px;
-    }
-    header h1 { font-size: 1.6rem; font-weight: 800; display: flex; align-items: center; gap: 12px; letter-spacing: -0.5px; }
-    header h1 i { color: var(--gold); }
-    .header-actions { display: flex; gap: 12px; align-items: center; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
 
-    /* NAVIGATION TABS */
-    .slide-navigation {
-      display: flex; gap: 8px; margin-bottom: 2rem; background: #e2e8f0;
-      padding: 6px; border-radius: 14px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); flex-wrap: wrap;
-    }
-    .slide-tab-btn {
-      flex: 1; min-width: 180px; background: transparent; border: none; padding: 0.9rem 1.2rem;
-      font-size: 0.9rem; font-weight: 700; color: var(--text-muted);
-      border-radius: 10px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-    }
-    .slide-tab-btn:hover { color: var(--primary); }
-    .slide-tab-btn.active {
-      background: var(--card-bg); color: var(--primary-accent);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-    .admin-slide-content { display: none; }
-    .admin-slide-content.active { display: block; }
+        /* HEADER & NAVBAR */
+        .navbar {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
 
-    /* CARDS & FORMS */
-    .admin-card {
-      background: var(--card-bg); padding: 2.2rem; border-radius: 18px;
-      box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); margin-bottom: 2rem;
-    }
-    h3 { font-size: 1.25rem; color: var(--primary); margin-bottom: 0.3rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-    p.subtitle { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.8rem; }
+        .navbar .brand {
+            font-size: 1.4rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 1.5rem; }
-    .form-group { margin-bottom: 1.2rem; text-align: left; }
-    label { display: block; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #334155; margin-bottom: 0.5rem; }
-    input[type="text"], input[type="password"], input[type="number"], input[type="datetime-local"], textarea, select {
-      width: 100%; padding: 0.85rem 1.1rem; border: 2px solid var(--border-color); border-radius: 10px;
-      font-size: 0.95rem; font-weight: 500; outline: none; transition: all 0.2s; background: #f8fafc; color: var(--text-main);
-    }
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--primary-accent); background: #ffffff;
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
-    }
+        .navbar .brand i {
+            color: var(--primary-accent);
+        }
 
-    /* BUTTONS */
-    .btn {
-      background: var(--primary); color: white; border: none; padding: 0.85rem 1.5rem;
-      font-size: 0.9rem; font-weight: 700; border-radius: 10px; cursor: pointer;
-      transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-    }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 15px -3px rgba(0,0,0,0.15); }
-    .btn-primary { background: var(--primary-accent); } .btn-primary:hover { background: #2563eb; }
-    .btn-success { background: var(--success); } .btn-success:hover { background: #059669; }
-    .btn-danger { background: var(--danger); } .btn-danger:hover { background: #dc2626; }
-    .btn-accent { background: var(--gold); color: #0f172a; } .btn-accent:hover { background: #d97706; }
-    .btn-refresh { background: #334155; color: white; } .btn-refresh:hover { background: #1e293b; }
+        /* MAIN LAYOUT */
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 2rem;
+        }
 
-    /* TABLES */
-    .table-responsive { width: 100%; overflow-x: auto; margin-top: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); }
-    table { width: 100%; border-collapse: collapse; text-align: left; background: white; }
-    th, td { padding: 1.1rem 1.2rem; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
-    th { background: #f8fafc; color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover { background: #f1f5f9; }
+        @media (max-width: 992px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
 
-    .badge-rank { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; font-weight: 800; padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.8rem; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3); }
-    .alert-indicator { padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.8rem; font-weight: 700; display: inline-block; }
-    .alert-safe { background: #d1fae5; color: #065f46; }
-    .alert-warn { background: #fee2e2; color: #991b1b; }
-    .time-stamp { font-size: 0.82rem; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 5px; }
+        /* CARDS & PANELS */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.8rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
 
-    /* STATS SUMMARY BOXES */
-    .stats-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 1.8rem; }
-    .stat-card {
-      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 1.3rem; border-radius: 14px;
-      border: 1px solid var(--border-color); text-align: left; box-shadow: var(--shadow-sm);
-    }
-    .stat-card h4 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 0.4rem; }
-    .stat-card p { font-size: 1.7rem; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--bg-body);
+            padding-bottom: 0.8rem;
+        }
 
-    .progress-bar-bg { background: #e2e8f0; height: 8px; border-radius: 10px; overflow: hidden; margin-top: 6px; }
-    .progress-bar-fill { background: var(--primary-accent); height: 100%; border-radius: 10px; width: 0%; transition: width 0.4s ease; }
+        /* FORM ELEMENTS */
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
 
-    .upload-section-box { background: #f8fafc; border: 2px dashed #cbd5e1; padding: 1.8rem; border-radius: 14px; margin-top: 1rem; }
-    .mode-content { display: none; }
-    .mode-content.active { display: block; }
-  </style>
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            color: var(--text-main);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-accent);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* CODE EDITOR TEXTAREA */
+        .code-textarea {
+            font-family: 'Courier New', Courier, monospace;
+            background: #0f172a;
+            color: #38bdf8;
+            min-height: 220px;
+            border-radius: 10px;
+            padding: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* TABS STYLING */
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .tab-btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            background: transparent;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary-accent);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 0.75rem 1.4rem;
+            border-radius: 10px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary { background: var(--primary-accent); color: white; }
+        .btn-primary:hover { background: #2563eb; }
+
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #059669; }
+
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #dc2626; }
+
+        .btn-dark { background: var(--primary); color: white; }
+        .btn-dark:hover { background: #1e293b; }
+
+        .btn-block { width: 100%; }
+
+        /* QUESTION PREVIEW LIST */
+        .q-preview-item {
+            background: var(--bg-body);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-left: 4px solid var(--primary-accent);
+        }
+
+        .q-preview-details h4 {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .q-preview-details p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .q-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: white;
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+
+        .action-btn:hover { background: #f8fafc; }
+    </style>
 </head>
 <body>
 
-  <!-- LOGIN OVERLAY -->
-  <div id="login-overlay">
-    <div class="login-card">
-      <div class="login-badge"><i class="fa-solid fa-shield-halved"></i></div>
-      <h2>Admin Authorization</h2>
-      <p>Enter your master credentials to enter control room</p>
-      <form onsubmit="handleLogin(event)">
-        <div class="form-group">
-          <label>Username</label>
-          <input type="text" id="admin-user" required>
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="brand">
+            <i class="fa-solid fa-sliders"></i> Exam Elite Admin Portal
         </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" id="admin-pass" required>
+        <div>
+            <button class="btn btn-danger" onclick="resetAttemptedEmails()">
+                <i class="fa-solid fa-rotate-left"></i> Clear Student Attempts
+            </button>
         </div>
-        <p id="login-error" style="color: var(--danger); font-size: 0.85rem; display: none; margin-bottom: 1rem; font-weight: 600;">Invalid username or password!</p>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">
-          <i class="fa-solid fa-right-to-bracket"></i> Login to Dashboard
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- MAIN ADMIN CONTAINER -->
-  <div class="admin-container" id="admin-main">
-    <header>
-      <h1><i class="fa-solid fa-crown"></i> Exam Elite Control Room</h1>
-      <div class="header-actions">
-        <button onclick="fetchLiveDatabaseRecords()" class="btn btn-refresh" title="Sync Database Data">
-          <i class="fa-solid fa-rotate"></i> Sync Live Data
-        </button>
-        <button onclick="logoutAdmin()" class="btn btn-danger" style="padding: 0.6rem 1.1rem;">
-          <i class="fa-solid fa-power-off"></i> Logout
-        </button>
-      </div>
-    </header>
-
-    <!-- NAVIGATION TABS -->
-    <div class="slide-navigation">
-      <button class="slide-tab-btn active" onclick="switchSlide(1, this)">
-        <i class="fa-solid fa-sliders"></i> Test Setup & Config
-      </button>
-      <button class="slide-tab-btn" onclick="switchSlide(2, this)">
-        <i class="fa-solid fa-user-shield"></i> Security Analytics
-      </button>
-      <button class="slide-tab-btn" onclick="switchSlide(3, this)">
-        <i class="fa-solid fa-trophy"></i> Live Leaderboard
-      </button>
-      <button class="slide-tab-btn" onclick="switchSlide(4, this)">
-        <i class="fa-solid fa-chart-pie"></i> Advanced Insights
-      </button>
     </div>
 
-    <!-- SLIDE 1: CONFIGURATION & TIMER -->
-    <div id="slide-1-content" class="admin-slide-content active">
-      <div class="admin-card">
-        <h3><i class="fa-solid fa-gear"></i> Test Configuration & Timing Controls</h3>
-        <p class="subtitle">Set pool numbers, student limit, per-question timer, and availability window.</p>
+    <!-- MAIN CONTAINER -->
+    <div class="container">
         
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="config-total-pool">Total Pool Questions *</label>
-            <input type="number" id="config-total-pool" min="1">
-          </div>
-          <div class="form-group">
-            <label for="config-student-limit">Student Display Limit (Randomized) *</label>
-            <input type="number" id="config-student-limit" min="1">
-          </div>
-          <div class="form-group">
-            <label for="config-per-question-timer">Per Question Timer (Seconds) *</label>
-            <input type="number" id="config-per-question-timer" min="0">
-          </div>
+        <!-- LEFT SIDEBAR: TEST CONFIGURATION -->
+        <div>
+            <div class="card">
+                <div class="card-title">
+                    <i class="fa-solid fa-gear"></i> Test Settings
+                </div>
+
+                <div class="form-group">
+                    <label>Test Title / Chapter Name</label>
+                    <input type="text" id="cfg-title" class="form-control" value="Physics Chapter Test">
+                </div>
+
+                <div class="form-group">
+                    <label>Total Duration (Minutes)</label>
+                    <input type="number" id="cfg-duration" class="form-control" value="15">
+                </div>
+
+                <div class="form-group">
+                    <label>Total Questions to Serve</label>
+                    <input type="number" id="cfg-total-q" class="form-control" value="10">
+                </div>
+
+                <div class="form-group">
+                    <label>Positive Marks (per question)</label>
+                    <input type="number" id="cfg-pos-marks" class="form-control" value="1" step="0.25">
+                </div>
+
+                <div class="form-group">
+                    <label>Negative Marks (per question)</label>
+                    <input type="number" id="cfg-neg-marks" class="form-control" value="0.25" step="0.25">
+                </div>
+
+                <button class="btn btn-primary btn-block" onclick="saveSettings()">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Settings
+                </button>
+            </div>
         </div>
 
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="config-window-start">Overall Test Window Start Time *</label>
-            <input type="datetime-local" id="config-window-start">
-          </div>
-          <div class="form-group">
-            <label for="config-window-end">Overall Test Window End Time *</label>
-            <input type="datetime-local" id="config-window-end">
-          </div>
-        </div>
+        <!-- RIGHT AREA: QUESTION MANAGEMENT & CODE UPLOAD -->
+        <div>
+            <div class="card">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('code-upload-tab', this)">
+                        <i class="fa-solid fa-code"></i> Code / JSON Upload
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('manual-tab', this)">
+                        <i class="fa-solid fa-plus"></i> Manual Add Question
+                    </button>
+                </div>
 
-        <!-- UPLOAD METHOD SELECTION -->
-        <div style="background: #f1f5f9; padding: 1.4rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border-color);">
-          <label style="font-weight: 800; color: var(--primary);">Question Upload Method & Options:</label>
-          <div style="display: flex; gap: 25px; flex-wrap: wrap; margin-top: 0.8rem; margin-bottom: 1.2rem;">
-            <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600;">
-              <input type="radio" name="upload-mode" value="form" checked onclick="toggleUploadUI('form')"> Live Form Upload
-            </label>
-            <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600;">
-              <input type="radio" name="upload-mode" value="msword" onclick="toggleUploadUI('msword')"> MS Word Parse
-            </label>
-          </div>
+                <!-- TAB 1: CODE / JSON UPLOAD OPTION -->
+                <div id="code-upload-tab" class="tab-content active">
+                    <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        Paste your questions in standard JSON code format or click below to upload a <code>.json</code> file.
+                    </p>
 
-          <!-- QUESTION LANGUAGE SELECTION -->
-          <div style="display: flex; gap: 20px; align-items: center; border-top: 1px solid #cbd5e1; padding-top: 1rem; flex-wrap: wrap;">
-            <label style="font-weight: 800; font-size: 0.85rem; color: var(--primary);">Question Language:</label>
-            <label style="cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:600;">
-              <input type="radio" name="question-language" value="hindi" checked> Hindi (हिंदी)
-            </label>
-            <label style="cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:600;">
-              <input type="radio" name="question-language" value="english"> English
-            </label>
-            <label style="cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:600;">
-              <input type="radio" name="question-language" value="both"> Both
-            </label>
-          </div>
+                    <div class="form-group">
+                        <label>Upload JSON File</label>
+                        <input type="file" id="json-file-input" accept=".json" class="form-control" onchange="handleFileUpload(event)">
+                    </div>
 
-          <!-- UPLOAD SECTIONS -->
-          <div class="upload-section-box">
-            <!-- 1. LIVE FORM UPLOAD -->
-            <div id="mode-form-area" class="mode-content active">
-              <h4 style="margin-bottom: 1rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-pen-to-square"></i> Add Question Directly</h4>
-              <div class="form-group">
-                <label>Question Text *</label>
-                <textarea id="live-q-text" rows="2"></textarea>
-              </div>
-              <div class="form-grid">
-                <div class="form-group"><label>Option A *</label><input type="text" id="live-opt-a"></div>
-                <div class="form-group"><label>Option B *</label><input type="text" id="live-opt-b"></div>
-                <div class="form-group"><label>Option C *</label><input type="text" id="live-opt-c"></div>
-                <div class="form-group"><label>Option D *</label><input type="text" id="live-opt-d"></div>
-              </div>
-              <div class="form-group">
-                <label>Correct Answer *</label>
-                <select id="live-correct-opt">
-                  <option value="A">Option A</option>
-                  <option value="B">Option B</option>
-                  <option value="C">Option C</option>
-                  <option value="D">Option D</option>
-                </select>
-              </div>
-              <button type="button" class="btn btn-accent" onclick="addQuestionToPool()"><i class="fa-solid fa-plus"></i> Add Question To Live Pool</button>
+                    <div class="form-group">
+                        <label>JSON Code Editor / Paste Box</label>
+                        <textarea id="json-code-box" class="form-control code-textarea" placeholder='[
+  {
+    "question": "What is the SI unit of Force?",
+    "options": ["Joule", "Newton", "Watt", "Pascal"],
+    "answer": 1
+  }
+]'></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-success" onclick="loadQuestionsFromCode()">
+                            <i class="fa-solid fa-file-import"></i> Load Questions from Code
+                        </button>
+                        <button class="btn btn-dark" onclick="copyJSONCode()">
+                            <i class="fa-solid fa-copy"></i> Copy Current JSON Code
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 2: MANUAL QUESTION ADDITION -->
+                <div id="manual-tab" class="tab-content">
+                    <div class="form-group">
+                        <label>Question Text</label>
+                        <textarea id="mq-text" class="form-control" placeholder="Enter question statement..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Option A</label>
+                        <input type="text" id="mq-opt-0" class="form-control" placeholder="Option A">
+                    </div>
+                    <div class="form-group">
+                        <label>Option B</label>
+                        <input type="text" id="mq-opt-1" class="form-control" placeholder="Option B">
+                    </div>
+                    <div class="form-group">
+                        <label>Option C</label>
+                        <input type="text" id="mq-opt-2" class="form-control" placeholder="Option C">
+                    </div>
+                    <div class="form-group">
+                        <label>Option D</label>
+                        <input type="text" id="mq-opt-3" class="form-control" placeholder="Option D">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Correct Answer Index</label>
+                        <select id="mq-correct" class="form-control">
+                            <option value="0">Option A (Index 0)</option>
+                            <option value="1">Option B (Index 1)</option>
+                            <option value="2">Option C (Index 2)</option>
+                            <option value="3">Option D (Index 3)</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="addManualQuestion()">
+                        <i class="fa-solid fa-plus-circle"></i> Add Question
+                    </button>
+                </div>
             </div>
 
-            <!-- 2. MS WORD PARSER -->
-            <div id="mode-msword-area" class="mode-content">
-              <h4 style="margin-bottom: 1rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-file-word"></i> MS Word Copy-Paste Parser</h4>
-              <div class="form-group">
-                <label>Paste MS Word Content *</label>
-                <textarea id="msword-text-input" rows="6"></textarea>
-              </div>
+            <!-- QUESTION BANK PREVIEW CARD -->
+            <div class="card">
+                <div class="card-title" style="justify-content: space-between;">
+                    <span><i class="fa-solid fa-database"></i> Loaded Question Bank (<span id="q-count">0</span>)</span>
+                    <button class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="clearAllQuestions()">
+                        <i class="fa-solid fa-trash"></i> Clear All
+                    </button>
+                </div>
+
+                <div id="q-list-container">
+                    <!-- Dynamic Questions Render Here -->
+                </div>
             </div>
-          </div>
         </div>
 
-        <button type="button" id="save-config-btn" onclick="saveExamSettings()" class="btn btn-success" style="padding: 1rem 2rem;">
-          <i class="fa-solid fa-floppy-disk"></i> Save & Lock Configurations
-        </button>
-      </div>
     </div>
 
-    <!-- SLIDE 2: SECURITY ANALYTICS -->
-    <div id="slide-2-content" class="admin-slide-content">
-      <div class="admin-card">
-        <h3><i class="fa-solid fa-shield-cat"></i> Anti-Cheating & Security Tracker</h3>
-        <p class="subtitle">Real-time anti-cheating tracking, test scores, tab switches, and penalty logs.</p>
-        
-        <div class="stats-summary">
-          <div class="stat-card">
-            <h4>Total Submissions</h4>
-            <p id="stat-total-students">0</p>
-          </div>
-          <div class="stat-card">
-            <h4>Tab Switch Violations</h4>
-            <p id="stat-total-tabs" style="color: var(--danger);">0</p>
-          </div>
-          <div class="stat-card">
-            <h4>Copy/Paste Attempts</h4>
-            <p id="stat-total-copies" style="color: var(--danger);">0</p>
-          </div>
-          <div class="stat-card">
-            <h4>Penalties Applied</h4>
-            <p id="stat-total-penalties" style="color: var(--gold);">0</p>
-          </div>
-        </div>
+    <!-- ADMIN SCRIPTS -->
+    <script>
+        let questionBank = [];
 
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Student Details</th>
-                <th>Test Score</th>
-                <th>Submit Time</th>
-                <th>Tab Switches</th>
-                <th>Copy Violations</th>
-                <th>Penalty Deduc.</th>
-              </tr>
-            </thead>
-            <tbody id="analytics-table-body">
-              <tr><td colspan="6" style="text-align:center;">Loading security logs...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- SLIDE 3: LEADERBOARD -->
-    <div id="slide-3-content" class="admin-slide-content">
-      <div class="admin-card">
-        <h3><i class="fa-solid fa-medal"></i> Student Rank Leaderboard</h3>
-        <p class="subtitle">Rankings dynamically arranged by highest test scores and submission speed.</p>
-        
-        <div style="display: flex; justify-content: space-between; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 10px;">
-          <button onclick="downloadResultsCSV()" class="btn btn-accent"><i class="fa-solid fa-file-excel"></i> Export CSV Report</button>
-          <button onclick="clearAllResults()" class="btn btn-danger"><i class="fa-solid fa-trash-can"></i> Clear All Submissions</button>
-        </div>
-
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Student Details</th>
-                <th>Score</th>
-                <th>Submitted At</th>
-                <th>Feedback / Notes</th>
-              </tr>
-            </thead>
-            <tbody id="leaderboard-table-body">
-              <tr><td colspan="5" style="text-align:center;">Loading leaderboard data...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- SLIDE 4: ADVANCED ANALYTICS & INSIGHTS (NEW) -->
-    <div id="slide-4-content" class="admin-slide-content">
-      <div class="admin-card">
-        <h3><i class="fa-solid fa-chart-line"></i> Exam Analytics & Deep Insights</h3>
-        <p class="subtitle">Performance metrics, question difficulty analysis, and student accuracy breakdown.</p>
-        
-        <!-- KPI METRICS -->
-        <div class="stats-summary">
-          <div class="stat-card">
-            <h4>Average Score</h4>
-            <p id="insight-avg-score">0.0%</p>
-          </div>
-          <div class="stat-card">
-            <h4>Pass Rate (>50%)</h4>
-            <p id="insight-pass-rate" style="color: var(--success);">0.0%</p>
-          </div>
-          <div class="stat-card">
-            <h4>Highest Score</h4>
-            <p id="insight-highest-score" style="color: var(--primary-accent);">0/0</p>
-          </div>
-          <div class="stat-card">
-            <h4>Hardest Question</h4>
-            <p id="insight-hardest-q" style="font-size: 1.2rem; color: var(--gold);">Q -</p>
-          </div>
-        </div>
-
-        <!-- QUESTION DIFFICULTY BREAKDOWN TABLE -->
-        <h4 style="margin-top: 1.5rem; color: var(--primary);"><i class="fa-solid fa-list-check"></i> Question-Level Performance Breakdown</h4>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Question #</th>
-                <th>Correct Answers</th>
-                <th>Incorrect Answers</th>
-                <th>Accuracy Rate</th>
-                <th>Difficulty Status</th>
-              </tr>
-            </thead>
-            <tbody id="question-insights-table-body">
-              <tr><td colspan="5" style="text-align:center;">Generating question-wise insights...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
-      authDomain: "physics-test-series-405c7.firebaseapp.com",
-      projectId: "physics-test-series-405c7",
-      storageBucket: "physics-test-series-405c7.firebasestorage.app",
-      messagingSenderId: "758620061190",
-      appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    let allStudentResults = [];
-
-    window.toggleUploadUI = (mode) => {
-      document.querySelectorAll('.mode-content').forEach(m => m.classList.remove('active'));
-      if (document.getElementById(`mode-${mode}-area`)) {
-        document.getElementById(`mode-${mode}-area`).classList.add('active');
-      }
-    };
-
-    window.handleLogin = (e) => {
-      e.preventDefault();
-      const user = document.getElementById('admin-user').value.trim();
-      const pass = document.getElementById('admin-pass').value.trim();
-
-      if (user === "saurav" && pass === "saurav@123") {
-        sessionStorage.setItem("admin_logged_in", "true");
-        document.getElementById('login-overlay').style.display = 'none';
-        document.getElementById('admin-main').style.display = 'block';
-        loadExamSettings();
-        fetchLiveDatabaseRecords();
-      } else {
-        document.getElementById('login-error').style.display = 'block';
-      }
-    };
-
-    window.logoutAdmin = () => {
-      sessionStorage.removeItem("admin_logged_in");
-      location.reload();
-    };
-
-    if (sessionStorage.getItem("admin_logged_in") === "true") {
-      document.getElementById('login-overlay').style.display = 'none';
-      document.getElementById('admin-main').style.display = 'block';
-      window.addEventListener('DOMContentLoaded', () => {
-        loadExamSettings();
-        fetchLiveDatabaseRecords();
-      });
-    }
-
-    window.switchSlide = (slideNum, btn) => {
-      document.querySelectorAll('.admin-slide-content').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.slide-tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(`slide-${slideNum}-content`).classList.add('active');
-      if (btn) btn.classList.add('active');
-    };
-
-    async function loadExamSettings() {
-      try {
-        const docRef = doc(db, "exam_config", "current_test");
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          document.getElementById('config-total-pool').value = data.totalPool || "";
-          document.getElementById('config-student-limit').value = data.studentLimit || "";
-          document.getElementById('config-per-question-timer').value = data.perQuestionSeconds || 0;
-          
-          if(data.windowStart) {
-            document.getElementById('config-window-start').value = new Date(data.windowStart).toISOString().slice(0, 16);
-          }
-          if(data.windowEnd) {
-            document.getElementById('config-window-end').value = new Date(data.windowEnd).toISOString().slice(0, 16);
-          }
-
-          if (data.uploadMode) {
-            const radio = document.querySelector(`input[name="upload-mode"][value="${data.uploadMode}"]`);
-            if (radio) {
-              radio.checked = true;
-              toggleUploadUI(data.uploadMode);
+        // Load saved state on start
+        window.onload = function() {
+            const savedBank = localStorage.getItem('adminQuestionBank');
+            if (savedBank) {
+                try {
+                    questionBank = JSON.parse(savedBank);
+                    updateCodeBox();
+                    renderQuestionList();
+                } catch(e) {}
             }
-          }
+        };
 
-          if (data.questionLanguage) {
-            const langRadio = document.querySelector(`input[name="question-language"][value="${data.questionLanguage}"]`);
-            if (langRadio) langRadio.checked = true;
-          }
-        }
-      } catch (e) {
-        console.error("Config load error:", e);
-      }
-    }
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(tb => tb.classList.remove('active'));
 
-    window.addQuestionToPool = () => {
-      const qText = document.getElementById('live-q-text').value.trim();
-      const optA = document.getElementById('live-opt-a').value.trim();
-      const optB = document.getElementById('live-opt-b').value.trim();
-      const optC = document.getElementById('live-opt-c').value.trim();
-      const optD = document.getElementById('live-opt-d').value.trim();
-
-      if (!qText || !optA || !optB || !optC || !optD) {
-        alert("Please fill all question fields.");
-        return;
-      }
-
-      alert("Question processed successfully!");
-    };
-
-    window.saveExamSettings = async () => {
-      const totalPool = parseInt(document.getElementById('config-total-pool').value);
-      const studentLimit = parseInt(document.getElementById('config-student-limit').value);
-      const perQuestionSeconds = parseInt(document.getElementById('config-per-question-timer').value) || 0;
-      const windowStartVal = document.getElementById('config-window-start').value;
-      const windowEndVal = document.getElementById('config-window-end').value;
-      const uploadMode = document.querySelector('input[name="upload-mode"]:checked').value;
-      const questionLanguage = document.querySelector('input[name="question-language"]:checked').value;
-
-      if (!totalPool || !studentLimit || !windowStartVal || !windowEndVal) {
-        alert("Please fill all configuration fields!");
-        return;
-      }
-
-      const saveBtn = document.getElementById('save-config-btn');
-      saveBtn.disabled = true;
-      saveBtn.innerText = "Saving Configuration...";
-
-      try {
-        await setDoc(doc(db, "exam_config", "current_test"), {
-          totalPool,
-          studentLimit,
-          perQuestionSeconds,
-          windowStart: new Date(windowStartVal).getTime(),
-          windowEnd: new Date(windowEndVal).getTime(),
-          uploadMode,
-          questionLanguage,
-          updatedAt: new Date()
-        });
-        alert("Configurations saved and locked successfully!");
-      } catch (err) {
-        alert("Error saving settings: " + err.message);
-      } finally {
-        saveBtn.disabled = false;
-        saveBtn.innerText = "Save & Lock Configurations";
-      }
-    };
-
-    window.fetchLiveDatabaseRecords = async () => {
-      const analyticsBody = document.getElementById('analytics-table-body');
-      const leaderboardBody = document.getElementById('leaderboard-table-body');
-
-      analyticsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching security logs...</td></tr>`;
-      leaderboardBody.innerHTML = `<tr><td colspan="5" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching leaderboard...</td></tr>`;
-
-      try {
-        const snap = await getDocs(collection(db, "results"));
-        allStudentResults = [];
-
-        let totalTabs = 0;
-        let totalCopies = 0;
-        let totalPenalties = 0;
-
-        snap.forEach((docSnap) => {
-          const r = docSnap.data();
-          let scoreVal = 0;
-          let maxScore = 10;
-          if (typeof r.score === 'string') {
-            const parts = r.score.split('/');
-            scoreVal = parseFloat(parts[0]) || 0;
-            if (parts[1]) maxScore = parseFloat(parts[1]) || 10;
-          } else if (typeof r.score === 'number') {
-            scoreVal = r.score;
-          }
-
-          let dateObj = new Date(0);
-          if (r.submittedAt) {
-            dateObj = r.submittedAt.toDate ? r.submittedAt.toDate() : new Date(r.submittedAt);
-          } else if (r.timestamp) {
-            dateObj = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
-          }
-
-          const submitTimeFormatted = dateObj.getTime() > 0 ? dateObj.toLocaleString('en-IN', {
-            dateStyle: 'medium',
-            timeStyle: 'short'
-          }) : "N/A";
-
-          const tabs = r.tabSwitches !== undefined ? r.tabSwitches : (r.tab_switches || 0);
-          const copies = r.copiesAttempted !== undefined ? r.copiesAttempted : (r.copy_paste || 0);
-          const penalties = r.penaltiesApplied || 0;
-
-          totalTabs += tabs;
-          totalCopies += copies;
-          totalPenalties += penalties;
-
-          allStudentResults.push({
-            id: docSnap.id,
-            name: r.name || "Anonymous Student",
-            email: r.email || "No Email",
-            scoreText: r.score || "0/0",
-            scoreVal: scoreVal,
-            maxScore: maxScore,
-            rawDate: dateObj,
-            tabSwitches: tabs,
-            copiesAttempted: copies,
-            penaltiesApplied: penalties,
-            submittedAtStr: submitTimeFormatted,
-            feedback: r.feedback || "None"
-          });
-        });
-
-        // Update Counter Stats
-        document.getElementById('stat-total-students').innerText = allStudentResults.length;
-        document.getElementById('stat-total-tabs').innerText = totalTabs;
-        document.getElementById('stat-total-copies').innerText = totalCopies;
-        document.getElementById('stat-total-penalties').innerText = `-${totalPenalties}`;
-
-        allStudentResults.sort((a, b) => b.rawDate - a.rawDate);
-
-        // Render Security Analytics Table
-        analyticsBody.innerHTML = '';
-        if (allStudentResults.length === 0) {
-          analyticsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No submissions recorded yet.</td></tr>`;
-        } else {
-          allStudentResults.forEach(r => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td><strong>${r.name}</strong><br><span style="font-size:0.8rem; color:var(--text-muted);">${r.email}</span></td>
-              <td><strong style="color:var(--primary-accent); font-size:1rem;">${r.scoreText}</strong></td>
-              <td><span class="time-stamp"><i class="fa-regular fa-clock"></i> ${r.submittedAtStr}</span></td>
-              <td><span class="alert-indicator ${r.tabSwitches > 0 ? 'alert-warn' : 'alert-safe'}">${r.tabSwitches} Switch(es)</span></td>
-              <td><span class="alert-indicator ${r.copiesAttempted > 0 ? 'alert-warn' : 'alert-safe'}">${r.copiesAttempted} Attempt(s)</span></td>
-              <td><span class="alert-indicator ${r.penaltiesApplied > 0 ? 'alert-warn' : 'alert-safe'}">-${r.penaltiesApplied} Mark(s)</span></td>
-            `;
-            analyticsBody.appendChild(tr);
-          });
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
         }
 
-        // Render Leaderboard
-        const leaderboardData = [...allStudentResults].sort((a, b) => b.scoreVal - a.scoreVal || a.rawDate - b.rawDate);
-        leaderboardBody.innerHTML = '';
-        if (leaderboardData.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No student performance data.</td></tr>`;
-        } else {
-          leaderboardData.forEach((r, idx) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td><span class="badge-rank">#${idx + 1}</span></td>
-              <td><strong>${r.name}</strong><br><span style="font-size:0.8rem; color:var(--text-muted);">${r.email}</span></td>
-              <td><strong style="color:var(--primary-accent); font-size:1.05rem;">${r.scoreText}</strong></td>
-              <td><span class="time-stamp"><i class="fa-regular fa-clock"></i> ${r.submittedAtStr}</span></td>
-              <td>${r.feedback}</td>
-            `;
-            leaderboardBody.appendChild(tr);
-          });
+        // 1. CODE / JSON UPLOAD LOGIC
+        function loadQuestionsFromCode() {
+            const rawCode = document.getElementById('json-code-box').value.trim();
+            if (!rawCode) {
+                alert("Please paste valid JSON code in the editor box!");
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(rawCode);
+                if (Array.isArray(parsed)) {
+                    questionBank = parsed;
+                    saveQuestionBank();
+                    renderQuestionList();
+                    alert(`Successfully imported ${parsed.length} questions from code!`);
+                } else {
+                    alert("JSON code must be an array of questions!");
+                }
+            } catch (err) {
+                alert("Invalid JSON Code format! Please check brackets and quotes.\nError: " + err.message);
+            }
         }
 
-        // Render Insights & Advanced Analytics (Slide 4)
-        renderAdvancedInsights(allStudentResults);
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-      } catch (err) {
-        console.error(err);
-        analyticsBody.innerHTML = `<tr><td colspan="6" style="color:var(--danger); text-align:center;">Failed to load data.</td></tr>`;
-      }
-    };
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('json-code-box').value = e.target.result;
+                loadQuestionsFromCode();
+            };
+            reader.readAsText(file);
+        }
 
-    function renderAdvancedInsights(data) {
-      if (data.length === 0) {
-        document.getElementById('insight-avg-score').innerText = "0%";
-        document.getElementById('insight-pass-rate').innerText = "0%";
-        document.getElementById('insight-highest-score').innerText = "0/0";
-        document.getElementById('insight-hardest-q').innerText = "N/A";
-        return;
-      }
+        function copyJSONCode() {
+            const codeBox = document.getElementById('json-code-box');
+            codeBox.select();
+            document.execCommand('copy');
+            alert("JSON Code copied to clipboard!");
+        }
 
-      let totalPerc = 0;
-      let passCount = 0;
-      let highestObj = data[0];
+        // 2. MANUAL QUESTION ADDITION
+        function addManualQuestion() {
+            const qText = document.getElementById('mq-text').value.trim();
+            const o0 = document.getElementById('mq-opt-0').value.trim();
+            const o1 = document.getElementById('mq-opt-1').value.trim();
+            const o2 = document.getElementById('mq-opt-2').value.trim();
+            const o3 = document.getElementById('mq-opt-3').value.trim();
+            const correctIdx = parseInt(document.getElementById('mq-correct').value);
 
-      data.forEach(r => {
-        let perc = (r.scoreVal / r.maxScore) * 100;
-        totalPerc += perc;
-        if (perc >= 50) passCount++;
-        if (r.scoreVal > highestObj.scoreVal) highestObj = r;
-      });
+            if (!qText || !o0 || !o1 || !o2 || !o3) {
+                alert("Please fill all fields for the question and options!");
+                return;
+            }
 
-      const avgPerc = (totalPerc / data.length).toFixed(1);
-      const passRate = ((passCount / data.length) * 100).toFixed(1);
+            const newQ = {
+                question: qText,
+                options: [o0, o1, o2, o3],
+                answer: correctIdx
+            };
 
-      document.getElementById('insight-avg-score').innerText = `${avgPerc}%`;
-      document.getElementById('insight-pass-rate').innerText = `${passRate}%`;
-      document.getElementById('insight-highest-score').innerText = highestObj.scoreText;
+            questionBank.push(newQ);
+            saveQuestionBank();
+            updateCodeBox();
+            renderQuestionList();
 
-      // Mocked Question Analytics Engine Demo
-      const qTable = document.getElementById('question-insights-table-body');
-      qTable.innerHTML = '';
+            // Reset manual form fields
+            document.getElementById('mq-text').value = '';
+            document.getElementById('mq-opt-0').value = '';
+            document.getElementById('mq-opt-1').value = '';
+            document.getElementById('mq-opt-2').value = '';
+            document.getElementById('mq-opt-3').value = '';
+            alert("Question added successfully!");
+        }
 
-      for (let qIndex = 1; qIndex <= 10; qIndex++) {
-        const correct = Math.floor(Math.random() * data.length);
-        const incorrect = data.length - correct;
-        const accuracy = data.length > 0 ? Math.round((correct / data.length) * 100) : 0;
-        
-        let diffBadge = `<span class="alert-indicator alert-safe">Easy</span>`;
-        if (accuracy < 40) diffBadge = `<span class="alert-indicator alert-warn">Hard</span>`;
-        else if (accuracy < 70) diffBadge = `<span class="alert-indicator" style="background:#fef3c7; color:#92400e;">Moderate</span>`;
+        // 3. RENDER & UI UPDATES
+        function renderQuestionList() {
+            const container = document.getElementById('q-list-container');
+            document.getElementById('q-count').innerText = questionBank.length;
+            container.innerHTML = '';
 
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>Question ${qIndex}</strong></td>
-          <td style="color:var(--success); font-weight:700;">${correct}</td>
-          <td style="color:var(--danger); font-weight:700;">${incorrect}</td>
-          <td>
-            <div style="display:flex; align-items:center; gap:10px;">
-              <span>${accuracy}%</span>
-              <div class="progress-bar-bg" style="width:80px;"><div class="progress-bar-fill" style="width:${accuracy}%;"></div></div>
-            </div>
-          </td>
-          <td>${diffBadge}</td>
-        `;
-        qTable.appendChild(tr);
-      }
-      document.getElementById('insight-hardest-q').innerText = "Q - 4 (32% Acc)";
-    }
+            if (questionBank.length === 0) {
+                container.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No questions loaded in bank yet.</p>`;
+                return;
+            }
 
-    window.downloadResultsCSV = () => {
-      if (allStudentResults.length === 0) {
-        alert("No student data available to download.");
-        return;
-      }
-      let csv = "Rank,Student Name,Email,Score,Submitted At,Tab Switches,Copy Violations,Penalties\n";
-      allStudentResults.forEach((r, i) => {
-        csv += `${i+1},"${r.name}","${r.email}","${r.scoreText}","${r.submittedAtStr}",${r.tabSwitches},${r.copiesAttempted},-${r.penaltiesApplied}\n`;
-      });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.setAttribute('href', url);
-      a.setAttribute('download', `Exam_Leaderboard_${new Date().toISOString().slice(0,10)}.csv`);
-      a.click();
-    };
+            questionBank.forEach((q, idx) => {
+                const item = document.createElement('div');
+                item.className = 'q-preview-item';
+                item.innerHTML = `
+                    <div class="q-preview-details">
+                        <h4>Q${idx + 1}. ${q.question}</h4>
+                        <p><strong>Options:</strong> A. ${q.options[0]} | B. ${q.options[1]} | C. ${q.options[2]} | D. ${q.options[3]}</p>
+                        <p><span style="color: var(--success); font-weight:700;">Correct Answer:</span> ${String.fromCharCode(65 + q.answer)} (${q.options[q.answer]})</p>
+                    </div>
+                    <div class="q-actions">
+                        <button class="action-btn" style="color: var(--danger);" onclick="deleteQuestion(${idx})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
 
-    window.clearAllResults = async () => {
-      if (!confirm("Are you sure you want to permanently clear all student submissions?")) return;
-      try {
-        const snap = await getDocs(collection(db, "results"));
-        const deletes = snap.docs.map(d => deleteDoc(doc(db, "results", d.id)));
-        await Promise.all(deletes);
-        alert("All student records cleared successfully!");
-        fetchLiveDatabaseRecords();
-      } catch (err) {
-        alert("Failed to clear database records: " + err.message);
-      }
-    };
-  </script>
+        function deleteQuestion(index) {
+            questionBank.splice(index, 1);
+            saveQuestionBank();
+            updateCodeBox();
+            renderQuestionList();
+        }
+
+        function clearAllQuestions() {
+            if (confirm("Are you sure you want to clear all loaded questions?")) {
+                questionBank = [];
+                saveQuestionBank();
+                updateCodeBox();
+                renderQuestionList();
+            }
+        }
+
+        function updateCodeBox() {
+            document.getElementById('json-code-box').value = JSON.stringify(questionBank, null, 2);
+        }
+
+        function saveQuestionBank() {
+            localStorage.setItem('adminQuestionBank', JSON.stringify(questionBank));
+        }
+
+        function saveSettings() {
+            const settings = {
+                title: document.getElementById('cfg-title').value,
+                duration: document.getElementById('cfg-duration').value,
+                totalQuestions: document.getElementById('cfg-total-q').value,
+                posMarks: document.getElementById('cfg-pos-marks').value,
+                negMarks: document.getElementById('cfg-neg-marks').value
+            };
+            localStorage.setItem('adminExamSettings', JSON.stringify(settings));
+            alert("Settings saved successfully!");
+        }
+
+        function resetAttemptedEmails() {
+            if (confirm("Are you sure you want to reset all recorded student exam attempts? Students will be able to re-attempt the test.")) {
+                localStorage.removeItem('attemptedEmails');
+                alert("Student exam attempts reset successfully!");
+            }
+        }
+    </script>
 </body>
 </html>
