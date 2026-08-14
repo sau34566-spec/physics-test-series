@@ -1,27 +1,18 @@
- <!DOCTYPE html>
-<html lang="en">
+  <!DOCTYPE html>
+<html>
 <head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physics Online Test | NTA Style</title>
-    <!-- Google Fonts & FontAwesome Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Physics Test</title>
+    <!-- Google Fonts aur FontAwesome Icons aapke website ki design match karne ke liye -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
             --primary: #1e3a8a;
-            --primary-accent: #2563eb;
             --bg-dark: #0f172a;
             --bg-card: #ffffff;
             --text-main: #1e293b;
-            --border-color: #cbd5e1;
-
-            /* NTA Palette Colors */
-            --nta-answered: #16a34a;       /* Green */
-            --nta-not-answered: #dc2626;   /* Red */
-            --nta-review: #9333ea;         /* Purple */
-            --nta-not-visited: #94a3b8;    /* Gray */
         }
 
         * {
@@ -31,607 +22,56 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* SECURITY: Text Selection Block */
+        /* SECURITY: Text Selection Block Karna */
         body {
             background-color: var(--bg-dark);
             color: var(--text-main);
             min-height: 100vh;
-            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             overflow-x: hidden;
             -webkit-user-select: none;
             -ms-user-select: none;
             user-select: none;
         }
 
-        /* MAIN EXAM CONTAINER LAYOUT */
-        .test-wrapper {
-            display: grid;
-            grid-template-columns: 1fr 340px;
-            gap: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        @media (max-width: 992px) {
-            .test-wrapper {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* LEFT: QUESTION CARD */
-        .question-card {
+        .test-container {
             background: var(--bg-card);
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .q-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #f1f5f9;
-            padding-bottom: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .q-title {
-            color: var(--primary);
-            font-size: 1.3rem;
-            font-weight: 800;
-        }
-
-        .q-text {
-            font-size: 1.1rem;
-            font-weight: 600;
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-            color: var(--text-main);
-        }
-
-        /* OPTIONS LIST */
-        .options-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 2rem;
-        }
-
-        .option-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 1rem 1.2rem;
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-
-        .option-item:hover {
-            border-color: var(--primary-accent);
-            background: #eff6ff;
-        }
-
-        .option-item.selected {
-            border-color: var(--primary-accent);
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .option-item input {
-            cursor: pointer;
-            width: 18px;
-            height: 18px;
-        }
-
-        /* CONTROL BUTTONS */
-        .action-buttons {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            border-top: 2px solid #f1f5f9;
-            padding-top: 1.5rem;
-        }
-
-        .btn {
-            padding: 0.8rem 1.4rem;
-            border-radius: 10px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-            font-size: 0.9rem;
-        }
-
-        .btn-save { background: var(--nta-answered); color: white; }
-        .btn-save:hover { background: #15803d; }
-
-        .btn-review { background: var(--nta-review); color: white; }
-        .btn-review:hover { background: #7e22ce; }
-
-        .btn-clear { background: #e2e8f0; color: #334155; }
-        .btn-clear:hover { background: #cbd5e1; }
-
-        .btn-submit { background: var(--primary); color: white; }
-        .btn-submit:hover { background: #1e40af; }
-
-        /* RIGHT: PALETTE SIDEBAR */
-        .palette-sidebar {
-            background: var(--bg-card);
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            height: fit-content;
-        }
-
-        .palette-title {
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 1rem;
-            border-bottom: 2px solid #f1f5f9;
-            padding-bottom: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* LEGEND INDICATORS */
-        .legend-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 1.5rem;
-            font-size: 0.78rem;
-            font-weight: 700;
-        }
-
-        .legend-item { display: flex; align-items: center; gap: 8px; }
-
-        .badge-icon {
-            width: 22px;
-            height: 22px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 800;
-        }
-
-        .badge-answered { background: var(--nta-answered); }
-        .badge-not-answered { background: var(--nta-not-answered); }
-        .badge-review { background: var(--nta-review); }
-        .badge-not-visited { background: var(--nta-not-visited); }
-
-        /* QUESTION GRID BUTTONS */
-        .question-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            max-height: 350px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-
-        .q-btn {
-            aspect-ratio: 1;
-            border: none;
-            border-radius: 8px;
-            font-weight: 800;
-            font-size: 0.95rem;
-            cursor: pointer;
-            color: white;
-            background: var(--nta-not-visited);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-            position: relative;
-        }
-
-        .q-btn:hover { transform: scale(1.08); }
-        .q-btn.active-current { outline: 3px solid var(--primary); outline-offset: 2px; }
-
-        .q-btn.status-answered { background: var(--nta-answered); }
-        .q-btn.status-not-answered { background: var(--nta-not-answered); }
-        .q-btn.status-review { background: var(--nta-review); }
-        .q-btn.status-review-answered { background: var(--nta-review); }
-        .q-btn.status-review-answered::after {
-            content: '★';
-            position: absolute;
-            top: 1px;
-            right: 3px;
-            font-size: 0.65rem;
-            color: #fde047;
-        }
-
-        /* RESULT SECTION OVERLAY MODAL */
-        #result-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.95);
-            z-index: 99999;
-            overflow-y: auto;
-            padding: 2rem 1rem;
-            backdrop-filter: blur(8px);
-        }
-
-        .result-card {
-            max-width: 850px;
-            margin: 0 auto;
-            background: #ffffff;
-            border-radius: 20px;
+            width: 100%;
+            max-width: 650px;
             padding: 2.5rem;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-            color: var(--text-main);
-        }
-
-        .result-header {
-            text-align: center;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .result-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 15px;
-            margin-bottom: 2rem;
-        }
-
-        .res-stat-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 1.2rem;
-            border-radius: 12px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             text-align: center;
         }
 
-        .res-stat-box h4 { font-size: 0.8rem; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
-        .res-stat-box p { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
-
-        .analysis-item {
-            border: 1px solid #e2e8f0;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            background: #f8fafc;
+        h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        p {
+            color: #64748b;
+            font-size: 1rem;
         }
     </style>
 </head>
 <body>
 
-    <!-- EXAM INTERFACE -->
-    <div class="test-wrapper">
-        
-        <!-- LEFT: QUESTION DISPLAY AREA -->
-        <div class="question-card">
-            <div>
-                <div class="q-header">
-                    <span class="q-title" id="display-q-num"><i class="fa-solid fa-flask-vial"></i> Question 1</span>
-                    <span style="font-weight: 700; color: #64748b;" id="marking-scheme">Marks: +4 / -1</span>
-                </div>
-
-                <div id="q-content-box">
-                    <p class="q-text" id="q-text">Loading question content...</p>
-
-                    <div class="options-list" id="options-container">
-                        <!-- Options Rendered Dynamically -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- ACTION CONTROL BUTTONS -->
-            <div class="action-buttons">
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="btn btn-save" onclick="saveAndNext()"><i class="fa-solid fa-check"></i> Save & Next</button>
-                    <button class="btn btn-review" onclick="markForReview()"><i class="fa-solid fa-bookmark"></i> Mark for Review</button>
-                    <button class="btn btn-clear" onclick="clearResponse()"><i class="fa-solid fa-rotate-left"></i> Clear Answer</button>
-                </div>
-                <button class="btn btn-submit" onclick="submitExam()"><i class="fa-solid fa-paper-plane"></i> Submit Test</button>
-            </div>
-        </div>
-
-        <!-- RIGHT: NTA QUESTION PALETTE SIDEBAR -->
-        <div class="palette-sidebar">
-            <div class="palette-title"><i class="fa-solid fa-border-all"></i> Question Palette</div>
-
-            <!-- PALETTE LEGEND GUIDE -->
-            <div class="legend-grid">
-                <div class="legend-item"><div class="badge-icon badge-answered"><i class="fa-solid fa-check"></i></div> Answered</div>
-                <div class="legend-item"><div class="badge-icon badge-not-answered"><i class="fa-solid fa-xmark"></i></div> Not Answered</div>
-                <div class="legend-item"><div class="badge-icon badge-review"><i class="fa-solid fa-bookmark"></i></div> Review</div>
-                <div class="legend-item"><div class="badge-icon badge-not-visited"></div> Not Visited</div>
-            </div>
-
-            <!-- PALETTE GRID BUTTONS -->
-            <div class="question-grid" id="palette-grid">
-                <!-- Dynamically Generated Buttons -->
-            </div>
-        </div>
-
+    <div class="test-container">
+        <h1><i class="fa-solid fa-flask-vial"></i> Physics Test Started!</h1>
+        <p>Your environment is securely locked. Do not attempt to switch tabs or copy content.</p>
+        <!-- Aapka baaki questions ka code ya portal content yahan aayega -->
     </div>
-
-    <!-- STUDENT RESULT MODAL SECTION -->
-    <div id="result-modal">
-        <div class="result-card">
-            <div class="result-header">
-                <h2 style="color: var(--primary); font-size: 1.8rem; font-weight: 800;"><i class="fa-solid fa-trophy"></i> Test Result & Performance Analysis</h2>
-                <p style="color: #64748b; font-size: 0.9rem; margin-top: 5px;">Exam Submitted Successfully</p>
-            </div>
-
-            <!-- STATS SUMMARY -->
-            <div class="result-stats-grid">
-                <div class="res-stat-box">
-                    <h4>Total Score</h4>
-                    <p id="res-score" style="color: var(--primary-accent);">0 / 0</p>
-                </div>
-                <div class="res-stat-box">
-                    <h4>Accuracy</h4>
-                    <p id="res-accuracy" style="color: #10b981;">0%</p>
-                </div>
-                <div class="res-stat-box">
-                    <h4>Correct</h4>
-                    <p id="res-correct" style="color: #10b981;">0</p>
-                </div>
-                <div class="res-stat-box">
-                    <h4>Incorrect</h4>
-                    <p id="res-wrong" style="color: #ef4444;">0</p>
-                </div>
-                <div class="res-stat-box">
-                    <h4>Unattempted</h4>
-                    <p id="res-unattempted" style="color: #64748b;">0</p>
-                </div>
-            </div>
-
-            <!-- QUESTION-BY-QUESTION REVIEW -->
-            <h3 style="margin-bottom: 1rem; color: var(--primary);"><i class="fa-solid fa-list-check"></i> Detailed Answer Key & Review</h3>
-            <div id="detailed-analysis-container">
-                <!-- Dynamic Breakdown -->
-            </div>
-
-            <div style="text-align: center; margin-top: 2rem;">
-                <button class="btn btn-submit" onclick="location.reload()"><i class="fa-solid fa-rotate-right"></i> Re-take Test</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- DYNAMIC EXAM ENGINE & NTA PALETTE LOGIC -->
-    <script>
-        let questions = [];
-        let currentIndex = 0;
-        let questionStates = [];
-
-        // Helper function to extract options from any JSON format
-        function parseOptions(qObj) {
-            if (Array.isArray(qObj.options) && qObj.options.length > 0) {
-                return qObj.options;
-            }
-            if (qObj.optionA || qObj.optionB) {
-                return [qObj.optionA, qObj.optionB, qObj.optionC, qObj.optionD].filter(Boolean);
-            }
-            if (qObj.optA || qObj.optB) {
-                return [qObj.optA, qObj.optB, qObj.optC, qObj.optD].filter(Boolean);
-            }
-            if (typeof qObj.options === 'object' && qObj.options !== null) {
-                return Object.values(qObj.options);
-            }
-            return ["Option A", "Option B", "Option C", "Option D"];
-        }
-
-        // Helper to extract correct answer index (0, 1, 2, 3 or 'A', 'B', 'C', 'D')
-        function parseCorrectAnswer(qObj) {
-            let ans = qObj.answer !== undefined ? qObj.answer : (qObj.correct !== undefined ? qObj.correct : qObj.correctOption);
-            if (ans === undefined || ans === null) return 0;
-
-            if (typeof ans === 'number') return ans;
-            if (typeof ans === 'string') {
-                let trimmed = ans.trim().toUpperCase();
-                if (trimmed === 'A' || trimmed === 'OPTION A') return 0;
-                if (trimmed === 'B' || trimmed === 'OPTION B') return 1;
-                if (trimmed === 'C' || trimmed === 'OPTION C') return 2;
-                if (trimmed === 'D' || trimmed === 'OPTION D') return 3;
-                let parsedInt = parseInt(trimmed);
-                if (!isNaN(parsedInt)) return parsedInt;
-            }
-            return 0;
-        }
-
-        // Fetch Questions JSON
-        async function fetchQuestions() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const chapterFile = urlParams.get('quiz') || 'chapter1.json';
-
-            try {
-                const response = await fetch(chapterFile);
-                if (!response.ok) throw new Error("File fetch failed");
-                const rawData = await response.json();
-                questions = Array.isArray(rawData) ? rawData : (rawData.questions || [rawData]);
-            } catch (err) {
-                console.warn("Falling back to default questions...", err);
-                questions = [
-                    { question: "Vector A and Vector B are perpendicular. Their dot product will be?", options: ["0", "1", "-1", "Infinity"], answer: 0 },
-                    { question: "SI unit of acceleration is?", options: ["m/s", "m/s²", "kg m/s", "N/m"], answer: 1 },
-                    { question: "What is the dimensional formula of Force?", options: ["M L T⁻¹", "M L T⁻²", "M L² T⁻²", "M L⁻¹ T⁻²"], answer: 1 }
-                ];
-            }
-
-            // Normalize Question Structure
-            questions = questions.map(q => ({
-                questionText: q.question || q.text || q.questionText || "Question text not found",
-                optionsList: parseOptions(q),
-                correctAnswerIdx: parseCorrectAnswer(q)
-            }));
-
-            // Initialize Question States
-            questionStates = questions.map(() => ({
-                status: 'not-visited',
-                selectedOption: null
-            }));
-
-            renderPalette();
-            loadQuestion(0);
-        }
-
-        function loadQuestion(index) {
-            if (!questions || questions.length === 0) return;
-            currentIndex = index;
-
-            if (questionStates[index].status === 'not-visited') {
-                questionStates[index].status = 'not-answered';
-            }
-
-            document.getElementById('display-q-num').innerHTML = `<i class="fa-solid fa-flask-vial"></i> Question ${index + 1} of ${questions.length}`;
-            
-            const qObj = questions[index];
-            document.getElementById('q-text').innerText = qObj.questionText;
-
-            const optsContainer = document.getElementById('options-container');
-            optsContainer.innerHTML = '';
-
-            qObj.optionsList.forEach((optText, optIdx) => {
-                const isSelected = questionStates[index].selectedOption === optIdx;
-                const div = document.createElement('div');
-                div.className = `option-item ${isSelected ? 'selected' : ''}`;
-                div.onclick = () => selectOption(optIdx);
-                div.innerHTML = `
-                    <input type="radio" name="option" ${isSelected ? 'checked' : ''}>
-                    <span>${String.fromCharCode(65 + optIdx)}. ${optText}</span>
-                `;
-                optsContainer.appendChild(div);
-            });
-
-            renderPalette();
-        }
-
-        function selectOption(optIdx) {
-            questionStates[currentIndex].selectedOption = optIdx;
-            loadQuestion(currentIndex);
-        }
-
-        function saveAndNext() {
-            if (questionStates[currentIndex].selectedOption !== null) {
-                questionStates[currentIndex].status = 'answered';
-            } else {
-                questionStates[currentIndex].status = 'not-answered';
-            }
-
-            if (currentIndex < questions.length - 1) {
-                loadQuestion(currentIndex + 1);
-            } else {
-                renderPalette();
-            }
-        }
-
-        function markForReview() {
-            if (questionStates[currentIndex].selectedOption !== null) {
-                questionStates[currentIndex].status = 'review-answered';
-            } else {
-                questionStates[currentIndex].status = 'review';
-            }
-
-            if (currentIndex < questions.length - 1) {
-                loadQuestion(currentIndex + 1);
-            } else {
-                renderPalette();
-            }
-        }
-
-        function clearResponse() {
-            questionStates[currentIndex].selectedOption = null;
-            questionStates[currentIndex].status = 'not-answered';
-            loadQuestion(currentIndex);
-        }
-
-        function renderPalette() {
-            const grid = document.getElementById('palette-grid');
-            grid.innerHTML = '';
-
-            questionStates.forEach((st, idx) => {
-                const btn = document.createElement('button');
-                btn.className = `q-btn status-${st.status} ${idx === currentIndex ? 'active-current' : ''}`;
-                btn.innerText = idx + 1;
-                btn.onclick = () => loadQuestion(idx);
-                grid.appendChild(btn);
-            });
-        }
-
-        // SUBMIT EXAM & GENERATE RESULT SECTION
-        function submitExam() {
-            let answeredCount = questionStates.filter(s => s.selectedOption !== null).length;
-            if (!confirm(`Are you sure you want to submit?\nAttempted: ${answeredCount} / ${questions.length}`)) {
-                return;
-            }
-
-            let correctCount = 0;
-            let wrongCount = 0;
-            let unattemptedCount = 0;
-            let analysisHTML = '';
-
-            questions.forEach((q, idx) => {
-                const selected = questionStates[idx].selectedOption;
-                const correct = q.correctAnswerIdx;
-
-                let statusBadge = '';
-                if (selected === null) {
-                    unattemptedCount++;
-                    statusBadge = `<span style="color:#64748b; font-weight:700;"><i class="fa-solid fa-minus"></i> Unattempted</span>`;
-                } else if (selected === correct) {
-                    correctCount++;
-                    statusBadge = `<span style="color:#10b981; font-weight:700;"><i class="fa-solid fa-check"></i> Correct (+4)</span>`;
-                } else {
-                    wrongCount++;
-                    statusBadge = `<span style="color:#ef4444; font-weight:700;"><i class="fa-solid fa-xmark"></i> Incorrect (-1)</span>`;
-                }
-
-                const userOptText = selected !== null ? `${String.fromCharCode(65 + selected)}. ${q.optionsList[selected]}` : 'None';
-                const correctOptText = `${String.fromCharCode(65 + correct)}. ${q.optionsList[correct]}`;
-
-                analysisHTML += `
-                    <div class="analysis-item">
-                        <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
-                            <strong>Q${idx + 1}: ${q.questionText}</strong>
-                            ${statusBadge}
-                        </div>
-                        <p style="font-size: 0.88rem; color:#475569;">Your Answer: <strong>${userOptText}</strong></p>
-                        <p style="font-size: 0.88rem; color:#16a34a;">Correct Answer: <strong>${correctOptText}</strong></p>
-                    </div>
-                `;
-            });
-
-            // Calculate Marks (+4 / -1 Scheme)
-            const totalMarks = (correctCount * 4) - (wrongCount * 1);
-            const maxMarks = questions.length * 4;
-            const accuracy = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
-
-            document.getElementById('res-score').innerText = `${totalMarks} / ${maxMarks}`;
-            document.getElementById('res-accuracy').innerText = `${accuracy}%`;
-            document.getElementById('res-correct').innerText = correctCount;
-            document.getElementById('res-wrong').innerText = wrongCount;
-            document.getElementById('res-unattempted').innerText = unattemptedCount;
-            document.getElementById('detailed-analysis-container').innerHTML = analysisHTML;
-
-            // Show Result Overlay Screen
-            document.getElementById('result-modal').style.display = 'block';
-        }
-
-        window.onload = fetchQuestions;
-    </script>
 
     <!-- SECURITY JAVASCRIPT ENGINE -->
     <script>
+        // 1. Right-Click Menu Block
         document.addEventListener('contextmenu', event => event.preventDefault());
 
+        // 2. Copy aur Paste Command Disabled
         document.addEventListener('copy', (e) => {
             e.preventDefault();
             alert("Security Alert: Copying test contents is prohibited!");
@@ -641,25 +81,31 @@
             alert("Security Alert: Pasting functions are locked!");
         });
 
+        // 3. Tab Switching Detection
         document.addEventListener("visibilitychange", function() {
             if (document.hidden) {
                 alert("CRITICAL WARNING: Tab switching detected! This incident has been logged in the system portal.");
             }
         });
 
+        // 4. Keyboard Shortcuts Disable (Print, DevTools, Inspect)
         document.addEventListener("keydown", function(e) {
+            // Ctrl+P (Print Screen / PDF download shortcut block)
             if (e.ctrlKey && (e.key === 'p' || e.keyCode === 80)) {
                 e.preventDefault();
                 alert("Security Action: Page rendering to print is blocked.");
             }
+            // F12 key (Inspect Element shortcut block)
             if (e.key === "F12" || e.keyCode === 123) {
                 e.preventDefault();
                 alert("Security Action: Developer settings access denied.");
             }
+            // Ctrl + Shift + I (Inspect Panel alternative lock)
             if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.keyCode === 73)) {
                 e.preventDefault();
                 alert("Security Action: Debugging tools are offline.");
             }
+            // Clear clipboard buffer on PrintScreen button trigger
             if (e.key === "PrintScreen") {
                 navigator.clipboard.writeText("");
                 alert("Screenshots are restricted on this exam page!");
