@@ -31,6 +31,12 @@
         .toast-popup { position: fixed; top: 20px; right: 20px; background: #0f172a; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-size: 0.9rem; z-index: 1000; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--danger); transition: transform 0.3s ease; transform: translateX(120%); }
         .toast-popup.show { transform: translateX(0); }
 
+        /* Email Login View */
+        .email-login-container { flex: 1; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); padding: 20px; display: flex; justify-content: center; align-items: center; }
+        .email-card { background: white; width: 100%; max-width: 420px; padding: 35px; border-radius: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 20px; }
+        .email-card h2 { font-size: 1.3rem; color: #0f172a; text-align: center; }
+        .email-card input { width: 100%; padding: 12px; border: 1px solid var(--gray-border); border-radius: 8px; font-size: 0.95rem; outline: none; }
+
         /* Slide 1: Direct Instructions Page */
         .instruction-container { flex: 1; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); padding: 20px; display: flex; justify-content: center; align-items: center; overflow-y: auto; }
         .instruction-card { background: white; width: 100%; max-width: 800px; padding: 35px; border-radius: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 20px; }
@@ -50,8 +56,7 @@
         .header-right { display: flex; align-items: center; gap: 12px; }
         .timer-container { background: rgba(255, 255, 255, 0.1); padding: 6px 12px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.15); }
         .timer-container i { color: var(--warning); }
-        .user-meta-info { font-size: 0.75rem; color: #cbd5e1; display: none; }
-        @media(min-width: 768px) { .user-meta-info { display: block; } .header-left h1 { max-width: none; } }
+        @media(min-width: 768px) { .header-left h1 { max-width: none; } }
 
         /* Workspace Exam Interface */
         .workspace { display: flex; flex: 1; height: calc(100vh - 60px); overflow: hidden; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); }
@@ -135,12 +140,23 @@
             <i class="fa-regular fa-clock"></i>
             <h2 id="notice-title">Test Not Started Yet</h2>
             <p id="notice-desc">Please check back during the scheduled window time.</p>
-            <button class="btn btn-primary" style="width: auto; padding: 10px 25px; margin-top: 10px; background: var(--primary); color: white;" onclick="window.location.reload()">Refresh Status</button>
         </div>
     </div>
 
-    <!-- DIRECT INSTRUCTIONS PAGE (Landing view) -->
-    <div id="slide-instructions" class="view-section active">
+    <!-- EMAIL LOGIN VIEW -->
+    <div id="slide-email-login" class="view-section active">
+        <div class="email-login-container">
+            <div class="email-card">
+                <h2>Candidate Verification</h2>
+                <p style="font-size: 0.85rem; color: #64748b;">Enter your registered Gmail address to start the assessment.</p>
+                <input type="email" id="student-email-input" placeholder="e.g. student@gmail.com">
+                <button class="btn btn-success" style="width: 100%; justify-content: center; padding: 12px;" onclick="verifyAndProceedEmail()">Proceed to Instructions</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIRECT INSTRUCTIONS PAGE -->
+    <div id="slide-instructions" class="view-section">
         <div class="instruction-container">
             <div class="instruction-card">
                 <h2>Examination Instructions & Guidelines</h2>
@@ -150,6 +166,7 @@
                         <li>The test will open as per the scheduled time window set by the administration.</li>
                         <li>The countdown timer at the top right of the screen will display the remaining time available for your assessment.</li>
                         <li>Each correct response carries <b>+1</b> mark, and incorrect answers carry negative marking of <b>-0.25</b> marks.</li>
+                        <li>Tab switching or leaving the screen will result in penalties (1st time: -1 mark, 2nd time: Auto-submit).</li>
                         <li>Click on <b>Save & Next</b> to record your answer and move forward. You can also bookmark questions using <b>Mark for Review</b>.</li>
                         <li>Once submitted or when the timer expires, your performance card and analytical breakdown will be automatically generated and synced to the admin database.</li>
                     </ul>
@@ -175,7 +192,7 @@
         </div>
     </div>
 
-    <!-- SLIDE 3: EXAM INTERFACE -->
+    <!-- EXAM INTERFACE -->
     <div id="slide-exam" class="view-section">
         <header>
             <div class="header-left">
@@ -192,7 +209,6 @@
         <div class="workspace">
             <div class="exam-main-panel">
                 
-                <!-- 1. Question Box -->
                 <div class="question-card-box">
                     <div class="question-header">
                         <div class="q-meta" id="question-indicator">Question No. 1</div>
@@ -207,7 +223,6 @@
                     </div>
                 </div>
 
-                <!-- 2. Buttons Just Below Question Box -->
                 <div class="question-footer-btns">
                     <div class="footer-left-btns">
                         <button class="btn btn-outline" onclick="markForReviewAndNext()"><i class="fa-solid fa-bookmark"></i> Review</button>
@@ -218,7 +233,6 @@
                     </div>
                 </div>
 
-                <!-- 3. Question Palette Just Below Buttons -->
                 <div class="sidebar-section">
                     <div class="palette-header">Question Palette</div>
                     <div class="status-legend">
@@ -235,7 +249,7 @@
         </div>
     </div>
 
-    <!-- SLIDE 4: PERFORMANCE DASHBOARD & ANALYSIS -->
+    <!-- PERFORMANCE DASHBOARD & ANALYSIS -->
     <div id="slide-dashboard" class="view-section">
         <header>
             <div class="header-left">
@@ -258,13 +272,11 @@
                 <div class="stat-box"><span>Accuracy</span><span id="stat-accuracy">0%</span></div>
             </div>
 
-            <!-- Detailed Question Analysis with Correct Answer -->
             <div class="analysis-section">
                 <h3>Detailed Question Analysis</h3>
                 <div id="detailed-analysis-container" style="display: flex; flex-direction: column; gap: 15px;"></div>
             </div>
 
-            <!-- Feedback Star Rating (Mandatory) & Queries (Optional) -->
             <div class="feedback-section">
                 <h3>Feedback & Queries</h3>
                 <div>
@@ -286,7 +298,7 @@
         </div>
     </div>
 
-    <!-- Thank You 3-Line Notice Modal upon Feedback Save (Clean text, no refresh mention) -->
+    <!-- Thank You Notice Modal (Clean text, no refresh/restart mention) -->
     <div class="modal-overlay" id="thankyou-modal">
         <div class="modal-card">
             <div style="background: var(--success); color: white; padding: 15px 20px; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
@@ -298,7 +310,7 @@
                 This session is now closed successfully.
             </div>
             <div style="padding: 12px 20px; display: flex; justify-content: flex-end; background: #f8fafc; border-top: 1px solid var(--gray-border);">
-                <button class="btn btn-success" onclick="lockWebsiteSession()">OK / Finish</button>
+                <button class="btn btn-success" onclick="lockWebsiteSession()">OK</button>
             </div>
         </div>
     </div>
@@ -327,6 +339,7 @@
         let windowTimerInterval = null;
         let currentRating = 0;
         let activeAdminConfig = {};
+        let currentStudentEmail = "";
 
         const defaultQuestions = [
             { q: "A particle moves in a straight line with deceleration proportional to its displacement. Its loss of kinetic energy is proportional to:", options: ["x", "x^2", "ln(x)", "e^x"], answer: 1 },
@@ -334,7 +347,6 @@
         ];
 
         window.onload = function() {
-            // Check if already locked from a previous submission in this tab
             if(localStorage.getItem('portal_session_locked') === 'true') {
                 document.body.innerHTML = `
                     <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: #0f172a; color: white; text-align: center; padding: 20px; gap: 15px;">
@@ -345,8 +357,28 @@
                 `;
                 return;
             }
-            checkTestScheduleWindow();
+            // Check if admin is logged in with persistent admin email, auto-bypass verification if needed
+            let savedAdmin = localStorage.getItem('persistent_admin_email');
+            if(localStorage.getItem('is_admin_logged_in') === 'true' && savedAdmin) {
+                currentStudentEmail = savedAdmin;
+                localStorage.setItem('current_test_user_email', savedAdmin);
+                checkTestScheduleWindow();
+            } else {
+                switchView('slide-email-login');
+            }
         };
+
+        function verifyAndProceedEmail() {
+            const emailInput = document.getElementById('student-email-input').value.trim();
+            if(typeof window.validateStudentEmailInput === 'function') {
+                if(!window.validateStudentEmailInput(emailInput)) {
+                    return;
+                }
+            }
+            currentStudentEmail = emailInput;
+            localStorage.setItem('current_test_user_email', emailInput);
+            checkTestScheduleWindow();
+        }
 
         function showToast(message) {
             const toast = document.getElementById('custom-toast');
@@ -370,7 +402,11 @@
                 activeAdminConfig = {};
             }
 
-            if(activeAdminConfig.startTime && activeAdminConfig.endTime) {
+            // Admin bypass check for schedule window
+            let savedAdmin = localStorage.getItem('persistent_admin_email');
+            let isAdmin = localStorage.getItem('is_admin_logged_in') === 'true' && currentStudentEmail.toLowerCase() === savedAdmin;
+
+            if(!isAdmin && activeAdminConfig.startTime && activeAdminConfig.endTime) {
                 const now = new Date().getTime();
                 const startTime = new Date(activeAdminConfig.startTime).getTime();
                 const endTime = new Date(activeAdminConfig.endTime).getTime();
@@ -387,6 +423,7 @@
                     return false;
                 }
             }
+            switchView('slide-instructions');
             return true;
         }
 
@@ -460,7 +497,9 @@
                         if(config.endTime) {
                             const now = new Date().getTime();
                             const endTime = new Date(config.endTime).getTime();
-                            if(now >= endTime) {
+                            let savedAdmin = localStorage.getItem('persistent_admin_email');
+                            let isAdmin = localStorage.getItem('is_admin_logged_in') === 'true' && currentStudentEmail.toLowerCase() === savedAdmin;
+                            if(!isAdmin && now >= endTime) {
                                 clearInterval(windowTimerInterval);
                                 alert("The scheduled test window has ended. Your exam is being auto-submitted.");
                                 executeFinalSubmit();
@@ -629,14 +668,16 @@
                 }
             });
 
-            let totalScore = (correctCount * 1) - (incorrectCount * 0.25);
+            // Include tab switch penalty if any
+            let securityPenalties = parseInt(localStorage.getItem('exam_security_penalties') || '0');
+            let totalScore = (correctCount * 1) - (incorrectCount * 0.25) - (securityPenalties * 1);
             let maxPossibleScore = questionsData.length * 1;
-            let penalty = (incorrectCount * 0.25).toFixed(2);
+            let penaltyTotal = ((incorrectCount * 0.25) + (securityPenalties * 1)).toFixed(2);
             let accuracy = attemptedCount > 0 ? ((correctCount / attemptedCount) * 100).toFixed(1) : 0;
 
             document.getElementById('stat-score').innerText = `${totalScore.toFixed(2)} / ${maxPossibleScore}`;
             document.getElementById('stat-correct-count').innerText = `${correctCount} / ${incorrectCount}`;
-            document.getElementById('stat-penalty').innerText = `-${penalty}`;
+            document.getElementById('stat-penalty').innerText = `-${penaltyTotal}`;
             document.getElementById('stat-accuracy').innerText = `${accuracy}%`;
 
             const analysisContainer = document.getElementById('detailed-analysis-container');
@@ -689,8 +730,8 @@
             const accuracy = document.getElementById('stat-accuracy').innerText;
             
             const feedbackPayload = {
-                candidateName: "Candidate",
-                email: "student@email.com",
+                candidateName: currentStudentEmail,
+                email: currentStudentEmail,
                 score: score,
                 accuracy: accuracy,
                 rating: currentRating,
@@ -704,12 +745,27 @@
             localStorage.setItem('admin_exam_submissions', JSON.stringify(existingRecords));
             localStorage.setItem('exam_results', JSON.stringify(existingRecords));
 
+            // Record email attempt so one email cannot give exam twice (unless admin)
+            let savedAdmin = localStorage.getItem('persistent_admin_email');
+            let isAdmin = localStorage.getItem('is_admin_logged_in') === 'true' && currentStudentEmail.toLowerCase() === savedAdmin;
+            if(!isAdmin && typeof window.recordEmailAttempt === 'function') {
+                window.recordEmailAttempt(currentStudentEmail);
+            }
+
             // Show updated Thank You Notice Popup
             document.getElementById('thankyou-modal').style.display = 'flex';
         }
 
         function lockWebsiteSession() {
-            localStorage.setItem('portal_session_locked', 'true');
+            let savedAdmin = localStorage.getItem('persistent_admin_email');
+            let isAdmin = localStorage.getItem('is_admin_logged_in') === 'true' && currentStudentEmail.toLowerCase() === savedAdmin;
+            
+            // If admin is testing, don't lock session permanently so admin can test again
+            if(!isAdmin) {
+                localStorage.setItem('portal_session_locked', 'true');
+            } else {
+                localStorage.removeItem('portal_session_locked');
+            }
             window.location.reload();
         }
     </script>
