@@ -1,15 +1,15 @@
  // ==========================================
-// NTA Exam Portal - Security & Anti-Cheating Script
+// NTA Exam Portal - Advanced Security & Anti-Cheating Script
 // ==========================================
 
 let tabSwitchCount = 0;
-let copyPasteAttempts = 0;
 let totalPenalties = 0;
+let isExamSubmitted = false;
 
-// Create and inject the warning banner dynamically if not present
+// Create and inject warning banner dynamically if not present
 function createWarningBanner() {
     if (document.getElementById("warning-banner")) return;
-    
+
     const banner = document.createElement("div");
     banner.id = "warning-banner";
     banner.style.cssText = `
@@ -26,102 +26,122 @@ function createWarningBanner() {
         font-size: 0.9rem;
         z-index: 99999;
         display: none;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     `;
-    banner.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span id="warning-msg">Security Warning!</span>`;
+    banner.innerText = "⚠️ WARNING: Tab switching or leaving the test window is strictly prohibited!";
     document.body.prepend(banner);
 }
 
-// Show security warning banner with specific message
-function showSecurityWarning(message) {
-    createWarningBanner();
-    const banner = document.getElementById("warning-banner");
-    const msgSpan = document.getElementById("warning-msg");
-    if (banner && msgSpan) {
-        msgSpan.innerText = message;
+function showSecurityWarning(msg) {
+    let banner = document.getElementById("warning-banner");
+    if (banner) {
+        banner.innerText = msg;
         banner.style.display = "block";
-        setTimeout(() => { 
-            banner.style.display = "none"; 
+        setTimeout(() => {
+            banner.style.display = "none";
         }, 4000);
     }
 }
 
-// Initialize security listeners on window load
-window.addEventListener('DOMContentLoaded', () => {
+// Security Event Listeners Setup
+document.addEventListener("DOMContentLoaded", () => {
     createWarningBanner();
+
+    // 1. Disable Right Click Context Menu
+    document.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        showSecurityWarning("⚠️ Right-click is disabled during the assessment.");
+    });
+
+    // 2. Disable Keyboard Shortcuts (F12, Inspect, Copy, Paste, Cut, Refresh, PrintScreen)
+    document.addEventListener("keydown", (e) => {
+        // F12 or Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+U
+        if (
+            e.key === "F12" ||
+            (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C")) ||
+            (e.ctrlKey && e.key === "U") ||
+            (e.ctrlKey && (e.key === "c" || e.key === "v" || e.key === "x" || e.key === "a" || e.key === "s" || e.key === "r")) ||
+            e.key === "PrintScreen"
+        ) {
+            e.preventDefault();
+            showSecurityWarning("⚠️ This shortcut or key combination is disabled during the exam.");
+            return false;
+        }
+    });
+
+    // 3. Disable Copy, Cut, Paste Actions via Mouse/Clipboard
+    document.addEventListener("copy", (e) => { e.preventDefault(); });
+    document.addEventListener("paste", (e) => { e.preventDefault(); });
+    document.addEventListener("cut", (e) => { e.preventDefault(); });
+
+    // 4. Tab Switch & Background Blur Detection Logic
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden && !isExamSubmitted) {
+            handleTabSwitchViolation();
+        }
+    });
+
+    window.addEventListener("blur", () => {
+        if (!isExamSubmitted) {
+            handleTabSwitchViolation();
+        }
+    });
 });
 
-// 1. Block Right-Click Context Menu
-document.addEventListener('contextmenu', function (e) {
-    e.preventDefault();
-    showSecurityWarning("Right-click context menu is disabled during the exam.");
-});
-
-// 2. Block Copy, Paste, and Cut Actions
-document.addEventListener('copy', function (e) {
-    e.preventDefault();
-    copyPasteAttempts++;
-    showSecurityWarning("Copying text is strictly prohibited!");
-});
-
-document.addEventListener('paste', function (e) {
-    e.preventDefault();
-    copyPasteAttempts++;
-    showSecurityWarning("Pasting text is strictly prohibited!");
-});
-
-document.addEventListener('cut', function (e) {
-    e.preventDefault();
-    showSecurityWarning("Cutting text is strictly prohibited!");
-});
-
-// 3. Detect Tab Switching / Minimizing Browser Window
-window.addEventListener('blur', function () {
+function handleTabSwitchViolation() {
     tabSwitchCount++;
-    totalPenalties++;
-    showSecurityWarning(`Warning! Tab switch detected (${tabSwitchCount}). Exam activity is strictly monitored.`);
-});
 
-// 4. Prevent Unauthorized Keyboard Shortcuts & Developer Tools
-document.addEventListener('keydown', function (e) {
-    // Disable F12 Key
-    if (e.key === 'F12') {
-        e.preventDefault();
-        showSecurityWarning("Developer tools (F12) are blocked.");
-    }
-
-    // Disable Inspect Element and View Source Combinations (Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
-    if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
-        e.preventDefault();
-        showSecurityWarning("Developer shortcuts are restricted.");
-    }
-
-    if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) {
-        e.preventDefault();
-        showSecurityWarning("Viewing page source is disabled.");
-    }
-
-    // Disable Common Shortcuts like Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+A via keyboard
-    if (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'v' || e.key === 'V' || e.key === 'x' || e.key === 'X' || e.key === 'a' || e.key === 'A')) {
-        e.preventDefault();
-        showSecurityWarning("Keyboard shortcuts for copying/selecting text are blocked.");
-    }
-});
-
-// 5. Fullscreen Enforcement Helper Functions
-function enforceFullscreen() {
-    if (!document.fullscreenElement) {
-        console.log("Candidate moved out of fullscreen mode.");
+    if (tabSwitchCount === 1) {
+        totalPenalties += 1;
+        // Save penalty state for score calculation integration if needed
+        localStorage.setItem('exam_security_penalties', totalPenalties);
+        showSecurityWarning("⚠️ Warning 1/2: Tab switch detected! 1 Mark penalty applied.");
+    } else if (tabSwitchCount >= 2) {
+        isExamSubmitted = true;
+        showSecurityWarning("🚨 Maximum tab switches reached! Auto-submitting test now.");
+        
+        // Trigger auto-submit function from main script if available
+        setTimeout(() => {
+            if (typeof executeFinalSubmit === "function") {
+                executeFinalSubmit();
+            } else {
+                localStorage.setItem('portal_session_locked', 'true');
+                window.location.reload();
+            }
+        }, 1500);
     }
 }
 
-document.addEventListener('fullscreenchange', enforceFullscreen);
-
-// Optional: Auto-request fullscreen on start if required
-function requestFullscreenMode() {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-            console.log("Fullscreen request error: ", err.message);
-        });
+// 5. Email Domain Validation Check Function
+window.validateStudentEmailInput = function(emailInput) {
+    if (!emailInput || !emailInput.includes("@")) {
+        alert("Your email not found");
+        return false;
     }
-}
+    
+    // Check if it ends with @gmail.com or has proper domain format after @
+    const parts = emailInput.trim().split("@");
+    if (parts.length !== 2 || !parts[1].includes(".")) {
+        alert("Your email not found");
+        return false;
+    }
+
+    // Check for One Email - One Attempt restriction
+    let submittedEmails = JSON.parse(localStorage.getItem('submitted_exam_emails') || '[]');
+    if (submittedEmails.includes(emailInput.trim().toLowerCase())) {
+        alert("This email has already been used to submit an exam. Only one attempt per email is allowed.");
+        return false;
+    }
+
+    return true;
+};
+
+// Record used email upon final submission
+window.recordEmailAttempt = function(emailInput) {
+    if(!emailInput) return;
+    let submittedEmails = JSON.parse(localStorage.getItem('submitted_exam_emails') || '[]');
+    if(!submittedEmails.includes(emailInput.trim().toLowerCase())) {
+        submittedEmails.push(emailInput.trim().toLowerCase());
+        localStorage.setItem('submitted_exam_emails', JSON.stringify(submittedEmails));
+    }
+};
