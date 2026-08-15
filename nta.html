@@ -145,9 +145,20 @@
     document.getElementById("student-name").innerText = studentInfo.name;
     document.getElementById("student-roll").innerText = "Roll: " + studentInfo.roll;
 
-    // Directly read exact keys typically used by your Admin panel in localStorage
-    const savedDuration = localStorage.getItem("examDuration") || localStorage.getItem("test_duration") || 5;
-    const savedLimit = localStorage.getItem("questionLimit") || localStorage.getItem("display_limit") || 5;
+    // Robust LocalStorage and URL Parameters sync for Admin settings
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    const savedDuration = urlParams.get('duration') || 
+                          localStorage.getItem("examDuration") || 
+                          localStorage.getItem("test_duration") || 
+                          localStorage.getItem("exam_duration") || 
+                          localStorage.getItem("duration") || 8;
+
+    const savedLimit = urlParams.get('limit') || 
+                       localStorage.getItem("questionLimit") || 
+                       localStorage.getItem("display_limit") || 
+                       localStorage.getItem("student_limit") || 
+                       localStorage.getItem("limit") || 8;
 
     let questionsPool = [];
     let currentIdx = 0;
@@ -163,7 +174,7 @@
         
         let allPool = Array.isArray(data) ? data : (data.questions || []);
         
-        // Slice the questions array as per Admin limit setting
+        // Slice questions array as per dynamic Limit setting
         const limit = parseInt(savedLimit);
         questionsPool = allPool.slice(0, limit);
 
