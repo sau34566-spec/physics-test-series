@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Online Assessment Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -10,16 +10,16 @@
     <script src="security.js" defer></script>
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
+            --primary: #1e3a8a;
+            --primary-dark: #1e293b;
+            --primary-accent: #3b82f6;
             --bg-dark: #0f172a;
-            --bg-card: #ffffff;
             --text-main: #1e293b;
             --danger: #ef4444;
             --success: #10b981;
             --warning: #f59e0b;
             --gray-light: #f8fafc;
-            --gray-border: #e2e8f0;
+            --gray-border: #cbd5e1;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; user-select: none; }
         body { background-color: #f1f5f9; color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -27,64 +27,66 @@
         .view-section { display: none; flex: 1; flex-direction: column; height: 100vh; width: 100%; overflow-y: auto; }
         .view-section.active { display: flex; }
 
-        /* Professional Toast / Popup Notification */
-        .toast-popup { position: fixed; top: 20px; right: 20px; background: #1e293b; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-size: 0.9rem; z-index: 1000; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--danger); transition: transform 0.3s ease; transform: translateX(120%); }
+        /* Professional Toast Popup */
+        .toast-popup { position: fixed; top: 20px; right: 20px; background: #0f172a; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-size: 0.9rem; z-index: 1000; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--danger); transition: transform 0.3s ease; transform: translateX(120%); }
         .toast-popup.show { transform: translateX(0); }
 
-        /* Slide 1: Professional Login */
-        .landing-container { display: flex; flex: 1; justify-content: center; align-items: center; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); padding: 20px; }
-        .login-card { background: white; width: 100%; max-width: 440px; padding: 40px; border-radius: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
-        .login-card h2 { font-size: 1.6rem; color: #0f172a; margin-bottom: 8px; font-weight: 700; }
+        /* Slide 1: Login */
+        .landing-container { display: flex; flex: 1; justify-content: center; align-items: center; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); padding: 15px; }
+        .login-card { background: white; width: 100%; max-width: 420px; padding: 35px 30px; border-radius: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+        .login-card h2 { font-size: 1.5rem; color: #0f172a; margin-bottom: 8px; font-weight: 700; }
         .login-card p { font-size: 0.85rem; color: #64748b; margin-bottom: 25px; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: #334155; }
-        .form-group input { width: 100%; padding: 12px 15px; border: 1px solid var(--gray-border); border-radius: 8px; font-size: 0.95rem; outline: none; transition: all 0.2s; }
-        .form-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .form-group input { width: 100%; padding: 12px 15px; border: 1px solid var(--gray-border); border-radius: 8px; font-size: 0.95rem; outline: none; }
+        .form-group input:focus { border-color: var(--primary-accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
         .btn-main { width: 100%; padding: 13px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-        .btn-main:hover { background: var(--primary-dark); }
+        .btn-main:hover { background: #1e293b; }
 
-        /* Slide 2: Highly Professional Instructions */
-        .instruction-container { flex: 1; background: var(--gray-light); padding: 40px; display: flex; justify-content: center; align-items: center; overflow-y: auto; }
-        .instruction-card { background: white; width: 100%; max-width: 850px; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--gray-border); display: flex; flex-direction: column; gap: 20px; }
+        /* Slide 2: Professional Blue Instructions Page */
+        .instruction-container { flex: 1; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); padding: 20px; display: flex; justify-content: center; align-items: center; overflow-y: auto; }
+        .instruction-card { background: white; width: 100%; max-width: 800px; padding: 35px; border-radius: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 20px; }
         .instruction-card h2 { font-size: 1.4rem; color: #0f172a; border-bottom: 2px solid var(--gray-border); padding-bottom: 12px; }
-        .instruction-content-box { font-size: 0.9rem; line-height: 1.7; color: #475569; display: flex; flex-direction: column; gap: 12px; max-height: 350px; overflow-y: auto; padding-right: 10px; }
+        .instruction-content-box { font-size: 0.9rem; line-height: 1.7; color: #475569; display: flex; flex-direction: column; gap: 12px; max-height: 320px; overflow-y: auto; padding-right: 5px; }
         .instruction-content-box ul { padding-left: 20px; }
-        .instruction-content-box li { margin-bottom: 6px; }
 
         /* Schedule Notice View */
-        .schedule-notice-box { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white; padding: 40px; text-align: center; gap: 15px; }
+        .schedule-notice-box { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white; padding: 30px; text-align: center; gap: 15px; }
         .schedule-notice-box i { font-size: 3rem; color: var(--warning); }
-        .schedule-notice-box h2 { font-size: 1.8rem; color: #0f172a; }
-        .schedule-notice-box p { color: #64748b; font-size: 1rem; max-width: 500px; }
+        .schedule-notice-box h2 { font-size: 1.6rem; color: #0f172a; }
+        .schedule-notice-box p { color: #64748b; font-size: 0.95rem; max-width: 450px; }
 
         /* Header Bar */
-        header { background-color: #0f172a; color: white; height: 65px; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 10; }
-        .header-left h1 { font-size: 1.1rem; font-weight: 600; }
-        .header-right { display: flex; align-items: center; gap: 20px; }
-        .timer-container { background: rgba(255, 255, 255, 0.1); padding: 7px 14px; border-radius: 6px; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.95rem; border: 1px solid rgba(255,255,255,0.15); }
+        header { background-color: #0f172a; color: white; height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 10; flex-shrink: 0; }
+        .header-left h1 { font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        .timer-container { background: rgba(255, 255, 255, 0.1); padding: 6px 12px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.15); }
         .timer-container i { color: var(--warning); }
-        .user-meta-info { font-size: 0.85rem; color: #cbd5e1; }
+        .user-meta-info { font-size: 0.75rem; color: #cbd5e1; display: none; }
+        @media(min-width: 768px) { .user-meta-info { display: block; } .header-left h1 { max-width: none; } }
 
-        /* Workspace Exam Interface */
-        .workspace { display: flex; flex: 1; height: calc(100vh - 65px); overflow: hidden; background: #f8fafc; }
-        .exam-main-panel { flex: 1; display: flex; flex-direction: column; padding: 25px; overflow-y: auto; gap: 20px; }
+        /* Workspace Exam Interface (Professional Blue Theme & Fully Mobile Friendly) */
+        .workspace { display: flex; flex: 1; height: calc(100vh - 60px); overflow: hidden; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); }
+        .exam-main-panel { flex: 1; display: flex; flex-direction: column; padding: 15px; overflow-y: auto; gap: 15px; max-width: 950px; margin: 0 auto; width: 100%; }
         
-        .question-card-box { background: white; border: 1px solid var(--gray-border); border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; flex-direction: column; }
-        .question-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gray-border); padding-bottom: 15px; margin-bottom: 20px; }
-        .q-meta { font-size: 0.95rem; font-weight: 600; color: #334155; }
-        .marks-info { display: flex; gap: 15px; font-size: 0.8rem; font-weight: 600; }
-        .positive-mark { color: var(--success); background: #d1fae5; padding: 3px 10px; border-radius: 4px; }
-        .negative-mark { color: var(--danger); background: #fee2e2; padding: 3px 10px; border-radius: 4px; }
-        .question-text { font-size: 1.05rem; line-height: 1.6; margin-bottom: 25px; color: #0f172a; font-weight: 500; }
-        .options-list { display: flex; flex-direction: column; gap: 12px; }
-        .option-item { display: flex; align-items: center; gap: 15px; padding: 14px 20px; border: 1px solid var(--gray-border); border-radius: 8px; cursor: pointer; transition: all 0.2s; background: white; }
-        .option-item:hover { border-color: var(--primary); background: #f8fafc; }
-        .option-item input[type="radio"] { accent-color: var(--primary); width: 18px; height: 18px; }
-        .option-item label { cursor: pointer; font-size: 0.95rem; width: 100%; color: #334155; }
+        .question-card-box { background: white; border: 1px solid var(--gray-border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
+        .question-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gray-border); padding-bottom: 12px; margin-bottom: 15px; flex-wrap: wrap; gap: 8px; }
+        .q-meta { font-size: 0.9rem; font-weight: 600; color: #334155; }
+        .marks-info { display: flex; gap: 10px; font-size: 0.75rem; font-weight: 600; }
+        .positive-mark { color: var(--success); background: #d1fae5; padding: 3px 8px; border-radius: 4px; }
+        .negative-mark { color: var(--danger); background: #fee2e2; padding: 3px 8px; border-radius: 4px; }
+        .question-text { font-size: 1rem; line-height: 1.6; margin-bottom: 20px; color: #0f172a; font-weight: 500; }
+        .options-list { display: flex; flex-direction: column; gap: 10px; }
+        .option-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; border: 1px solid var(--gray-border); border-radius: 8px; cursor: pointer; transition: all 0.2s; background: white; }
+        .option-item:hover { border-color: var(--primary-accent); background: #f8fafc; }
+        .option-item input[type="radio"] { accent-color: var(--primary); width: 18px; height: 18px; flex-shrink: 0; }
+        .option-item label { cursor: pointer; font-size: 0.9rem; width: 100%; color: #334155; }
 
-        .question-footer-btns { display: flex; justify-content: space-between; align-items: center; background: white; padding: 18px 25px; border: 1px solid var(--gray-border); border-radius: 12px; }
-        .footer-left-btns, .footer-right-btns { display: flex; gap: 12px; }
-        .btn { padding: 10px 20px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+        .question-footer-btns { display: flex; justify-content: space-between; align-items: center; background: white; padding: 12px 15px; border: 1px solid var(--gray-border); border-radius: 12px; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .footer-left-btns, .footer-right-btns { display: flex; gap: 8px; flex-wrap: wrap; width: 100%; justify-content: space-between; }
+        @media(min-width: 640px) { .footer-left-btns, .footer-right-btns { width: auto; } }
+        
+        .btn { padding: 10px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: none; display: flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap; }
         .btn-outline { background: white; border: 1px solid var(--gray-border); color: #475569; }
         .btn-outline:hover { background: var(--gray-light); }
         .btn-warning { background: var(--warning); color: white; }
@@ -92,48 +94,48 @@
         .btn-success { background: var(--success); color: white; }
         .btn-success:hover { background: #059669; }
 
-        .sidebar-section { background: white; border: 1px solid var(--gray-border); border-radius: 12px; padding: 22px; display: flex; flex-direction: column; gap: 15px; }
-        .palette-header { font-size: 0.95rem; font-weight: 600; color: #334155; border-bottom: 1px solid var(--gray-border); padding-bottom: 10px; }
-        .status-legend { display: flex; gap: 18px; font-size: 0.75rem; font-weight: 500; flex-wrap: wrap; }
-        .legend-item { display: flex; align-items: center; gap: 6px; }
-        .legend-box { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.65rem; }
+        .sidebar-section { background: white; border: 1px solid var(--gray-border); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .palette-header { font-size: 0.9rem; font-weight: 600; color: #334155; border-bottom: 1px solid var(--gray-border); padding-bottom: 8px; }
+        .status-legend { display: flex; gap: 12px; font-size: 0.7rem; font-weight: 500; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend-box { width: 15px; height: 15px; border-radius: 3px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.6rem; }
         .bg-answered { background-color: var(--success); }
         .bg-not-answered { background-color: var(--danger); }
         .bg-not-visited { background-color: #cbd5e1; color: #475569 !important; }
         .bg-marked { background-color: #8b5cf6; }
-        .palette-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 10px; max-height: 160px; overflow-y: auto; padding: 2px; }
-        .q-box { width: 42px; height: 42px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: 1px solid var(--gray-border); background: #f1f5f9; color: #334155; transition: all 0.1s; }
+        .palette-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 8px; max-height: 140px; overflow-y: auto; padding: 2px; }
+        .q-box { width: 38px; height: 38px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1px solid var(--gray-border); background: #f1f5f9; color: #334155; }
         .q-box.answered { background-color: var(--success); color: white; border-color: #059669; }
         .q-box.not-answered { background-color: var(--danger); color: white; border-color: #dc2626; }
         .q-box.marked { background-color: #8b5cf6; color: white; border-color: #7c3aed; }
-        .q-box.current { border: 2px solid var(--primary); transform: scale(1.04); }
-        .submit-exam-btn { width: 100%; padding: 13px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; }
-        .submit-exam-btn:hover { background: var(--primary-dark); }
+        .q-box.current { border: 2px solid var(--primary-accent); }
+        .submit-exam-btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+        .submit-exam-btn:hover { background: #1e293b; }
 
         /* Performance Dashboard View */
-        .dashboard-container { flex: 1; background: #f8fafc; padding: 35px; overflow-y: auto; display: flex; flex-direction: column; gap: 25px; max-width: 1000px; margin: 0 auto; width: 100%; }
-        .dash-header-card { background: white; padding: 25px; border-radius: 12px; border: 1px solid var(--gray-border); display: flex; justify-content: space-between; align-items: center; }
-        .dash-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 15px; }
-        .stat-box { background: white; padding: 22px; border-radius: 12px; border: 1px solid var(--gray-border); display: flex; flex-direction: column; gap: 6px; }
-        .stat-box span:first-child { font-size: 0.8rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
-        .stat-box span:last-child { font-size: 1.6rem; font-weight: 700; color: #0f172a; }
+        .dashboard-container { flex: 1; background: #f8fafc; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; max-width: 900px; margin: 0 auto; width: 100%; }
+        .dash-header-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--gray-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: gap; gap: 10px; }
+        .dash-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+        .stat-box { background: white; padding: 18px; border-radius: 12px; border: 1px solid var(--gray-border); display: flex; flex-direction: column; gap: 5px; }
+        .stat-box span:first-child { font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+        .stat-box span:last-child { font-size: 1.4rem; font-weight: 700; color: #0f172a; }
         
-        .analysis-section { background: white; padding: 30px; border-radius: 12px; border: 1px solid var(--gray-border); display: flex; flex-direction: column; gap: 20px; }
-        .analysis-item { padding: 18px; border: 1px solid var(--gray-border); border-radius: 10px; display: flex; flex-direction: column; gap: 10px; background: #fafafa; }
-        .analysis-item p { font-weight: 600; font-size: 0.95rem; color: #0f172a; }
+        .analysis-section { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--gray-border); display: flex; flex-direction: column; gap: 15px; }
+        .analysis-item { padding: 15px; border: 1px solid var(--gray-border); border-radius: 8px; display: flex; flex-direction: column; gap: 8px; background: #fafafa; }
+        .analysis-item p { font-weight: 600; font-size: 0.9rem; color: #0f172a; }
         
-        .feedback-section { background: white; padding: 30px; border-radius: 12px; border: 1px solid var(--gray-border); display: flex; flex-direction: column; gap: 18px; }
-        .star-rating { display: flex; gap: 8px; font-size: 1.6rem; color: #cbd5e1; cursor: pointer; }
+        .feedback-section { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--gray-border); display: flex; flex-direction: column; gap: 15px; }
+        .star-rating { display: flex; gap: 8px; font-size: 1.5rem; color: #cbd5e1; cursor: pointer; }
         .star-rating .rated { color: var(--warning); }
-        .query-box textarea { width: 100%; padding: 14px; border: 1px solid var(--gray-border); border-radius: 8px; resize: vertical; min-height: 90px; outline: none; }
+        .query-box textarea { width: 100%; padding: 12px; border: 1px solid var(--gray-border); border-radius: 8px; resize: vertical; min-height: 80px; outline: none; }
         
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 100; display: none; }
-        .modal-card { background: white; width: 420px; border-radius: 12px; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.2); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 100; display: none; padding: 15px; }
+        .modal-card { background: white; width: 100%; max-width: 400px; border-radius: 12px; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
-    <!-- Professional Toast Popup Notification -->
+    <!-- Professional Toast Popup -->
     <div id="custom-toast" class="toast-popup">
         <i class="fa-solid fa-triangle-exclamation" style="color: var(--danger); font-size: 1.1rem;"></i>
         <span id="toast-message">This email is not found or invalid format.</span>
@@ -145,11 +147,11 @@
             <i class="fa-regular fa-clock"></i>
             <h2 id="notice-title">Test Not Started Yet</h2>
             <p id="notice-desc">Please check back during the scheduled window time.</p>
-            <button class="btn btn-primary" style="width: auto; padding: 10px 25px; margin-top: 10px;" onclick="window.location.reload()">Refresh Status</button>
+            <button class="btn btn-primary" style="width: auto; padding: 10px 25px; margin-top: 10px; background: var(--primary); color: white;" onclick="window.location.reload()">Refresh Status</button>
         </div>
     </div>
 
-    <!-- SLIDE 1: LOGIN (Candidate Name & Email Only) -->
+    <!-- SLIDE 1: LOGIN -->
     <div id="slide-login" class="view-section active">
         <div class="landing-container">
             <div class="login-card">
@@ -168,7 +170,7 @@
         </div>
     </div>
 
-    <!-- SLIDE 2: PROFESSIONAL INSTRUCTIONS -->
+    <!-- SLIDE 2: PROFESSIONAL BLUE INSTRUCTIONS PAGE -->
     <div id="slide-instructions" class="view-section">
         <div class="instruction-container">
             <div class="instruction-card">
@@ -194,22 +196,22 @@
     <!-- Ready Confirmation Modal -->
     <div class="modal-overlay" id="ready-modal">
         <div class="modal-card">
-            <div style="background: #0f172a; color: white; padding: 16px 20px; font-weight: 600; font-size: 1rem;">Confirmation Required</div>
-            <div style="padding: 20px; font-size: 0.95rem; color: #334155; line-height: 1.5;">
+            <div style="background: #0f172a; color: white; padding: 15px 20px; font-weight: 600; font-size: 0.95rem;">Confirmation Required</div>
+            <div style="padding: 20px; font-size: 0.9rem; color: #334155; line-height: 1.5;">
                 Are you ready to begin the test? Once started, the timer cannot be paused.
             </div>
-            <div style="padding: 15px 20px; display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; border-top: 1px solid var(--gray-border);">
+            <div style="padding: 12px 20px; display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; border-top: 1px solid var(--gray-border);">
                 <button class="btn btn-outline" onclick="closeReadyModal()">Cancel</button>
                 <button class="btn btn-success" onclick="startExamPortalSession()">I am Ready, Start</button>
             </div>
         </div>
     </div>
 
-    <!-- SLIDE 3: EXAM INTERFACE -->
+    <!-- SLIDE 3: EXAM INTERFACE (Professional Blue Theme) -->
     <div id="slide-exam" class="view-section">
         <header>
             <div class="header-left">
-                <h1>Online Assessment Portal</h1>
+                <h1>Assessment Portal</h1>
             </div>
             <div class="header-right">
                 <div class="user-meta-info" id="header-user-display">Candidate</div>
@@ -241,10 +243,10 @@
                 <!-- 2. Buttons Just Below Question Box -->
                 <div class="question-footer-btns">
                     <div class="footer-left-btns">
-                        <button class="btn btn-outline" onclick="markForReviewAndNext()"><i class="fa-solid fa-bookmark"></i> Mark for Review & Next</button>
-                        <button class="btn btn-outline" onclick="clearResponse()">Clear Response</button>
+                        <button class="btn btn-outline" onclick="markForReviewAndNext()"><i class="fa-solid fa-bookmark"></i> Review</button>
+                        <button class="btn btn-outline" onclick="clearResponse()">Clear</button>
                     </div>
-                    <div class="footer-right-btns">
+                    <div class="footer-right-btns" style="justify-content: flex-end;">
                         <button class="btn btn-warning" onclick="saveAndNext()"><i class="fa-solid fa-arrow-right"></i> Save & Next</button>
                     </div>
                 </div>
@@ -253,10 +255,10 @@
                 <div class="sidebar-section">
                     <div class="palette-header">Question Palette</div>
                     <div class="status-legend">
-                        <div class="legend-item"><div class="legend-box bg-answered" id="leg-ans">0</div> Answered</div>
-                        <div class="legend-item"><div class="legend-box bg-not-answered" id="leg-not-ans">0</div> Not Answered</div>
-                        <div class="legend-item"><div class="legend-box bg-not-visited" id="leg-not-vis">0</div> Not Visited</div>
-                        <div class="legend-item"><div class="legend-box bg-marked" id="leg-marked">0</div> Marked for Review</div>
+                        <div class="legend-item"><div class="legend-box bg-answered" id="leg-ans">0</div> Ans</div>
+                        <div class="legend-item"><div class="legend-box bg-not-answered" id="leg-not-ans">0</div> Not Ans</div>
+                        <div class="legend-item"><div class="legend-box bg-not-visited" id="leg-not-vis">0</div> Unvisited</div>
+                        <div class="legend-item"><div class="legend-box bg-marked" id="leg-marked">0</div> Review</div>
                     </div>
                     <div class="palette-grid" id="palette-grid"></div>
                     <button class="submit-exam-btn" onclick="openSubmitModal()">Submit Test</button>
@@ -270,22 +272,22 @@
     <div id="slide-dashboard" class="view-section">
         <header>
             <div class="header-left">
-                <h1>Performance Scorecard & Detailed Analysis</h1>
+                <h1>Performance Scorecard</h1>
             </div>
         </header>
         <div class="dashboard-container">
             <div class="dash-header-card">
                 <div>
-                    <h2 id="dash-candidate-name" style="font-size: 1.2rem; color: #0f172a;">Candidate Name</h2>
-                    <p id="dash-candidate-email" style="font-size: 0.85rem; color: #64748b;">Email: -</p>
+                    <h2 id="dash-candidate-name" style="font-size: 1.1rem; color: #0f172a;">Candidate Name</h2>
+                    <p id="dash-candidate-email" style="font-size: 0.8rem; color: #64748b;">Email: -</p>
                 </div>
-                <div style="background: #d1fae5; color: var(--success); padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.85rem;">Test Submitted Successfully</div>
+                <div style="background: #d1fae5; color: var(--success); padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.8rem;">Submitted</div>
             </div>
 
             <div class="dash-stats-grid">
                 <div class="stat-box"><span>Total Score</span><span id="stat-score">0 / 0</span></div>
-                <div class="stat-box"><span>Correct / Incorrect</span><span id="stat-correct-count" style="font-size: 1.4rem;">0 / 0</span></div>
-                <div class="stat-box"><span>Penalty Deducted</span><span id="stat-penalty" style="color: var(--danger);">0</span></div>
+                <div class="stat-box"><span>Correct / Incorrect</span><span id="stat-correct-count" style="font-size: 1.2rem;">0 / 0</span></div>
+                <div class="stat-box"><span>Penalty</span><span id="stat-penalty" style="color: var(--danger);">0</span></div>
                 <div class="stat-box"><span>Accuracy</span><span id="stat-accuracy">0%</span></div>
             </div>
 
@@ -312,7 +314,7 @@
                     <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 8px;">Doubts & Queries</label>
                     <textarea id="user-query-text" placeholder="Write any query or feedback here..."></textarea>
                 </div>
-                <button class="btn btn-success" style="align-self: flex-start; padding: 12px 24px;" onclick="submitFinalFeedbackData()">Save Data to Admin Storage</button>
+                <button class="btn btn-success" style="align-self: flex-start; padding: 12px 20px;" onclick="submitFinalFeedbackData()">Save Data to Admin Storage</button>
             </div>
         </div>
     </div>
@@ -320,12 +322,12 @@
     <!-- Submit Modal Confirmation -->
     <div class="modal-overlay" id="submit-modal">
         <div class="modal-card">
-            <div style="background: #0f172a; color: white; padding: 16px 20px; font-weight: 600; font-size: 1rem;">Confirm Exam Submission</div>
-            <div style="padding: 20px; font-size: 0.95rem; color: #334155;">
+            <div style="background: #0f172a; color: white; padding: 15px 20px; font-weight: 600; font-size: 0.95rem;">Confirm Exam Submission</div>
+            <div style="padding: 20px; font-size: 0.9rem; color: #334155;">
                 Are you sure you want to submit your test?
             </div>
-            <div style="padding: 15px 20px; display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; border-top: 1px solid var(--gray-border);">
-                <button class="btn btn-outline" onclick="closeSubmitModal()">Resume Test</button>
+            <div style="padding: 12px 20px; display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; border-top: 1px solid var(--gray-border);">
+                <button class="btn btn-outline" onclick="closeSubmitModal()">Resume</button>
                 <button class="btn btn-success" onclick="executeFinalSubmit()">Yes, Submit</button>
             </div>
         </div>
@@ -336,13 +338,12 @@
         let currentQuestionIndex = 0;
         let userResponses = [];
         let visitStatus = [];
-        let totalSeconds = 1800; // default 30 mins
+        let totalSeconds = 1800; 
         let timerInterval = null;
         let windowTimerInterval = null;
         let currentRating = 0;
         let activeAdminConfig = {};
 
-        // Fallback default questions if none set in admin panel
         const defaultQuestions = [
             { q: "A particle moves in a straight line with deceleration proportional to its displacement. Its loss of kinetic energy is proportional to:", options: ["x", "x^2", "ln(x)", "e^x"], answer: 1 },
             { q: "The magnetic field at the center of a circular coil of radius R carrying current I is B. Magnetic field on axis at distance R is:", options: ["B / 2", "B / 2√2", "B / 2√3", "B / 4"], answer: 1 }
@@ -366,16 +367,15 @@
             document.getElementById(viewId).classList.add('active');
         }
 
-        // Check window start & end schedule from admin settings
         function checkTestScheduleWindow() {
-            let adminSettingsStr = localStorage.getItem('admin_test_config') || localStorage.getItem('admin_settings');
+            // FIX: Robust sync with admin settings keys
+            let adminSettingsStr = localStorage.getItem('admin_test_config') || localStorage.getItem('admin_settings') || localStorage.getItem('test_settings');
             try {
                 activeAdminConfig = adminSettingsStr ? JSON.parse(adminSettingsStr) : {};
             } catch(e) {
                 activeAdminConfig = {};
             }
 
-            // If start/end times are configured
             if(activeAdminConfig.startTime && activeAdminConfig.endTime) {
                 const now = new Date().getTime();
                 const startTime = new Date(activeAdminConfig.startTime).getTime();
@@ -383,7 +383,7 @@
 
                 if(now < startTime) {
                     document.getElementById('notice-title').innerText = "Test Not Started Yet";
-                    document.getElementById('notice-desc').innerText = `Scheduled Start Time: ${new Date(activeAdminConfig.startTime).toLocaleString()}. Please visit when the window opens.`;
+                    document.getElementById('notice-desc').innerText = `Scheduled Start Time: ${new Date(activeAdminConfig.startTime).toLocaleString()}.`;
                     switchView('slide-schedule-notice');
                     return false;
                 } else if(now > endTime) {
@@ -407,14 +407,12 @@
                 return;
             }
 
-            // Professional Email validation for "@email.com" or general format
             if(!email.endsWith('@email.com') && !email.includes('@')) {
                 showToast("This email not found or invalid format. Must include @email.com");
                 return;
             }
 
-            // Check if student already gave test using this email
-            let submittedRecords = JSON.parse(localStorage.getItem('admin_exam_submissions') || '[]');
+            let submittedRecords = JSON.parse(localStorage.getItem('admin_exam_submissions') || localStorage.getItem('exam_results') || '[]');
             const alreadyGiven = submittedRecords.some(record => record.email && record.email.toLowerCase() === email.toLowerCase());
             
             if(alreadyGiven) {
@@ -441,8 +439,8 @@
         async function startExamPortalSession() {
             closeReadyModal();
 
-            // Load configuration and questions from admin panel storage or chapter json
-            let adminQuestions = localStorage.getItem('admin_live_questions') || localStorage.getItem('admin_questions');
+            // FIX: Read admin panel questions robustly from multiple possible keys used by admin.html
+            let adminQuestions = localStorage.getItem('admin_live_questions') || localStorage.getItem('admin_questions') || localStorage.getItem('questions');
             if(adminQuestions) {
                 try {
                     questionsData = JSON.parse(adminQuestions);
@@ -462,7 +460,10 @@
                 }
             }
 
-            // Apply admin question count limit if specified
+            if(!questionsData || questionsData.length === 0) {
+                questionsData = defaultQuestions;
+            }
+
             if(activeAdminConfig.questionCount && !isNaN(activeAdminConfig.questionCount)) {
                 let limit = parseInt(activeAdminConfig.questionCount);
                 if(limit > 0 && limit < questionsData.length) {
@@ -470,11 +471,10 @@
                 }
             }
 
-            // Apply admin duration timer if specified (in minutes or seconds)
             if(activeAdminConfig.testDuration && !isNaN(activeAdminConfig.testDuration)) {
                 totalSeconds = parseInt(activeAdminConfig.testDuration) * 60;
             } else {
-                totalSeconds = questionsData.length * 120; // 2 mins per question default
+                totalSeconds = questionsData.length * 120;
             }
 
             userResponses = new Array(questionsData.length).fill(null);
@@ -490,7 +490,6 @@
         }
 
         function startWindowEndWatcher() {
-            // Auto submit if overall test window schedule ends while exam is running
             clearInterval(windowTimerInterval);
             windowTimerInterval = setInterval(() => {
                 let adminSettingsStr = localStorage.getItem('admin_test_config') || localStorage.getItem('admin_settings');
@@ -513,7 +512,7 @@
 
         function renderQuestion() {
             const qData = questionsData[currentQuestionIndex];
-            document.getElementById('question-indicator').innerText = `Question No. ${currentQuestionIndex + 1} of ${questionsData.length}`;
+            document.getElementById('question-indicator').innerText = `Q. ${currentQuestionIndex + 1} of ${questionsData.length}`;
             document.getElementById('question-content').innerText = qData.q || qData.question;
             
             const optionsContainer = document.getElementById('options-container');
@@ -647,6 +646,7 @@
             clearInterval(timerInterval);
             clearInterval(windowTimerInterval);
             closeSubmitModal();
+            // FIX: Ensure dashboard view is explicitly called and switched instantly
             buildPerformanceDashboard();
             switchView('slide-dashboard');
         }
@@ -682,10 +682,9 @@
 
             document.getElementById('stat-score').innerText = `${totalScore} / ${maxPossibleScore}`;
             document.getElementById('stat-correct-count').innerText = `${correctCount} / ${incorrectCount}`;
-            document.getElementById('stat-penalty').innerText = `-${penalty} Marks`;
+            document.getElementById('stat-penalty').innerText = `-${penalty}`;
             document.getElementById('stat-accuracy').innerText = `${accuracy}%`;
 
-            // Detailed Question Analysis with Correct Answer & Color Twist
             const analysisContainer = document.getElementById('detailed-analysis-container');
             analysisContainer.innerHTML = '';
 
@@ -699,7 +698,6 @@
                 const userAnsText = isAttempted ? `(${String.fromCharCode(65 + userAns)}) ${opts[userAns] || ''}` : "Not Answered";
                 const correctAnsText = `(${String.fromCharCode(65 + correctAnsIdx)}) ${opts[correctAnsIdx] || ''}`;
                 
-                // Color twist: Green if matching, Red if not matching
                 const userAnsColor = isCorrect ? 'color: var(--success); font-weight: 700;' : 'color: var(--danger); font-weight: 700;';
 
                 const item = document.createElement('div');
@@ -714,7 +712,6 @@
                 analysisContainer.appendChild(item);
             });
 
-            // Automatically save data to admin storage so admin.html receives it
             saveSubmissionToAdminStorage(name, email, totalScore, accuracy, correctCount, incorrectCount);
         }
 
@@ -743,12 +740,11 @@
                 timestamp: new Date().toISOString()
             };
 
-            let existingRecords = JSON.parse(localStorage.getItem('admin_exam_submissions') || '[]');
-            // Avoid duplicate pushes for same email
+            let existingRecords = JSON.parse(localStorage.getItem('admin_exam_submissions') || localStorage.getItem('exam_results') || '[]');
             existingRecords = existingRecords.filter(r => r.email.toLowerCase() !== email.toLowerCase());
             existingRecords.push(feedbackPayload);
             
-            // Save to multiple storage keys to guarantee admin.html catches it
+            // FIX: Save under all possible keys so admin.html retrieves it seamlessly
             localStorage.setItem('admin_exam_submissions', JSON.stringify(existingRecords));
             localStorage.setItem('exam_results', JSON.stringify(existingRecords));
         }
@@ -760,7 +756,7 @@
             const accuracy = document.getElementById('stat-accuracy').innerText;
             
             saveSubmissionToAdminStorage(name, email, score, accuracy, 0, 0);
-            showToast("Feedback and result data successfully synced to Admin records!");
+            showToast("Feedback and score successfully synced to Admin records!");
         }
     </script>
 </body>
