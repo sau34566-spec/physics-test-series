@@ -51,7 +51,6 @@
     .btn-palette.bg-not-answered { background: #c62828; color: white; border-color: #c62828; }
     .btn-palette.bg-review { background: #6a1b9a; color: white; border-color: #6a1b9a; }
 
-    /* Action bar options ke just niche positioned */
     .action-bar { border-top: 1px solid #e2e8f0; padding-top: 15px; background: transparent; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
     .btn { padding: 10px 14px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; }
     .btn-save { background: #2e7d32; color: white; }
@@ -59,14 +58,12 @@
     .btn-clear { background: #d32f2f; color: white; }
     .btn-submit { background: #003366; color: white; width: 100%; margin-top: 10px; }
 
-    /* Professional Custom Modal Overlay */
     #custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center; }
     .modal-card { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
     .modal-card h3 { color: #003366; margin-bottom: 10px; font-size: 18px; }
     .modal-card p { color: #475569; font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
     .modal-btns { display: flex; gap: 10px; justify-content: center; }
 
-    /* Performance Dashboard Slide View Overlay */
     #dashboard-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f6f9; z-index: 9999; overflow-y: auto; justify-content: center; padding: 20px; }
     .dashboard-card { background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 800px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin: auto; }
     .dashboard-card h2 { color: #003366; margin-bottom: 20px; text-align: center; }
@@ -78,7 +75,6 @@
 </head>
 <body>
 
-  <!-- Professional Custom Alert Modal -->
   <div id="custom-modal">
     <div class="modal-card">
       <h3 id="modal-title">Notification</h3>
@@ -100,11 +96,9 @@
       <div>
         <div class="q-header" id="question-number-title">Question No. 1</div>
         <div class="q-text" id="question-text">Loading question content...</div>
-        
         <div class="options-list" id="options-container"></div>
       </div>
 
-      <!-- Action Bar options ke just niche positioned -->
       <div class="action-bar">
         <div>
           <button class="btn btn-save" onclick="saveAndNext()">Save & Next</button>
@@ -139,7 +133,6 @@
     </div>
   </div>
 
-  <!-- Performance Dashboard Slide View Overlay -->
   <div id="dashboard-overlay">
     <div class="dashboard-card">
       <h2>Exam Performance & Analysis</h2>
@@ -163,16 +156,13 @@
         </div>
       </div>
 
-      <!-- Penalty Reason Note -->
       <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; color: #92400e; text-align: left;">
         <strong>Note:</strong> Penalty marks were applied due to incorrect answers / negative marking rules or security violations during the test.
       </div>
 
-      <!-- Question Analysis Section -->
       <h3 style="margin-bottom: 10px; font-size: 16px; color: #003366; text-align: left;">Detailed Question Analysis</h3>
       <div id="analysis-questions-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; text-align: left; padding-right: 5px;"></div>
 
-      <!-- Mandatory Star Feedback Section -->
       <div style="border-top: 1px solid #e2e8f0; padding-top: 15px; text-align: left; margin-bottom: 15px;">
         <label style="display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px;">Rate Your Experience (Mandatory):</label>
         <div id="star-rating" style="display: flex; gap: 8px; cursor: pointer; font-size: 26px; color: #d1d5db;">
@@ -184,7 +174,6 @@
         </div>
       </div>
 
-      <!-- Doubt / Query Box Section -->
       <div style="text-align: left; margin-bottom: 20px;">
         <label style="display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px;">Any Doubts or Queries (Optional):</label>
         <textarea id="student-query" placeholder="Write your feedback or doubts here..." style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; height: 70px; font-family: 'Roboto', sans-serif; outline: none;"></textarea>
@@ -193,6 +182,26 @@
       <button class="btn btn-submit" style="width: 100%; padding: 12px; font-size: 15px;" onclick="finalSubmitFeedback()">Submit Feedback & Finish</button>
     </div>
   </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
+      authDomain: "physics-test-series-405c7.firebaseapp.com",
+      projectId: "physics-test-series-405c7",
+      storageBucket: "physics-test-series-405c7.firebasestorage.app",
+      messagingSenderId: "758620061190",
+      appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db;
+    window.setDoc = setDoc;
+    window.doc = doc;
+  </script>
 
   <script>
     window.showCustomAlert = function(title, message, callback) {
@@ -230,7 +239,6 @@
     document.getElementById("student-name").innerText = studentInfo.name;
     document.getElementById("student-roll").innerText = "Roll: " + studentInfo.roll;
 
-    // Single attempt verification check on load
     if (typeof window.verifySingleAttempt === 'function') {
       window.verifySingleAttempt(studentInfo.email || studentInfo.roll);
     }
@@ -251,7 +259,6 @@
     let questionStatus = {};
     let timeLeftSeconds = parseInt(savedDuration) * 60;
 
-    // Fisher-Yates Shuffle Algorithm for Randomizing Questions & Options
     function shuffleArray(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -267,14 +274,11 @@
         const data = await response.json();
         
         let allPool = Array.isArray(data) ? data : (data.questions || []);
-        
-        // Randomize questions sequence for uniqueness
         shuffleArray(allPool);
 
         const limit = parseInt(savedLimit);
         questionsPool = allPool.slice(0, limit);
 
-        // Randomize options for each question
         questionsPool.forEach(q => {
           if (q.options && Array.isArray(q.options)) {
             shuffleArray(q.options);
@@ -369,7 +373,6 @@
       renderQuestion(currentIdx);
     };
 
-    // Tab switch penalty trigger integration for security.js
     window.applyTabSwitchPenalty = function() {
       if (currentIdx < questionsPool.length - 1) {
         renderQuestion(currentIdx + 1);
@@ -435,7 +438,7 @@
       });
     };
 
-    function submitExam() {
+    async function submitExam() {
       window.isTestSubmitted = true;
       
       let score = 0;
@@ -453,29 +456,43 @@
       });
 
       const finalScore = Math.max(0, score - penaltyMarks);
+      const studentId = (studentInfo.roll || studentInfo.email || "student").replace(/[^a-zA-Z0-9]/g, "_");
 
-      // Save submission data into localStorage for Admin Panel Sync
       const submissionRecord = {
         name: studentInfo.name,
         roll: studentInfo.roll,
         email: studentInfo.email || studentInfo.roll,
-        score: finalScore.toFixed(2),
+        score: `${finalScore.toFixed(2)} / ${questionsPool.length}`,
+        scoreVal: finalScore,
         correct: score,
         total: questionsPool.length,
         penalty: penaltyMarks.toFixed(2),
-        timestamp: new Date().toLocaleString()
+        tabSwitches: window.tabSwitchCount || 0,
+        copiesAttempted: window.copyAttemptCount || 0,
+        penaltiesApplied: penaltyMarks.toFixed(2),
+        timestamp: new Date().toISOString(),
+        submittedAt: new Date().toISOString()
       };
 
+      // Save to localStorage for instant backup
       let allSubmissions = JSON.parse(localStorage.getItem("exam_submissions")) || [];
       allSubmissions = allSubmissions.filter(item => item.roll !== studentInfo.roll);
       allSubmissions.push(submissionRecord);
       localStorage.setItem("exam_submissions", JSON.stringify(allSubmissions));
 
+      // Save to Firebase Firestore so Admin Panel receives it instantly
+      try {
+        if (window.db && window.setDoc && window.doc) {
+          await window.setDoc(window.doc(window.db, "results", studentId), submissionRecord);
+        }
+      } catch (err) {
+        console.error("Firebase sync error during submission:", err);
+      }
+
       if (typeof window.markEmailAsSubmitted === 'function') {
         window.markEmailAsSubmitted(studentInfo.email || studentInfo.roll);
       }
 
-      // Populate Performance Dashboard View
       document.getElementById("dash-name").innerText = studentInfo.name;
       document.getElementById("dash-score").innerText = `${finalScore.toFixed(2)} / ${questionsPool.length}`;
       document.getElementById("dash-correct").innerText = `${score} Correct`;
@@ -515,6 +532,20 @@
       if (selectedRating === 0) {
         showCustomAlert("Feedback Required", "Please select a star rating before submitting feedback.");
         return;
+      }
+
+      // Append feedback to local and Firebase record if needed
+      const studentId = (studentInfo.roll || studentInfo.email || "student").replace(/[^a-zA-Z0-9]/g, "_");
+      let allSubmissions = JSON.parse(localStorage.getItem("exam_submissions")) || [];
+      let sub = allSubmissions.find(item => item.roll === studentInfo.roll);
+      if (sub) {
+        sub.feedback = `Rating: ${selectedRating}★ | Query: ${document.getElementById("student-query").value.trim()}`;
+        localStorage.setItem("exam_submissions", JSON.stringify(allSubmissions));
+        try {
+          if (window.db && window.setDoc && window.doc) {
+            window.setDoc(window.doc(window.db, "results", studentId), sub, { merge: true });
+          }
+        } catch(e) {}
       }
 
       showCustomAlert("Thank You!", "Thank you for attempting test! Your response has been recorded successfully.", () => {
