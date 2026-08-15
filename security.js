@@ -85,10 +85,11 @@ document.addEventListener('visibilitychange', () => {
                 window.nextQuestion(); 
             }
 
-            triggerCustomModal("Security Warning #1", "Aapne tab switch ya minimize kiya hai! Penalty ke taur par aapka current question badal kar pool se naya question de diya gaya hai aur score se 1 mark (-1) deduct kar liya gaya hai. Dobara tab switch karne par test automatically submit ho jayega.");
+            // Updated Warning Message (English & Removed question change reference)
+            triggerCustomModal("Security Warning #1", "Tab switch or minimization detected! Penalty applied: 1 mark deducted. Further tab switches will result in automatic submission.");
             
         } else if (tabSwitchCount >= 2) {
-            triggerCustomModal("Security Warning #2", "Aapne fir se tab switch kiya hai! Rule todne ke karan aapka test ab automatically submit kiya ja raha hai.", () => {
+            triggerCustomModal("Security Warning #2", "Tab switch detected again! Your test is being automatically submitted due to rules violation.", () => {
                 if (typeof window.submitExam === 'function') {
                     window.submitExam();
                 } else {
