@@ -63,21 +63,32 @@ document.addEventListener('paste', (e) => {
 
 document.addEventListener('cut', (e) => e.preventDefault());
 
-// 4. Refresh & Page Reload Lock
+// 4. Refresh & Page Reload Complete Lock (Without Confirmation Pop-up)
 window.addEventListener('beforeunload', (e) => {
-    e.preventDefault();
-    e.returnValue = "Warning: Refreshing or leaving the page will affect your exam!";
-    return e.returnValue;
+    // Agar test submit ho chuka hai tab reload allow karein, warna block karein
+    if (!window.isTestSubmitted) {
+        e.preventDefault();
+        e.returnValue = ""; 
+    }
 });
 
-// 5. Tab Switch Detection
+// 5. Tab Switch Detection (Updated: -1 mark + Question Change + Auto Submit on 2nd switch)
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         tabSwitchCount++;
         
         if (tabSwitchCount === 1) {
             penaltiesApplied += 1;
-            triggerCustomModal("Security Warning #1", "Aapne tab switch ya minimize kiya hai! Aapke test score se 1 mark (-1) deduct kar liya gaya hai. Dobara tab switch karne par test automatically submit ho jayega.");
+            
+            // `-1` mark penalty lagane ke sath question bhi change/skip karne ka function call
+            if (typeof window.applyTabSwitchPenalty === 'function') {
+                window.applyTabSwitchPenalty(); 
+            } else if (typeof window.nextQuestion === 'function') {
+                window.nextQuestion(); // Fallback to next question
+            }
+
+            triggerCustomModal("Security Warning #1", "Aapne tab switch ya minimize kiya hai! Aapke test score se 1 mark (-1) deduct kar liya gaya hai aur agla question load kar diya gaya hai. Dobara tab switch karne par test automatically submit ho jayega.");
+            
         } else if (tabSwitchCount >= 2) {
             triggerCustomModal("Security Warning #2", "Aapne fir se tab switch kiya hai! Rule todne ke karan aapka test ab automatically submit kiya ja raha hai.", () => {
                 if (typeof window.submitExam === 'function') {
@@ -98,9 +109,9 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 
-    if ((e.ctrlKey && e.key === 'r') || (e.metaKey && e.key === 'r')) {
+    if ((e.ctrlKey && e.key === 'r') || (e.metaKey && e.key === 'r') || e.key === 'F5') {
         e.preventDefault();
-        triggerCustomModal("Action Blocked", "Page reload is disabled during the exam!");
+        triggerCustomModal("Action Blocked", "Page reload is completely locked during the exam!");
         return;
     }
 
