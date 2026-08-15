@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -145,20 +145,30 @@
     document.getElementById("student-name").innerText = studentInfo.name;
     document.getElementById("student-roll").innerText = "Roll: " + studentInfo.roll;
 
-    // Robust LocalStorage and URL Parameters sync for Admin settings
+    // Load configuration seamlessly from Admin LocalStorage configuration payload
+    let examConfig = {};
+    try {
+      const rawConfig = localStorage.getItem("exam_config") || localStorage.getItem("test_settings");
+      if (rawConfig) examConfig = JSON.parse(rawConfig);
+    } catch(e) { console.error(e); }
+
     const urlParams = new URLSearchParams(window.location.search);
     
+    // Synced configuration keys with admin panel payload
     const savedDuration = urlParams.get('duration') || 
+                          examConfig.examDurationMinutes || 
                           localStorage.getItem("examDuration") || 
                           localStorage.getItem("test_duration") || 
                           localStorage.getItem("exam_duration") || 
-                          localStorage.getItem("duration") || 8;
+                          localStorage.getItem("duration") || 60;
 
     const savedLimit = urlParams.get('limit') || 
+                       examConfig.studentLimit || 
+                       examConfig.questions_per_student || 
                        localStorage.getItem("questionLimit") || 
                        localStorage.getItem("display_limit") || 
                        localStorage.getItem("student_limit") || 
-                       localStorage.getItem("limit") || 8;
+                       localStorage.getItem("limit") || 20;
 
     let questionsPool = [];
     let currentIdx = 0;
@@ -174,7 +184,7 @@
         
         let allPool = Array.isArray(data) ? data : (data.questions || []);
         
-        // Slice questions array as per dynamic Limit setting
+        // Slice questions array as per dynamic Limit setting from admin config
         const limit = parseInt(savedLimit);
         questionsPool = allPool.slice(0, limit);
 
