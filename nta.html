@@ -1,495 +1,856 @@
- <!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Online Test Series | Exam Portal</title>
-  
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <style>
-    :root {
-      --primary: #1e3a8a;
-      --primary-accent: #3b82f6;
-      --bg-dark: #0f172a;
-      --bg-card: #ffffff;
-      --text-main: #1e293b;
-      --danger: #ef4444;
-      --success: #10b981;
-      --warning: #f59e0b;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Test Series | NTA Exam Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-accent: #3b82f6;
+            --bg-dark: #0f172a;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --gray-light: #f1f5f9;
+            --gray-border: #cbd5e1;
+        }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
-      user-select: none;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
 
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      min-height: 100vh;
-      padding: 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+        body {
+            background-color: #f8fafc;
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
 
-    .test-container {
-      background: var(--bg-card);
-      width: 100%;
-      max-width: 800px;
-      padding: 2.5rem;
-      border-radius: 16px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-      position: relative;
-    }
+        /* Top Navigation Bar */
+        header {
+            background-color: var(--primary);
+            color: white;
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
 
-    .exam-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #e2e8f0;
-      padding-bottom: 1rem;
-      margin-bottom: 1.5rem;
-    }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-    .student-badge {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--primary);
-    }
+        .header-left h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
 
-    .timer-box {
-      background: #fee2e2;
-      color: #991b1b;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 1.1rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+        .exam-badge {
+            background-color: var(--primary-accent);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
 
-    .question-box {
-      margin-bottom: 1.5rem;
-    }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
 
-    .question-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 1rem;
-      line-height: 1.5;
-    }
+        .timer-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
 
-    .options-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 2rem;
-    }
+        .timer-container i {
+            color: var(--warning);
+        }
 
-    .option-label {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      background: #f8fafc;
-      border: 2px solid #e2e8f0;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-weight: 500;
-    }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-    .option-label:hover {
-      background: #f1f5f9;
-      border-color: var(--primary-accent);
-    }
+        .user-profile img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid white;
+            object-fit: cover;
+        }
 
-    .option-label input {
-      accent-color: var(--primary-accent);
-      width: 18px;
-      height: 18px;
-    }
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
 
-    .exam-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 2px solid #e2e8f0;
-      padding-top: 1.5rem;
-    }
+        .user-info span:first-child {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
 
-    .btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
+        .user-info span:last-child {
+            font-size: 0.7rem;
+            color: #93c5fd;
+        }
 
-    .btn:hover {
-      background: #1e40af;
-    }
+        /* Main Workspace */
+        .workspace {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
 
-    .btn-danger {
-      background: var(--danger);
-    }
+        /* Left Question Area */
+        .question-section {
+            flex: 1;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--gray-border);
+            overflow-y: auto;
+        }
 
-    .btn-danger:hover {
-      background: #dc2626;
-    }
+        .subject-tabs {
+            display: flex;
+            background: var(--gray-light);
+            border-bottom: 1px solid var(--gray-border);
+            padding: 0 20px;
+            gap: 10px;
+        }
 
-    /* Custom Modal */
-    .custom-modal-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(4px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 99999;
-    }
+        .sub-tab {
+            padding: 12px 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
 
-    .custom-modal-card {
-      background: white;
-      padding: 2rem;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-    }
+        .sub-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: white;
+        }
 
-    .custom-modal-card h3 {
-      color: var(--primary);
-      margin-bottom: 0.75rem;
-      font-size: 1.3rem;
-    }
+        .question-header {
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--gray-light);
+            background: #fafafa;
+        }
 
-    .custom-modal-card p {
-      color: #64748b;
-      font-size: 0.95rem;
-      margin-bottom: 1.5rem;
-      line-height: 1.4;
-    }
-  </style>
+        .q-meta {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .marks-info {
+            display: flex;
+            gap: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .positive-mark {
+            color: var(--success);
+            background: #d1fae5;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .negative-mark {
+            color: var(--danger);
+            background: #fee2e2;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .question-body {
+            padding: 25px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .question-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #0f172a;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 18px;
+            border: 1px solid var(--gray-border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .option-item:hover {
+            border-color: var(--primary-accent);
+            background: #f8fafc;
+        }
+
+        .option-item input[type="radio"] {
+            accent-color: var(--primary);
+            width: 18px;
+            height: 18px;
+        }
+
+        .option-item label {
+            cursor: pointer;
+            font-size: 0.95rem;
+            width: 100%;
+        }
+
+        /* Question Footer Controls */
+        .question-footer {
+            padding: 15px 25px;
+            border-top: 1px solid var(--gray-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+        }
+
+        .footer-left-btns, .footer-right-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid var(--gray-border);
+            color: #475569;
+        }
+
+        .btn-outline:hover {
+            background: var(--gray-light);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e293b;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        /* Right Panel: Palette & Summary */
+        .sidebar-section {
+            width: 340px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--gray-border);
+        }
+
+        .palette-header {
+            padding: 15px 20px;
+            background: var(--gray-light);
+            border-bottom: 1px solid var(--gray-border);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .status-legend {
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            border-bottom: 1px solid var(--gray-border);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-box {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.7rem;
+        }
+
+        .bg-answered { background-color: var(--success); }
+        .bg-not-answered { background-color: var(--danger); }
+        .bg-not-visited { background-color: #e2e8f0; color: #475569 !important; }
+        .bg-marked { background-color: #8b5cf6; }
+
+        .palette-grid-container {
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .palette-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        .q-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
+            background: #e2e8f0;
+            color: #334155;
+            transition: all 0.1s;
+        }
+
+        .q-box.answered {
+            background-color: var(--success);
+            color: white;
+            border-color: #059669;
+        }
+
+        .q-box.not-answered {
+            background-color: var(--danger);
+            color: white;
+            border-color: #dc2626;
+        }
+
+        .q-box.marked {
+            background-color: #8b5cf6;
+            color: white;
+            border-color: #7c3aed;
+            border-radius: 50%;
+        }
+
+        .q-box.current {
+            border: 2px dashed var(--primary);
+            transform: scale(1.05);
+        }
+
+        .sidebar-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--gray-border);
+            background: #fafafa;
+        }
+
+        .submit-exam-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .submit-exam-btn:hover {
+            background: var(--danger);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            display: none;
+        }
+
+        .modal-card {
+            background: white;
+            width: 450px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            overflow: hidden;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-header {
+            background: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .modal-body {
+            padding: 20px;
+            font-size: 0.9rem;
+            color: #334155;
+            line-height: 1.5;
+        }
+
+        .summary-stats {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: var(--gray-light);
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-top: 1px solid var(--gray-border);
+            background: #fafafa;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body>
 
-  <!-- Custom Alert Modal -->
-  <div id="custom-alert-modal" class="custom-modal-overlay">
-    <div class="custom-modal-card">
-      <h3 id="modal-title">Security Warning</h3>
-      <p id="modal-message">Warning message goes here...</p>
-      <button onclick="closeCustomModal()" class="btn btn-primary" style="width: 100%; justify-content: center;">OK</button>
-    </div>
-  </div>
+    <!-- Header -->
+    <header>
+        <div class="header-left">
+            <h1>NTA Mock Test Portal</h1>
+            <span class="exam-badge">NEET / JEE Advanced Physics Series</span>
+        </div>
+        <div class="header-right">
+            <div class="timer-container">
+                <i class="fa-regular fa-clock"></i>
+                <span id="time-left">02:59:45</span>
+            </div>
+            <div class="user-profile">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces" alt="Candidate">
+                <div class="user-info">
+                    <span>Aspirant Student</span>
+                    <span>Roll: 2026NTA01</span>
+                </div>
+            </div>
+        </div>
+    </header>
 
-  <div class="test-container">
-    <div class="exam-header">
-      <div class="student-badge" id="display-student-name">Loading Student...</div>
-      <div class="timer-box">
-        <i class="fa-regular fa-clock"></i>
-        <span id="time-remaining">--:--</span>
-      </div>
-    </div>
-
-    <div class="question-box">
-      <div class="question-title" id="question-text">Loading question...</div>
-      <div class="options-list" id="options-container">
-        <!-- Options injected dynamically -->
-      </div>
-    </div>
-
-    <div class="exam-footer">
-      <span id="question-counter" style="font-weight: 600; color: #64748b;">Question 0 of 0</span>
-      <div style="display: flex; gap: 10px;">
-        <button id="prev-btn" onclick="prevQuestion()" class="btn" style="background: #64748b;"><i class="fa-solid fa-arrow-left"></i> Previous</button>
-        <button id="next-btn" onclick="nextQuestion()" class="btn">Next <i class="fa-solid fa-arrow-right"></i></button>
-        <button id="submit-btn" onclick="confirmSubmitExam()" class="btn btn-danger" style="display:none;"><i class="fa-solid fa-check"></i> Submit Exam</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Security Script Integration -->
-  <script src="security.js"></script>
-
-  <!-- Firebase & Exam Core Logic -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
-      authDomain: "physics-test-series-405c7.firebaseapp.com",
-      projectId: "physics-test-series-405c7",
-      storageBucket: "physics-test-series-405c7.firebasestorage.app",
-      messagingSenderId: "758620061190",
-      appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
-    };
-
-    let db;
-    try {
-      const app = initializeApp(firebaseConfig);
-      db = getFirestore(app);
-    } catch (e) {
-      console.warn("Firebase offline mode fallback.");
-    }
-
-    // Session Verification & Redirect guard
-    const studentInfo = JSON.parse(sessionStorage.getItem("student_info"));
-    let activeConfig = JSON.parse(sessionStorage.getItem("active_exam_config"));
-
-    if (!studentInfo) {
-      alert("Unauthorized access! Please login via student portal.");
-      window.location.href = "index.html";
-    } else {
-      if (typeof window.verifySingleAttempt === 'function' && !window.verifySingleAttempt(studentInfo.email)) {
-        // Handled inside function
-      }
-      document.getElementById('display-student-name').innerHTML = `<i class="fa-solid fa-user-graduate"></i> ${studentInfo.name} (${studentInfo.roll})`;
-    }
-
-    let questionsPool = [];
-    let currentQuestionsList = [];
-    let currentIndex = 0;
-    let userAnswers = {};
-    let timerInterval = null;
-    let examActive = true;
-
-    window.isExamActive = () => examActive;
-
-    window.showCustomAlert = function(title, message, callback) {
-      document.getElementById('modal-title').innerText = title;
-      document.getElementById('modal-message').innerText = message;
-      document.getElementById('custom-alert-modal').style.display = 'flex';
-      window.modalCallback = callback;
-    };
-
-    window.closeCustomModal = function() {
-      document.getElementById('custom-alert-modal').style.display = 'none';
-      if (typeof window.modalCallback === 'function') {
-        const cb = window.modalCallback;
-        window.modalCallback = null;
-        cb();
-      }
-    };
-
-    async function initializeExam() {
-      // Load questions pool from fallback json or active config
-      if (activeConfig && activeConfig.questions && activeConfig.questions.length > 0) {
-        questionsPool = activeConfig.questions;
-      } else {
-        try {
-          const res = await fetch('chapter1.json');
-          questionsPool = await res.json();
-        } catch (err) {
-          questionsPool = [
-            { q: "Sample Question 1: What is the powerhouse of the cell?", options: ["Nucleus", "Mitochondria", "Ribosome", "Golgi"], a: "Mitochondria" }
-          ];
-        }
-      }
-
-      // Shuffle and pick limit
-      const limit = activeConfig?.studentLimit || activeConfig?.questions_per_student || 10;
-      currentQuestionsList = [...questionsPool].sort(() => 0.5 - Math.random()).slice(0, limit);
-
-      renderQuestion();
-      startTimer();
-    }
-
-    function startTimer() {
-      const durationMinutes = activeConfig?.examDurationMinutes || 30;
-      let totalSeconds = durationMinutes * 60;
-
-      timerInterval = setInterval(() => {
-        if (!examActive) {
-          clearInterval(timerInterval);
-          return;
-        }
-
-        const mins = Math.floor(totalSeconds / 60);
-        const secs = totalSeconds % 60;
-        document.getElementById('time-remaining').innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-
-        if (totalSeconds <= 0) {
-          clearInterval(timerInterval);
-          alert("Time is up! Submitting exam automatically.");
-          window.submitExam();
-        }
-        totalSeconds--;
-      }, 1000);
-    }
-
-    window.renderQuestion = function() {
-      if (currentIndex < 0) currentIndex = 0;
-      if (currentIndex >= currentQuestionsList.length) currentIndex = currentQuestionsList.length - 1;
-
-      const q = currentQuestionsList[currentIndex];
-      document.getElementById('question-counter').innerText = `Question ${currentIndex + 1} of ${currentQuestionsList.length}`;
-      document.getElementById('question-text').innerText = `${currentIndex + 1}. ${q.q || q.question}`;
-
-      const optionsContainer = document.getElementById('options-container');
-      optionsContainer.innerHTML = '';
-
-      const opts = q.options || [];
-      opts.forEach((optText, idx) => {
-        const optLetter = ['A', 'B', 'C', 'D'][idx];
-        const isChecked = userAnswers[currentIndex] === optText ? 'checked' : '';
-
-        const label = document.createElement('label');
-        label.className = 'option-label';
-        label.innerHTML = `
-          <input type="radio" name="exam-option" value="${optText}" ${isChecked} onchange="saveAnswer('${optText}')">
-          <span><strong>${optLetter}.</strong> ${optText}</span>
-        `;
-        optionsContainer.appendChild(label);
-      });
-
-      document.getElementById('prev-btn').style.display = currentIndex === 0 ? 'none' : 'inline-flex';
-      if (currentIndex === currentQuestionsList.length - 1) {
-        document.getElementById('next-btn').style.display = 'none';
-        document.getElementById('submit-btn').style.display = 'inline-flex';
-      } else {
-        document.getElementById('next-btn').style.display = 'inline-flex';
-        document.getElementById('submit-btn').style.display = 'none';
-      }
-    };
-
-    window.saveAnswer = function(optVal) {
-      userAnswers[currentIndex] = optVal;
-    };
-
-    window.nextQuestion = function() {
-      if (currentIndex < currentQuestionsList.length - 1) {
-        currentIndex++;
-        window.renderQuestion();
-      }
-    };
-
-    window.prevQuestion = function() {
-      if (currentIndex > 0) {
-        currentIndex--;
-        window.renderQuestion();
-      }
-    };
-
-    window.loadRandomPoolQuestion = function() {
-      if (currentQuestionsList.length > 1) {
-        currentIndex = Math.floor(Math.random() * currentQuestionsList.length);
-        window.renderQuestion();
-      }
-    };
-
-    window.confirmSubmitExam = function() {
-      if (confirm("Are you sure you want to submit your exam?")) {
-        window.submitExam();
-      }
-    };
-
-    window.submitExam = async function() {
-      if (!examActive) return;
-      examActive = false;
-      window.isTestSubmitted = true;
-      if (timerInterval) clearInterval(timerInterval);
-
-      // Calculate score
-      let correctCount = 0;
-      currentQuestionsList.forEach((q, idx) => {
-        const correctAns = q.a || q.correctAnswer;
-        if (userAnswers[idx] && userAnswers[idx] === correctAns) {
-          correctCount++;
-        }
-      });
-
-      const securityReport = typeof window.getSecurityReport === 'function' ? window.getSecurityReport() : { tabSwitches: 0, copiesAttempted: 0, penaltiesApplied: 0 };
-      const finalScore = Math.max(0, correctCount - (securityReport.penaltiesApplied || 0));
-
-      const submissionPayload = {
-        name: studentInfo.name,
-        email: studentInfo.email,
-        roll: studentInfo.roll,
-        score: `${finalScore}/${currentQuestionsList.length}`,
-        tabSwitches: securityReport.tabSwitches,
-        copiesAttempted: securityReport.copiesAttempted,
-        penaltiesApplied: securityReport.penaltiesApplied,
-        submittedAt: new Date().toISOString()
-      };
-
-      // Save Local Submissions
-      try {
-        const subs = JSON.parse(localStorage.getItem("exam_submissions")) || [];
-        subs.push(submissionPayload);
-        localStorage.setItem("exam_submissions", JSON.stringify(subs));
-        if (typeof window.markEmailAsSubmitted === 'function') {
-          window.markEmailAsSubmitted(studentInfo.email);
-        }
-      } catch (e) {
-        console.error("Local save error:", e);
-      }
-
-      // Save to Firebase Firestore
-      if (db) {
-        try {
-          await setDoc(doc(db, "results", `${studentInfo.roll}_${Date.now()}`), submissionPayload);
-        } catch (err) {
-          console.warn("Firestore sync error:", err);
-        }
-      }
-
-      sessionStorage.removeItem("student_info");
-
-      // Render Results Summary Page
-      document.body.innerHTML = `
-        <div style="display:flex; justify-content:center; align-items:center; min-height:100vh; background:#0f172a; font-family:'Inter', sans-serif; padding:20px; width:100%;">
-          <div style="background:white; padding:40px; border-radius:20px; box-shadow:0 25px 50px rgba(0,0,0,0.5); max-width:500px; width:100%; text-align:center;">
-            <div style="font-size:3rem; color:#10b981; margin-bottom:15px;"><i class="fa-solid fa-circle-check"></i></div>
-            <h2 style="color:#1e3a8a; font-size:1.8rem; margin-bottom:10px;">Exam Submitted Successfully!</h2>
-            <p style="color:#64748b; font-size:0.95rem; margin-bottom:25px;">Your test responses have been successfully recorded in the central database.</p>
-            
-            <div style="background:#f8fafc; padding:20px; border-radius:12px; margin-bottom:25px; text-align:left; border:1px solid #e2e8f0;">
-              <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.95rem;">
-                <span style="color:#64748b;">Candidate Name:</span>
-                <strong style="color:#1e293b;">${submissionPayload.name}</strong>
-              </div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.95rem;">
-                <span style="color:#64748b;">Final Score:</span>
-                <strong style="color:#2563eb; font-size:1.1rem;">${submissionPayload.score}</strong>
-              </div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.95rem;">
-                <span style="color:#64748b;">Tab Switch Violations:</span>
-                <strong style="color:#ef4444;">${submissionPayload.tabSwitches}</strong>
-              </div>
-              <div style="display:flex; justify-content:space-between; font-size:0.95rem;">
-                <span style="color:#64748b;">Penalties Deducted:</span>
-                <strong style="color:#f59e0b;">-${submissionPayload.penaltiesApplied} Mark(s)</strong>
-              </div>
+    <!-- Workspace -->
+    <div class="workspace">
+        <!-- Question Section -->
+        <div class="question-section">
+            <div class="subject-tabs">
+                <div class="sub-tab active" onclick="switchSubject('Physics')">Physics</div>
+                <div class="sub-tab" onclick="switchSubject('Chemistry')">Chemistry</div>
+                <div class="sub-tab" onclick="switchSubject('Mathematics')">Mathematics</div>
             </div>
 
-            <button onclick="location.href='index.html'" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">
-              <i class="fa-solid fa-house"></i> Return to Portal Home
-            </button>
-          </div>
-        </div>
-      `;
-    };
+            <div class="question-header">
+                <div class="q-meta" id="question-indicator">Question No. 1</div>
+                <div class="marks-info">
+                    <span class="positive-mark">+4 Marks</span>
+                    <span class="negative-mark">-1 Mark</span>
+                </div>
+            </div>
 
-    initializeExam();
-  </script>
+            <div class="question-body">
+                <div class="question-text" id="question-content">
+                    Loading question text...
+                </div>
+                <div class="options-list" id="options-container">
+                    <!-- Options populated dynamically -->
+                </div>
+            </div>
+
+            <div class="question-footer">
+                <div class="footer-left-btns">
+                    <button class="btn btn-outline" onclick="markForReviewAndNext()"><i class="fa-solid fa-bookmark"></i> Mark for Review & Next</button>
+                    <button class="btn btn-outline" onclick="clearResponse()">Clear Response</button>
+                </div>
+                <div class="footer-right-btns">
+                    <button class="btn btn-warning" onclick="saveAndNext()"><i class="fa-solid fa-arrow-right"></i> Save & Next</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar / Palette Section -->
+        <div class="sidebar-section">
+            <div class="palette-header">Question Palette</div>
+            
+            <div class="status-legend">
+                <div class="legend-item"><div class="legend-box bg-answered" id="leg-ans">0</div> Answered</div>
+                <div class="legend-item"><div class="legend-box bg-not-answered" id="leg-not-ans">0</div> Not Answered</div>
+                <div class="legend-item"><div class="legend-box bg-not-visited" id="leg-not-vis">15</div> Not Visited</div>
+                <div class="legend-item"><div class="legend-box bg-marked" id="leg-marked">0</div> Marked for Review</div>
+            </div>
+
+            <div class="palette-grid-container">
+                <div class="palette-title" id="current-section-title">Physics Section</div>
+                <div class="palette-grid" id="palette-grid">
+                    <!-- Grid items generated dynamically -->
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="submit-exam-btn" onclick="openSubmitModal()">Submit Test</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Modal Confirmation -->
+    <div class="modal-overlay" id="submit-modal">
+        <div class="modal-card">
+            <div class="modal-header">Confirm Exam Submission</div>
+            <div class="modal-body">
+                Are you sure you want to submit your test? Once submitted, you will not be able to modify your answers.
+                <div class="summary-stats">
+                    <div class="stat-row"><span>Total Questions:</span> <span id="m-total">15</span></div>
+                    <div class="stat-row"><span>Answered:</span> <span id="m-answered" style="color:var(--success)">0</span></div>
+                    <div class="stat-row"><span>Not Answered:</span> <span id="m-not-answered" style="color:var(--danger)">0</span></div>
+                    <div class="stat-row"><span>Marked for Review:</span> <span id="m-marked" style="color:#8b5cf6">0</span></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeSubmitModal()">Resume Test</button>
+                <button class="btn btn-success" onclick="finalSubmit()">Yes, Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock dataset for 15 Questions spanning 3 subjects
+        const questionsData = [
+            // Physics (Q1 - Q5)
+            { subject: "Physics", q: "A particle moves in a straight line with deceleration proportional to its displacement. Its loss of kinetic energy for any displacement x is proportional to:", options: ["x", "x^2", "ln(x)", "e^x"], answer: 1 },
+            { subject: "Physics", q: "The magnetic field at the center of a circular coil of radius R carrying current I is B. The magnetic field on the axis of the coil at a distance R from the center is:", options: ["B / 2", "B / 2√2", "B / 2√3", "B / 4"], answer: 1 },
+            { subject: "Physics", q: "A monoatomic gas at pressure P is suddenly compressed to 1/8th of its initial volume. What is the final pressure of the gas? (Given gamma = 5/3)", options: ["8 P", "16 P", "32 P", "64 P"], answer: 2 },
+            { subject: "Physics", q: "In a Young's double slit experiment, the fringe width is beta. If the entire apparatus is immersed in water of refractive index 4/3, the new fringe width will be:", options: ["beta", "3 beta / 4", "4 beta / 3", "beta / 2"], answer: 1 },
+            { subject: "Physics", q: "The work function of a photoelectric material is 3.2 eV. The threshold frequency for the material is approximately:", options: ["7.7 x 10^14 Hz", "4.8 x 10^14 Hz", "1.2 x 10^15 Hz", "3.0 x 10^14 Hz"], answer: 0 },
+
+            // Chemistry (Q6 - Q10)
+            { subject: "Chemistry", q: "Which of the following complex ions has the highest crystal field splitting energy (Delta_o)?", options: ["[Co(CN)6]3-", "[Co(NH3)6]3+", "[Co(H2O)6]3+", "[Co(F)6]3-"], answer: 0 },
+            { subject: "Chemistry", q: "The correct order of acidic strength of halogen acids is:", options: ["HI > HBr > HCl > HF", "HF > HCl > HBr > HI", "HCl > HBr > HI > HF", "HBr > HI > HF > HCl"], answer: 0 },
+            { subject: "Chemistry", q: "Which catalyst is used in the conversion of vegetable oils into ghee (Hydrogenation)?", options: ["Fe", "Ni", "Mo", "V2O5"], answer: 1 },
+            { subject: "Chemistry", q: "The IUPAC name of the compound CH3-CH(OH)-CH2-C(=O)-CH3 is:", options: ["4-hydroxypentan-2-one", "2-hydroxypentan-4-one", "4-oxopentan-2-ol", "2-oxopentan-4-ol"], answer: 0 },
+            { subject: "Chemistry", q: "For a first order reaction, the time required for 99.9% completion is roughly how many times its half-life (t1/2)?", options: ["10 times", "5 times", "20 times", "100 times"], answer: 0 },
+
+            // Mathematics (Q11 - Q15)
+            { subject: "Mathematics", q: "If A is a square matrix of order 3 such that |adj A| = 64, then the determinant |A| can be:", options: ["+- 4", "+- 8", "+- 16", "+- 2"], answer: 1 },
+            { subject: "Mathematics", q: "The domain of the function f(x) = sin^-1(log2(x/2)) is:", options: ["[1, 4]", "[1, 2]", "[0, 4]", "[2, 4]"], answer: 0 },
+            { subject: "Mathematics", q: "The value of the integral int(dx / (x(x^5 + 1))) is equal to:", options: ["(1/5) ln|(x^5)/(x^5 + 1)| + C", "(1/5) ln|(x^5 + 1)/x^5| + C", "ln|x^5 + 1| + C", "None of these"], answer: 0 },
+            { subject: "Mathematics", q: "The angle between two vectors a and b with magnitudes 3 and 2 respectively having a.b = 3 is:", options: ["pi / 3", "pi / 4", "pi / 6", "pi / 2"], answer: 0 },
+            { subject: "Mathematics", q: "The number of solutions of the equation tan x + sec x = 2 cos x in the interval [0, 2pi] is:", options: ["2", "3", "4", "1"], answer: 0 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let currentSubject = "Physics";
+        const userResponses = new Array(questionsData.length).fill(null); // stores selected option or null
+        const visitStatus = new Array(questionsData.length).fill("not-visited"); // "not-visited", "not-answered", "answered", "marked"
+
+        // Initialize exam
+        function initExam() {
+            visitStatus[0] = "not-answered";
+            renderQuestion();
+            renderPalette();
+            startTimer();
+        }
+
+        function switchSubject(subjectName) {
+            currentSubject = subjectName;
+            // Find first question of that subject
+            const index = questionsData.findIndex(q => q.subject === subjectName);
+            if(index !== -1) {
+                currentQuestionIndex = index;
+                renderQuestion();
+                renderPalette();
+                updateTabsUI();
+            }
+        }
+
+        function updateTabsUI() {
+            const tabs = document.querySelectorAll('.sub-tab');
+            tabs.forEach(tab => {
+                if(tab.innerText.toLowerCase() === currentSubject.toLowerCase()) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+        }
+
+        function renderQuestion() {
+            const qData = questionsData[currentQuestionIndex];
+            
+            // Update Subject tab if jumped from palette
+            currentSubject = qData.subject;
+            updateTabsUI();
+
+            document.getElementById('question-indicator').innerText = `Question No. ${currentQuestionIndex + 1} (${currentSubject})`;
+            document.getElementById('question-content').innerText = qData.q;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            qData.options.forEach((opt, idx) => {
+                const isChecked = userResponses[currentQuestionIndex] === idx ? 'checked' : '';
+                const item = document.createElement('div');
+                item.className = 'option-item';
+                item.innerHTML = `
+                    <input type="radio" name="exam_option" id="opt_${idx}" value="${idx}" ${isChecked} onclick="selectOption(${idx})">
+                    <label for="opt_${idx}"><b>(${String.fromCharCode(65 + idx)})</b> ${opt}</label>
+                `;
+                item.onclick = (e) => {
+                    // allows clicking the whole box
+                    document.getElementById(`opt_${idx}`).checked = true;
+                    selectOption(idx);
+                };
+                optionsContainer.appendChild(item);
+            });
+
+            if(visitStatus[currentQuestionIndex] === "not-visited") {
+                visitStatus[currentQuestionIndex] = "not-answered";
+            }
+            renderPalette();
+        }
+
+        function selectOption(idx) {
+            userResponses[currentQuestionIndex] = idx;
+        }
+
+        function saveAndNext() {
+            const selected = userResponses[currentQuestionIndex];
+            if(selected !== null && selected !== undefined) {
+                visitStatus[currentQuestionIndex] = "answered";
+            } else {
+                visitStatus[currentQuestionIndex] = "not-answered";
+            }
+
+            if(currentQuestionIndex < questionsData.length - 1) {
+                currentQuestionIndex++;
+                if(visitStatus[currentQuestionIndex] === "not-visited") {
+                    visitStatus[currentQuestionIndex] = "not-answered";
+                }
+                renderQuestion();
+            } else {
+                renderPalette();
+            }
+        }
+
+        function markForReviewAndNext() {
+            visitStatus[currentQuestionIndex] = "marked";
+            if(currentQuestionIndex < questionsData.length - 1) {
+                currentQuestionIndex++;
+                if(visitStatus[currentQuestionIndex] === "not-visited") {
+                    visitStatus[currentQuestionIndex] = "not-answered";
+                }
+                renderQuestion();
+            } else {
+                renderPalette();
+            }
+        }
+
+        function clearResponse() {
+            userResponses[currentQuestionIndex] = null;
+            visitStatus[currentQuestionIndex] = "not-answered";
+            renderQuestion();
+        }
+
+        function jumpToQuestion(index) {
+            currentQuestionIndex = index;
+            if(visitStatus[currentQuestionIndex] === "not-visited") {
+                visitStatus[currentQuestionIndex] = "not-answered";
+            }
+            renderQuestion();
+        }
+
+        function renderPalette() {
+            const grid = document.getElementById('palette-grid');
+            grid.innerHTML = '';
+
+            let counts = { answered: 0, notAnswered: 0, notVisited: 0, marked: 0 };
+
+            questionsData.forEach((q, idx) => {
+                const box = document.createElement('div');
+                box.className = `q-box`;
+                box.innerText = idx + 1;
+
+                const status = visitStatus[idx];
+                if(status === "answered") {
+                    box.classList.add('answered');
+                    counts.answered++;
+                } else if(status === "marked") {
+                    box.classList.add('marked');
+                    counts.marked++;
+                } else if(status === "not-answered") {
+                    box.classList.add('not-answered');
+                    counts.notAnswered++;
+                } else {
+                    counts.notVisited++;
+                }
+
+                if(idx === currentQuestionIndex) {
+                    box.classList.add('current');
+                }
+
+                box.onclick = () => jumpToQuestion(idx);
+                grid.appendChild(box);
+            });
+
+            // Update Legend counts
+            document.getElementById('leg-ans').innerText = counts.answered;
+            document.getElementById('leg-not-ans').innerText = counts.notAnswered;
+            document.getElementById('leg-not-vis').innerText = counts.notVisited;
+            document.getElementById('leg-marked').innerText = counts.marked;
+        }
+
+        // Timer functionality
+        let totalSeconds = 3 * 3600 - 15; // 3 hours countdown
+        function startTimer() {
+            const timerEl = document.getElementById('time-left');
+            setInterval(() => {
+                if(totalSeconds > 0) {
+                    totalSeconds--;
+                    let hours = Math.floor(totalSeconds / 3600);
+                    let minutes = Math.floor((totalSeconds % 3600) / 60);
+                    let seconds = totalSeconds % 60;
+                    timerEl.innerText = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+                }
+            }, 1000);
+        }
+
+        // Modal Controls
+        function openSubmitModal() {
+            let counts = { answered: 0, notAnswered: 0, marked: 0 };
+            visitStatus.forEach((s, idx) => {
+                if(s === "answered") counts.answered++;
+                else if(s === "marked") counts.marked++;
+                else counts.notAnswered++;
+            });
+
+            document.getElementById('m-total').innerText = questionsData.length;
+            document.getElementById('m-answered').innerText = counts.answered;
+            document.getElementById('m-not-answered').innerText = counts.notAnswered;
+            document.getElementById('m-marked').innerText = counts.marked;
+
+            document.getElementById('submit-modal').style.display = 'flex';
+        }
+
+        function closeSubmitModal() {
+            document.getElementById('submit-modal').style.display = 'none';
+        }
+
+        function finalSubmit() {
+            alert("Test submitted successfully! Redirecting to score analysis...");
+            window.location.reload();
+        }
+
+        // Run on load
+        window.onload = initExam;
+    </script>
 </body>
 </html>
