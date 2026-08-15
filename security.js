@@ -4,8 +4,39 @@
 
 let tabSwitchCount = 0;
 let copyPasteAttempts = 0;
+let penaltiesApplied = 0;
 
-// 1. Right Click, Text Selection, Copy & Paste Block
+// 1. Single Attempt Per Email Validation Check
+// (Yeh check login ke baad ya exam start hone par email verify karega)
+window.verifySingleAttempt = function(studentEmail) {
+    if (!studentEmail) return true;
+    const submittedEmails = JSON.parse(localStorage.getItem("submitted_exam_emails")) || [];
+    if (submittedEmails.includes(studentEmail)) {
+        alert("Access Denied: Aap is email se pehle hi test de chuke hain. Ek email se kewal ek hi baar test dena allowed hai!");
+        document.body.innerHTML = `
+            <div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#f8fafc; font-family:sans-serif; text-align:center; padding:20px;">
+                <div style="background:white; padding:40px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1); max-width:500px;">
+                    <h2 style="color:#dc2626; margin-bottom:15px;">Test Already Submitted!</h2>
+                    <p style="color:#475569; font-size:16px; line-height:1.5;">Is email address se pehle hi exam submit kiya ja chuka hai. Dobar test attempt karna strict rule ke khilaf hai.</p>
+                </div>
+            </div>
+        `;
+        return false;
+    }
+    return true;
+};
+
+// 2. Mark Email as Submitted upon Exam Finish/Submit
+window.markEmailAsSubmitted = function(studentEmail) {
+    if (!studentEmail) return;
+    let submittedEmails = JSON.parse(localStorage.getItem("submitted_exam_emails")) || [];
+    if (!submittedEmails.includes(studentEmail)) {
+        submittedEmails.push(studentEmail);
+        localStorage.setItem("submitted_exam_emails", JSON.stringify(submittedEmails));
+    }
+};
+
+// 3. Right Click, Text Selection, Copy & Paste Block
 document.addEventListener('contextmenu', (e) => e.preventDefault());
 
 document.addEventListener('copy', (e) => {
@@ -22,35 +53,53 @@ document.addEventListener('paste', (e) => {
 
 document.addEventListener('cut', (e) => e.preventDefault());
 
-// 2. Refresh & Page Reload Lock (Accidental Exit Protection)
+// 4. Refresh & Page Reload Lock (Accidental Exit Protection)
 window.addEventListener('beforeunload', (e) => {
     e.preventDefault();
     e.returnValue = "Warning: Refreshing or leaving the page will auto-submit your test!";
     return e.returnValue;
 });
 
-// 3. Tab Switch Detection
+// 5. Tab Switch Detection (1st time: -1 mark penalty, 2nd time: Auto Submit)
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         tabSwitchCount++;
-        alert(`SECURITY WARNING #${tabSwitchCount}: You switched tabs or minimized the browser! This violation is logged.`);
+        
+        if (tabSwitchCount === 1) {
+            penaltiesApplied += 1;
+            alert(`SECURITY WARNING #1: Aapne tab switch ya minimize kiya hai! Aapke test score se 1 mark (-1) deduct kar liya gaya hai. Dobara tab switch karne par test automatically submit ho jayega!`);
+        } else if (tabSwitchCount >= 2) {
+            alert(`SECURITY WARNING #2: Aapne fir se tab switch kiya hai! Rule todne ke karan aapka test ab automatically submit kiya ja raha hai.`);
+            if (typeof window.submitExam === 'function') {
+                window.submitExam();
+            } else {
+                // Fallback direct reload / redirect to result
+                location.reload();
+            }
+        }
     }
 });
 
-// 4. Advanced Keyboard Shortcuts & Screenshot Lock
+// 6. Advanced Keyboard Shortcuts & Full F1 to F12 Key Disable
 document.addEventListener('keydown', (e) => {
+    // Disable F1 to F12 Keys completely
+    if (e.key.startsWith('F') && !isNaN(e.key.substring(1))) {
+        e.preventDefault();
+        alert(`Action Blocked: Key (${e.key}) is disabled during the exam!`);
+        return;
+    }
+
     // Prevent Refresh Keys (F5 & Ctrl+R / Cmd+R)
-    if (e.key === 'F5' || (e.ctrlKey && e.key === 'r') || (e.metaKey && e.key === 'r')) {
+    if ((e.ctrlKey && e.key === 'r') || (e.metaKey && e.key === 'r')) {
         e.preventDefault();
         alert("Action Blocked: Page reload is disabled during the exam!");
         return;
     }
 
-    // Prevent PrintScreen (PrtScn Key / Windows + Shift + S)
+    // Prevent PrintScreen & Screenshots (Windows + Shift + S / PrtScn)
     if (e.key === 'PrintScreen' || (e.key === 'S' && e.shiftKey && (e.metaKey || e.ctrlKey))) {
         e.preventDefault();
         alert("Action Blocked: Screenshots are disabled during the test!");
-        // Clear Clipboard data if screenshot was attempted
         navigator.clipboard.writeText('');
         return;
     }
@@ -62,9 +111,8 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 
-    // Block F12 & Developer Tools Shortcuts (Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U)
+    // Block Developer Tools Shortcuts (Ctrl+Shift+I, J, C, Ctrl+U)
     if (
-        e.key === 'F12' ||
         ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
         ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U'))
     ) {
@@ -74,11 +122,11 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// 5. Screenshot Protection via Clipboard Clearing
+// 7. Screenshot Protection via Clipboard Clearing
 window.addEventListener('keyup', (e) => {
     if (e.key === 'PrintScreen') {
         navigator.clipboard.writeText('');
-        alert("Screenshot captured erased for security reasons!");
+        alert("Screenshot clipboard cleared for security reasons!");
     }
 });
 
@@ -87,6 +135,6 @@ window.getSecurityReport = function() {
     return {
         tabSwitches: tabSwitchCount,
         copyAttempts: copyPasteAttempts,
-        penaltiesApplied: tabSwitchCount * 1 // 1 mark deduction per tab switch
+        penaltiesApplied: penaltiesApplied // 1 mark penalty applied on 1st switch
     };
 };
