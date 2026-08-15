@@ -647,7 +647,6 @@
       leaderboardBody.innerHTML = `<tr><td colspan="5" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching leaderboard...</td></tr>`;
 
       try {
-        // Checking both "results" and "student_results" collections to ensure results are fetched properly
         let snap = await getDocs(collection(db, "results"));
         if (snap.empty) {
           snap = await getDocs(collection(db, "student_results"));
