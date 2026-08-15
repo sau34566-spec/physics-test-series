@@ -1,9 +1,9 @@
- // ==========================================
+// ==========================================
 // NTA Exam Portal - Advanced Security & Anti-Cheating Script
 // ==========================================
 
 let tabSwitchCount = 0;
-let totalPenalties = 0;
+let totalPenalties = parseInt(localStorage.getItem('exam_security_penalties') || '0');
 let isExamSubmitted = false;
 
 // Create and inject warning banner dynamically if not present
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     window.addEventListener("blur", () => {
-        if (!isExamSubmitted) {
+        if (!isExamSubmitted && document.hasFocus() === false) {
             handleTabSwitchViolation();
         }
     });
@@ -90,8 +90,9 @@ document.addEventListener("DOMContentLoaded", () => {
 function handleTabSwitchViolation() {
     // Check if logged-in user is admin, if yes, skip penalties and auto-submit
     let currentUserEmail = localStorage.getItem('current_test_user_email') || "";
-    let savedAdminEmail = localStorage.getItem('persistent_admin_email');
-    if (localStorage.getItem('is_admin_logged_in') === 'true' && currentUserEmail.trim().toLowerCase() === savedAdminEmail) {
+    let savedAdminEmail = localStorage.getItem('persistent_admin_email') || "";
+    
+    if (localStorage.getItem('is_admin_logged_in') === 'true' && currentUserEmail.trim().toLowerCase() === savedAdminEmail.trim().toLowerCase()) {
         return; // Admin bypasses security restrictions during testing
     }
 
@@ -106,8 +107,8 @@ function handleTabSwitchViolation() {
         showSecurityWarning("🚨 Maximum tab switches reached! Auto-submitting test now.");
         
         setTimeout(() => {
-            if (typeof executeFinalSubmit === "function") {
-                executeFinalSubmit();
+            if (typeof window.executeFinalSubmit === "function") {
+                window.executeFinalSubmit();
             } else {
                 localStorage.setItem('portal_session_locked', 'true');
                 window.location.reload();
@@ -116,28 +117,28 @@ function handleTabSwitchViolation() {
     }
 }
 
-// 5. Email Domain Validation Check Function (@gmail.com requirement + Not Found message)
+// 5. Email Domain Validation Check Function
 window.validateStudentEmailInput = function(emailInput) {
-    if (!emailInput || !emailInput.includes("@")) {
+    if (!emailInput || typeof emailInput !== 'string' || !emailInput.includes("@")) {
         alert("Your email not found");
         return false;
     }
     
     const emailTrimmed = emailInput.trim().toLowerCase();
     
-    // Check if it ends with @gmail.com or contains a valid domain structure
+    // Check structure (e.g., must contain localpart, @, and domain with a dot)
     const parts = emailTrimmed.split("@");
-    if (parts.length !== 2 || !parts[1].includes(".") || !emailTrimmed.endsWith("@gmail.com")) {
-        alert("Your email not found");
+    if (parts.length !== 2 || !parts[0] || !parts[1].includes(".") || !emailTrimmed.endsWith("@gmail.com")) {
+        alert("Your email not found or invalid domain");
         return false;
     }
 
     // Check if admin is logging in with persistent admin email (bypass one-attempt limit)
-    let savedAdmin = localStorage.getItem('persistent_admin_email');
+    let savedAdmin = (localStorage.getItem('persistent_admin_email') || "").trim().toLowerCase();
     let isAdmin = localStorage.getItem('is_admin_logged_in') === 'true' && emailTrimmed === savedAdmin;
 
     if (!isAdmin) {
-        // Check for One Email - One Attempt restriction
+        // Check for One Email - One Attempt restriction for normal users
         let submittedEmails = JSON.parse(localStorage.getItem('submitted_exam_emails') || '[]');
         if (submittedEmails.includes(emailTrimmed)) {
             alert("This email has already been used to submit an exam. Only one attempt per email is allowed.");
@@ -150,10 +151,10 @@ window.validateStudentEmailInput = function(emailInput) {
 
 // Record used email upon final submission
 window.recordEmailAttempt = function(emailInput) {
-    if(!emailInput) return;
+    if (!emailInput) return;
     let emailTrimmed = emailInput.trim().toLowerCase();
     let submittedEmails = JSON.parse(localStorage.getItem('submitted_exam_emails') || '[]');
-    if(!submittedEmails.includes(emailTrimmed)) {
+    if (!submittedEmails.includes(emailTrimmed)) {
         submittedEmails.push(emailTrimmed);
         localStorage.setItem('submitted_exam_emails', JSON.stringify(submittedEmails));
     }
