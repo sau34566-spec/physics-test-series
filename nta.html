@@ -59,7 +59,7 @@
     .btn-clear { background: #d32f2f; color: white; }
     .btn-submit { background: #003366; color: white; width: 100%; margin-top: 10px; }
 
-    /* Professional Custom Modal Overlay (Replaces alert/confirm) */
+    /* Professional Custom Modal Overlay */
     #custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center; }
     .modal-card { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
     .modal-card h3 { color: #003366; margin-bottom: 10px; font-size: 18px; }
@@ -168,7 +168,7 @@
         <strong>Note:</strong> Penalty marks were applied due to incorrect answers / negative marking rules or security violations during the test.
       </div>
 
-      <!-- Question Analysis Section (Green/Red color coding) -->
+      <!-- Question Analysis Section -->
       <h3 style="margin-bottom: 10px; font-size: 16px; color: #003366; text-align: left;">Detailed Question Analysis</h3>
       <div id="analysis-questions-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; text-align: left; padding-right: 5px;"></div>
 
@@ -195,7 +195,6 @@
   </div>
 
   <script>
-    // Custom Professional Alert function (Removes GitHub domain ugly alerts)
     window.showCustomAlert = function(title, message, callback) {
       document.getElementById("modal-title").innerText = title;
       document.getElementById("modal-message").innerText = message;
@@ -227,9 +226,14 @@
       };
     };
 
-    const studentInfo = JSON.parse(sessionStorage.getItem("student_info")) || { name: "Student", roll: "EXAM-1001" };
+    const studentInfo = JSON.parse(sessionStorage.getItem("student_info")) || { name: "Student", roll: "EXAM-1001", email: "student@test.com" };
     document.getElementById("student-name").innerText = studentInfo.name;
     document.getElementById("student-roll").innerText = "Roll: " + studentInfo.roll;
+
+    // Single attempt verification check on load
+    if (typeof window.verifySingleAttempt === 'function') {
+      window.verifySingleAttempt(studentInfo.email || studentInfo.roll);
+    }
 
     let examConfig = {};
     try {
@@ -238,20 +242,23 @@
     } catch(e) { console.error(e); }
 
     const urlParams = new URLSearchParams(window.location.search);
-    
-    const savedDuration = urlParams.get('duration') || 
-                          examConfig.examDurationMinutes || 
-                          localStorage.getItem("examDuration") || 60;
-
-    const savedLimit = urlParams.get('limit') || 
-                       examConfig.studentLimit || 
-                       localStorage.getItem("questionLimit") || 20;
+    const savedDuration = urlParams.get('duration') || examConfig.examDurationMinutes || localStorage.getItem("examDuration") || 60;
+    const savedLimit = urlParams.get('limit') || examConfig.studentLimit || localStorage.getItem("questionLimit") || 20;
 
     let questionsPool = [];
     let currentIdx = 0;
     let studentAnswers = {};
     let questionStatus = {};
     let timeLeftSeconds = parseInt(savedDuration) * 60;
+
+    // Fisher-Yates Shuffle Algorithm for Randomizing Questions & Options
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
 
     async function loadQuestions() {
       try {
@@ -260,8 +267,19 @@
         const data = await response.json();
         
         let allPool = Array.isArray(data) ? data : (data.questions || []);
+        
+        // Randomize questions sequence for 100+ students uniqueness
+        shuffleArray(allPool);
+
         const limit = parseInt(savedLimit);
         questionsPool = allPool.slice(0, limit);
+
+        // Randomize options for each question
+        questionsPool.forEach(q => {
+          if (q.options && Array.isArray(q.options)) {
+            shuffleArray(q.options);
+          }
+        });
 
         if (questionsPool.length === 0) throw new Error("Empty questions");
       } catch (err) {
@@ -351,6 +369,15 @@
       renderQuestion(currentIdx);
     };
 
+    // Tab switch penalty trigger integration for security.js
+    window.applyTabSwitchPenalty = function() {
+      if (currentIdx < questionsPool.length - 1) {
+        renderQuestion(currentIdx + 1);
+      } else {
+        renderQuestion(0);
+      }
+    };
+
     function renderPalette() {
       const grid = document.getElementById("question-palette-grid");
       grid.innerHTML = '';
@@ -409,6 +436,8 @@
     };
 
     function submitExam() {
+      window.isTestSubmitted = true; // Unlock beforeunload prompt
+      
       let score = 0;
       let penaltyMarks = 0;
       const negativePerWrong = 0.25;
@@ -425,20 +454,42 @@
 
       const finalScore = Math.max(0, score - penaltyMarks);
 
+      // Save submission data into localStorage for Admin Panel Sync
+      const submissionRecord = {
+        name: studentInfo.name,
+        roll: studentInfo.roll,
+        email: studentInfo.email || studentInfo.roll,
+        score: finalScore.toFixed(2),
+        correct: score,
+        total: questionsPool.length,
+        penalty: penaltyMarks.toFixed(2),
+        timestamp: new Date().toLocaleString()
+      };
+
+      let allSubmissions = JSON.parse(localStorage.getItem("exam_submissions")) || [];
+      // Remove existing record for this roll if present and push new
+      allSubmissions = allSubmissions.filter(item => item.roll !== studentInfo.roll);
+      allSubmissions.push(submissionRecord);
+      localStorage.setItem("exam_submissions", JSON.stringify(allSubmissions));
+
+      // Also mark email/roll as submitted for Single Attempt rule
+      if (typeof window.markEmailAsSubmitted === 'function') {
+        window.markEmailAsSubmitted(studentInfo.email || studentInfo.roll);
+      }
+
       // Populate Performance Dashboard View
       document.getElementById("dash-name").innerText = studentInfo.name;
       document.getElementById("dash-score").innerText = `${finalScore.toFixed(2)} / ${questionsPool.length}`;
       document.getElementById("dash-correct").innerText = `${score} Correct`;
       document.getElementById("dash-penalty").innerText = `-${penaltyMarks.toFixed(2)} Marks`;
 
-      // Render Question Analysis List with Green/Red Color Coding
       const analysisList = document.getElementById("analysis-questions-list");
       analysisList.innerHTML = "";
 
       questionsPool.forEach((qObj, idx) => {
         let studentChoice = studentAnswers[idx] || "Not Answered";
         let isCorrect = studentChoice === qObj.a;
-        let choiceColor = isCorrect ? "#16a34a" : "#dc2626"; // Green if match, Red if different
+        let choiceColor = isCorrect ? "#16a34a" : "#dc2626";
 
         let itemHTML = `
           <div style="background: #f9fafb; padding: 10px 12px; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 13px;">
@@ -468,10 +519,6 @@
         return;
       }
 
-      const doubtText = document.getElementById("student-query").value;
-      console.log("Student Feedback Rating:", selectedRating, "Doubt/Query:", doubtText);
-
-      // Professional Thank You Message Popup
       showCustomAlert("Thank You!", "Thank you for attempting test! Your response has been recorded successfully.", () => {
         window.location.href = 'index.html';
       });
