@@ -104,7 +104,7 @@
         <div class="options-list" id="options-container"></div>
       </div>
 
-      <!-- Action Bar options ke just niche rakhi gayi hai -->
+      <!-- Action Bar options ke just niche positioned -->
       <div class="action-bar">
         <div>
           <button class="btn btn-save" onclick="saveAndNext()">Save & Next</button>
@@ -268,7 +268,7 @@
         
         let allPool = Array.isArray(data) ? data : (data.questions || []);
         
-        // Randomize questions sequence for 100+ students uniqueness
+        // Randomize questions sequence for uniqueness
         shuffleArray(allPool);
 
         const limit = parseInt(savedLimit);
@@ -436,7 +436,7 @@
     };
 
     function submitExam() {
-      window.isTestSubmitted = true; // Unlock beforeunload prompt
+      window.isTestSubmitted = true;
       
       let score = 0;
       let penaltyMarks = 0;
@@ -467,12 +467,10 @@
       };
 
       let allSubmissions = JSON.parse(localStorage.getItem("exam_submissions")) || [];
-      // Remove existing record for this roll if present and push new
       allSubmissions = allSubmissions.filter(item => item.roll !== studentInfo.roll);
       allSubmissions.push(submissionRecord);
       localStorage.setItem("exam_submissions", JSON.stringify(allSubmissions));
 
-      // Also mark email/roll as submitted for Single Attempt rule
       if (typeof window.markEmailAsSubmitted === 'function') {
         window.markEmailAsSubmitted(studentInfo.email || studentInfo.roll);
       }
