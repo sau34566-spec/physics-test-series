@@ -317,7 +317,6 @@
         <div style="margin-top: 1.5rem; background: #ffffff; padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border-color);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <h4 style="color: var(--primary); font-weight: 700;"><i class="fa-solid fa-list-ol"></i> Live Added Questions Pool (<span id="added-pool-count">0</span>)</h4>
-            <button class="btn btn-sm btn-danger" onclick="clearQuestionsPool()"><i class="fa-solid fa-trash"></i> Clear Pool</button>
           </div>
           <div class="table-responsive" style="margin-top: 0; max-height: 250px; overflow-y: auto;">
             <table>
@@ -659,8 +658,8 @@
         tr.innerHTML = `
           <td><strong>${index + 1}</strong></td>
           <td><div style="max-width:280px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${q.question}</div></td>
-          <td style="font-size:0.8rem;">A: ${q.options.A} | B: ${q.options.B} | C: ${q.options.C} | D: ${q.options.D}</td>
-          <td><span class="badge-rank" style="background:#10b981;">${q.answer}</span></td>
+          <td style="font-size:0.8rem;">A: ${q.options ? q.options.A : ''} | B: ${q.options ? q.options.B : ''} | C: ${q.options ? q.options.C : ''} | D: ${q.options ? q.options.D : ''}</td>
+          <td><span class="badge-rank" style="background:#10b981;">${q.answer || q.correctAnswer || 'A'}</span></td>
           <td>
             <button class="btn btn-sm btn-danger" onclick="deleteQuestionFromPool(${index})"><i class="fa-solid fa-trash"></i></button>
           </td>
@@ -674,15 +673,6 @@
       localStorage.setItem("live_questions_pool", JSON.stringify(liveQuestionsPool));
       document.getElementById('config-total-pool').value = liveQuestionsPool.length;
       renderQuestionsPool();
-    };
-
-    window.clearQuestionsPool = () => {
-      if(confirm("Are you sure you want to clear all added questions from pool?")) {
-        liveQuestionsPool = [];
-        localStorage.setItem("live_questions_pool", JSON.stringify(liveQuestionsPool));
-        document.getElementById('config-total-pool').value = 0;
-        renderQuestionsPool();
-      }
     };
 
     window.saveExamSettings = async () => {
@@ -968,27 +958,50 @@
       const body = document.getElementById('modal-question-body');
       
       let sampleQuestion = liveQuestionsPool[qNum - 1];
-      let qTextDisplay = sampleQuestion ? sampleQuestion.question : "What is the fundamental unit of Electric Current in the SI system?";
-      let optA = sampleQuestion ? sampleQuestion.options.A : "Ampere (Correct Answer)";
-      let optB = sampleQuestion ? sampleQuestion.options.B : "Volt";
-      let optC = sampleQuestion ? sampleQuestion.options.C : "Ohm";
-      let optD = sampleQuestion ? sampleQuestion.options.D : "Joule";
-      let correctAns = sampleQuestion ? sampleQuestion.answer : "A";
+      
+      let qTextDisplay = "";
+      let optA = "", optB = "", optC = "", optD = "";
+      let correctAns = "A";
+
+      if (sampleQuestion) {
+        qTextDisplay = sampleQuestion.question || sampleQuestion.q || sampleQuestion.title || "No question text provided";
+        if (sampleQuestion.options) {
+          optA = sampleQuestion.options.A || sampleQuestion.options[0] || "";
+          optB = sampleQuestion.options.B || sampleQuestion.options[1] || "";
+          optC = sampleQuestion.options.C || sampleQuestion.options[2] || "";
+          optD = sampleQuestion.options.D || sampleQuestion.options[3] || "";
+        }
+        correctAns = (sampleQuestion.answer || sampleQuestion.correctAnswer || "A").toString().toUpperCase();
+      } else {
+        qTextDisplay = `Question #${qNum} (Pool me total ${liveQuestionsPool.length} questions hain)`;
+        optA = "Option A";
+        optB = "Option B";
+        optC = "Option C";
+        optD = "Option D";
+      }
 
       body.innerHTML = `
         <div style="margin-bottom: 1rem;">
-          <h4 style="font-size: 1rem; color: var(--primary); margin-bottom: 0.5rem;">Sample Question Text #${qNum}:</h4>
-          <p style="color: var(--text-muted); font-size: 0.9rem; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <h4 style="font-size: 1rem; color: var(--primary); margin-bottom: 0.5rem;">Question Text #${qNum}:</h4>
+          <p style="color: var(--text-main); font-weight:600; font-size: 0.95rem; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
             ${qTextDisplay}
           </p>
         </div>
         <div style="margin-bottom: 1rem;">
           <strong style="font-size: 0.85rem; color: var(--text-main);">Options & Answer:</strong>
-          <ul style="list-style: none; margin-top: 5px; font-size: 0.88rem; color: var(--text-muted);">
-            <li style="padding: 4px 0;"><strong style="${correctAns === 'A' ? 'color: var(--success);' : ''}">A. ${optA}</strong></li>
-            <li style="padding: 4px 0;"><strong style="${correctAns === 'B' ? 'color: var(--success);' : ''}">B. ${optB}</strong></li>
-            <li style="padding: 4px 0;"><strong style="${correctAns === 'C' ? 'color: var(--success);' : ''}">C. ${optC}</strong></li>
-            <li style="padding: 4px 0;"><strong style="${correctAns === 'D' ? 'color: var(--success);' : ''}">D. ${optD}</strong></li>
+          <ul style="list-style: none; margin-top: 8px; font-size: 0.9rem;">
+            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'A' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">
+              A. ${optA} ${correctAns === 'A' ? '✓ (Correct)' : ''}
+            </li>
+            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'B' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">
+              B. ${optB} ${correctAns === 'B' ? '✓ (Correct)' : ''}
+            </li>
+            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'C' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">
+              C. ${optC} ${correctAns === 'C' ? '✓ (Correct)' : ''}
+            </li>
+            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'D' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">
+              D. ${optD} ${correctAns === 'D' ? '✓ (Correct)' : ''}
+            </li>
           </ul>
         </div>
         <div style="display: flex; gap: 15px; margin-top: 1.2rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
