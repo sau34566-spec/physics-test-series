@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Online Assessment Portal</title>
+    <title>Assessment Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Security Module Connection -->
@@ -65,7 +65,7 @@
         .user-meta-info { font-size: 0.75rem; color: #cbd5e1; display: none; }
         @media(min-width: 768px) { .user-meta-info { display: block; } .header-left h1 { max-width: none; } }
 
-        /* Workspace Exam Interface (Professional Blue Theme & Fully Mobile Friendly) */
+        /* Workspace Exam Interface */
         .workspace { display: flex; flex: 1; height: calc(100vh - 60px); overflow: hidden; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); }
         .exam-main-panel { flex: 1; display: flex; flex-direction: column; padding: 15px; overflow-y: auto; gap: 15px; max-width: 950px; margin: 0 auto; width: 100%; }
         
@@ -114,7 +114,7 @@
 
         /* Performance Dashboard View */
         .dashboard-container { flex: 1; background: #f8fafc; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; max-width: 900px; margin: 0 auto; width: 100%; }
-        .dash-header-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--gray-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: gap; gap: 10px; }
+        .dash-header-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--gray-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .dash-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
         .stat-box { background: white; padding: 18px; border-radius: 12px; border: 1px solid var(--gray-border); display: flex; flex-direction: column; gap: 5px; }
         .stat-box span:first-child { font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
@@ -155,7 +155,7 @@
     <div id="slide-login" class="view-section active">
         <div class="landing-container">
             <div class="login-card">
-                <h2>Online Assessment Portal</h2>
+                <h2>Assessment Portal</h2>
                 <p>Enter your credentials to access the examination.</p>
                 <div class="form-group">
                     <label>Candidate Name</label>
@@ -180,7 +180,7 @@
                     <ul>
                         <li>The test will open as per the scheduled time window set by the administration.</li>
                         <li>The countdown timer at the top right of the screen will display the remaining time available for your assessment.</li>
-                        <li>Each correct response carries positive marks, and incorrect answers will attract negative marking as configured by the admin.</li>
+                        <li>Each correct response carries <b>+1</b> mark, and incorrect answers carry negative marking of <b>-0.25</b> marks.</li>
                         <li>Click on <b>Save & Next</b> to record your answer and move forward. You can also bookmark questions using <b>Mark for Review</b>.</li>
                         <li>Once submitted or when the timer expires, your performance card and analytical breakdown will be automatically generated and synced to the admin database.</li>
                     </ul>
@@ -207,7 +207,7 @@
         </div>
     </div>
 
-    <!-- SLIDE 3: EXAM INTERFACE (Professional Blue Theme) -->
+    <!-- SLIDE 3: EXAM INTERFACE -->
     <div id="slide-exam" class="view-section">
         <header>
             <div class="header-left">
@@ -230,8 +230,8 @@
                     <div class="question-header">
                         <div class="q-meta" id="question-indicator">Question No. 1</div>
                         <div class="marks-info">
-                            <span class="positive-mark">+Marks</span>
-                            <span class="negative-mark">-Marks</span>
+                            <span class="positive-mark">+1 Mark</span>
+                            <span class="negative-mark">-0.25 Mark</span>
                         </div>
                     </div>
                     <div class="question-body">
@@ -291,17 +291,17 @@
                 <div class="stat-box"><span>Accuracy</span><span id="stat-accuracy">0%</span></div>
             </div>
 
-            <!-- Detailed Question Analysis with Correct Answer & Color Twist -->
+            <!-- Detailed Question Analysis with Correct Answer -->
             <div class="analysis-section">
                 <h3>Detailed Question Analysis</h3>
                 <div id="detailed-analysis-container" style="display: flex; flex-direction: column; gap: 15px;"></div>
             </div>
 
-            <!-- Feedback Star Rating & Queries -->
+            <!-- Feedback Star Rating (Mandatory) & Queries (Optional) -->
             <div class="feedback-section">
                 <h3>Feedback & Queries</h3>
                 <div>
-                    <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 8px;">Rate Your Experience</label>
+                    <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 8px;">Rate Your Experience <span style="color: var(--danger);">* (Mandatory)</span></label>
                     <div class="star-rating" id="star-rating-box">
                         <i class="fa-solid fa-star" onclick="setRating(1)"></i>
                         <i class="fa-solid fa-star" onclick="setRating(2)"></i>
@@ -311,10 +311,25 @@
                     </div>
                 </div>
                 <div class="query-box">
-                    <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 8px;">Doubts & Queries</label>
+                    <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 8px;">Doubts & Queries <span style="color: #64748b; font-weight: normal;">(Optional)</span></label>
                     <textarea id="user-query-text" placeholder="Write any query or feedback here..."></textarea>
                 </div>
                 <button class="btn btn-success" style="align-self: flex-start; padding: 12px 20px;" onclick="submitFinalFeedbackData()">Save Data to Admin Storage</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thank You Notice Modal upon Submission -->
+    <div class="modal-overlay" id="thankyou-modal" style="display: flex;">
+        <div class="modal-card">
+            <div style="background: var(--success); color: white; padding: 15px 20px; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-circle-check"></i> Test Submitted Successfully
+            </div>
+            <div style="padding: 20px; font-size: 0.9rem; color: #334155; line-height: 1.6;">
+                <b>Thank You!</b> Your test has been successfully submitted and responses are recorded. You can now check your detailed performance scorecard below.
+            </div>
+            <div style="padding: 12px 20px; display: flex; justify-content: flex-end; background: #f8fafc; border-top: 1px solid var(--gray-border);">
+                <button class="btn btn-success" onclick="closeThankYouModal()">View Scorecard</button>
             </div>
         </div>
     </div>
@@ -368,7 +383,6 @@
         }
 
         function checkTestScheduleWindow() {
-            // FIX: Robust sync with admin settings keys
             let adminSettingsStr = localStorage.getItem('admin_test_config') || localStorage.getItem('admin_settings') || localStorage.getItem('test_settings');
             try {
                 activeAdminConfig = adminSettingsStr ? JSON.parse(adminSettingsStr) : {};
@@ -439,7 +453,6 @@
         async function startExamPortalSession() {
             closeReadyModal();
 
-            // FIX: Read admin panel questions robustly from multiple possible keys used by admin.html
             let adminQuestions = localStorage.getItem('admin_live_questions') || localStorage.getItem('admin_questions') || localStorage.getItem('questions');
             if(adminQuestions) {
                 try {
@@ -646,9 +659,14 @@
             clearInterval(timerInterval);
             clearInterval(windowTimerInterval);
             closeSubmitModal();
-            // FIX: Ensure dashboard view is explicitly called and switched instantly
             buildPerformanceDashboard();
             switchView('slide-dashboard');
+            // Show Thank You modal immediately after dashboard opens
+            document.getElementById('thankyou-modal').style.display = 'flex';
+        }
+
+        function closeThankYouModal() {
+            document.getElementById('thankyou-modal').style.display = 'none';
         }
 
         function buildPerformanceDashboard() {
@@ -675,12 +693,13 @@
                 }
             });
 
-            let totalScore = (correctCount * 4) - (incorrectCount * 1);
-            let maxPossibleScore = questionsData.length * 4;
-            let penalty = incorrectCount * 1;
+            // UPDATED SCORING: +1 per correct, -0.25 per incorrect
+            let totalScore = (correctCount * 1) - (incorrectCount * 0.25);
+            let maxPossibleScore = questionsData.length * 1;
+            let penalty = (incorrectCount * 0.25).toFixed(2);
             let accuracy = attemptedCount > 0 ? ((correctCount / attemptedCount) * 100).toFixed(1) : 0;
 
-            document.getElementById('stat-score').innerText = `${totalScore} / ${maxPossibleScore}`;
+            document.getElementById('stat-score').innerText = `${totalScore.toFixed(2)} / ${maxPossibleScore}`;
             document.getElementById('stat-correct-count').innerText = `${correctCount} / ${incorrectCount}`;
             document.getElementById('stat-penalty').innerText = `-${penalty}`;
             document.getElementById('stat-accuracy').innerText = `${accuracy}%`;
@@ -712,7 +731,7 @@
                 analysisContainer.appendChild(item);
             });
 
-            saveSubmissionToAdminStorage(name, email, totalScore, accuracy, correctCount, incorrectCount);
+            saveSubmissionToAdminStorage(name, email, totalScore.toFixed(2), accuracy, correctCount, incorrectCount);
         }
 
         function setRating(stars) {
@@ -744,12 +763,17 @@
             existingRecords = existingRecords.filter(r => r.email.toLowerCase() !== email.toLowerCase());
             existingRecords.push(feedbackPayload);
             
-            // FIX: Save under all possible keys so admin.html retrieves it seamlessly
             localStorage.setItem('admin_exam_submissions', JSON.stringify(existingRecords));
             localStorage.setItem('exam_results', JSON.stringify(existingRecords));
         }
 
         function submitFinalFeedbackData() {
+            // FEEDBACK MANDATORY CHECK
+            if(currentRating === 0) {
+                showToast("Please provide a star rating experience before saving/submitting feedback.");
+                return;
+            }
+
             const name = document.getElementById('candidate-name').value;
             const email = document.getElementById('candidate-email').value;
             const score = document.getElementById('stat-score').innerText;
