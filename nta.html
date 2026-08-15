@@ -1,232 +1,495 @@
  <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Online Test Series | Exam Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        :root {
-            --primary: #1e3a8a;
-            --primary-accent: #3b82f6;
-            --bg-dark: #0f172a;
-            --bg-card: #ffffff;
-            --text-main: #1e293b;
-            --danger: #ef4444;
-            --success: #10b981;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Test Series | Exam Portal</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-accent: #3b82f6;
+      --bg-dark: #0f172a;
+      --bg-card: #ffffff;
+      --text-main: #1e293b;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+    }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; user-select: none; }
-        body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: center; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+    }
 
-        .test-container { background: var(--bg-card); width: 100%; max-width: 800px; padding: 2.5rem; border-radius: 16px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); position: relative; }
-        
-        .exam-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1.5rem; }
-        .timer-box { background: #fee2e2; color: #991b1b; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-        
-        .question-box { margin-bottom: 1.5rem; }
-        .question-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem; line-height: 1.5; }
-        
-        .options-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 2rem; }
-        .option-label { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 10px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
-        .option-label:hover { background: #f1f5f9; border-color: var(--primary-accent); }
-        .option-label input { accent-color: var(--primary-accent); width: 18px; height: 18px; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-        .exam-footer { display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #e2e8f0; padding-top: 1.5rem; }
-        .btn { background: var(--primary-accent); color: white; border: none; padding: 10px 20px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
-        .btn:hover { background: #2563eb; }
-        .btn-success { background: var(--success); }
-        .btn-success:hover { background: #059669; }
+    .test-container {
+      background: var(--bg-card);
+      width: 100%;
+      max-width: 800px;
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      position: relative;
+    }
 
-        #warning-banner { display: none; background-color: #fee2e2; border: 1px solid var(--danger); color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-weight: 600; text-align: center; }
-    </style>
+    .exam-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .student-badge {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .timer-box {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .question-box {
+      margin-bottom: 1.5rem;
+    }
+
+    .question-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 2rem;
+    }
+
+    .option-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .option-label:hover {
+      background: #f1f5f9;
+      border-color: var(--primary-accent);
+    }
+
+    .option-label input {
+      accent-color: var(--primary-accent);
+      width: 18px;
+      height: 18px;
+    }
+
+    .exam-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 2px solid #e2e8f0;
+      padding-top: 1.5rem;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      background: #1e40af;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    /* Custom Modal */
+    .custom-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+    }
+
+    .custom-modal-card {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+
+    .custom-modal-card h3 {
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+      font-size: 1.3rem;
+    }
+
+    .custom-modal-card p {
+      color: #64748b;
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.4;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="test-container">
-        <div id="warning-banner"><i class="fa-solid fa-triangle-exclamation"></i> <span id="warning-msg"></span></div>
-        
-        <div class="exam-header">
-            <div>
-                <h2 id="student-display-name" style="color: var(--primary); font-size: 1.2rem;">Mock Exam Portal</h2>
-                <p id="question-progress" style="font-size: 0.85rem; color: #64748b;">Question 1 of 10</p>
-            </div>
-            <div class="timer-box">
-                <i class="fa-regular fa-clock"></i> <span id="time-left">00:00</span>
-            </div>
-        </div>
+  <!-- Custom Alert Modal -->
+  <div id="custom-alert-modal" class="custom-modal-overlay">
+    <div class="custom-modal-card">
+      <h3 id="modal-title">Security Warning</h3>
+      <p id="modal-message">Warning message goes here...</p>
+      <button onclick="closeCustomModal()" class="btn btn-primary" style="width: 100%; justify-content: center;">OK</button>
+    </div>
+  </div>
 
-        <div id="quiz-body">
-            <div class="question-box">
-                <div class="question-title" id="q-text">Loading question...</div>
-                <div class="options-list" id="options-container"></div>
-            </div>
-
-            <div class="exam-footer">
-                <button class="btn" id="prev-btn" onclick="prevQuestion()" style="display:none;"><i class="fa-solid fa-arrow-left"></i> Previous</button>
-                <button class="btn" id="next-btn" onclick="nextQuestion()">Save & Next <i class="fa-solid fa-arrow-right"></i></button>
-                <button class="btn btn-success" id="submit-btn" onclick="confirmSubmit()" style="display:none;"><i class="fa-solid fa-check"></i> Submit Exam</button>
-            </div>
-        </div>
+  <div class="test-container">
+    <div class="exam-header">
+      <div class="student-badge" id="display-student-name">Loading Student...</div>
+      <div class="timer-box">
+        <i class="fa-regular fa-clock"></i>
+        <span id="time-remaining">--:--</span>
+      </div>
     </div>
 
-    <!-- Security Module Import -->
-    <script src="security.js"></script>
+    <div class="question-box">
+      <div class="question-title" id="question-text">Loading question...</div>
+      <div class="options-list" id="options-container">
+        <!-- Options injected dynamically -->
+      </div>
+    </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <div class="exam-footer">
+      <span id="question-counter" style="font-weight: 600; color: #64748b;">Question 0 of 0</span>
+      <div style="display: flex; gap: 10px;">
+        <button id="prev-btn" onclick="prevQuestion()" class="btn" style="background: #64748b;"><i class="fa-solid fa-arrow-left"></i> Previous</button>
+        <button id="next-btn" onclick="nextQuestion()" class="btn">Next <i class="fa-solid fa-arrow-right"></i></button>
+        <button id="submit-btn" onclick="confirmSubmitExam()" class="btn btn-danger" style="display:none;"><i class="fa-solid fa-check"></i> Submit Exam</button>
+      </div>
+    </div>
+  </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
-            authDomain: "physics-test-series-405c7.firebaseapp.com",
-            projectId: "physics-test-series-405c7",
-            storageBucket: "physics-test-series-405c7.firebasestorage.app",
-            messagingSenderId: "758620061190",
-            appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
-        };
+  <!-- Security Script Integration -->
+  <script src="security.js"></script>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+  <!-- Firebase & Exam Core Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        let questions = [];
-        let currentIndex = 0;
-        let userAnswers = {};
-        window.isTestSubmitted = false;
+    const firebaseConfig = {
+      apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
+      authDomain: "physics-test-series-405c7.firebaseapp.com",
+      projectId: "physics-test-series-405c7",
+      storageBucket: "physics-test-series-405c7.firebasestorage.app",
+      messagingSenderId: "758620061190",
+      appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
+    };
 
-        const studentInfo = JSON.parse(sessionStorage.getItem("student_info"));
-        const examConfig = JSON.parse(sessionStorage.getItem("active_exam_config"));
+    let db;
+    try {
+      const app = initializeApp(firebaseConfig);
+      db = getFirestore(app);
+    } catch (e) {
+      console.warn("Firebase offline mode fallback.");
+    }
 
-        if (!studentInfo) {
-            alert("Unauthorized access! Please login from portal first.");
-            window.location.href = "index.html";
-        } else {
-            document.getElementById("student-display-name").innerText = `Student: ${studentInfo.name} (${studentInfo.roll})`;
+    // Session Verification & Redirect guard
+    const studentInfo = JSON.parse(sessionStorage.getItem("student_info"));
+    let activeConfig = JSON.parse(sessionStorage.getItem("active_exam_config"));
+
+    if (!studentInfo) {
+      alert("Unauthorized access! Please login via student portal.");
+      window.location.href = "index.html";
+    } else {
+      if (typeof window.verifySingleAttempt === 'function' && !window.verifySingleAttempt(studentInfo.email)) {
+        // Handled inside function
+      }
+      document.getElementById('display-student-name').innerHTML = `<i class="fa-solid fa-user-graduate"></i> ${studentInfo.name} (${studentInfo.roll})`;
+    }
+
+    let questionsPool = [];
+    let currentQuestionsList = [];
+    let currentIndex = 0;
+    let userAnswers = {};
+    let timerInterval = null;
+    let examActive = true;
+
+    window.isExamActive = () => examActive;
+
+    window.showCustomAlert = function(title, message, callback) {
+      document.getElementById('modal-title').innerText = title;
+      document.getElementById('modal-message').innerText = message;
+      document.getElementById('custom-alert-modal').style.display = 'flex';
+      window.modalCallback = callback;
+    };
+
+    window.closeCustomModal = function() {
+      document.getElementById('custom-alert-modal').style.display = 'none';
+      if (typeof window.modalCallback === 'function') {
+        const cb = window.modalCallback;
+        window.modalCallback = null;
+        cb();
+      }
+    };
+
+    async function initializeExam() {
+      // Load questions pool from fallback json or active config
+      if (activeConfig && activeConfig.questions && activeConfig.questions.length > 0) {
+        questionsPool = activeConfig.questions;
+      } else {
+        try {
+          const res = await fetch('chapter1.json');
+          questionsPool = await res.json();
+        } catch (err) {
+          questionsPool = [
+            { q: "Sample Question 1: What is the powerhouse of the cell?", options: ["Nucleus", "Mitochondria", "Ribosome", "Golgi"], a: "Mitochondria" }
+          ];
+        }
+      }
+
+      // Shuffle and pick limit
+      const limit = activeConfig?.studentLimit || activeConfig?.questions_per_student || 10;
+      currentQuestionsList = [...questionsPool].sort(() => 0.5 - Math.random()).slice(0, limit);
+
+      renderQuestion();
+      startTimer();
+    }
+
+    function startTimer() {
+      const durationMinutes = activeConfig?.examDurationMinutes || 30;
+      let totalSeconds = durationMinutes * 60;
+
+      timerInterval = setInterval(() => {
+        if (!examActive) {
+          clearInterval(timerInterval);
+          return;
         }
 
-        const defaultQuestions = [
-            { q: "How do plants make their own food?", options: ["Respiration", "Photosynthesis", "Digestion", "Transpiration"], a: "Photosynthesis" },
-            { q: "What is the chemical formula of water?", options: ["CO2", "H2O", "O2", "H2SO4"], a: "H2O" },
-            { q: "Which is the largest organ in the human body?", options: ["Heart", "Liver", "Skin", "Lungs"], a: "Skin" },
-            { q: "What do we get from the Sun?", options: ["Light and Energy", "Only Water", "Only Air", "Only Sound"], a: "Light and Energy" },
-            { q: "Which substance gives blood its red color?", options: ["Platelets", "Hemoglobin", "Plasma", "White Blood Cells"], a: "Hemoglobin" },
-            { q: "In which medium can sound NOT travel?", options: ["Solid", "Liquid", "Gas", "Vacuum"], a: "Vacuum" },
-            { q: "What is Earth's natural satellite?", options: ["Mars", "Sun", "Moon", "Venus"], a: "Moon" },
-            { q: "Which fruit is a rich source of Vitamin C?", options: ["Orange", "Rice", "Butter", "Lentils"], a: "Orange" },
-            { q: "Approximately what percentage of Earth's atmosphere is oxygen?", options: ["21%", "50%", "78%", "10%"], a: "21%" },
-            { q: "Which metal is a good conductor of electricity?", options: ["Wood", "Plastic", "Copper", "Rubber"], a: "Copper" }
-        ];
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = totalSeconds % 60;
+        document.getElementById('time-remaining').innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
-        if (examConfig && examConfig.questions && examConfig.questions.length > 0) {
-            questions = examConfig.questions.map(item => ({
-                q: item.question || item.q,
-                options: item.options ? [item.options.A, item.options.B, item.options.C, item.options.D] : item.options,
-                a: item.answer ? (typeof item.answer === 'string' && item.answer.length === 1 ? item.options[item.answer] : item.answer) : item.a
-            }));
-        } else {
-            questions = defaultQuestions;
+        if (totalSeconds <= 0) {
+          clearInterval(timerInterval);
+          alert("Time is up! Submitting exam automatically.");
+          window.submitExam();
         }
+        totalSeconds--;
+      }, 1000);
+    }
 
-        function renderQuestion() {
-            if (questions.length === 0) return;
-            const q = questions[currentIndex];
-            document.getElementById("question-progress").innerText = `Question ${currentIndex + 1} of ${questions.length}`;
-            document.getElementById("q-text").innerText = q.q;
+    window.renderQuestion = function() {
+      if (currentIndex < 0) currentIndex = 0;
+      if (currentIndex >= currentQuestionsList.length) currentIndex = currentQuestionsList.length - 1;
 
-            const optContainer = document.getElementById("options-container");
-            optContainer.innerHTML = "";
+      const q = currentQuestionsList[currentIndex];
+      document.getElementById('question-counter').innerText = `Question ${currentIndex + 1} of ${currentQuestionsList.length}`;
+      document.getElementById('question-text').innerText = `${currentIndex + 1}. ${q.q || q.question}`;
 
-            q.options.forEach((opt) => {
-                const isChecked = userAnswers[currentIndex] === opt ? "checked" : "";
-                optContainer.innerHTML += `
-                    <label class="option-label">
-                        <input type="radio" name="exam_option" value="${opt}" ${isChecked} onclick="saveAnswer('${opt}')">
-                        <span>${opt}</span>
-                    </label>
-                `;
-            });
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
 
-            document.getElementById("prev-btn").style.display = currentIndex > 0 ? "inline-block" : "none";
-            if (currentIndex === questions.length - 1) {
-                document.getElementById("next-btn").style.display = "none";
-                document.getElementById("submit-btn").style.display = "inline-block";
-            } else {
-                document.getElementById("next-btn").style.display = "inline-block";
-                document.getElementById("submit-btn").style.display = "none";
-            }
+      const opts = q.options || [];
+      opts.forEach((optText, idx) => {
+        const optLetter = ['A', 'B', 'C', 'D'][idx];
+        const isChecked = userAnswers[currentIndex] === optText ? 'checked' : '';
+
+        const label = document.createElement('label');
+        label.className = 'option-label';
+        label.innerHTML = `
+          <input type="radio" name="exam-option" value="${optText}" ${isChecked} onchange="saveAnswer('${optText}')">
+          <span><strong>${optLetter}.</strong> ${optText}</span>
+        `;
+        optionsContainer.appendChild(label);
+      });
+
+      document.getElementById('prev-btn').style.display = currentIndex === 0 ? 'none' : 'inline-flex';
+      if (currentIndex === currentQuestionsList.length - 1) {
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('submit-btn').style.display = 'inline-flex';
+      } else {
+        document.getElementById('next-btn').style.display = 'inline-flex';
+        document.getElementById('submit-btn').style.display = 'none';
+      }
+    };
+
+    window.saveAnswer = function(optVal) {
+      userAnswers[currentIndex] = optVal;
+    };
+
+    window.nextQuestion = function() {
+      if (currentIndex < currentQuestionsList.length - 1) {
+        currentIndex++;
+        window.renderQuestion();
+      }
+    };
+
+    window.prevQuestion = function() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        window.renderQuestion();
+      }
+    };
+
+    window.loadRandomPoolQuestion = function() {
+      if (currentQuestionsList.length > 1) {
+        currentIndex = Math.floor(Math.random() * currentQuestionsList.length);
+        window.renderQuestion();
+      }
+    };
+
+    window.confirmSubmitExam = function() {
+      if (confirm("Are you sure you want to submit your exam?")) {
+        window.submitExam();
+      }
+    };
+
+    window.submitExam = async function() {
+      if (!examActive) return;
+      examActive = false;
+      window.isTestSubmitted = true;
+      if (timerInterval) clearInterval(timerInterval);
+
+      // Calculate score
+      let correctCount = 0;
+      currentQuestionsList.forEach((q, idx) => {
+        const correctAns = q.a || q.correctAnswer;
+        if (userAnswers[idx] && userAnswers[idx] === correctAns) {
+          correctCount++;
         }
+      });
 
-        window.saveAnswer = (opt) => { userAnswers[currentIndex] = opt; };
-        window.nextQuestion = () => { if (currentIndex < questions.length - 1) { currentIndex++; renderQuestion(); } };
-        window.prevQuestion = () => { if (currentIndex > 0) { currentIndex--; renderQuestion(); } };
+      const securityReport = typeof window.getSecurityReport === 'function' ? window.getSecurityReport() : { tabSwitches: 0, copiesAttempted: 0, penaltiesApplied: 0 };
+      const finalScore = Math.max(0, correctCount - (securityReport.penaltiesApplied || 0));
 
-        let durationMinutes = examConfig?.examDurationMinutes || 10;
-        let totalSeconds = durationMinutes * 60;
-        const timerInterval = setInterval(() => {
-            if (totalSeconds <= 0) {
-                clearInterval(timerInterval);
-                window.triggerExamSubmit();
-                return;
-            }
-            totalSeconds--;
-            const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
-            const secs = String(totalSeconds % 60).padStart(2, '0');
-            document.getElementById("time-left").innerText = `${mins}:${secs}`;
-        }, 1000);
+      const submissionPayload = {
+        name: studentInfo.name,
+        email: studentInfo.email,
+        roll: studentInfo.roll,
+        score: `${finalScore}/${currentQuestionsList.length}`,
+        tabSwitches: securityReport.tabSwitches,
+        copiesAttempted: securityReport.copiesAttempted,
+        penaltiesApplied: securityReport.penaltiesApplied,
+        submittedAt: new Date().toISOString()
+      };
 
-        window.confirmSubmit = () => {
-            if (confirm("Are you sure you want to submit the exam?")) {
-                window.triggerExamSubmit();
-            }
-        };
+      // Save Local Submissions
+      try {
+        const subs = JSON.parse(localStorage.getItem("exam_submissions")) || [];
+        subs.push(submissionPayload);
+        localStorage.setItem("exam_submissions", JSON.stringify(subs));
+        if (typeof window.markEmailAsSubmitted === 'function') {
+          window.markEmailAsSubmitted(studentInfo.email);
+        }
+      } catch (e) {
+        console.error("Local save error:", e);
+      }
 
-        window.triggerExamSubmit = async () => {
-            if (window.isTestSubmitted) return;
-            window.isTestSubmitted = true;
-            clearInterval(timerInterval);
+      // Save to Firebase Firestore
+      if (db) {
+        try {
+          await setDoc(doc(db, "results", `${studentInfo.roll}_${Date.now()}`), submissionPayload);
+        } catch (err) {
+          console.warn("Firestore sync error:", err);
+        }
+      }
 
-            let correctCount = 0;
-            questions.forEach((q, idx) => {
-                if (userAnswers[idx] === q.a) correctCount++;
-            });
+      sessionStorage.removeItem("student_info");
 
-            let penalties = window.getPenaltiesCount ? window.getPenaltiesCount() : 0;
-            let finalScore = Math.max(0, correctCount - penalties);
-            const scoreString = `${finalScore}/${questions.length}`;
+      // Render Results Summary Page
+      document.body.innerHTML = `
+        <div style="display:flex; justify-content:center; align-items:center; min-height:100vh; background:#0f172a; font-family:'Inter', sans-serif; padding:20px; width:100%;">
+          <div style="background:white; padding:40px; border-radius:20px; box-shadow:0 25px 50px rgba(0,0,0,0.5); max-width:500px; width:100%; text-align:center;">
+            <div style="font-size:3rem; color:#10b981; margin-bottom:15px;"><i class="fa-solid fa-circle-check"></i></div>
+            <h2 style="color:#1e3a8a; font-size:1.8rem; margin-bottom:10px;">Exam Submitted Successfully!</h2>
+            <p style="color:#64748b; font-size:0.95rem; margin-bottom:25px;">Your test responses have been successfully recorded in the central database.</p>
+            
+            <div style="background:#f8fafc; padding:20px; border-radius:12px; margin-bottom:25px; text-align:left; border:1px solid #e2e8f0;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.95rem;">
+                <span style="color:#64748b;">Candidate Name:</span>
+                <strong style="color:#1e293b;">${submissionPayload.name}</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.95rem;">
+                <span style="color:#64748b;">Final Score:</span>
+                <strong style="color:#2563eb; font-size:1.1rem;">${submissionPayload.score}</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.95rem;">
+                <span style="color:#64748b;">Tab Switch Violations:</span>
+                <strong style="color:#ef4444;">${submissionPayload.tabSwitches}</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.95rem;">
+                <span style="color:#64748b;">Penalties Deducted:</span>
+                <strong style="color:#f59e0b;">-${submissionPayload.penaltiesApplied} Mark(s)</strong>
+              </div>
+            </div>
 
-            const submissionData = {
-                name: studentInfo.name,
-                email: studentInfo.email,
-                roll: studentInfo.roll,
-                score: scoreString,
-                penaltiesApplied: penalties,
-                submittedAt: new Date().toISOString()
-            };
+            <button onclick="location.href='index.html'" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">
+              <i class="fa-solid fa-house"></i> Return to Portal Home
+            </button>
+          </div>
+        </div>
+      `;
+    };
 
-            try {
-                await setDoc(doc(db, "results", `${studentInfo.email}_${Date.now()}`), submissionData);
-            } catch (err) {
-                console.warn("Cloud sync notice:", err.message);
-            }
-
-            document.body.innerHTML = `
-                <div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#0f172a; font-family:sans-serif; text-align:center; padding:20px;">
-                    <div style="background:white; padding:40px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.3); max-width:500px; width:100%;">
-                        <i class="fa-solid fa-circle-check" style="font-size:4rem; color:#10b981; margin-bottom:15px;"></i>
-                        <h2 style="color:#1e293b; margin-bottom:10px;">Exam Submitted Successfully!</h2>
-                        <p style="color:#64748b; font-size:1rem; margin-bottom:20px;">Your response has been saved securely.</p>
-                        <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px; font-weight:600; font-size:1.1rem; color:#1e3a8a;">
-                            Final Score: ${scoreString}
-                        </div>
-                        <button onclick="window.location.href='index.html'" style="background:#2563eb; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:700; cursor:pointer;">Return to Home</button>
-                    </div>
-                </div>
-            `;
-        };
-
-        renderQuestion();
-    </script>
+    initializeExam();
+  </script>
 </body>
 </html>
