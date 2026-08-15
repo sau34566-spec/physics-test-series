@@ -63,16 +63,7 @@ document.addEventListener('paste', (e) => {
 
 document.addEventListener('cut', (e) => e.preventDefault());
 
-// 4. Refresh & Page Reload Complete Lock (Without Confirmation Pop-up)
-window.addEventListener('beforeunload', (e) => {
-    // Agar test submit ho chuka hai tab reload allow karein, warna block karein
-    if (!window.isTestSubmitted) {
-        e.preventDefault();
-        e.returnValue = ""; 
-    }
-});
-
-// 5. Tab Switch Detection (Updated: -1 mark + Question Change + Auto Submit on 2nd switch)
+// 4. Tab Switch Detection (Updated: -1 mark + Question Change + Auto Submit on 2nd switch)
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         tabSwitchCount++;
@@ -101,17 +92,12 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-// 6. Advanced Keyboard Shortcuts & Full F1 to F12 Key Disable
+// 5. Keyboard Shortcuts Protection (Refresh allowed, other developer shortcuts blocked)
 document.addEventListener('keydown', (e) => {
-    if (e.key.startsWith('F') && !isNaN(e.key.substring(1))) {
+    // Disable F1 to F12 except F5 for refresh
+    if (e.key.startsWith('F') && !isNaN(e.key.substring(1)) && e.key !== 'F5') {
         e.preventDefault();
         triggerCustomModal("Action Blocked", `Key (${e.key}) is disabled during the exam!`);
-        return;
-    }
-
-    if ((e.ctrlKey && e.key === 'r') || (e.metaKey && e.key === 'r') || e.key === 'F5') {
-        e.preventDefault();
-        triggerCustomModal("Action Blocked", "Page reload is completely locked during the exam!");
         return;
     }
 
@@ -138,7 +124,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// 7. Screenshot Protection via Clipboard Clearing
+// 6. Screenshot Protection via Clipboard Clearing
 window.addEventListener('keyup', (e) => {
     if (e.key === 'PrintScreen') {
         navigator.clipboard.writeText('');
