@@ -298,7 +298,7 @@
         </div>
     </div>
 
-    <!-- Thank You Notice Modal (Clean text, no refresh/restart mention) -->
+    <!-- Thank You Notice Modal -->
     <div class="modal-overlay" id="thankyou-modal">
         <div class="modal-card">
             <div style="background: var(--success); color: white; padding: 15px 20px; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
@@ -357,7 +357,6 @@
                 `;
                 return;
             }
-            // Check if admin is logged in with persistent admin email, auto-bypass verification if needed
             let savedAdmin = localStorage.getItem('persistent_admin_email');
             if(localStorage.getItem('is_admin_logged_in') === 'true' && savedAdmin) {
                 currentStudentEmail = savedAdmin;
@@ -370,6 +369,10 @@
 
         function verifyAndProceedEmail() {
             const emailInput = document.getElementById('student-email-input').value.trim();
+            if(!emailInput || !emailInput.includes('@')) {
+                showToast("Please enter a valid email address.");
+                return;
+            }
             if(typeof window.validateStudentEmailInput === 'function') {
                 if(!window.validateStudentEmailInput(emailInput)) {
                     return;
@@ -402,7 +405,6 @@
                 activeAdminConfig = {};
             }
 
-            // Admin bypass check for schedule window
             let savedAdmin = localStorage.getItem('persistent_admin_email');
             let isAdmin = localStorage.getItem('is_admin_logged_in') === 'true' && currentStudentEmail.toLowerCase() === savedAdmin;
 
@@ -501,7 +503,7 @@
                             let isAdmin = localStorage.getItem('is_admin_logged_in') === 'true' && currentStudentEmail.toLowerCase() === savedAdmin;
                             if(!isAdmin && now >= endTime) {
                                 clearInterval(windowTimerInterval);
-                                alert("The scheduled test window has ended. Your exam is being auto-submitted.");
+                                showToast("The scheduled test window has ended. Auto-submitting exam.");
                                 executeFinalSubmit();
                             }
                         }
@@ -628,7 +630,7 @@
                     document.getElementById('time-left').innerText = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
                 } else {
                     clearInterval(timerInterval);
-                    alert("Time is up! Your test is automatically submitting.");
+                    showToast("Time is up! Your test is automatically submitting.");
                     executeFinalSubmit();
                 }
             }, 1000);
@@ -668,7 +670,6 @@
                 }
             });
 
-            // Include tab switch penalty if any
             let securityPenalties = parseInt(localStorage.getItem('exam_security_penalties') || '0');
             let totalScore = (correctCount * 1) - (incorrectCount * 0.25) - (securityPenalties * 1);
             let maxPossibleScore = questionsData.length * 1;
@@ -745,14 +746,12 @@
             localStorage.setItem('admin_exam_submissions', JSON.stringify(existingRecords));
             localStorage.setItem('exam_results', JSON.stringify(existingRecords));
 
-            // Record email attempt so one email cannot give exam twice (unless admin)
             let savedAdmin = localStorage.getItem('persistent_admin_email');
             let isAdmin = localStorage.getItem('is_admin_logged_in') === 'true' && currentStudentEmail.toLowerCase() === savedAdmin;
             if(!isAdmin && typeof window.recordEmailAttempt === 'function') {
                 window.recordEmailAttempt(currentStudentEmail);
             }
 
-            // Show updated Thank You Notice Popup
             document.getElementById('thankyou-modal').style.display = 'flex';
         }
 
@@ -760,7 +759,6 @@
             let savedAdmin = localStorage.getItem('persistent_admin_email');
             let isAdmin = localStorage.getItem('is_admin_logged_in') === 'true' && currentStudentEmail.toLowerCase() === savedAdmin;
             
-            // If admin is testing, don't lock session permanently so admin can test again
             if(!isAdmin) {
                 localStorage.setItem('portal_session_locked', 'true');
             } else {
