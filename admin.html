@@ -578,7 +578,6 @@
         return;
       }
 
-      // Agar JSON/Code mode select kiya hai toh automatically chapter1.json link attach ho jayegi
       const jsonUrlVal = uploadMode === "code" ? "chapter1.json" : "";
 
       const startTimeMs = new Date(windowStartVal).getTime();
@@ -607,6 +606,7 @@
         updatedAt: new Date().toISOString()
       };
 
+      // Save locally first so students can read updated rules immediately
       localStorage.setItem("exam_config", JSON.stringify(configPayload));
       localStorage.setItem("test_settings", JSON.stringify(configPayload));
 
@@ -615,9 +615,9 @@
         await setDoc(doc(db, "config", "test_settings"), configPayload, { merge: true });
         await setDoc(doc(db, "test_config", "latest"), configPayload, { merge: true });
 
-        alert("Configurations saved and locked successfully! chapter1.json attached for student questions.");
+        alert("Configurations saved and locked successfully! Student questions and timing updated.");
       } catch (err) {
-        alert("Saved to browser local cache! (Firebase notice: " + err.message + ")");
+        alert("Saved to local browser storage! (Firebase notice: " + err.message + ")");
       } finally {
         saveBtn.disabled = false;
         saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save & Lock Configurations';
@@ -647,7 +647,12 @@
       leaderboardBody.innerHTML = `<tr><td colspan="5" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching leaderboard...</td></tr>`;
 
       try {
-        const snap = await getDocs(collection(db, "results"));
+        // Checking both "results" and "student_results" collections to ensure results are fetched properly
+        let snap = await getDocs(collection(db, "results"));
+        if (snap.empty) {
+          snap = await getDocs(collection(db, "student_results"));
+        }
+
         allStudentResults = [];
 
         let totalTabs = 0;
@@ -689,8 +694,8 @@
 
           allStudentResults.push({
             id: docSnap.id,
-            name: r.name || "Anonymous Student",
-            email: r.email || "No Email",
+            name: r.name || r.studentName || "Anonymous Student",
+            email: r.email || r.studentEmail || "No Email",
             scoreText: r.score !== undefined ? String(r.score) : "0/0",
             scoreVal: scoreVal,
             maxScore: maxScore,
