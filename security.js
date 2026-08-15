@@ -63,22 +63,29 @@ document.addEventListener('paste', (e) => {
 
 document.addEventListener('cut', (e) => e.preventDefault());
 
-// 4. Tab Switch Detection (Updated: -1 mark + Question Change + Auto Submit on 2nd switch)
+// 4. Tab Switch Detection (Updated: Active Exam Check + Pool Random Question Change + Auto Submit on 2nd switch)
 document.addEventListener('visibilitychange', () => {
+    // Agar exam active nahi hai (shuru nahi hua ya submit ho chuka hai), toh tab switch rule kaam nahi karega
+    if (typeof window.isExamActive === 'function' && !window.isExamActive()) {
+        return;
+    }
+
     if (document.hidden) {
         tabSwitchCount++;
         
         if (tabSwitchCount === 1) {
             penaltiesApplied += 1;
             
-            // `-1` mark penalty lagane ke sath question bhi change/skip karne ka function call
-            if (typeof window.applyTabSwitchPenalty === 'function') {
+            // Pool me se naya random question load karne ka function call (ya fallback to nextQuestion/penalty)
+            if (typeof window.loadRandomPoolQuestion === 'function') {
+                window.loadRandomPoolQuestion();
+            } else if (typeof window.applyTabSwitchPenalty === 'function') {
                 window.applyTabSwitchPenalty(); 
             } else if (typeof window.nextQuestion === 'function') {
-                window.nextQuestion(); // Fallback to next question
+                window.nextQuestion(); 
             }
 
-            triggerCustomModal("Security Warning #1", "Aapne tab switch ya minimize kiya hai! Aapke test score se 1 mark (-1) deduct kar liya gaya hai aur agla question load kar diya gaya hai. Dobara tab switch karne par test automatically submit ho jayega.");
+            triggerCustomModal("Security Warning #1", "Aapne tab switch ya minimize kiya hai! Penalty ke taur par aapka current question badal kar pool se naya question de diya gaya hai aur score se 1 mark (-1) deduct kar liya gaya hai. Dobara tab switch karne par test automatically submit ho jayega.");
             
         } else if (tabSwitchCount >= 2) {
             triggerCustomModal("Security Warning #2", "Aapne fir se tab switch kiya hai! Rule todne ke karan aapka test ab automatically submit kiya ja raha hai.", () => {
@@ -126,10 +133,7 @@ document.addEventListener('keydown', (e) => {
 
 // 6. Screenshot Protection via Clipboard Clearing
 window.addEventListener('keyup', (e) => {
-    if (e.key === 'PrintScreen') {
-        navigator.clipboard.writeText('');
-        triggerCustomModal("Security Notice", "Screenshot clipboard cleared for security reasons!");
-    }
+    e.key === 'PrintScreen' && (navigator.clipboard.writeText(''), triggerCustomModal("Security Notice", "Screenshot clipboard cleared for security reasons!"));
 });
 
 window.getSecurityReport = function() {
