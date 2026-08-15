@@ -19,14 +19,18 @@
     .timer-box { background: #ff9800; color: #fff; padding: 6px 14px; border-radius: 4px; font-weight: bold; font-size: 16px; }
 
     .exam-container { display: flex; flex: 1; overflow: hidden; }
+    @media (max-width: 768px) {
+      .exam-container { flex-direction: column; overflow-y: auto; }
+      body { overflow: auto; height: auto; }
+    }
     
     .question-section { flex: 3; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; background: white; border-right: 2px solid #e0e0e0; overflow-y: auto; }
     .q-header { font-size: 16px; font-weight: bold; border-bottom: 2px solid #003366; padding-bottom: 8px; margin-bottom: 15px; }
-    .q-text { font-size: 16px; color: #333; margin-bottom: 20px; line-height: 1.5; }
-    .options-list { display: flex; flex-direction: column; gap: 12px; }
-    .option-item { border: 1px solid #ccc; padding: 12px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
-    .option-item:hover { background-color: #f0f4f8; }
-    .option-item.selected { background-color: #e3f2fd; border-color: #2196f3; font-weight: bold; }
+    .q-text { font-size: 17px; color: #1e293b; margin-bottom: 20px; line-height: 1.6; font-weight: 500; }
+    .options-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+    .option-item { border: 1.5px solid #cbd5e1; padding: 12px 15px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; font-size: 15px; background: #f8fafc; }
+    .option-item:hover { background-color: #f1f5f9; border-color: #94a3b8; }
+    .option-item.selected { background-color: #eff6ff !important; border-color: #3b82f6 !important; font-weight: 600; color: #1d4ed8; }
     .option-item input { accent-color: #003366; width: 18px; height: 18px; }
 
     .palette-section { flex: 1; background: #fafafa; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; min-width: 280px; }
@@ -47,24 +51,44 @@
     .btn-palette.bg-not-answered { background: #c62828; color: white; border-color: #c62828; }
     .btn-palette.bg-review { background: #6a1b9a; color: white; border-color: #6a1b9a; }
 
-    .action-bar { border-top: 1px solid #ddd; padding: 12px 20px; background: #eee; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-    .btn { padding: 10px 14px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; }
+    /* Action bar options ke just niche positioned */
+    .action-bar { border-top: 1px solid #e2e8f0; padding-top: 15px; background: transparent; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .btn { padding: 10px 14px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; }
     .btn-save { background: #2e7d32; color: white; }
     .btn-mark { background: #6a1b9a; color: white; }
     .btn-clear { background: #d32f2f; color: white; }
     .btn-submit { background: #003366; color: white; width: 100%; margin-top: 10px; }
 
-    /* Performance Dashboard Overlay */
-    #dashboard-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; }
-    .dashboard-card { background: white; padding: 30px; border-radius: 8px; width: 90%; max-width: 600px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: center; }
-    .dashboard-card h2 { color: #003366; margin-bottom: 20px; }
-    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; text-align: left; }
-    .stat-box { background: #f4f6f9; padding: 15px; border-radius: 6px; border-left: 4px solid #003366; }
+    /* Professional Custom Modal Overlay (Replaces alert/confirm) */
+    #custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center; }
+    .modal-card { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .modal-card h3 { color: #003366; margin-bottom: 10px; font-size: 18px; }
+    .modal-card p { color: #475569; font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
+    .modal-btns { display: flex; gap: 10px; justify-content: center; }
+
+    /* Performance Dashboard Slide View Overlay */
+    #dashboard-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f6f9; z-index: 9999; overflow-y: auto; justify-content: center; padding: 20px; }
+    .dashboard-card { background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 800px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin: auto; }
+    .dashboard-card h2 { color: #003366; margin-bottom: 20px; text-align: center; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; text-align: left; }
+    .stat-box { background: #f8fafc; padding: 15px; border-radius: 6px; border-left: 4px solid #003366; }
     .stat-box h4 { font-size: 13px; color: #666; margin-bottom: 5px; }
     .stat-box p { font-size: 18px; font-weight: bold; color: #333; }
   </style>
 </head>
 <body>
+
+  <!-- Professional Custom Alert Modal -->
+  <div id="custom-modal">
+    <div class="modal-card">
+      <h3 id="modal-title">Notification</h3>
+      <p id="modal-message"></p>
+      <div class="modal-btns">
+        <button id="modal-ok-btn" class="btn" style="background:#003366; color:white; padding:8px 20px;">OK</button>
+        <button id="modal-cancel-btn" class="btn" style="background:#e5e7eb; color:#374151; padding:8px 20px; display:none;">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <header>
     <h1>Online Examination Portal</h1>
@@ -80,6 +104,7 @@
         <div class="options-list" id="options-container"></div>
       </div>
 
+      <!-- Action Bar options ke just niche rakhi gayi hai -->
       <div class="action-bar">
         <div>
           <button class="btn btn-save" onclick="saveAndNext()">Save & Next</button>
@@ -114,10 +139,11 @@
     </div>
   </div>
 
-  <!-- Performance Dashboard Overlay -->
+  <!-- Performance Dashboard Slide View Overlay -->
   <div id="dashboard-overlay">
     <div class="dashboard-card">
-      <h2>Exam Performance Dashboard</h2>
+      <h2>Exam Performance & Analysis</h2>
+      
       <div class="stats-grid">
         <div class="stat-box">
           <h4>Candidate Name</h4>
@@ -132,20 +158,79 @@
           <p id="dash-correct">-</p>
         </div>
         <div class="stat-box">
-          <h4>Accuracy</h4>
-          <p id="dash-accuracy">-</p>
+          <h4>Penalty Deducted</h4>
+          <p id="dash-penalty" style="color: #dc2626;">-</p>
         </div>
       </div>
-      <button class="btn btn-submit" style="width: auto; padding: 10px 25px;" onclick="window.location.href='index.html'">Back to Home</button>
+
+      <!-- Penalty Reason Note -->
+      <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; color: #92400e; text-align: left;">
+        <strong>Note:</strong> Penalty marks were applied due to incorrect answers / negative marking rules or security violations during the test.
+      </div>
+
+      <!-- Question Analysis Section (Green/Red color coding) -->
+      <h3 style="margin-bottom: 10px; font-size: 16px; color: #003366; text-align: left;">Detailed Question Analysis</h3>
+      <div id="analysis-questions-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; text-align: left; padding-right: 5px;"></div>
+
+      <!-- Mandatory Star Feedback Section -->
+      <div style="border-top: 1px solid #e2e8f0; padding-top: 15px; text-align: left; margin-bottom: 15px;">
+        <label style="display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px;">Rate Your Experience (Mandatory):</label>
+        <div id="star-rating" style="display: flex; gap: 8px; cursor: pointer; font-size: 26px; color: #d1d5db;">
+          <span onclick="setRating(1)">★</span>
+          <span onclick="setRating(2)">★</span>
+          <span onclick="setRating(3)">★</span>
+          <span onclick="setRating(4)">★</span>
+          <span onclick="setRating(5)">★</span>
+        </div>
+      </div>
+
+      <!-- Doubt / Query Box Section -->
+      <div style="text-align: left; margin-bottom: 20px;">
+        <label style="display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px;">Any Doubts or Queries (Optional):</label>
+        <textarea id="student-query" placeholder="Write your feedback or doubts here..." style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; height: 70px; font-family: 'Roboto', sans-serif; outline: none;"></textarea>
+      </div>
+
+      <button class="btn btn-submit" style="width: 100%; padding: 12px; font-size: 15px;" onclick="finalSubmitFeedback()">Submit Feedback & Finish</button>
     </div>
   </div>
 
   <script>
+    // Custom Professional Alert function (Removes GitHub domain ugly alerts)
+    window.showCustomAlert = function(title, message, callback) {
+      document.getElementById("modal-title").innerText = title;
+      document.getElementById("modal-message").innerText = message;
+      document.getElementById("modal-cancel-btn").style.display = "none";
+      document.getElementById("custom-modal").style.display = "flex";
+      
+      const okBtn = document.getElementById("modal-ok-btn");
+      okBtn.onclick = function() {
+        document.getElementById("custom-modal").style.display = "none";
+        if (callback) callback();
+      };
+    };
+
+    window.showCustomConfirm = function(title, message, onConfirm) {
+      document.getElementById("modal-title").innerText = title;
+      document.getElementById("modal-message").innerText = message;
+      document.getElementById("modal-cancel-btn").style.display = "inline-block";
+      document.getElementById("custom-modal").style.display = "flex";
+      
+      const okBtn = document.getElementById("modal-ok-btn");
+      const cancelBtn = document.getElementById("modal-cancel-btn");
+      
+      okBtn.onclick = function() {
+        document.getElementById("custom-modal").style.display = "none";
+        if (onConfirm) onConfirm();
+      };
+      cancelBtn.onclick = function() {
+        document.getElementById("custom-modal").style.display = "none";
+      };
+    };
+
     const studentInfo = JSON.parse(sessionStorage.getItem("student_info")) || { name: "Student", roll: "EXAM-1001" };
     document.getElementById("student-name").innerText = studentInfo.name;
     document.getElementById("student-roll").innerText = "Roll: " + studentInfo.roll;
 
-    // Load configuration seamlessly from Admin LocalStorage configuration payload
     let examConfig = {};
     try {
       const rawConfig = localStorage.getItem("exam_config") || localStorage.getItem("test_settings");
@@ -154,21 +239,13 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     
-    // Synced configuration keys with admin panel payload
     const savedDuration = urlParams.get('duration') || 
                           examConfig.examDurationMinutes || 
-                          localStorage.getItem("examDuration") || 
-                          localStorage.getItem("test_duration") || 
-                          localStorage.getItem("exam_duration") || 
-                          localStorage.getItem("duration") || 60;
+                          localStorage.getItem("examDuration") || 60;
 
     const savedLimit = urlParams.get('limit') || 
                        examConfig.studentLimit || 
-                       examConfig.questions_per_student || 
-                       localStorage.getItem("questionLimit") || 
-                       localStorage.getItem("display_limit") || 
-                       localStorage.getItem("student_limit") || 
-                       localStorage.getItem("limit") || 20;
+                       localStorage.getItem("questionLimit") || 20;
 
     let questionsPool = [];
     let currentIdx = 0;
@@ -183,8 +260,6 @@
         const data = await response.json();
         
         let allPool = Array.isArray(data) ? data : (data.questions || []);
-        
-        // Slice questions array as per dynamic Limit setting from admin config
         const limit = parseInt(savedLimit);
         questionsPool = allPool.slice(0, limit);
 
@@ -257,7 +332,7 @@
       if (currentIdx < questionsPool.length - 1) {
         renderQuestion(currentIdx + 1);
       } else {
-        alert("You are on the last question.");
+        showCustomAlert("Notice", "You are on the last question.");
       }
     };
 
@@ -314,8 +389,9 @@
       const timerInterval = setInterval(() => {
         if (timeLeftSeconds <= 0) {
           clearInterval(timerInterval);
-          alert("Time is up! Your exam will be submitted automatically.");
-          submitExam();
+          showCustomAlert("Time Up", "Your time is finished. Test will be submitted automatically.", () => {
+            submitExam();
+          });
           return;
         }
         timeLeftSeconds--;
@@ -327,30 +403,79 @@
     }
 
     window.confirmSubmitExam = function() {
-      if (confirm("Are you sure you want to submit your exam?")) {
+      showCustomConfirm("Submit Test", "Are you sure you want to submit your exam?", () => {
         submitExam();
-      }
+      });
     };
 
     function submitExam() {
       let score = 0;
-      let attempted = 0;
+      let penaltyMarks = 0;
+      const negativePerWrong = 0.25;
+
       questionsPool.forEach((qObj, idx) => {
         if (studentAnswers[idx]) {
-          attempted++;
-          if (studentAnswers[idx] === qObj.a) score++;
+          if (studentAnswers[idx] === qObj.a) {
+            score++;
+          } else {
+            penaltyMarks += negativePerWrong;
+          }
         }
       });
 
-      const accuracy = attempted > 0 ? ((score / attempted) * 100).toFixed(1) + '%' : '0%';
+      const finalScore = Math.max(0, score - penaltyMarks);
 
-      // Display Performance Dashboard Popup
+      // Populate Performance Dashboard View
       document.getElementById("dash-name").innerText = studentInfo.name;
-      document.getElementById("dash-score").innerText = `${score} / ${questionsPool.length}`;
+      document.getElementById("dash-score").innerText = `${finalScore.toFixed(2)} / ${questionsPool.length}`;
       document.getElementById("dash-correct").innerText = `${score} Correct`;
-      document.getElementById("dash-accuracy").innerText = accuracy;
+      document.getElementById("dash-penalty").innerText = `-${penaltyMarks.toFixed(2)} Marks`;
+
+      // Render Question Analysis List with Green/Red Color Coding
+      const analysisList = document.getElementById("analysis-questions-list");
+      analysisList.innerHTML = "";
+
+      questionsPool.forEach((qObj, idx) => {
+        let studentChoice = studentAnswers[idx] || "Not Answered";
+        let isCorrect = studentChoice === qObj.a;
+        let choiceColor = isCorrect ? "#16a34a" : "#dc2626"; // Green if match, Red if different
+
+        let itemHTML = `
+          <div style="background: #f9fafb; padding: 10px 12px; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 13px;">
+            <p style="font-weight: 600; margin-bottom: 5px; color: #1e293b;">Q${idx + 1}: ${qObj.q}</p>
+            <p style="margin-bottom: 3px;">Correct Answer: <span style="color: #16a34a; font-weight: bold;">${qObj.a}</span></p>
+            <p>Student Choice: <span style="color: ${choiceColor}; font-weight: bold;">${studentChoice}</span></p>
+          </div>
+        `;
+        analysisList.innerHTML += itemHTML;
+      });
+
       document.getElementById("dashboard-overlay").style.display = 'flex';
     }
+
+    let selectedRating = 0;
+    window.setRating = function(rating) {
+      selectedRating = rating;
+      const stars = document.querySelectorAll("#star-rating span");
+      stars.forEach((star, index) => {
+        star.style.color = index < rating ? "#f59e0b" : "#d1d5db";
+      });
+    };
+
+    window.finalSubmitFeedback = function() {
+      if (selectedRating === 0) {
+        showCustomAlert("Feedback Required", "Please select a star rating before submitting feedback.");
+        return;
+      }
+
+      const doubtText = document.getElementById("student-query").value;
+      console.log("Student Feedback Rating:", selectedRating, "Doubt/Query:", doubtText);
+
+      // Professional Thank You Message Popup
+      showCustomAlert("Thank You!", "Thank you for attempting test! Your response has been recorded successfully.", () => {
+        window.location.href = 'index.html';
+      });
+    };
 
     loadQuestions();
   </script>
