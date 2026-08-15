@@ -31,19 +31,7 @@
         .toast-popup { position: fixed; top: 20px; right: 20px; background: #0f172a; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-size: 0.9rem; z-index: 1000; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--danger); transition: transform 0.3s ease; transform: translateX(120%); }
         .toast-popup.show { transform: translateX(0); }
 
-        /* Slide 1: Login */
-        .landing-container { display: flex; flex: 1; justify-content: center; align-items: center; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); padding: 15px; }
-        .login-card { background: white; width: 100%; max-width: 420px; padding: 35px 30px; border-radius: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
-        .login-card h2 { font-size: 1.5rem; color: #0f172a; margin-bottom: 8px; font-weight: 700; }
-        .login-card p { font-size: 0.85rem; color: #64748b; margin-bottom: 25px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: #334155; }
-        .form-group input { width: 100%; padding: 12px 15px; border: 1px solid var(--gray-border); border-radius: 8px; font-size: 0.95rem; outline: none; }
-        .form-group input:focus { border-color: var(--primary-accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
-        .btn-main { width: 100%; padding: 13px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-        .btn-main:hover { background: #1e293b; }
-
-        /* Slide 2: Professional Blue Instructions Page */
+        /* Slide 1: Direct Instructions Page */
         .instruction-container { flex: 1; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); padding: 20px; display: flex; justify-content: center; align-items: center; overflow-y: auto; }
         .instruction-card { background: white; width: 100%; max-width: 800px; padding: 35px; border-radius: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 20px; }
         .instruction-card h2 { font-size: 1.4rem; color: #0f172a; border-bottom: 2px solid var(--gray-border); padding-bottom: 12px; }
@@ -130,7 +118,7 @@
         .query-box textarea { width: 100%; padding: 12px; border: 1px solid var(--gray-border); border-radius: 8px; resize: vertical; min-height: 80px; outline: none; }
         
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 100; display: none; padding: 15px; }
-        .modal-card { background: white; width: 100%; max-width: 400px; border-radius: 12px; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.2); }
+        .modal-card { background: white; width: 100%; max-width: 420px; border-radius: 12px; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
@@ -138,7 +126,7 @@
     <!-- Professional Toast Popup -->
     <div id="custom-toast" class="toast-popup">
         <i class="fa-solid fa-triangle-exclamation" style="color: var(--danger); font-size: 1.1rem;"></i>
-        <span id="toast-message">This email is not found or invalid format.</span>
+        <span id="toast-message">Notification message here.</span>
     </div>
 
     <!-- SCHEDULE NOTICE VIEW -->
@@ -151,27 +139,8 @@
         </div>
     </div>
 
-    <!-- SLIDE 1: LOGIN -->
-    <div id="slide-login" class="view-section active">
-        <div class="landing-container">
-            <div class="login-card">
-                <h2>Assessment Portal</h2>
-                <p>Enter your credentials to access the examination.</p>
-                <div class="form-group">
-                    <label>Candidate Name</label>
-                    <input type="text" id="candidate-name" placeholder="Enter full name">
-                </div>
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" id="candidate-email" placeholder="name@email.com">
-                </div>
-                <button class="btn-main" onclick="handleLoginValidation()">Proceed to Instructions</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- SLIDE 2: PROFESSIONAL BLUE INSTRUCTIONS PAGE -->
-    <div id="slide-instructions" class="view-section">
+    <!-- DIRECT INSTRUCTIONS PAGE (Landing view) -->
+    <div id="slide-instructions" class="view-section active">
         <div class="instruction-container">
             <div class="instruction-card">
                 <h2>Examination Instructions & Guidelines</h2>
@@ -185,8 +154,7 @@
                         <li>Once submitted or when the timer expires, your performance card and analytical breakdown will be automatically generated and synced to the admin database.</li>
                     </ul>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid var(--gray-border); padding-top: 15px;">
-                    <button class="btn btn-outline" onclick="backToLogin()">Back</button>
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 10px; border-top: 1px solid var(--gray-border); padding-top: 15px;">
                     <button class="btn btn-success" onclick="openReadyConfirmationModal()"><i class="fa-solid fa-play"></i> Start Test</button>
                 </div>
             </div>
@@ -214,7 +182,6 @@
                 <h1>Assessment Portal</h1>
             </div>
             <div class="header-right">
-                <div class="user-meta-info" id="header-user-display">Candidate</div>
                 <div class="timer-container">
                     <i class="fa-regular fa-clock"></i>
                     <span id="time-left">00:00:00</span>
@@ -278,8 +245,8 @@
         <div class="dashboard-container">
             <div class="dash-header-card">
                 <div>
-                    <h2 id="dash-candidate-name" style="font-size: 1.1rem; color: #0f172a;">Candidate Name</h2>
-                    <p id="dash-candidate-email" style="font-size: 0.8rem; color: #64748b;">Email: -</p>
+                    <h2 style="font-size: 1.1rem; color: #0f172a;">Assessment Result</h2>
+                    <p style="font-size: 0.8rem; color: #64748b;">Evaluation Completed</p>
                 </div>
                 <div style="background: #d1fae5; color: var(--success); padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.8rem;">Submitted</div>
             </div>
@@ -319,17 +286,19 @@
         </div>
     </div>
 
-    <!-- Thank You Notice Modal upon Submission -->
-    <div class="modal-overlay" id="thankyou-modal" style="display: flex;">
+    <!-- Thank You 3-Line Notice Modal upon Feedback Save -->
+    <div class="modal-overlay" id="thankyou-modal">
         <div class="modal-card">
             <div style="background: var(--success); color: white; padding: 15px 20px; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-circle-check"></i> Test Submitted Successfully
+                <i class="fa-solid fa-circle-check"></i> Thank You Note
             </div>
             <div style="padding: 20px; font-size: 0.9rem; color: #334155; line-height: 1.6;">
-                <b>Thank You!</b> Your test has been successfully submitted and responses are recorded. You can now check your detailed performance scorecard below.
+                Thank you for completing the assessment!<br>
+                Your feedback and responses have been successfully stored.<br>
+                This session is now closed; please refresh the page to start a new session.
             </div>
             <div style="padding: 12px 20px; display: flex; justify-content: flex-end; background: #f8fafc; border-top: 1px solid var(--gray-border);">
-                <button class="btn btn-success" onclick="closeThankYouModal()">View Scorecard</button>
+                <button class="btn btn-success" onclick="lockWebsiteSession()">OK / Finish</button>
             </div>
         </div>
     </div>
@@ -365,6 +334,18 @@
         ];
 
         window.onload = function() {
+            // Check if already locked from a previous submission in this tab
+            if(localStorage.getItem('portal_session_locked') === 'true') {
+                document.body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: #0f172a; color: white; text-align: center; padding: 20px; gap: 15px;">
+                        <i class="fa-solid fa-lock" style="font-size: 3rem; color: var(--warning);"></i>
+                        <h2 style="font-size: 1.5rem;">Session Already Completed</h2>
+                        <p style="color: #cbd5e1; max-width: 400px; font-size: 0.9rem;">Your test and feedback have already been submitted. Please refresh the browser tab or restart to start a fresh attempt.</p>
+                        <button onclick="localStorage.removeItem('portal_session_locked'); window.location.reload();" style="padding: 10px 20px; background: var(--success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 10px;">Refresh & Restart</button>
+                    </div>
+                `;
+                return;
+            }
             checkTestScheduleWindow();
         };
 
@@ -408,38 +389,6 @@
                 }
             }
             return true;
-        }
-
-        function handleLoginValidation() {
-            if(!checkTestScheduleWindow()) return;
-
-            const name = document.getElementById('candidate-name').value.trim();
-            const email = document.getElementById('candidate-email').value.trim();
-
-            if(!name || !email) {
-                showToast("Please fill in both candidate name and email address.");
-                return;
-            }
-
-            if(!email.endsWith('@email.com') && !email.includes('@')) {
-                showToast("This email not found or invalid format. Must include @email.com");
-                return;
-            }
-
-            let submittedRecords = JSON.parse(localStorage.getItem('admin_exam_submissions') || localStorage.getItem('exam_results') || '[]');
-            const alreadyGiven = submittedRecords.some(record => record.email && record.email.toLowerCase() === email.toLowerCase());
-            
-            if(alreadyGiven) {
-                showToast("You have already submitted a test with this email ID. Only one attempt is permitted.");
-                return;
-            }
-
-            document.getElementById('header-user-display').innerText = `${name} (${email})`;
-            switchView('slide-instructions');
-        }
-
-        function backToLogin() {
-            switchView('slide-login');
         }
 
         function openReadyConfirmationModal() {
@@ -661,21 +610,9 @@
             closeSubmitModal();
             buildPerformanceDashboard();
             switchView('slide-dashboard');
-            // Show Thank You modal immediately after dashboard opens
-            document.getElementById('thankyou-modal').style.display = 'flex';
-        }
-
-        function closeThankYouModal() {
-            document.getElementById('thankyou-modal').style.display = 'none';
         }
 
         function buildPerformanceDashboard() {
-            const name = document.getElementById('candidate-name').value;
-            const email = document.getElementById('candidate-email').value;
-            
-            document.getElementById('dash-candidate-name').innerText = name;
-            document.getElementById('dash-candidate-email').innerText = `Email: ${email}`;
-
             let correctCount = 0;
             let incorrectCount = 0;
             let attemptedCount = 0;
@@ -693,7 +630,6 @@
                 }
             });
 
-            // UPDATED SCORING: +1 per correct, -0.25 per incorrect
             let totalScore = (correctCount * 1) - (incorrectCount * 0.25);
             let maxPossibleScore = questionsData.length * 1;
             let penalty = (incorrectCount * 0.25).toFixed(2);
@@ -730,8 +666,6 @@
                 `;
                 analysisContainer.appendChild(item);
             });
-
-            saveSubmissionToAdminStorage(name, email, totalScore.toFixed(2), accuracy, correctCount, incorrectCount);
         }
 
         function setRating(stars) {
@@ -746,41 +680,38 @@
             });
         }
 
-        function saveSubmissionToAdminStorage(name, email, score, accuracy, correct, incorrect) {
+        function submitFinalFeedbackData() {
+            if(currentRating === 0) {
+                showToast("Please provide a star rating experience before saving feedback.");
+                return;
+            }
+
+            const score = document.getElementById('stat-score').innerText;
+            const accuracy = document.getElementById('stat-accuracy').innerText;
+            
             const feedbackPayload = {
-                candidateName: name,
-                email: email,
+                candidateName: "Candidate",
+                email: "student@email.com",
                 score: score,
                 accuracy: accuracy,
-                correctCount: correct,
-                incorrectCount: incorrect,
                 rating: currentRating,
                 query: document.getElementById('user-query-text').value,
                 timestamp: new Date().toISOString()
             };
 
             let existingRecords = JSON.parse(localStorage.getItem('admin_exam_submissions') || localStorage.getItem('exam_results') || '[]');
-            existingRecords = existingRecords.filter(r => r.email.toLowerCase() !== email.toLowerCase());
             existingRecords.push(feedbackPayload);
             
             localStorage.setItem('admin_exam_submissions', JSON.stringify(existingRecords));
             localStorage.setItem('exam_results', JSON.stringify(existingRecords));
+
+            // Show 3-line Thank You Notice Popup
+            document.getElementById('thankyou-modal').style.display = 'flex';
         }
 
-        function submitFinalFeedbackData() {
-            // FEEDBACK MANDATORY CHECK
-            if(currentRating === 0) {
-                showToast("Please provide a star rating experience before saving/submitting feedback.");
-                return;
-            }
-
-            const name = document.getElementById('candidate-name').value;
-            const email = document.getElementById('candidate-email').value;
-            const score = document.getElementById('stat-score').innerText;
-            const accuracy = document.getElementById('stat-accuracy').innerText;
-            
-            saveSubmissionToAdminStorage(name, email, score, accuracy, 0, 0);
-            showToast("Feedback and score successfully synced to Admin records!");
+        function lockWebsiteSession() {
+            localStorage.setItem('portal_session_locked', 'true');
+            window.location.reload();
         }
     </script>
 </body>
