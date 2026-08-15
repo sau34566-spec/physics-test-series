@@ -701,9 +701,11 @@
       localStorage.setItem("test_settings", JSON.stringify(configPayload));
 
       try {
+        // 🔥 Real-time sync settings document update for students
         await setDoc(doc(db, "settings", "testConfig"), {
             totalQuestions: Number(totalPool),
-            durationMinutes: Number(examDurationMinutes)
+            durationMinutes: Number(examDurationMinutes),
+            updatedAt: new Date().toISOString()
         }, { merge: true });
 
         await setDoc(doc(db, "exam_config", "current_test"), configPayload, { merge: true });
