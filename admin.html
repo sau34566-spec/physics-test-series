@@ -99,6 +99,7 @@
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
     .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 15px -3px rgba(0,0,0,0.15); }
+    .btn-sm { padding: 0.45rem 0.85rem; font-size: 0.8rem; border-radius: 6px; }
     .btn-primary { background: var(--primary-accent); } .btn-primary:hover { background: #2563eb; }
     .btn-success { background: var(--success); } .btn-success:hover { background: #059669; }
     .btn-danger { background: var(--danger); } .btn-danger:hover { background: #dc2626; }
@@ -107,7 +108,7 @@
 
     .table-responsive { width: 100%; overflow-x: auto; margin-top: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); }
     table { width: 100%; border-collapse: collapse; text-align: left; background: white; }
-    th, td { padding: 1.1rem 1.2rem; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+    th, td { padding: 1.1rem 1.2rem; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; vertical-align: middle; }
     th { background: #f8fafc; color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; }
     tr:last-child td { border-bottom: none; }
     tr:hover { background: #f1f5f9; }
@@ -142,6 +143,21 @@
       display: inline-block; width: 12px; height: 12px; background-color: #2563eb; border-radius: 50%;
       margin-right: 6px; animation: pulseGlow 2s infinite;
     }
+
+    /* Modal Styling for Question Preview */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center; z-index: 10000;
+    }
+    .modal-card {
+      background: white; border-radius: 16px; width: 90%; max-width: 600px;
+      padding: 1.8rem; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color);
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem; }
+    .modal-close { background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
+    .modal-close:hover { color: var(--danger); }
   </style>
 </head>
 <body>
@@ -409,7 +425,7 @@
                 <th>Correct Answers</th>
                 <th>Incorrect Answers</th>
                 <th>Accuracy Rate</th>
-                <th>Difficulty Status</th>
+                <th>Difficulty Status & Action</th>
               </tr>
             </thead>
             <tbody id="question-insights-table-body">
@@ -420,6 +436,19 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- Question Detail View Modal -->
+  <div id="question-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-question-title"><i class="fa-solid fa-circle-question"></i> Question Details</h3>
+        <button class="modal-close" onclick="closeQuestionModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="modal-question-body">
+        <!-- Content inserted dynamically -->
+      </div>
+    </div>
   </div>
 
   <script type="module">
@@ -687,9 +716,27 @@
             timeStyle: 'short'
           }) : "N/A";
 
-          const tabs = r.tabSwitches !== undefined ? r.tabSwitches : (r.tabSwitchesDetected || r.tab_switches || 0);
-          const copies = r.copiesAttempted !== undefined ? r.copiesAttempted : (r.copyPasteAttempts || r.copy_paste || 0);
-          const penalties = r.penaltiesApplied !== undefined ? r.penaltiesApplied : tabs;
+          // Improved Fallback Extraction for Tab Switches, Copy Violations, and Penalty Calculations
+          const tabs = r.tabSwitches !== undefined ? Number(r.tabSwitches) : 
+                        (r.tabSwitchesDetected !== undefined ? Number(r.tabSwitchesDetected) : 
+                        (r.tab_switches !== undefined ? Number(r.tab_switches) : 0));
+                        
+          const copies = r.copiesAttempted !== undefined ? Number(r.copiesAttempted) : 
+                         (r.copyPasteAttempts !== undefined ? Number(r.copyPasteAttempts) : 
+                         (r.copy_paste !== undefined ? Number(r.copy_paste) : 0));
+
+          // Calculate or fetch total penalty points deducted
+          let penalties = 0;
+          if (r.penaltiesApplied !== undefined) {
+            penalties = Number(r.penaltiesApplied);
+          } else if (r.penaltyDeduction !== undefined) {
+            penalties = Number(r.penaltyDeduction);
+          } else if (r.penalty !== undefined) {
+            penalties = Number(r.penalty);
+          } else {
+            // Formula fallback: 1 mark per tab switch + 1 mark per copy violation
+            penalties = (tabs * 1) + (copies * 1);
+          }
 
           totalTabs += tabs;
           totalCopies += copies;
@@ -811,11 +858,59 @@
               <div class="progress-bar-bg" style="width:80px;"><div class="progress-bar-fill" style="width:${accuracy}%;"></div></div>
             </div>
           </td>
-          <td>${diffBadge}</td>
+          <td style="display:flex; align-items:center; gap:10px;">
+            ${diffBadge}
+            <button class="btn btn-sm btn-primary" onclick="viewQuestionDetail(${qIndex}, ${accuracy}, ${correct}, ${incorrect})">
+              <i class="fa-solid fa-eye"></i> View
+            </button>
+          </td>
         `;
         qTable.appendChild(tr);
       }
     }
+
+    // Function to Open Question Details Modal
+    window.viewQuestionDetail = (qNum, accuracy, correct, incorrect) => {
+      document.getElementById('modal-question-title').innerHTML = `<i class="fa-solid fa-circle-question"></i> Insights: Question #${qNum}`;
+      const body = document.getElementById('modal-question-body');
+      
+      body.innerHTML = `
+        <div style="margin-bottom: 1rem;">
+          <h4 style="font-size: 1rem; color: var(--primary); margin-bottom: 0.5rem;">Sample Question Text #${qNum}:</h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+            What is the fundamental unit of Electric Current in the SI system?
+          </p>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <strong style="font-size: 0.85rem; color: var(--text-main);">Options & Answer:</strong>
+          <ul style="list-style: none; margin-top: 5px; font-size: 0.88rem; color: var(--text-muted);">
+            <li style="padding: 4px 0;"><strong style="color: var(--success);">A. Ampere (Correct Answer)</strong></li>
+            <li style="padding: 4px 0;">B. Volt</li>
+            <li style="padding: 4px 0;">C. Ohm</li>
+            <li style="padding: 4px 0;">D. Joule</li>
+          </ul>
+        </div>
+        <div style="display: flex; gap: 15px; margin-top: 1.2rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+          <div style="flex:1; text-align:center; background:#d1fae5; padding:10px; border-radius:8px;">
+            <div style="font-size:0.75rem; font-weight:700; color:#065f46;">CORRECT</div>
+            <div style="font-size:1.2rem; font-weight:800; color:#065f46;">${correct}</div>
+          </div>
+          <div style="flex:1; text-align:center; background:#fee2e2; padding:10px; border-radius:8px;">
+            <div style="font-size:0.75rem; font-weight:700; color:#991b1b;">INCORRECT</div>
+            <div style="font-size:1.2rem; font-weight:800; color:#991b1b;">${incorrect}</div>
+          </div>
+          <div style="flex:1; text-align:center; background:#eff6ff; padding:10px; border-radius:8px;">
+            <div style="font-size:0.75rem; font-weight:700; color:#1e40af;">ACCURACY</div>
+            <div style="font-size:1.2rem; font-weight:800; color:#1e40af;">${accuracy}%</div>
+          </div>
+        </div>
+      `;
+      document.getElementById('question-modal').style.display = 'flex';
+    };
+
+    window.closeQuestionModal = () => {
+      document.getElementById('question-modal').style.display = 'none';
+    };
 
     window.downloadResultsCSV = () => {
       if (allStudentResults.length === 0) {
