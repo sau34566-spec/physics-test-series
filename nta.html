@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -255,10 +255,17 @@
     const savedLimit = urlParams.get('limit') || examConfig.studentLimit || localStorage.getItem("questionLimit") || 20;
 
     let questionsPool = [];
+    let completeMasterPool = []; // Pool me se bache hue extra questions ke liye
     let currentIdx = 0;
     let studentAnswers = {};
     let questionStatus = {};
     let timeLeftSeconds = parseInt(savedDuration) * 60;
+    let examActiveState = false;
+
+    // Exam Active check for security.js
+    window.isExamActive = function() {
+      return examActiveState;
+    };
 
     function shuffleArray(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -268,7 +275,6 @@
       return array;
     }
 
-    // Optional UI update function stub if required by real-time listener
     function updateTestUI(totalQuestions, examTimeMinutes) {
       console.log("UI updated with live config:", totalQuestions, examTimeMinutes);
     }
@@ -282,8 +288,9 @@
         let allPool = Array.isArray(data) ? data : (data.questions || []);
         shuffleArray(allPool);
 
+        completeMasterPool = [...allPool]; // Store full master pool
         const limit = parseInt(savedLimit);
-        questionsPool = allPool.slice(0, limit);
+        questionsPool = allPool.slice(0, Math.min(limit, allPool.length));
 
         questionsPool.forEach(q => {
           if (q.options && Array.isArray(q.options)) {
@@ -294,28 +301,18 @@
         if (questionsPool.length === 0) throw new Error("Empty questions");
       } catch (err) {
         console.warn("Fetch error, using default fallback:", err);
-        questionsPool = [
-          {
-            q: "How do plants make their own food?",
-            options: ["Respiration", "Photosynthesis", "Digestion", "Transpiration"],
-            a: "Photosynthesis"
-          }
+        completeMasterPool = [
+          { q: "How do plants make their own food?", options: ["Respiration", "Photosynthesis", "Digestion", "Transpiration"], a: "Photosynthesis" }
         ];
+        questionsPool = [...completeMasterPool];
       }
       initExam();
       
-      // Real-time listener setup after DB is initialized
       if (window.db && window.doc && window.onSnapshot) {
         window.onSnapshot(window.doc(window.db, "settings", "testConfig"), (docSnap) => {
             if (docSnap.exists()) {
                 const config = docSnap.data();
-                
-                let totalQuestions = config.totalQuestions; 
-                let examTimeMinutes = config.durationMinutes;
-                
-                console.log("Live update received:", totalQuestions, examTimeMinutes);
-                
-                updateTestUI(totalQuestions, examTimeMinutes);
+                updateTestUI(config.totalQuestions, config.durationMinutes);
             }
         });
       }
@@ -324,6 +321,7 @@
     function initExam() {
       questionStatus = {};
       questionsPool.forEach((_, idx) => { questionStatus[idx] = 'not-visited'; });
+      examActiveState = true; // Mark exam active
       renderQuestion(0);
       startTimer();
     }
@@ -395,12 +393,40 @@
       renderQuestion(currentIdx);
     };
 
-    window.applyTabSwitchPenalty = function() {
+    // Tab Switch penalty handler: Replaces current question with a random unused question from the master pool if available
+    window.loadRandomPoolQuestion = function() {
+      if (completeMasterPool.length > questionsPool.length) {
+        // Find questions not currently in active questionsPool
+        let activeQuestionsSet = new Set(questionsPool.map(q => q.q));
+        let availablePool = completeMasterPool.filter(q => !activeQuestionsSet.has(q.q));
+
+        if (availablePool.length > 0) {
+          let randomIndex = Math.floor(Math.random() * availablePool.length);
+          let newQ = availablePool[randomIndex];
+          
+          if (newQ.options && Array.isArray(newQ.options)) {
+            shuffleArray(newQ.options);
+          }
+
+          // Replace current question with new random pool question
+          questionsPool[currentIdx] = newQ;
+          delete studentAnswers[currentIdx]; // clear previous answer for replaced question
+          questionStatus[currentIdx] = 'not-answered';
+          renderQuestion(currentIdx);
+          return;
+        }
+      }
+      
+      // Fallback: Just switch to next question if pool has no spare item
       if (currentIdx < questionsPool.length - 1) {
         renderQuestion(currentIdx + 1);
       } else {
         renderQuestion(0);
       }
+    };
+
+    window.applyTabSwitchPenalty = function() {
+      window.loadRandomPoolQuestion();
     };
 
     function renderPalette() {
@@ -441,6 +467,7 @@
       const timerInterval = setInterval(() => {
         if (timeLeftSeconds <= 0) {
           clearInterval(timerInterval);
+          examActiveState = false; // Stop active check
           showCustomAlert("Time Up", "Your time is finished. Test will be submitted automatically.", () => {
             submitExam();
           });
@@ -461,6 +488,7 @@
     };
 
     window.submitExam = async function() {
+      examActiveState = false; // Deactivate exam security tracking
       window.isTestSubmitted = true;
 
       let secReport = { tabSwitches: 0, copiesAttempted: 0, penaltiesApplied: 0 };
