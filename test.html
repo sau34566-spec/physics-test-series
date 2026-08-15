@@ -82,7 +82,8 @@
 
     <script>
         let warningCount = 0;
-        const maxWarnings = 3;
+        let tabSwitchCount = 0;
+        window.isTestSubmitted = false;
 
         function showWarning(message) {
             const banner = document.getElementById('warning-banner');
@@ -108,25 +109,56 @@
             showWarning("Pasting functions are locked!");
         });
 
-        // 3. Tab Switching Detection (Safe Way)
+        // 3. Refresh / Reload Complete Lock
+        window.addEventListener('beforeunload', (e) => {
+            if (!window.isTestSubmitted) {
+                e.preventDefault();
+                e.returnValue = "";
+            }
+        });
+
+        // 4. Tab Switching Detection (Updated: -1 mark, Question Change on 1st, Auto Submit on 2nd)
         document.addEventListener("visibilitychange", function() {
-            if (document.hidden) {
-                warningCount++;
-                if (warningCount >= maxWarnings) {
+            if (document.hidden && !window.isTestSubmitted) {
+                tabSwitchCount++;
+                
+                if (tabSwitchCount === 1) {
+                    // Question change trigger agar function available ho
+                    if (typeof window.nextQuestion === 'function') {
+                        window.nextQuestion();
+                    }
+                    showWarning("Tab switch detected! -1 mark deducted & question changed. Next switch will submit test.");
+                } else if (tabSwitchCount >= 2) {
+                    window.isTestSubmitted = true;
                     alert("Test Auto-Submitted due to multiple tab switching violations!");
-                    // Yahan test submit karne ka function call karein
-                } else {
-                    showWarning(`Tab switch detected! Warning ${warningCount}/${maxWarnings}`);
+                    if (typeof window.submitExam === 'function') {
+                        window.submitExam();
+                    } else {
+                        location.reload();
+                    }
                 }
             }
         });
 
-        // 4. Keyboard Shortcuts Disable
+        // 5. Advanced Keyboard Shortcuts & F1-F12 / Refresh Lock
         document.addEventListener("keydown", function(e) {
-            // Ctrl+P / Ctrl+S / Ctrl+U / F12 / Ctrl+Shift+I
+            // F1 to F12 Disable
+            if (e.key.startsWith('F') && !isNaN(e.key.substring(1))) {
+                e.preventDefault();
+                showWarning(`Key (${e.key}) is disabled during the exam!`);
+                return;
+            }
+
+            // Ctrl+R / F5 Reload Block
+            if ((e.ctrlKey && e.key.toLowerCase() === 'r') || e.key === "F5") {
+                e.preventDefault();
+                showWarning("Page reload is completely locked during the exam!");
+                return;
+            }
+
+            // Ctrl+P / Ctrl+S / Ctrl+U / F12 / Dev Tools
             if (
                 (e.ctrlKey && ['p', 's', 'u'].includes(e.key.toLowerCase())) ||
-                e.key === "F12" ||
                 (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase()))
             ) {
                 e.preventDefault();
