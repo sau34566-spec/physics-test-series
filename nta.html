@@ -729,22 +729,32 @@
 
             const score = document.getElementById('stat-score').innerText;
             const accuracy = document.getElementById('stat-accuracy').innerText;
+            let securityPenalties = parseInt(localStorage.getItem('exam_security_penalties') || '0');
             
             const feedbackPayload = {
                 candidateName: currentStudentEmail,
                 email: currentStudentEmail,
                 score: score,
                 accuracy: accuracy,
+                penalties: securityPenalties,
                 rating: currentRating,
                 query: document.getElementById('user-query-text').value,
                 timestamp: new Date().toISOString()
             };
 
-            let existingRecords = JSON.parse(localStorage.getItem('admin_exam_submissions') || localStorage.getItem('exam_results') || '[]');
-            existingRecords.push(feedbackPayload);
+            // Save data across all possible keys so Admin Panel picks it up instantly
+            const storageKeys = ['admin_exam_submissions', 'exam_results', 'all_student_results', 'student_submissions'];
             
-            localStorage.setItem('admin_exam_submissions', JSON.stringify(existingRecords));
-            localStorage.setItem('exam_results', JSON.stringify(existingRecords));
+            storageKeys.forEach(key => {
+                let existingRecords = JSON.parse(localStorage.getItem(key) || '[]');
+                let index = existingRecords.findIndex(r => r.email === currentStudentEmail);
+                if(index !== -1) {
+                    existingRecords[index] = feedbackPayload;
+                } else {
+                    existingRecords.push(feedbackPayload);
+                }
+                localStorage.setItem(key, JSON.stringify(existingRecords));
+            });
 
             let savedAdmin = localStorage.getItem('persistent_admin_email');
             let isAdmin = localStorage.getItem('is_admin_logged_in') === 'true' && currentStudentEmail.toLowerCase() === savedAdmin;
