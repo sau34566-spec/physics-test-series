@@ -452,8 +452,8 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -604,7 +604,6 @@
       liveQuestionsPool.push(newQ);
       localStorage.setItem("live_questions_pool", JSON.stringify(liveQuestionsPool));
       
-      // Auto update total pool input box if needed
       document.getElementById('config-total-pool').value = liveQuestionsPool.length;
       
       renderQuestionsPool();
@@ -702,11 +701,16 @@
       localStorage.setItem("test_settings", JSON.stringify(configPayload));
 
       try {
+        await setDoc(doc(db, "settings", "testConfig"), {
+            totalQuestions: Number(totalPool),
+            durationMinutes: Number(examDurationMinutes)
+        }, { merge: true });
+
         await setDoc(doc(db, "exam_config", "current_test"), configPayload, { merge: true });
         await setDoc(doc(db, "config", "test_settings"), configPayload, { merge: true });
         await setDoc(doc(db, "test_config", "latest"), configPayload, { merge: true });
 
-        alert("Configurations & Question pool saved successfully!");
+        alert("Settings updated successfully live!");
       } catch (err) {
         alert("Saved to local browser storage! (Firebase notice: " + err.message + ")");
       } finally {
