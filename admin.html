@@ -8,10 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- File Extractors Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  
   <style>
     :root {
       --primary: #0f172a;
@@ -87,7 +83,7 @@
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 1.5rem; }
     .form-group { margin-bottom: 1.2rem; text-align: left; }
     label { display: block; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #334155; margin-bottom: 0.5rem; }
-    input[type="text"], input[type="password"], input[type="number"], input[type="datetime-local"], input[type="file"], textarea, select {
+    input[type="text"], input[type="password"], input[type="number"], input[type="datetime-local"], textarea, select {
       width: 100%; padding: 0.85rem 1.1rem; border: 2px solid var(--border-color); border-radius: 10px;
       font-size: 0.95rem; font-weight: 500; outline: none; transition: all 0.2s; background: #f8fafc; color: var(--text-main);
     }
@@ -254,10 +250,7 @@
               <input type="radio" name="upload-mode" value="form" checked onclick="toggleUploadUI('form')"> Live Form Upload
             </label>
             <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600;">
-              <input type="radio" name="upload-mode" value="docfile" onclick="toggleUploadUI('docfile')"> Upload File (DOCX/PDF)
-            </label>
-            <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600;">
-              <input type="radio" name="upload-mode" value="msword" onclick="toggleUploadUI('msword')"> MS Word Text Paste
+              <input type="radio" name="upload-mode" value="msword" onclick="toggleUploadUI('msword')"> MS Word Parse
             </label>
             <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600;">
               <input type="radio" name="upload-mode" value="code" onclick="toggleUploadUI('code')"> JSON File (chapter1.json)
@@ -302,23 +295,12 @@
               <button type="button" class="btn btn-accent" onclick="addQuestionToPool()"><i class="fa-solid fa-plus"></i> Add Question To Live Pool</button>
             </div>
 
-            <!-- NEW: Document & PDF Direct Upload Area -->
-            <div id="mode-docfile-area" class="mode-content">
-              <h4 style="margin-bottom: 0.5rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-file-arrow-up"></i> Select & Extract Questions File</h4>
-              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Select your Word Document (.docx) or PDF file. Questions will be extracted automatically into the live pool.</p>
-              <div class="form-group">
-                <input type="file" id="file-doc-input" accept=".docx,.pdf">
-              </div>
-              <button type="button" class="btn btn-primary" onclick="processUploadedDocFile()"><i class="fa-solid fa-gear"></i> Parse File & Add Questions</button>
-            </div>
-
             <div id="mode-msword-area" class="mode-content">
               <h4 style="margin-bottom: 1rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-file-word"></i> MS Word Copy-Paste Parser</h4>
               <div class="form-group">
                 <label>Paste MS Word Content *</label>
                 <textarea id="msword-text-input" rows="6" placeholder="Paste formatted questions from MS Word here..."></textarea>
               </div>
-              <button type="button" class="btn btn-accent" onclick="parsePastedTextContent()"><i class="fa-solid fa-plus"></i> Parse & Append Questions</button>
             </div>
 
             <div id="mode-code-area" class="mode-content">
@@ -328,29 +310,6 @@
                 <i class="fa-solid fa-circle-check" style="color: var(--success);"></i> Attached File: <code>chapter1.json</code>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Added Questions List Preview -->
-        <div style="margin-top: 1.5rem; background: #ffffff; padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border-color);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h4 style="color: var(--primary); font-weight: 700;"><i class="fa-solid fa-list-ol"></i> Live Added Questions Pool (<span id="added-pool-count">0</span>)</h4>
-          </div>
-          <div class="table-responsive" style="margin-top: 0; max-height: 250px; overflow-y: auto;">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Question</th>
-                  <th>Options</th>
-                  <th>Ans</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="live-questions-table-body">
-                <tr><td colspan="5" style="text-align:center;">No questions added yet to pool.</td></tr>
-              </tbody>
-            </table>
           </div>
         </div>
 
@@ -621,115 +580,6 @@
       }
     }
 
-    /* Helper function to parse raw question text into structured questions */
-    function parseFormattedText(text) {
-      const questions = [];
-      const blocks = text.split(/(?:Q\d+[:.]|Question\d+[:.]|\n(?=\d+[\.\)]))/gi);
-
-      blocks.forEach((block) => {
-        const cleanBlock = block.trim();
-        if (!cleanBlock) return;
-
-        const lines = cleanBlock.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        let qText = "";
-        let optA = "", optB = "", optC = "", optD = "";
-        let ans = "A";
-
-        lines.forEach(line => {
-          if (/^(?:[A-a]\)|\([A-a]\)|[A-a]\.)/i.test(line)) optA = line.replace(/^(?:[A-a]\)|\([A-a]\)|[A-a]\.)\s*/i, '');
-          else if (/^(?:[B-b]\)|\([B-b]\)|[B-b]\.)/i.test(line)) optB = line.replace(/^(?:[B-b]\)|\([B-b]\)|[B-b]\.)\s*/i, '');
-          else if (/^(?:[C-c]\)|\([C-c]\)|[C-c]\.)/i.test(line)) optC = line.replace(/^(?:[C-c]\)|\([C-c]\)|[C-c]\.)\s*/i, '');
-          else if (/^(?:[D-d]\)|\([D-d]\)|[D-d]\.)/i.test(line)) optD = line.replace(/^(?:[D-d]\)|\([D-d]\)|[D-d]\.)\s*/i, '');
-          else if (/^(?:Ans|Answer)[:\s]*([A-D])/i.test(line)) {
-            const match = line.match(/^(?:Ans|Answer)[:\s]*([A-D])/i);
-            if(match) ans = match[1].toUpperCase();
-          } else {
-            if(!optA && !optB && !optC && !optD) qText += (qText ? " " : "") + line;
-          }
-        });
-
-        if (qText) {
-          questions.push({
-            id: Date.now() + Math.floor(Math.random() * 1000),
-            question: qText,
-            options: { A: optA || "Option A", B: optB || "Option B", C: optC || "Option C", D: optD || "Option D" },
-            answer: ans
-          });
-        }
-      });
-      return questions;
-    }
-
-    window.parsePastedTextContent = () => {
-      const txt = document.getElementById('msword-text-input').value;
-      if (!txt.trim()) { alert("Please paste some text first."); return; }
-      const newQs = parseFormattedText(txt);
-      if (newQs.length === 0) {
-        alert("Could not detect structured questions. Please check text format.");
-        return;
-      }
-      liveQuestionsPool = [...liveQuestionsPool, ...newQs];
-      localStorage.setItem("live_questions_pool", JSON.stringify(liveQuestionsPool));
-      document.getElementById('config-total-pool').value = liveQuestionsPool.length;
-      renderQuestionsPool();
-      alert(`Successfully added ${newQs.length} question(s)!`);
-      document.getElementById('msword-text-input').value = "";
-    };
-
-    /* File upload processing for Word / PDF */
-    window.processUploadedDocFile = async () => {
-      const fileInput = document.getElementById('file-doc-input');
-      if (!fileInput.files || fileInput.files.length === 0) {
-        alert("Please select a file to process.");
-        return;
-      }
-      const file = fileInput.files[0];
-      const filename = file.name.toLowerCase();
-
-      try {
-        let extractedText = "";
-
-        if (filename.endsWith('.docx')) {
-          const arrayBuffer = await file.arrayBuffer();
-          const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-          extractedText = result.value;
-        } else if (filename.endsWith('.pdf')) {
-          const arrayBuffer = await file.arrayBuffer();
-          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-          for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const content = await page.getTextContent();
-            const strings = content.items.map(item => item.str);
-            extractedText += strings.join(' ') + '\n';
-          }
-        } else {
-          alert("Unsupported file format! Please select a .docx or .pdf file.");
-          return;
-        }
-
-        const newQs = parseFormattedText(extractedText);
-        if (newQs.length === 0) {
-          alert("Text extracted, but no structured questions found. Using full raw text import.");
-          liveQuestionsPool.push({
-            id: Date.now(),
-            question: extractedText.slice(0, 300) + "...",
-            options: { A: "A", B: "B", C: "C", D: "D" },
-            answer: "A"
-          });
-        } else {
-          liveQuestionsPool = [...liveQuestionsPool, ...newQs];
-          alert(`Success! Parsed ${newQs.length} question(s) from ${file.name}`);
-        }
-
-        localStorage.setItem("live_questions_pool", JSON.stringify(liveQuestionsPool));
-        document.getElementById('config-total-pool').value = liveQuestionsPool.length;
-        renderQuestionsPool();
-        fileInput.value = "";
-      } catch (err) {
-        alert("Error parsing file: " + err.message);
-      }
-    };
-
     /* Live Question Management Functions */
     window.addQuestionToPool = () => {
       const qText = document.getElementById('live-q-text').value.trim();
@@ -754,7 +604,9 @@
       liveQuestionsPool.push(newQ);
       localStorage.setItem("live_questions_pool", JSON.stringify(liveQuestionsPool));
       
+      // Auto update total pool input box if needed
       document.getElementById('config-total-pool').value = liveQuestionsPool.length;
+      
       renderQuestionsPool();
 
       alert("Question processed & added to pool successfully!");
