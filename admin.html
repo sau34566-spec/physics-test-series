@@ -144,7 +144,6 @@
       margin-right: 6px; animation: pulseGlow 2s infinite;
     }
 
-    /* Modal Styling for Question Preview */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
@@ -243,6 +242,13 @@
           </div>
         </div>
 
+        <!-- NEW: Authorized / Unlimited Admin Emails Option -->
+        <div class="form-group" style="margin-top: 0.5rem; margin-bottom: 1.5rem;">
+          <label for="config-unlimited-emails"><i class="fa-solid fa-envelope-circle-check" style="color:var(--success);"></i> Authorized Admin / Unlimited Emails (Comma Separated)</label>
+          <textarea id="config-unlimited-emails" rows="2" placeholder="admin1@gmail.com, teacher@gmail.com, saurav@gmail.com"></textarea>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">In emails se login karne wale users bina kisi attempt limit, session expiration, ya timer restriction ke kitni bhi baar test de sakte hain (`nta.html` connected).</p>
+        </div>
+
         <div style="background: #f1f5f9; padding: 1.4rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border-color);">
           <label style="font-weight: 800; color: var(--primary);">Question Upload Method & Options:</label>
           <div style="display: flex; gap: 25px; flex-wrap: wrap; margin-top: 0.8rem; margin-bottom: 1.2rem;">
@@ -313,7 +319,6 @@
           </div>
         </div>
 
-        <!-- Added Questions Table Listing Preview -->
         <div style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
           <h4 style="font-size: 1.05rem; color: var(--primary); margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: space-between;">
             <span><i class="fa-solid fa-list"></i> Live Questions Pool Preview (<span id="added-pool-count">0</span>)</span>
@@ -462,16 +467,13 @@
 
   </div>
 
-  <!-- Question Detail View Modal -->
   <div id="question-modal" class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
         <h3 id="modal-question-title"><i class="fa-solid fa-circle-question"></i> Question Details</h3>
         <button class="modal-close" onclick="closeQuestionModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div id="modal-question-body">
-        <!-- Content inserted dynamically -->
-      </div>
+      <div id="modal-question-body"></div>
     </div>
   </div>
 
@@ -572,6 +574,10 @@
           document.getElementById('config-student-limit').value = data.studentLimit || data.questions_per_student || "";
           document.getElementById('config-per-question-timer').value = data.examDurationMinutes ?? (data.perQuestionSeconds ? Math.round(data.perQuestionSeconds / 60) : 60);
 
+          if(data.unlimitedEmails) {
+            document.getElementById('config-unlimited-emails').value = data.unlimitedEmails;
+          }
+
           if(data.windowStart || data.startTime) {
             document.getElementById('config-window-start').value = formatDateTimeLocal(data.windowStart || data.startTime);
           }
@@ -604,7 +610,6 @@
       }
     }
 
-    /* Live Question Management Functions */
     window.addQuestionToPool = () => {
       const qText = document.getElementById('live-q-text').value.trim();
       const optA = document.getElementById('live-opt-a').value.trim();
@@ -627,9 +632,7 @@
 
       liveQuestionsPool.push(newQ);
       localStorage.setItem("live_questions_pool", JSON.stringify(liveQuestionsPool));
-      
       document.getElementById('config-total-pool').value = liveQuestionsPool.length;
-      
       renderQuestionsPool();
 
       alert("Question processed & added to pool successfully!");
@@ -679,6 +682,7 @@
       const totalPool = parseInt(document.getElementById('config-total-pool').value) || liveQuestionsPool.length;
       const studentLimit = parseInt(document.getElementById('config-student-limit').value);
       const examDurationMinutes = parseInt(document.getElementById('config-per-question-timer').value) || 60;
+      const unlimitedEmailsVal = document.getElementById('config-unlimited-emails').value.trim();
       const windowStartVal = document.getElementById('config-window-start').value;
       const windowEndVal = document.getElementById('config-window-end').value;
       
@@ -708,6 +712,7 @@
         questions_per_student: studentLimit,
         examDurationMinutes,
         perQuestionSeconds: examDurationMinutes * 60,
+        unlimitedEmails: unlimitedEmailsVal, // Connected for nta.html usage
         windowStart: startTimeMs,
         windowEnd: endTimeMs,
         startTime: startTimeMs,
@@ -725,10 +730,10 @@
       localStorage.setItem("test_settings", JSON.stringify(configPayload));
 
       try {
-        // 🔥 Real-time sync settings document update for students
         await setDoc(doc(db, "settings", "testConfig"), {
             totalQuestions: Number(totalPool),
             durationMinutes: Number(examDurationMinutes),
+            unlimitedEmails: unlimitedEmailsVal,
             updatedAt: new Date().toISOString()
         }, { merge: true });
 
@@ -736,7 +741,7 @@
         await setDoc(doc(db, "config", "test_settings"), configPayload, { merge: true });
         await setDoc(doc(db, "test_config", "latest"), configPayload, { merge: true });
 
-        alert("Settings updated successfully live!");
+        alert("Settings and Unlimited Admin Emails updated successfully live!");
       } catch (err) {
         alert("Saved to local browser storage! (Firebase notice: " + err.message + ")");
       } finally {
@@ -778,15 +783,11 @@
         }
 
         allStudentResults = [];
-
-        let totalTabs = 0;
-        let totalCopies = 0;
-        let totalPenalties = 0;
+        let totalTabs = 0, totalCopies = 0, totalPenalties = 0;
 
         snap.forEach((docSnap) => {
           const r = docSnap.data();
-          let scoreVal = 0;
-          let maxScore = 10;
+          let scoreVal = 0, maxScore = 10;
           
           if (typeof r.score === 'string') {
             const parts = r.score.split('/');
@@ -808,24 +809,9 @@
             timeStyle: 'short'
           }) : "N/A";
 
-          const tabs = r.tabSwitches !== undefined ? Number(r.tabSwitches) : 
-                        (r.tabSwitchesDetected !== undefined ? Number(r.tabSwitchesDetected) : 
-                        (r.tab_switches !== undefined ? Number(r.tab_switches) : 0));
-                        
-          const copies = r.copiesAttempted !== undefined ? Number(r.copiesAttempted) : 
-                         (r.copyPasteAttempts !== undefined ? Number(r.copyPasteAttempts) : 
-                         (r.copy_paste !== undefined ? Number(r.copy_paste) : 0));
-
-          let penalties = 0;
-          if (r.penaltiesApplied !== undefined) {
-            penalties = Number(r.penaltiesApplied);
-          } else if (r.penaltyDeduction !== undefined) {
-            penalties = Number(r.penaltyDeduction);
-          } else if (r.penalty !== undefined) {
-            penalties = Number(r.penalty);
-          } else {
-            penalties = (tabs * 1) + (copies * 1);
-          }
+          const tabs = Number(r.tabSwitches ?? r.tabSwitchesDetected ?? r.tab_switches ?? 0);
+          const copies = Number(r.copiesAttempted ?? r.copyPasteAttempts ?? r.copy_paste ?? 0);
+          const penalties = Number(r.penaltiesApplied ?? r.penaltyDeduction ?? r.penalty ?? (tabs + copies));
 
           totalTabs += tabs;
           totalCopies += copies;
@@ -836,12 +822,8 @@
             name: r.name || r.studentName || "Anonymous Student",
             email: r.email || r.studentEmail || "No Email",
             scoreText: r.score !== undefined ? String(r.score) : "0/0",
-            scoreVal: scoreVal,
-            maxScore: maxScore,
-            rawDate: dateObj,
-            tabSwitches: tabs,
-            copiesAttempted: copies,
-            penaltiesApplied: penalties,
+            scoreVal, maxScore, rawDate: dateObj,
+            tabSwitches: tabs, copiesAttempted: copies, penaltiesApplied: penalties,
             submittedAtStr: submitTimeFormatted,
             feedback: r.feedback || r.doubt || "None"
           });
@@ -854,44 +836,35 @@
 
         allStudentResults.sort((a, b) => b.rawDate - a.rawDate);
 
-        analyticsBody.innerHTML = '';
-        if (allStudentResults.length === 0) {
-          analyticsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No submissions recorded yet.</td></tr>`;
-        } else {
-          allStudentResults.forEach(r => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td><strong>${r.name}</strong><br><span style="font-size:0.8rem; color:var(--text-muted);">${r.email}</span></td>
-              <td><strong style="color:var(--primary-accent); font-size:1rem;">${r.scoreText}</strong></td>
-              <td><span class="time-stamp"><i class="fa-regular fa-clock"></i> ${r.submittedAtStr}</span></td>
-              <td><span class="alert-indicator ${r.tabSwitches > 0 ? 'alert-warn' : 'alert-safe'}">${r.tabSwitches} Switch(es)</span></td>
-              <td><span class="alert-indicator ${r.copiesAttempted > 0 ? 'alert-warn' : 'alert-safe'}">${r.copiesAttempted} Attempt(s)</span></td>
-              <td><span class="alert-indicator ${r.penaltiesApplied > 0 ? 'alert-warn' : 'alert-safe'}">-${r.penaltiesApplied} Mark(s)</span></td>
-            `;
-            analyticsBody.appendChild(tr);
-          });
-        }
+        analyticsBody.innerHTML = allStudentResults.length === 0 ? `<tr><td colspan="6" style="text-align:center;">No submissions recorded yet.</td></tr>` : '';
+        allStudentResults.forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${r.name}</strong><br><span style="font-size:0.8rem; color:var(--text-muted);">${r.email}</span></td>
+            <td><strong style="color:var(--primary-accent); font-size:1rem;">${r.scoreText}</strong></td>
+            <td><span class="time-stamp"><i class="fa-regular fa-clock"></i> ${r.submittedAtStr}</span></td>
+            <td><span class="alert-indicator ${r.tabSwitches > 0 ? 'alert-warn' : 'alert-safe'}">${r.tabSwitches} Switch(es)</span></td>
+            <td><span class="alert-indicator ${r.copiesAttempted > 0 ? 'alert-warn' : 'alert-safe'}">${r.copiesAttempted} Attempt(s)</span></td>
+            <td><span class="alert-indicator ${r.penaltiesApplied > 0 ? 'alert-warn' : 'alert-safe'}">-${r.penaltiesApplied} Mark(s)</span></td>
+          `;
+          analyticsBody.appendChild(tr);
+        });
 
         const leaderboardData = [...allStudentResults].sort((a, b) => b.scoreVal - a.scoreVal || a.rawDate - b.rawDate);
-        leaderboardBody.innerHTML = '';
-        if (leaderboardData.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No student performance data.</td></tr>`;
-        } else {
-          leaderboardData.forEach((r, idx) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td><span class="badge-rank">#${idx + 1}</span></td>
-              <td><strong>${r.name}</strong><br><span style="font-size:0.8rem; color:var(--text-muted);">${r.email}</span></td>
-              <td><strong style="color:var(--primary-accent); font-size:1.05rem;">${r.scoreText}</strong></td>
-              <td><span class="time-stamp"><i class="fa-regular fa-clock"></i> ${r.submittedAtStr}</span></td>
-              <td>${r.feedback}</td>
-            `;
-            leaderboardBody.appendChild(tr);
-          });
-        }
+        leaderboardBody.innerHTML = leaderboardData.length === 0 ? `<tr><td colspan="5" style="text-align:center;">No student performance data.</td></tr>` : '';
+        leaderboardData.forEach((r, idx) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><span class="badge-rank">#${idx + 1}</span></td>
+            <td><strong>${r.name}</strong><br><span style="font-size:0.8rem; color:var(--text-muted);">${r.email}</span></td>
+            <td><strong style="color:var(--primary-accent); font-size:1.05rem;">${r.scoreText}</strong></td>
+            <td><span class="time-stamp"><i class="fa-regular fa-clock"></i> ${r.submittedAtStr}</span></td>
+            <td>${r.feedback}</td>
+          `;
+          leaderboardBody.appendChild(tr);
+        });
 
         renderAdvancedInsights(allStudentResults);
-
       } catch (err) {
         console.error(err);
         analyticsBody.innerHTML = `<tr><td colspan="6" style="color:var(--danger); text-align:center;">Failed to load data.</td></tr>`;
@@ -906,10 +879,7 @@
         return;
       }
 
-      let totalPerc = 0;
-      let passCount = 0;
-      let highestObj = data[0];
-
+      let totalPerc = 0, passCount = 0, highestObj = data[0];
       data.forEach(r => {
         let perc = r.maxScore > 0 ? (r.scoreVal / r.maxScore) * 100 : 0;
         totalPerc += perc;
@@ -917,16 +887,12 @@
         if (r.scoreVal > highestObj.scoreVal) highestObj = r;
       });
 
-      const avgPerc = (totalPerc / data.length).toFixed(1);
-      const passRate = ((passCount / data.length) * 100).toFixed(1);
-
-      document.getElementById('insight-avg-score').innerText = `${avgPerc}%`;
-      document.getElementById('insight-pass-rate').innerText = `${passRate}%`;
+      document.getElementById('insight-avg-score').innerText = `${(totalPerc / data.length).toFixed(1)}%`;
+      document.getElementById('insight-pass-rate').innerText = `${((passCount / data.length) * 100).toFixed(1)}%`;
       document.getElementById('insight-highest-score').innerText = highestObj.scoreText;
 
       const qTable = document.getElementById('question-insights-table-body');
       qTable.innerHTML = '';
-
       const totalQsToShow = liveQuestionsPool.length > 0 ? liveQuestionsPool.length : 10;
 
       for (let qIndex = 1; qIndex <= totalQsToShow; qIndex++) {
@@ -963,29 +929,14 @@
     window.viewQuestionDetail = (qNum, accuracy, correct, incorrect) => {
       document.getElementById('modal-question-title').innerHTML = `<i class="fa-solid fa-circle-question"></i> Insights: Question #${qNum}`;
       const body = document.getElementById('modal-question-body');
-      
       let sampleQuestion = liveQuestionsPool[qNum - 1];
       
-      let qTextDisplay = "";
-      let optA = "", optB = "", optC = "", optD = "";
-      let correctAns = "A";
-
-      if (sampleQuestion) {
-        qTextDisplay = sampleQuestion.question || sampleQuestion.q || sampleQuestion.title || "No question text provided";
-        if (sampleQuestion.options) {
-          optA = sampleQuestion.options.A || sampleQuestion.options[0] || "";
-          optB = sampleQuestion.options.B || sampleQuestion.options[1] || "";
-          optC = sampleQuestion.options.C || sampleQuestion.options[2] || "";
-          optD = sampleQuestion.options.D || sampleQuestion.options[3] || "";
-        }
-        correctAns = (sampleQuestion.answer || sampleQuestion.correctAnswer || "A").toString().toUpperCase();
-      } else {
-        qTextDisplay = `Question #${qNum} (Pool me total ${liveQuestionsPool.length} questions hain)`;
-        optA = "Option A";
-        optB = "Option B";
-        optC = "Option C";
-        optD = "Option D";
-      }
+      let qTextDisplay = sampleQuestion ? (sampleQuestion.question || "") : `Question #${qNum}`;
+      let optA = sampleQuestion?.options?.A || "Option A";
+      let optB = sampleQuestion?.options?.B || "Option B";
+      let optC = sampleQuestion?.options?.C || "Option C";
+      let optD = sampleQuestion?.options?.D || "Option D";
+      let correctAns = (sampleQuestion?.answer || sampleQuestion?.correctAnswer || "A").toString().toUpperCase();
 
       body.innerHTML = `
         <div style="margin-bottom: 1rem;">
@@ -997,33 +948,11 @@
         <div style="margin-bottom: 1rem;">
           <strong style="font-size: 0.85rem; color: var(--text-main);">Options & Answer:</strong>
           <ul style="list-style: none; margin-top: 8px; font-size: 0.9rem;">
-            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'A' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">
-              A. ${optA} ${correctAns === 'A' ? '✓ (Correct)' : ''}
-            </li>
-            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'B' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">
-              B. ${optB} ${correctAns === 'B' ? '✓ (Correct)' : ''}
-            </li>
-            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'C' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">
-              C. ${optC} ${correctAns === 'C' ? '✓ (Correct)' : ''}
-            </li>
-            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'D' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">
-              D. ${optD} ${correctAns === 'D' ? '✓ (Correct)' : ''}
-            </li>
+            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'A' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">A. ${optA}</li>
+            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'B' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">B. ${optB}</li>
+            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'C' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">C. ${optC}</li>
+            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'D' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">D. ${optD}</li>
           </ul>
-        </div>
-        <div style="display: flex; gap: 15px; margin-top: 1.2rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
-          <div style="flex:1; text-align:center; background:#d1fae5; padding:10px; border-radius:8px;">
-            <div style="font-size:0.75rem; font-weight:700; color:#065f46;">CORRECT</div>
-            <div style="font-size:1.2rem; font-weight:800; color:#065f46;">${correct}</div>
-          </div>
-          <div style="flex:1; text-align:center; background:#fee2e2; padding:10px; border-radius:8px;">
-            <div style="font-size:0.75rem; font-weight:700; color:#991b1b;">INCORRECT</div>
-            <div style="font-size:1.2rem; font-weight:800; color:#991b1b;">${incorrect}</div>
-          </div>
-          <div style="flex:1; text-align:center; background:#eff6ff; padding:10px; border-radius:8px;">
-            <div style="font-size:0.75rem; font-weight:700; color:#1e40af;">ACCURACY</div>
-            <div style="font-size:1.2rem; font-weight:800; color:#1e40af;">${accuracy}%</div>
-          </div>
         </div>
       `;
       document.getElementById('question-modal').style.display = 'flex';
