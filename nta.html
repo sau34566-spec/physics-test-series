@@ -184,8 +184,8 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -201,6 +201,7 @@
     window.db = db;
     window.setDoc = setDoc;
     window.doc = doc;
+    window.onSnapshot = onSnapshot;
   </script>
 
   <script>
@@ -267,6 +268,11 @@
       return array;
     }
 
+    // Optional UI update function stub if required by real-time listener
+    function updateTestUI(totalQuestions, examTimeMinutes) {
+      console.log("UI updated with live config:", totalQuestions, examTimeMinutes);
+    }
+
     async function loadQuestions() {
       try {
         const response = await fetch('chapter1.json');
@@ -297,6 +303,22 @@
         ];
       }
       initExam();
+      
+      // Real-time listener setup after DB is initialized
+      if (window.db && window.doc && window.onSnapshot) {
+        window.onSnapshot(window.doc(window.db, "settings", "testConfig"), (docSnap) => {
+            if (docSnap.exists()) {
+                const config = docSnap.data();
+                
+                let totalQuestions = config.totalQuestions; 
+                let examTimeMinutes = config.durationMinutes;
+                
+                console.log("Live update received:", totalQuestions, examTimeMinutes);
+                
+                updateTestUI(totalQuestions, examTimeMinutes);
+            }
+        });
+      }
     }
 
     function initExam() {
@@ -441,7 +463,6 @@
     window.submitExam = async function() {
       window.isTestSubmitted = true;
 
-      // 1. Fetch Security Report Data safely from security.js
       let secReport = { tabSwitches: 0, copiesAttempted: 0, penaltiesApplied: 0 };
       if (typeof window.getSecurityReport === 'function') {
         secReport = window.getSecurityReport();
@@ -452,7 +473,6 @@
       let wrongAnsPenalty = 0;
       const negativePerWrong = 0.25;
 
-      // 2. Score Calculation
       questionsPool.forEach((qObj, idx) => {
         if (studentAnswers[idx]) {
           if (studentAnswers[idx] === qObj.a) {
@@ -463,7 +483,6 @@
         }
       });
 
-      // Total Penalty = Wrong Answer Penalty + Tab Switch Penalty
       let totalPenaltyMarks = wrongAnsPenalty + secPenalty;
       const finalScore = Math.max(0, score - totalPenaltyMarks);
       const studentId = (studentInfo.roll || studentInfo.email || "student").replace(/[^a-zA-Z0-9]/g, "_");
@@ -484,13 +503,11 @@
         submittedAt: new Date().toISOString()
       };
 
-      // Save to localStorage for instant backup
       let allSubmissions = JSON.parse(localStorage.getItem("exam_submissions")) || [];
       allSubmissions = allSubmissions.filter(item => item.roll !== studentInfo.roll);
       allSubmissions.push(submissionRecord);
       localStorage.setItem("exam_submissions", JSON.stringify(allSubmissions));
 
-      // Save to Firebase Firestore so Admin Panel receives it instantly
       try {
         if (window.db && window.setDoc && window.doc) {
           await window.setDoc(window.doc(window.db, "results", studentId), submissionRecord);
@@ -503,7 +520,6 @@
         window.markEmailAsSubmitted(studentInfo.email || studentInfo.roll);
       }
 
-      // Update UI Elements
       document.getElementById("dash-name").innerText = studentInfo.name;
       document.getElementById("dash-score").innerText = `${finalScore.toFixed(2)} / ${questionsPool.length}`;
       document.getElementById("dash-correct").innerText = `${score} Correct`;
