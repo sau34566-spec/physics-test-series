@@ -313,7 +313,31 @@
           </div>
         </div>
 
-        <button type="button" id="save-config-btn" onclick="saveExamSettings()" class="btn btn-success" style="padding: 1rem 2rem;">
+        <!-- Added Questions List Preview -->
+        <div style="margin-top: 1.5rem; background: #ffffff; padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h4 style="color: var(--primary); font-weight: 700;"><i class="fa-solid fa-list-ol"></i> Live Added Questions Pool (<span id="added-pool-count">0</span>)</h4>
+            <button class="btn btn-sm btn-danger" onclick="clearQuestionsPool()"><i class="fa-solid fa-trash"></i> Clear Pool</button>
+          </div>
+          <div class="table-responsive" style="margin-top: 0; max-height: 250px; overflow-y: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Question</th>
+                  <th>Options</th>
+                  <th>Ans</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="live-questions-table-body">
+                <tr><td colspan="5" style="text-align:center;">No questions added yet to pool.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <button type="button" id="save-config-btn" onclick="saveExamSettings()" class="btn btn-success" style="padding: 1rem 2rem; margin-top: 1.5rem;">
           <i class="fa-solid fa-floppy-disk"></i> Save & Lock Configurations
         </button>
       </div>
@@ -467,6 +491,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     let allStudentResults = [];
+    let liveQuestionsPool = JSON.parse(localStorage.getItem("live_questions_pool") || "[]");
 
     function formatDateTimeLocal(timestamp) {
       if(!timestamp) return "";
@@ -498,6 +523,7 @@
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('admin-main').style.display = 'block';
         loadExamSettings();
+        renderQuestionsPool();
         fetchLiveDatabaseRecords();
         listenLiveActiveStudents();
       } else {
@@ -515,6 +541,7 @@
       document.getElementById('admin-main').style.display = 'block';
       window.addEventListener('DOMContentLoaded', () => {
         loadExamSettings();
+        renderQuestionsPool();
         fetchLiveDatabaseRecords();
         listenLiveActiveStudents();
       });
@@ -541,7 +568,7 @@
         }
 
         if (data) {
-          document.getElementById('config-total-pool').value = data.totalPool || data.total_questions || "";
+          document.getElementById('config-total-pool').value = data.totalPool || data.total_questions || liveQuestionsPool.length || "";
           document.getElementById('config-student-limit').value = data.studentLimit || data.questions_per_student || "";
           document.getElementById('config-per-question-timer').value = data.examDurationMinutes ?? (data.perQuestionSeconds ? Math.round(data.perQuestionSeconds / 60) : 60);
 
@@ -565,25 +592,48 @@
             const langRadio = document.querySelector(`input[name="question-language"][value="${data.questionLanguage}"]`);
             if (langRadio) langRadio.checked = true;
           }
+
+          if (data.questions && Array.isArray(data.questions)) {
+            liveQuestionsPool = data.questions;
+            localStorage.setItem("live_questions_pool", JSON.stringify(liveQuestionsPool));
+            renderQuestionsPool();
+          }
         }
       } catch (e) {
         console.error("Config load error:", e);
       }
     }
 
+    /* Live Question Management Functions */
     window.addQuestionToPool = () => {
       const qText = document.getElementById('live-q-text').value.trim();
       const optA = document.getElementById('live-opt-a').value.trim();
       const optB = document.getElementById('live-opt-b').value.trim();
       const optC = document.getElementById('live-opt-c').value.trim();
       const optD = document.getElementById('live-opt-d').value.trim();
+      const correctOpt = document.getElementById('live-correct-opt').value;
 
       if (!qText || !optA || !optB || !optC || !optD) {
         alert("Please fill all question fields.");
         return;
       }
 
-      alert("Question processed successfully!");
+      const newQ = {
+        id: Date.now(),
+        question: qText,
+        options: { A: optA, B: optB, C: optC, D: optD },
+        answer: correctOpt
+      };
+
+      liveQuestionsPool.push(newQ);
+      localStorage.setItem("live_questions_pool", JSON.stringify(liveQuestionsPool));
+      
+      // Auto update total pool input box if needed
+      document.getElementById('config-total-pool').value = liveQuestionsPool.length;
+      
+      renderQuestionsPool();
+
+      alert("Question processed & added to pool successfully!");
       document.getElementById('live-q-text').value = '';
       document.getElementById('live-opt-a').value = '';
       document.getElementById('live-opt-b').value = '';
@@ -591,8 +641,52 @@
       document.getElementById('live-opt-d').value = '';
     };
 
+    window.renderQuestionsPool = () => {
+      const tbody = document.getElementById('live-questions-table-body');
+      const countEl = document.getElementById('added-pool-count');
+      if(countEl) countEl.innerText = liveQuestionsPool.length;
+
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (liveQuestionsPool.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No questions added yet to pool.</td></tr>`;
+        return;
+      }
+
+      liveQuestionsPool.forEach((q, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${index + 1}</strong></td>
+          <td><div style="max-width:280px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${q.question}</div></td>
+          <td style="font-size:0.8rem;">A: ${q.options.A} | B: ${q.options.B} | C: ${q.options.C} | D: ${q.options.D}</td>
+          <td><span class="badge-rank" style="background:#10b981;">${q.answer}</span></td>
+          <td>
+            <button class="btn btn-sm btn-danger" onclick="deleteQuestionFromPool(${index})"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    };
+
+    window.deleteQuestionFromPool = (index) => {
+      liveQuestionsPool.splice(index, 1);
+      localStorage.setItem("live_questions_pool", JSON.stringify(liveQuestionsPool));
+      document.getElementById('config-total-pool').value = liveQuestionsPool.length;
+      renderQuestionsPool();
+    };
+
+    window.clearQuestionsPool = () => {
+      if(confirm("Are you sure you want to clear all added questions from pool?")) {
+        liveQuestionsPool = [];
+        localStorage.setItem("live_questions_pool", JSON.stringify(liveQuestionsPool));
+        document.getElementById('config-total-pool').value = 0;
+        renderQuestionsPool();
+      }
+    };
+
     window.saveExamSettings = async () => {
-      const totalPool = parseInt(document.getElementById('config-total-pool').value);
+      const totalPool = parseInt(document.getElementById('config-total-pool').value) || liveQuestionsPool.length;
       const studentLimit = parseInt(document.getElementById('config-student-limit').value);
       const examDurationMinutes = parseInt(document.getElementById('config-per-question-timer').value) || 60;
       const windowStartVal = document.getElementById('config-window-start').value;
@@ -604,7 +698,7 @@
       const questionLangRadio = document.querySelector('input[name="question-language"]:checked');
       const questionLanguage = questionLangRadio ? questionLangRadio.value : "hindi";
 
-      if (!totalPool || !studentLimit || !windowStartVal || !windowEndVal) {
+      if (!studentLimit || !windowStartVal || !windowEndVal) {
         alert("Please fill all required configuration & timing fields!");
         return;
       }
@@ -633,6 +727,7 @@
         jsonUrl: jsonUrlVal,
         json_url: jsonUrlVal,
         questionLanguage,
+        questions: liveQuestionsPool,
         updatedAt: new Date().toISOString()
       };
 
@@ -644,7 +739,7 @@
         await setDoc(doc(db, "config", "test_settings"), configPayload, { merge: true });
         await setDoc(doc(db, "test_config", "latest"), configPayload, { merge: true });
 
-        alert("Configurations saved and locked successfully! Student questions and timing updated.");
+        alert("Configurations & Question pool saved successfully!");
       } catch (err) {
         alert("Saved to local browser storage! (Firebase notice: " + err.message + ")");
       } finally {
@@ -716,7 +811,6 @@
             timeStyle: 'short'
           }) : "N/A";
 
-          // Improved Fallback Extraction for Tab Switches, Copy Violations, and Penalty Calculations
           const tabs = r.tabSwitches !== undefined ? Number(r.tabSwitches) : 
                         (r.tabSwitchesDetected !== undefined ? Number(r.tabSwitchesDetected) : 
                         (r.tab_switches !== undefined ? Number(r.tab_switches) : 0));
@@ -725,7 +819,6 @@
                          (r.copyPasteAttempts !== undefined ? Number(r.copyPasteAttempts) : 
                          (r.copy_paste !== undefined ? Number(r.copy_paste) : 0));
 
-          // Calculate or fetch total penalty points deducted
           let penalties = 0;
           if (r.penaltiesApplied !== undefined) {
             penalties = Number(r.penaltiesApplied);
@@ -734,7 +827,6 @@
           } else if (r.penalty !== undefined) {
             penalties = Number(r.penalty);
           } else {
-            // Formula fallback: 1 mark per tab switch + 1 mark per copy violation
             penalties = (tabs * 1) + (copies * 1);
           }
 
@@ -838,7 +930,9 @@
       const qTable = document.getElementById('question-insights-table-body');
       qTable.innerHTML = '';
 
-      for (let qIndex = 1; qIndex <= 10; qIndex++) {
+      const totalQsToShow = liveQuestionsPool.length > 0 ? liveQuestionsPool.length : 10;
+
+      for (let qIndex = 1; qIndex <= totalQsToShow; qIndex++) {
         const correct = Math.floor(Math.random() * data.length);
         const incorrect = data.length - correct;
         const accuracy = data.length > 0 ? Math.round((correct / data.length) * 100) : 0;
@@ -869,25 +963,32 @@
       }
     }
 
-    // Function to Open Question Details Modal
     window.viewQuestionDetail = (qNum, accuracy, correct, incorrect) => {
       document.getElementById('modal-question-title').innerHTML = `<i class="fa-solid fa-circle-question"></i> Insights: Question #${qNum}`;
       const body = document.getElementById('modal-question-body');
       
+      let sampleQuestion = liveQuestionsPool[qNum - 1];
+      let qTextDisplay = sampleQuestion ? sampleQuestion.question : "What is the fundamental unit of Electric Current in the SI system?";
+      let optA = sampleQuestion ? sampleQuestion.options.A : "Ampere (Correct Answer)";
+      let optB = sampleQuestion ? sampleQuestion.options.B : "Volt";
+      let optC = sampleQuestion ? sampleQuestion.options.C : "Ohm";
+      let optD = sampleQuestion ? sampleQuestion.options.D : "Joule";
+      let correctAns = sampleQuestion ? sampleQuestion.answer : "A";
+
       body.innerHTML = `
         <div style="margin-bottom: 1rem;">
           <h4 style="font-size: 1rem; color: var(--primary); margin-bottom: 0.5rem;">Sample Question Text #${qNum}:</h4>
           <p style="color: var(--text-muted); font-size: 0.9rem; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
-            What is the fundamental unit of Electric Current in the SI system?
+            ${qTextDisplay}
           </p>
         </div>
         <div style="margin-bottom: 1rem;">
           <strong style="font-size: 0.85rem; color: var(--text-main);">Options & Answer:</strong>
           <ul style="list-style: none; margin-top: 5px; font-size: 0.88rem; color: var(--text-muted);">
-            <li style="padding: 4px 0;"><strong style="color: var(--success);">A. Ampere (Correct Answer)</strong></li>
-            <li style="padding: 4px 0;">B. Volt</li>
-            <li style="padding: 4px 0;">C. Ohm</li>
-            <li style="padding: 4px 0;">D. Joule</li>
+            <li style="padding: 4px 0;"><strong style="${correctAns === 'A' ? 'color: var(--success);' : ''}">A. ${optA}</strong></li>
+            <li style="padding: 4px 0;"><strong style="${correctAns === 'B' ? 'color: var(--success);' : ''}">B. ${optB}</strong></li>
+            <li style="padding: 4px 0;"><strong style="${correctAns === 'C' ? 'color: var(--success);' : ''}">C. ${optC}</strong></li>
+            <li style="padding: 4px 0;"><strong style="${correctAns === 'D' ? 'color: var(--success);' : ''}">D. ${optD}</strong></li>
           </ul>
         </div>
         <div style="display: flex; gap: 15px; margin-top: 1.2rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
