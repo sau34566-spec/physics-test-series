@@ -286,7 +286,7 @@
         </div>
     </div>
 
-    <!-- Thank You 3-Line Notice Modal upon Feedback Save -->
+    <!-- Thank You 3-Line Notice Modal upon Feedback Save (Clean text, no refresh mention) -->
     <div class="modal-overlay" id="thankyou-modal">
         <div class="modal-card">
             <div style="background: var(--success); color: white; padding: 15px 20px; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
@@ -295,7 +295,7 @@
             <div style="padding: 20px; font-size: 0.9rem; color: #334155; line-height: 1.6;">
                 Thank you for completing the assessment!<br>
                 Your feedback and responses have been successfully stored.<br>
-                This session is now closed; please refresh the page to start a new session.
+                This session is now closed successfully.
             </div>
             <div style="padding: 12px 20px; display: flex; justify-content: flex-end; background: #f8fafc; border-top: 1px solid var(--gray-border);">
                 <button class="btn btn-success" onclick="lockWebsiteSession()">OK / Finish</button>
@@ -340,8 +340,7 @@
                     <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: #0f172a; color: white; text-align: center; padding: 20px; gap: 15px;">
                         <i class="fa-solid fa-lock" style="font-size: 3rem; color: var(--warning);"></i>
                         <h2 style="font-size: 1.5rem;">Session Already Completed</h2>
-                        <p style="color: #cbd5e1; max-width: 400px; font-size: 0.9rem;">Your test and feedback have already been submitted. Please refresh the browser tab or restart to start a fresh attempt.</p>
-                        <button onclick="localStorage.removeItem('portal_session_locked'); window.location.reload();" style="padding: 10px 20px; background: var(--success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 10px;">Refresh & Restart</button>
+                        <p style="color: #cbd5e1; max-width: 400px; font-size: 0.9rem;">Your test and feedback have already been submitted successfully. This session is now closed.</p>
                     </div>
                 `;
                 return;
@@ -705,7 +704,7 @@
             localStorage.setItem('admin_exam_submissions', JSON.stringify(existingRecords));
             localStorage.setItem('exam_results', JSON.stringify(existingRecords));
 
-            // Show 3-line Thank You Notice Popup
+            // Show updated Thank You Notice Popup
             document.getElementById('thankyou-modal').style.display = 'flex';
         }
 
