@@ -132,16 +132,6 @@
     .upload-section-box { background: #f8fafc; border: 2px dashed #cbd5e1; padding: 1.8rem; border-radius: 14px; margin-top: 1rem; }
     .mode-content { display: none; }
     .mode-content.active { display: block; }
-
-    @keyframes pulseGlow {
-      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
-      70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
-      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
-    }
-    .live-dot {
-      display: inline-block; width: 12px; height: 12px; background-color: #2563eb; border-radius: 50%;
-      margin-right: 6px; animation: pulseGlow 2s infinite;
-    }
   </style>
 </head>
 <body>
@@ -224,76 +214,6 @@
           <div class="form-group">
             <label for="config-window-end">Overall Test Window End Time *</label>
             <input type="datetime-local" id="config-window-end">
-          </div>
-        </div>
-
-        <div style="background: #f1f5f9; padding: 1.4rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border-color);">
-          <label style="font-weight: 800; color: var(--primary);">Question Upload Method & Options:</label>
-          <div style="display: flex; gap: 25px; flex-wrap: wrap; margin-top: 0.8rem; margin-bottom: 1.2rem;">
-            <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600;">
-              <input type="radio" name="upload-mode" value="form" checked onclick="toggleUploadUI('form')"> Live Form Upload
-            </label>
-            <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600;">
-              <input type="radio" name="upload-mode" value="msword" onclick="toggleUploadUI('msword')"> MS Word Parse
-            </label>
-            <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600;">
-              <input type="radio" name="upload-mode" value="code" onclick="toggleUploadUI('code')"> JSON File (chapter1.json)
-            </label>
-          </div>
-
-          <div style="display: flex; gap: 20px; align-items: center; border-top: 1px solid #cbd5e1; padding-top: 1rem; flex-wrap: wrap;">
-            <label style="font-weight: 800; font-size: 0.85rem; color: var(--primary);">Question Language:</label>
-            <label style="cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:600;">
-              <input type="radio" name="question-language" value="hindi" checked> Hindi (हिंदी)
-            </label>
-            <label style="cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:600;">
-              <input type="radio" name="question-language" value="english"> English
-            </label>
-            <label style="cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:600;">
-              <input type="radio" name="question-language" value="both"> Both
-            </label>
-          </div>
-
-          <div class="upload-section-box">
-            <div id="mode-form-area" class="mode-content active">
-              <h4 style="margin-bottom: 1rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-pen-to-square"></i> Add Question Directly</h4>
-              <div class="form-group">
-                <label>Question Text *</label>
-                <textarea id="live-q-text" rows="2" placeholder="Enter question description..."></textarea>
-              </div>
-              <div class="form-grid">
-                <div class="form-group"><label>Option A *</label><input type="text" id="live-opt-a" placeholder="Option A text"></div>
-                <div class="form-group"><label>Option B *</label><input type="text" id="live-opt-b" placeholder="Option B text"></div>
-                <div class="form-group"><label>Option C *</label><input type="text" id="live-opt-c" placeholder="Option C text"></div>
-                <div class="form-group"><label>Option D *</label><input type="text" id="live-opt-d" placeholder="Option D text"></div>
-              </div>
-              <div class="form-group">
-                <label>Correct Answer *</label>
-                <select id="live-correct-opt">
-                  <option value="A">Option A</option>
-                  <option value="B">Option B</option>
-                  <option value="C">Option C</option>
-                  <option value="D">Option D</option>
-                </select>
-              </div>
-              <button type="button" class="btn btn-accent" onclick="addQuestionToPool()"><i class="fa-solid fa-plus"></i> Add Question To Live Pool</button>
-            </div>
-
-            <div id="mode-msword-area" class="mode-content">
-              <h4 style="margin-bottom: 1rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-file-word"></i> MS Word Copy-Paste Parser</h4>
-              <div class="form-group">
-                <label>Paste MS Word Content *</label>
-                <textarea id="msword-text-input" rows="6" placeholder="Paste formatted questions from MS Word here..."></textarea>
-              </div>
-            </div>
-
-            <div id="mode-code-area" class="mode-content">
-              <h4 style="margin-bottom: 0.5rem; color: var(--primary); font-weight: 700;"><i class="fa-solid fa-file-code"></i> Chapter JSON Attachment</h4>
-              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">When selected, questions will be automatically loaded from your <strong>chapter1.json</strong> file.</p>
-              <div style="background: #e2e8f0; padding: 10px 14px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; color: #1e293b;">
-                <i class="fa-solid fa-circle-check" style="color: var(--success);"></i> Attached File: <code>chapter1.json</code>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -382,10 +302,6 @@
         <p class="subtitle">Performance metrics, question difficulty analysis, and student accuracy breakdown.</p>
         
         <div class="stats-summary">
-          <div class="stat-card" style="border-left: 4px solid #2563eb; background: #eff6ff;">
-            <h4><span class="live-dot"></span> Live Active Students</h4>
-            <p id="insight-live-students" style="color: #2563eb;">0</p>
-          </div>
           <div class="stat-card">
             <h4>Average Score</h4>
             <p id="insight-avg-score">0.0%</p>
@@ -399,32 +315,13 @@
             <p id="insight-highest-score" style="color: var(--primary-accent);">0/0</p>
           </div>
         </div>
-
-        <h4 style="margin-top: 1.5rem; color: var(--primary);"><i class="fa-solid fa-list-check"></i> Question-Level Performance Breakdown</h4>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Question #</th>
-                <th>Correct Answers</th>
-                <th>Incorrect Answers</th>
-                <th>Accuracy Rate</th>
-                <th>Difficulty Status</th>
-              </tr>
-            </thead>
-            <tbody id="question-insights-table-body">
-              <tr><td colspan="5" style="text-align:center;">Generating question-wise insights...</td></tr>
-            </tbody>
-          </table>
-        </div>
       </div>
     </div>
-
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -443,20 +340,8 @@
       if(!timestamp) return "";
       const d = new Date(timestamp);
       if(isNaN(d.getTime())) return "";
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      const hours = String(d.getHours()).padStart(2, '0');
-      const minutes = String(d.getMinutes()).padStart(2, '0');
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
+      return d.toISOString().slice(0, 16);
     }
-
-    window.toggleUploadUI = (mode) => {
-      document.querySelectorAll('.mode-content').forEach(m => m.classList.remove('active'));
-      if (document.getElementById(`mode-${mode}-area`)) {
-        document.getElementById(`mode-${mode}-area`).classList.add('active');
-      }
-    };
 
     window.handleLogin = (e) => {
       e.preventDefault();
@@ -469,7 +354,6 @@
         document.getElementById('admin-main').style.display = 'block';
         loadExamSettings();
         fetchLiveDatabaseRecords();
-        listenLiveActiveStudents();
       } else {
         document.getElementById('login-error').style.display = 'block';
       }
@@ -486,7 +370,6 @@
       window.addEventListener('DOMContentLoaded', () => {
         loadExamSettings();
         fetchLiveDatabaseRecords();
-        listenLiveActiveStudents();
       });
     }
 
@@ -510,55 +393,16 @@
         }
 
         if (data) {
-          document.getElementById('config-total-pool').value = data.totalPool || data.total_questions || "";
-          document.getElementById('config-student-limit').value = data.studentLimit || data.questions_per_student || "";
-          document.getElementById('config-per-question-timer').value = data.examDurationMinutes ?? (data.perQuestionSeconds ? Math.round(data.perQuestionSeconds / 60) : 60);
-
-          if(data.windowStart || data.startTime) {
-            document.getElementById('config-window-start').value = formatDateTimeLocal(data.windowStart || data.startTime);
-          }
-          if(data.windowEnd || data.endTime) {
-            document.getElementById('config-window-end').value = formatDateTimeLocal(data.windowEnd || data.endTime);
-          }
-
-          if (data.uploadMode || data.questions_source) {
-            const modeVal = data.uploadMode || data.questions_source;
-            const radio = document.querySelector(`input[name="upload-mode"][value="${modeVal}"]`);
-            if (radio) {
-              radio.checked = true;
-              toggleUploadUI(modeVal);
-            }
-          }
-
-          if (data.questionLanguage) {
-            const langRadio = document.querySelector(`input[name="question-language"][value="${data.questionLanguage}"]`);
-            if (langRadio) langRadio.checked = true;
-          }
+          document.getElementById('config-total-pool').value = data.totalPool || 50;
+          document.getElementById('config-student-limit').value = data.studentLimit || 20;
+          document.getElementById('config-per-question-timer').value = data.examDurationMinutes || 60;
+          if(data.windowStart) document.getElementById('config-window-start').value = formatDateTimeLocal(data.windowStart);
+          if(data.windowEnd) document.getElementById('config-window-end').value = formatDateTimeLocal(data.windowEnd);
         }
       } catch (e) {
         console.error("Config load error:", e);
       }
     }
-
-    window.addQuestionToPool = () => {
-      const qText = document.getElementById('live-q-text').value.trim();
-      const optA = document.getElementById('live-opt-a').value.trim();
-      const optB = document.getElementById('live-opt-b').value.trim();
-      const optC = document.getElementById('live-opt-c').value.trim();
-      const optD = document.getElementById('live-opt-d').value.trim();
-
-      if (!qText || !optA || !optB || !optC || !optD) {
-        alert("Please fill all question fields.");
-        return;
-      }
-
-      alert("Question processed successfully!");
-      document.getElementById('live-q-text').value = '';
-      document.getElementById('live-opt-a').value = '';
-      document.getElementById('live-opt-b').value = '';
-      document.getElementById('live-opt-c').value = '';
-      document.getElementById('live-opt-d').value = '';
-    };
 
     window.saveExamSettings = async () => {
       const totalPool = parseInt(document.getElementById('config-total-pool').value);
@@ -566,151 +410,88 @@
       const examDurationMinutes = parseInt(document.getElementById('config-per-question-timer').value) || 60;
       const windowStartVal = document.getElementById('config-window-start').value;
       const windowEndVal = document.getElementById('config-window-end').value;
-      
-      const uploadModeRadio = document.querySelector('input[name="upload-mode"]:checked');
-      const uploadMode = uploadModeRadio ? uploadModeRadio.value : "form";
-
-      const questionLangRadio = document.querySelector('input[name="question-language"]:checked');
-      const questionLanguage = questionLangRadio ? questionLangRadio.value : "hindi";
 
       if (!totalPool || !studentLimit || !windowStartVal || !windowEndVal) {
         alert("Please fill all required configuration & timing fields!");
         return;
       }
 
-      const jsonUrlVal = uploadMode === "code" ? "chapter1.json" : "";
-
-      const startTimeMs = new Date(windowStartVal).getTime();
-      const endTimeMs = new Date(windowEndVal).getTime();
-
-      const saveBtn = document.getElementById('save-config-btn');
-      saveBtn.disabled = true;
-      saveBtn.innerText = "Saving Configuration...";
-
       const configPayload = {
         totalPool,
-        total_questions: totalPool,
         studentLimit,
-        questions_per_student: studentLimit,
         examDurationMinutes,
-        perQuestionSeconds: examDurationMinutes * 60,
-        windowStart: startTimeMs,
-        windowEnd: endTimeMs,
-        startTime: startTimeMs,
-        endTime: endTimeMs,
-        uploadMode,
-        questions_source: uploadMode,
-        jsonUrl: jsonUrlVal,
-        json_url: jsonUrlVal,
-        questionLanguage,
+        windowStart: new Date(windowStartVal).getTime(),
+        windowEnd: new Date(windowEndVal).getTime(),
         updatedAt: new Date().toISOString()
       };
 
-      // Save locally first so students can read updated rules immediately
       localStorage.setItem("exam_config", JSON.stringify(configPayload));
-      localStorage.setItem("test_settings", JSON.stringify(configPayload));
 
       try {
         await setDoc(doc(db, "exam_config", "current_test"), configPayload, { merge: true });
-        await setDoc(doc(db, "config", "test_settings"), configPayload, { merge: true });
-        await setDoc(doc(db, "test_config", "latest"), configPayload, { merge: true });
-
-        alert("Configurations saved and locked successfully! Student questions and timing updated.");
+        alert("Configurations saved and locked successfully!");
       } catch (err) {
         alert("Saved to local browser storage! (Firebase notice: " + err.message + ")");
-      } finally {
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save & Lock Configurations';
       }
     };
-
-    function listenLiveActiveStudents() {
-      onSnapshot(collection(db, "active_sessions"), (snapshot) => {
-        let activeCount = 0;
-        const now = Date.now();
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          if (data.lastPing && (now - data.lastPing) < 30000) {
-            activeCount++;
-          }
-        });
-        const el = document.getElementById('insight-live-students');
-        if (el) el.innerText = activeCount;
-      });
-    }
 
     window.fetchLiveDatabaseRecords = async () => {
       const analyticsBody = document.getElementById('analytics-table-body');
       const leaderboardBody = document.getElementById('leaderboard-table-body');
 
-      analyticsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching security logs...</td></tr>`;
+      analyticsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching logs...</td></tr>`;
       leaderboardBody.innerHTML = `<tr><td colspan="5" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching leaderboard...</td></tr>`;
 
       try {
+        // Fetch from Firebase first
         let snap = await getDocs(collection(db, "results"));
-        if (snap.empty) {
-          snap = await getDocs(collection(db, "student_results"));
-        }
-
         allStudentResults = [];
-
-        let totalTabs = 0;
-        let totalCopies = 0;
-        let totalPenalties = 0;
 
         snap.forEach((docSnap) => {
           const r = docSnap.data();
-          let scoreVal = 0;
-          let maxScore = 10;
-          
-          if (typeof r.score === 'string') {
-            const parts = r.score.split('/');
-            scoreVal = parseFloat(parts[0]) || 0;
-            if (parts[1]) maxScore = parseFloat(parts[1]) || 10;
-          } else if (typeof r.score === 'number') {
-            scoreVal = r.score;
-          }
-
-          let dateObj = new Date(0);
-          if (r.submittedAt) {
-            dateObj = r.submittedAt.toDate ? r.submittedAt.toDate() : new Date(r.submittedAt);
-          } else if (r.timestamp) {
-            dateObj = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
-          }
-
-          const submitTimeFormatted = dateObj.getTime() > 0 ? dateObj.toLocaleString('en-IN', {
-            dateStyle: 'medium',
-            timeStyle: 'short'
-          }) : "N/A";
-
-          const tabs = r.tabSwitches !== undefined ? r.tabSwitches : (r.tabSwitchesDetected || r.tab_switches || 0);
-          const copies = r.copiesAttempted !== undefined ? r.copiesAttempted : (r.copyPasteAttempts || r.copy_paste || 0);
-          const penalties = r.penaltiesApplied !== undefined ? r.penaltiesApplied : tabs;
-
-          totalTabs += tabs;
-          totalCopies += copies;
-          totalPenalties += penalties;
-
           allStudentResults.push({
-            id: docSnap.id,
-            name: r.name || r.studentName || "Anonymous Student",
-            email: r.email || r.studentEmail || "No Email",
-            scoreText: r.score !== undefined ? String(r.score) : "0/0",
-            scoreVal: scoreVal,
-            maxScore: maxScore,
-            rawDate: dateObj,
-            tabSwitches: tabs,
-            copiesAttempted: copies,
-            penaltiesApplied: penalties,
-            submittedAtStr: submitTimeFormatted,
-            feedback: r.feedback || r.doubt || "None"
+            name: r.name || "Anonymous",
+            email: r.email || r.roll || "N/A",
+            scoreText: r.score || "0/0",
+            scoreVal: r.scoreVal || 0,
+            maxScore: r.total || 10,
+            rawDate: new Date(r.timestamp || Date.now()),
+            tabSwitches: r.tabSwitches || 0,
+            copiesAttempted: r.copiesAttempted || 0,
+            penaltiesApplied: r.penalty || 0,
+            submittedAtStr: new Date(r.timestamp || Date.now()).toLocaleString(),
+            feedback: r.feedback || "None"
           });
         });
 
+        // Merge with local storage results as backup sync
+        const localResults = JSON.parse(localStorage.getItem("exam_submissions")) || [];
+        localResults.forEach(r => {
+          if (!allStudentResults.some(item => item.email === r.email)) {
+            allStudentResults.push({
+              name: r.name,
+              email: r.email || r.roll,
+              scoreText: r.score,
+              scoreVal: parseFloat(r.score) || 0,
+              maxScore: r.total || 10,
+              rawDate: new Date(r.timestamp || Date.now()),
+              tabSwitches: r.tabSwitches || 0,
+              copiesAttempted: r.copiesAttempted || 0,
+              penaltiesApplied: r.penalty || 0,
+              submittedAtStr: new Date(r.timestamp || Date.now()).toLocaleString(),
+              feedback: r.feedback || "None"
+            });
+          }
+        });
+
         document.getElementById('stat-total-students').innerText = allStudentResults.length;
+        let totalTabs = allStudentResults.reduce((sum, r) => sum + r.tabSwitches, 0);
+        let totalCopies = allStudentResults.reduce((sum, r) => sum + r.copiesAttempted, 0);
+        let totalPenalties = allStudentResults.reduce((sum, r) => sum + parseFloat(r.penaltiesApplied || 0), 0);
+
         document.getElementById('stat-total-tabs').innerText = totalTabs;
         document.getElementById('stat-total-copies').innerText = totalCopies;
-        document.getElementById('stat-total-penalties').innerText = `-${totalPenalties}`;
+        document.getElementById('stat-total-penalties').innerText = `-${totalPenalties.toFixed(2)}`;
 
         allStudentResults.sort((a, b) => b.rawDate - a.rawDate);
 
@@ -726,13 +507,13 @@
               <td><span class="time-stamp"><i class="fa-regular fa-clock"></i> ${r.submittedAtStr}</span></td>
               <td><span class="alert-indicator ${r.tabSwitches > 0 ? 'alert-warn' : 'alert-safe'}">${r.tabSwitches} Switch(es)</span></td>
               <td><span class="alert-indicator ${r.copiesAttempted > 0 ? 'alert-warn' : 'alert-safe'}">${r.copiesAttempted} Attempt(s)</span></td>
-              <td><span class="alert-indicator ${r.penaltiesApplied > 0 ? 'alert-warn' : 'alert-safe'}">-${r.penaltiesApplied} Mark(s)</span></td>
+              <td><span class="alert-indicator ${parseFloat(r.penaltiesApplied) > 0 ? 'alert-warn' : 'alert-safe'}">-${r.penaltiesApplied} Mark(s)</span></td>
             `;
             analyticsBody.appendChild(tr);
           });
         }
 
-        const leaderboardData = [...allStudentResults].sort((a, b) => b.scoreVal - a.scoreVal || a.rawDate - b.rawDate);
+        const leaderboardData = [...allStudentResults].sort((a, b) => b.scoreVal - a.scoreVal);
         leaderboardBody.innerHTML = '';
         if (leaderboardData.length === 0) {
           leaderboardBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No student performance data.</td></tr>`;
@@ -750,68 +531,11 @@
           });
         }
 
-        renderAdvancedInsights(allStudentResults);
-
       } catch (err) {
         console.error(err);
         analyticsBody.innerHTML = `<tr><td colspan="6" style="color:var(--danger); text-align:center;">Failed to load data.</td></tr>`;
       }
     };
-
-    function renderAdvancedInsights(data) {
-      if (data.length === 0) {
-        document.getElementById('insight-avg-score').innerText = "0%";
-        document.getElementById('insight-pass-rate').innerText = "0%";
-        document.getElementById('insight-highest-score').innerText = "0/0";
-        return;
-      }
-
-      let totalPerc = 0;
-      let passCount = 0;
-      let highestObj = data[0];
-
-      data.forEach(r => {
-        let perc = r.maxScore > 0 ? (r.scoreVal / r.maxScore) * 100 : 0;
-        totalPerc += perc;
-        if (perc >= 50) passCount++;
-        if (r.scoreVal > highestObj.scoreVal) highestObj = r;
-      });
-
-      const avgPerc = (totalPerc / data.length).toFixed(1);
-      const passRate = ((passCount / data.length) * 100).toFixed(1);
-
-      document.getElementById('insight-avg-score').innerText = `${avgPerc}%`;
-      document.getElementById('insight-pass-rate').innerText = `${passRate}%`;
-      document.getElementById('insight-highest-score').innerText = highestObj.scoreText;
-
-      const qTable = document.getElementById('question-insights-table-body');
-      qTable.innerHTML = '';
-
-      for (let qIndex = 1; qIndex <= 10; qIndex++) {
-        const correct = Math.floor(Math.random() * data.length);
-        const incorrect = data.length - correct;
-        const accuracy = data.length > 0 ? Math.round((correct / data.length) * 100) : 0;
-        
-        let diffBadge = `<span class="alert-indicator alert-safe">Easy</span>`;
-        if (accuracy < 40) diffBadge = `<span class="alert-indicator alert-warn">Hard</span>`;
-        else if (accuracy < 70) diffBadge = `<span class="alert-indicator" style="background:#fef3c7; color:#92400e;">Moderate</span>`;
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>Question ${qIndex}</strong></td>
-          <td style="color:var(--success); font-weight:700;">${correct}</td>
-          <td style="color:var(--danger); font-weight:700;">${incorrect}</td>
-          <td>
-            <div style="display:flex; align-items:center; gap:10px;">
-              <span>${accuracy}%</span>
-              <div class="progress-bar-bg" style="width:80px;"><div class="progress-bar-fill" style="width:${accuracy}%;"></div></div>
-            </div>
-          </td>
-          <td>${diffBadge}</td>
-        `;
-        qTable.appendChild(tr);
-      }
-    }
 
     window.downloadResultsCSV = () => {
       if (allStudentResults.length === 0) {
@@ -833,6 +557,7 @@
     window.clearAllResults = async () => {
       if (!confirm("Are you sure you want to permanently clear all student submissions?")) return;
       try {
+        localStorage.removeItem("exam_submissions");
         const snap = await getDocs(collection(db, "results"));
         const deletes = snap.docs.map(d => deleteDoc(doc(db, "results", d.id)));
         await Promise.all(deletes);
