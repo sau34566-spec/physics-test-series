@@ -438,24 +438,34 @@
       });
     };
 
-    async function submitExam() {
+    window.submitExam = async function() {
       window.isTestSubmitted = true;
+
+      // 1. Fetch Security Report Data safely from security.js
+      let secReport = { tabSwitches: 0, copiesAttempted: 0, penaltiesApplied: 0 };
+      if (typeof window.getSecurityReport === 'function') {
+        secReport = window.getSecurityReport();
+      }
       
+      let secPenalty = parseFloat(secReport.penaltiesApplied) || 0;
       let score = 0;
-      let penaltyMarks = 0;
+      let wrongAnsPenalty = 0;
       const negativePerWrong = 0.25;
 
+      // 2. Score Calculation
       questionsPool.forEach((qObj, idx) => {
         if (studentAnswers[idx]) {
           if (studentAnswers[idx] === qObj.a) {
             score++;
           } else {
-            penaltyMarks += negativePerWrong;
+            wrongAnsPenalty += negativePerWrong;
           }
         }
       });
 
-      const finalScore = Math.max(0, score - penaltyMarks);
+      // Total Penalty = Wrong Answer Penalty + Tab Switch Penalty
+      let totalPenaltyMarks = wrongAnsPenalty + secPenalty;
+      const finalScore = Math.max(0, score - totalPenaltyMarks);
       const studentId = (studentInfo.roll || studentInfo.email || "student").replace(/[^a-zA-Z0-9]/g, "_");
 
       const submissionRecord = {
@@ -466,10 +476,10 @@
         scoreVal: finalScore,
         correct: score,
         total: questionsPool.length,
-        penalty: penaltyMarks.toFixed(2),
-        tabSwitches: window.tabSwitchCount || 0,
-        copiesAttempted: window.copyAttemptCount || 0,
-        penaltiesApplied: penaltyMarks.toFixed(2),
+        penalty: totalPenaltyMarks.toFixed(2),
+        tabSwitches: secReport.tabSwitches || 0,
+        copiesAttempted: secReport.copiesAttempted || 0,
+        penaltiesApplied: totalPenaltyMarks.toFixed(2),
         timestamp: new Date().toISOString(),
         submittedAt: new Date().toISOString()
       };
@@ -493,10 +503,11 @@
         window.markEmailAsSubmitted(studentInfo.email || studentInfo.roll);
       }
 
+      // Update UI Elements
       document.getElementById("dash-name").innerText = studentInfo.name;
       document.getElementById("dash-score").innerText = `${finalScore.toFixed(2)} / ${questionsPool.length}`;
       document.getElementById("dash-correct").innerText = `${score} Correct`;
-      document.getElementById("dash-penalty").innerText = `-${penaltyMarks.toFixed(2)} Marks`;
+      document.getElementById("dash-penalty").innerText = `-${totalPenaltyMarks.toFixed(2)} Marks`;
 
       const analysisList = document.getElementById("analysis-questions-list");
       analysisList.innerHTML = "";
@@ -507,7 +518,7 @@
         let choiceColor = isCorrect ? "#16a34a" : "#dc2626";
 
         let itemHTML = `
-          <div style="background: #f9fafb; padding: 10px 12px; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 13px;">
+          <div style="background: #f9fafb; padding: 10px 12px; border-radius: 6px; border: 1px solid #e5e5e5; font-size: 13px;">
             <p style="font-weight: 600; margin-bottom: 5px; color: #1e293b;">Q${idx + 1}: ${qObj.q}</p>
             <p style="margin-bottom: 3px;">Correct Answer: <span style="color: #16a34a; font-weight: bold;">${qObj.a}</span></p>
             <p>Student Choice: <span style="color: ${choiceColor}; font-weight: bold;">${studentChoice}</span></p>
@@ -517,7 +528,7 @@
       });
 
       document.getElementById("dashboard-overlay").style.display = 'flex';
-    }
+    };
 
     let selectedRating = 0;
     window.setRating = function(rating) {
@@ -534,7 +545,6 @@
         return;
       }
 
-      // Append feedback to local and Firebase record if needed
       const studentId = (studentInfo.roll || studentInfo.email || "student").replace(/[^a-zA-Z0-9]/g, "_");
       let allSubmissions = JSON.parse(localStorage.getItem("exam_submissions")) || [];
       let sub = allSubmissions.find(item => item.roll === studentInfo.roll);
