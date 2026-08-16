@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Exam Elite | Result</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,.35);
+        }
+
+        .success-icon {
+            width: 75px;
+            height: 75px;
+            background: #dcfce7;
+            color: #16a34a;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 38px;
+            margin: 0 auto 15px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #0f172a;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .student {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 18px;
+        }
+
+        .student p {
+            margin: 5px 0;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .student strong {
+            color: #0f172a;
+        }
+
+        .score {
+            text-align: center;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 18px;
+        }
+
+        .score-label {
+            color: #475569;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .score-number {
+            font-size: 40px;
+            font-weight: 800;
+            color: #1d4ed8;
+            margin-top: 5px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .stat {
+            padding: 15px 8px;
+            text-align: center;
+            border-radius: 10px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 22px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .reason {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .home-btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .home-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .error {
+            text-align: center;
+            color: #991b1b;
+            background: #fee2e2;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        @media(max-width:500px) {
+
+            .card {
+                padding: 22px 16px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="card" id="result-card">
+
+    <div class="success-icon">
+        ✓
+    </div>
+
+    <h1>Test Submitted Successfully</h1>
+
+    <p class="subtitle">
+        Your examination has been completed.
+    </p>
+
+    <div class="student">
+
+        <p>
+            <strong>Name:</strong>
+            <span id="student-name">-</span>
+        </p>
+
+        <p>
+            <strong>Roll:</strong>
+            <span id="student-roll">-</span>
+        </p>
+
+        <p>
+            <strong>Email:</strong>
+            <span id="student-email">-</span>
+        </p>
+
+    </div>
+
+
+    <div class="score">
+
+        <div class="score-label">
+            Final Score
+        </div>
+
+        <div class="score-number" id="score">
+            0
+        </div>
+
+        <div style="color:#64748b;font-size:13px;">
+            out of <span id="total">0</span>
+        </div>
+
+    </div>
+
+
+    <div class="stats">
+
+        <div class="stat">
+            <span
+                class="stat-number"
+                id="correct"
+                style="color:#16a34a;"
+            >
+                0
+            </span>
+
+            <span class="stat-label">
+                Correct
+            </span>
+        </div>
+
+
+        <div class="stat">
+
+            <span
+                class="stat-number"
+                id="incorrect"
+                style="color:#dc2626;"
+            >
+                0
+            </span>
+
+            <span class="stat-label">
+                Incorrect
+            </span>
+
+        </div>
+
+
+        <div class="stat">
+
+            <span
+                class="stat-number"
+                id="unanswered"
+                style="color:#64748b;"
+            >
+                0
+            </span>
+
+            <span class="stat-label">
+                Unanswered
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="reason">
+
+        Submission:
+        <strong id="reason">
+            Manual submission
+        </strong>
+
+    </div>
+
+
+    <button
+        class="home-btn"
+        onclick="goHome()"
+    >
+        Back to Home
+    </button>
+
+</div>
+
+
+<script>
+
+"use strict";
+
+
+/* =====================================================
+   GET RESULT
+===================================================== */
+
+const result =
+    JSON.parse(
+        sessionStorage.getItem("last_exam_result") || "null"
+    );
+
+
+/* =====================================================
+   IF RESULT DOES NOT EXIST
+===================================================== */
+
+if (!result) {
+
+    document.getElementById("result-card").innerHTML = `
+
+        <div class="error">
+
+            <h2 style="margin-bottom:8px;">
+                Result Not Found
+            </h2>
+
+            <p>
+                Please complete the examination first.
+            </p>
+
+        </div>
+
+    `;
+
+}
+else {
+
+    /* Student information */
+
+    document.getElementById("student-name").innerText =
+        result.name || "-";
+
+
+    document.getElementById("student-roll").innerText =
+        result.roll || "-";
+
+
+    document.getElementById("student-email").innerText =
+        result.email || "-";
+
+
+    /* Score */
+
+    document.getElementById("score").innerText =
+        Number(result.score || 0).toFixed(2);
+
+
+    document.getElementById("total").innerText =
+        result.totalQuestions || 0;
+
+
+    /* Statistics */
+
+    document.getElementById("correct").innerText =
+        result.correct || 0;
+
+
+    document.getElementById("incorrect").innerText =
+        result.incorrect || 0;
+
+
+    document.getElementById("unanswered").innerText =
+        result.unanswered || 0;
+
+
+    /* Submission reason */
+
+    document.getElementById("reason").innerText =
+        result.submissionReason ||
+        "Manual submission";
+
+}
+
+
+/* =====================================================
+   BACK TO HOME
+===================================================== */
+
+function goHome() {
+
+    /*
+       Clear student session so that
+       the previous test cannot be reopened
+       using old session information.
+    */
+
+    sessionStorage.removeItem("student_info");
+
+    sessionStorage.removeItem("last_exam_result");
+
+    window.location.href = "index.html";
+
+}
+
+</script>
+
+</body>
+</html>
