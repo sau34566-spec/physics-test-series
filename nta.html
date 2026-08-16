@@ -347,16 +347,6 @@
         ];
 
         window.onload = function() {
-            if(localStorage.getItem('portal_session_locked') === 'true') {
-                document.body.innerHTML = `
-                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: #0f172a; color: white; text-align: center; padding: 20px; gap: 15px;">
-                        <i class="fa-solid fa-lock" style="font-size: 3rem; color: var(--warning);"></i>
-                        <h2 style="font-size: 1.5rem;">Session Already Completed</h2>
-                        <p style="color: #cbd5e1; max-width: 400px; font-size: 0.9rem;">Your test and feedback have already been submitted successfully. This session is now closed.</p>
-                    </div>
-                `;
-                return;
-            }
             let savedAdmin = localStorage.getItem('persistent_admin_email');
             if(localStorage.getItem('is_admin_logged_in') === 'true' && savedAdmin) {
                 currentStudentEmail = savedAdmin;
@@ -742,7 +732,6 @@
                 timestamp: new Date().toISOString()
             };
 
-            // Save data across all possible keys so Admin Panel picks it up instantly
             const storageKeys = ['admin_exam_submissions', 'exam_results', 'all_student_results', 'student_submissions'];
             
             storageKeys.forEach(key => {
@@ -766,14 +755,7 @@
         }
 
         function lockWebsiteSession() {
-            let savedAdmin = localStorage.getItem('persistent_admin_email');
-            let isAdmin = localStorage.getItem('is_admin_logged_in') === 'true' && currentStudentEmail.toLowerCase() === savedAdmin;
-            
-            if(!isAdmin) {
-                localStorage.setItem('portal_session_locked', 'true');
-            } else {
-                localStorage.removeItem('portal_session_locked');
-            }
+            // Session lock disabled - simply reloads the page
             window.location.reload();
         }
     </script>
