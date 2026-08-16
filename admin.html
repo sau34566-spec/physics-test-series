@@ -388,6 +388,24 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Added Test Results Table for explicit matching -->
+        <h4 style="margin-top: 2rem; color: var(--primary);"><i class="fa-solid fa-database"></i> Firestore Test Results Collection (`testResults`)</h4>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Email</th>
+                <th>Score</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="adminTableBody">
+              <tr><td colspan="4" style="text-align:center;">Loading cloud records...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -527,6 +545,7 @@
         renderQuestionsPool();
         fetchLiveDatabaseRecords();
         listenLiveActiveStudents();
+        loadAdminDashboard();
       } else {
         document.getElementById('login-error').style.display = 'block';
       }
@@ -545,6 +564,7 @@
         renderQuestionsPool();
         fetchLiveDatabaseRecords();
         listenLiveActiveStudents();
+        loadAdminDashboard();
       });
     }
 
@@ -774,6 +794,41 @@
       }
     }
 
+    // Integrated function to load test results directly into adminTableBody
+    async function loadAdminDashboard() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "testResults"));
+        const tableBody = document.getElementById("adminTableBody");
+        if (!tableBody) return;
+        
+        tableBody.innerHTML = "";
+        let index = 1;
+        
+        if (querySnapshot.empty) {
+          tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No test results found in testResults collection.</td></tr>`;
+          return;
+        }
+
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            let timestampStr = 'N/A';
+            if (data.timestamp) {
+              timestampStr = data.timestamp.toDate ? data.timestamp.toDate().toLocaleString() : new Date(data.timestamp).toLocaleString();
+            }
+            tableBody.innerHTML += `
+                <tr>
+                    <td>${index++}</td>
+                    <td>${data.email || 'N/A'}</td>
+                    <td>${data.score !== undefined ? data.score : 'N/A'}</td>
+                    <td>${timestampStr}</td>
+                </tr>
+            `;
+        });
+      } catch (error) {
+        console.error("Error loading test results:", error);
+      }
+    }
+
     window.fetchLiveDatabaseRecords = async () => {
       const analyticsBody = document.getElementById('analytics-table-body');
       const leaderboardBody = document.getElementById('leaderboard-table-body');
@@ -870,6 +925,7 @@
         });
 
         renderAdvancedInsights(allStudentResults);
+        loadAdminDashboard();
       } catch (err) {
         console.error(err);
         analyticsBody.innerHTML = `<tr><td colspan="6" style="color:var(--danger); text-align:center;">Failed to load data.</td></tr>`;
