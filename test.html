@@ -6,66 +6,45 @@
     <title>Exam Elite | Live Test Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        :root {
-            --primary: #1e3a8a;
-            --primary-accent: #3b82f6;
-            --bg-dark: #0f172a;
-            --bg-card: #ffffff;
-            --text-main: #1e293b;
-            --danger: #ef4444;
-            --success: #10b981;
-        }
-
+        :root {--primary: #1e3a8a; --primary-accent: #3b82f6; --bg-dark: #0f172a; --bg-card: #ffffff; --text-main: #1e293b; --danger: #ef4444; --success: #10b981;}
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; user-select: none; }
         body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: center; }
-
         .test-container { background: var(--bg-card); width: 100%; max-width: 800px; padding: 2.5rem; border-radius: 16px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); position: relative; }
-        
         .exam-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1.5rem; }
         .timer-box { background: #fee2e2; color: #991b1b; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-        
         .question-box { margin-bottom: 1.5rem; }
         .question-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem; line-height: 1.5; }
-        
         .options-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 2rem; }
         .option-label { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 10px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
         .option-label:hover { background: #f1f5f9; border-color: var(--primary-accent); }
         .option-label input { accent-color: var(--primary-accent); width: 18px; height: 18px; }
-
         .exam-footer { display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #e2e8f0; padding-top: 1.5rem; }
         .btn { background: var(--primary-accent); color: white; border: none; padding: 10px 20px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
         .btn:hover { background: #2563eb; }
         .btn-success { background: var(--success); }
         .btn-success:hover { background: #059669; }
-
         #warning-banner { display: none; background-color: #fee2e2; border: 1px solid var(--danger); color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-weight: 600; text-align: center; }
     </style>
 </head>
 <body>
-
     <div class="test-container">
         <div id="warning-banner"><i class="fa-solid fa-triangle-exclamation"></i> <span id="warning-msg"></span></div>
-        
         <div class="exam-header">
             <div>
                 <h2 id="student-display-name" style="color: var(--primary); font-size: 1.2rem;">Student Exam Portal</h2>
                 <p id="question-progress" style="font-size: 0.85rem; color: #64748b;">Question 1 of 10</p>
             </div>
             <div class="timer-box">
-                <i class="fa-regular fa-clock"></i> <span id="time-left">00:00</span>
+                <i class="fa-regular fa-clock"></i>
+                <span id="time-left">00:00</span>
             </div>
         </div>
-
         <div id="quiz-body">
             <div class="question-box">
                 <div class="question-title" id="q-text">Loading question...</div>
-                <div class="options-list" id="options-container">
-                    <!-- Options injected dynamically -->
-                </div>
+                <div class="options-list" id="options-container"></div>
             </div>
-
             <div class="exam-footer">
                 <button class="btn" id="prev-btn" onclick="prevQuestion()" style="display:none;"><i class="fa-solid fa-arrow-left"></i> Previous</button>
                 <button class="btn" id="next-btn" onclick="nextQuestion()">Save & Next <i class="fa-solid fa-arrow-right"></i></button>
@@ -76,16 +55,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { 
-            getFirestore, 
-            doc, 
-            setDoc, 
-            collection, 
-            query, 
-            where, 
-            getDocs, 
-            addDoc 
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -103,17 +73,31 @@
         let currentIndex = 0;
         let userAnswers = {};
         let tabSwitchCount = 0;
-        let copyPasteAttempts = 0;
         window.isTestSubmitted = false;
 
         const studentInfo = JSON.parse(sessionStorage.getItem("student_info"));
         const examConfig = JSON.parse(sessionStorage.getItem("active_exam_config"));
 
-        if (!studentInfo) {
+        if (!studentInfo || !studentInfo.email) {
             alert("Unauthorized access! Please login from portal first.");
             window.location.href = "index.html";
         } else {
             document.getElementById("student-display-name").innerText = `Student: ${studentInfo.name} (${studentInfo.roll})`;
+            // Check previous submission immediately on load via Firestore
+            checkExistingSubmission(studentInfo.email);
+        }
+
+        async function checkExistingSubmission(email) {
+            try {
+                const q = query(collection(db, "testResults"), where("email", "==", email));
+                const querySnapshot = await getDocs(q);
+                if (!querySnapshot.empty) {
+                    alert("Security Alert: Aap is email se pehle hi test de chuke hain! Dobara test allow nahi hai.");
+                    window.location.href = "index.html";
+                }
+            } catch (err) {
+                console.error("Error checking previous attempts:", err);
+            }
         }
 
         // Default Questions Fallback
@@ -130,7 +114,6 @@
             { q: "Which metal is a good conductor of electricity?", options: ["Wood", "Plastic", "Copper", "Rubber"], a: "Copper" }
         ];
 
-        // Safe Question Normalizer
         if (examConfig && examConfig.questions && examConfig.questions.length > 0) {
             questions = examConfig.questions.map(item => {
                 let opts = [];
@@ -139,17 +122,11 @@
                 } else if (item.options && typeof item.options === 'object') {
                     opts = [item.options.A, item.options.B, item.options.C, item.options.D].filter(Boolean);
                 }
-
                 let ans = item.answer || item.a;
                 if (ans && ans.length === 1 && item.options && item.options[ans]) {
                     ans = item.options[ans];
                 }
-
-                return {
-                    q: item.question || item.q,
-                    options: opts,
-                    a: ans
-                };
+                return { q: item.question || item.q, options: opts, a: ans };
             });
         } else {
             questions = defaultQuestions;
@@ -160,10 +137,10 @@
             const q = questions[currentIndex];
             document.getElementById("question-progress").innerText = `Question ${currentIndex + 1} of ${questions.length}`;
             document.getElementById("q-text").innerText = q.q;
-
+            
             const optContainer = document.getElementById("options-container");
             optContainer.innerHTML = "";
-
+            
             q.options.forEach((opt) => {
                 const isChecked = userAnswers[currentIndex] === opt ? "checked" : "";
                 optContainer.innerHTML += `
@@ -184,23 +161,9 @@
             }
         }
 
-        window.saveAnswer = (opt) => {
-            userAnswers[currentIndex] = opt;
-        };
-
-        window.nextQuestion = () => {
-            if (currentIndex < questions.length - 1) {
-                currentIndex++;
-                renderQuestion();
-            }
-        };
-
-        window.prevQuestion = () => {
-            if (currentIndex > 0) {
-                currentIndex--;
-                renderQuestion();
-            }
-        };
+        window.saveAnswer = (opt) => { userAnswers[currentIndex] = opt; };
+        window.nextQuestion = () => { if (currentIndex < questions.length - 1) { currentIndex++; renderQuestion(); } };
+        window.prevQuestion = () => { if (currentIndex > 0) { currentIndex--; renderQuestion(); } };
 
         // Timer Setup
         let durationMinutes = examConfig?.examDurationMinutes || 10;
@@ -224,20 +187,19 @@
             setTimeout(() => banner.style.display = "none", 4000);
         }
 
-        // Anti-Cheating: Context menu & Copy-Paste prohibition
+        // Anti-Cheating: Tab Switch & Copy-Paste Detection
         document.addEventListener('contextmenu', e => e.preventDefault());
-        document.addEventListener('copy', e => { e.preventDefault(); copyPasteAttempts++; showWarning("Copying prohibited!"); });
-        document.addEventListener('paste', e => { e.preventDefault(); copyPasteAttempts++; showWarning("Pasting prohibited!"); });
+        document.addEventListener('copy', e => { e.preventDefault(); showWarning("Copying is prohibited!"); });
+        document.addEventListener('paste', e => { e.preventDefault(); showWarning("Pasting is prohibited!"); });
 
-        // 1. Tab Switch Detection (Auto-submit on 2nd switch)
         document.addEventListener("visibilitychange", () => {
             if (document.hidden && !window.isTestSubmitted) {
                 tabSwitchCount++;
                 if (tabSwitchCount >= 2) {
-                    alert("Aapne 2 baar tab switch kiya hai. Aapka test automatically submit kiya ja raha hai.");
-                    submitExam("Multiple tab switches");
+                    alert("Aapne 2 baar tab switch kiya hai! Penalty ke roop mein aapka test auto-submit kiya ja raha hai.");
+                    submitExam("Multiple tab switches penalty");
                 } else {
-                    alert("Warning: Tab switch mat kariye! Agli baar test auto-submit ho jayega.");
+                    showWarning(`Warning: Tab switch mat kariye (${tabSwitchCount}/2). Dobara switch karne par test submit ho jayega!`);
                 }
             }
         });
@@ -247,42 +209,6 @@
                 submitExam("Manual submission");
             }
         };
-
-        // 2. Email Verification & Firestore Saving function
-        async function verifyAndSubmitTest(userEmail, score, resultPayload) {
-            try {
-                // Check if user has already submitted a test using this email
-                const q = query(collection(db, "testResults"), where("email", "==", userEmail));
-                const querySnapshot = await getDocs(q);
-
-                if (!querySnapshot.empty) {
-                    alert("Aap is email se pehle hi test de chuke hain!");
-                    window.location.href = "index.html";
-                    return false;
-                }
-
-                // Save data to Firestore "testResults" collection
-                await addDoc(collection(db, "testResults"), {
-                    email: userEmail,
-                    score: score,
-                    candidateName: resultPayload.candidateName,
-                    roll: resultPayload.roll,
-                    totalQuestions: resultPayload.totalQuestions,
-                    correctCount: resultPayload.correctCount,
-                    incorrectCount: resultPayload.incorrectCount,
-                    unansweredCount: resultPayload.unansweredCount,
-                    submissionReason: resultPayload.submissionReason,
-                    detailedAnalysis: resultPayload.detailedAnalysis,
-                    timestamp: new Date()
-                });
-
-                return true;
-            } catch (error) {
-                console.error("Firestore verification/saving error:", error);
-                alert("Error saving test results: " + error.message);
-                return false;
-            }
-        }
 
         window.submitExam = async (reason = "Manual submission") => {
             if (window.isTestSubmitted) return;
@@ -297,7 +223,6 @@
             questions.forEach((q, idx) => {
                 const studentChoice = userAnswers[idx] || "Not Answered";
                 let isCorrect = false;
-
                 if (studentChoice === "Not Answered") {
                     unansweredCount++;
                 } else if (studentChoice === q.a) {
@@ -306,7 +231,6 @@
                 } else {
                     incorrectCount++;
                 }
-
                 detailedAnalysis.push({
                     questionNo: idx + 1,
                     questionText: q.q,
@@ -317,30 +241,43 @@
             });
 
             let finalScore = Math.max(0, correctCount);
-
             const resultPayload = {
                 candidateName: studentInfo.name,
-                candidateEmail: studentInfo.email,
+                email: studentInfo.email,
                 roll: studentInfo.roll,
-                finalScore: finalScore.toFixed(2),
+                score: finalScore,
                 totalQuestions: questions.length,
                 correctCount: correctCount,
                 incorrectCount: incorrectCount,
                 unansweredCount: unansweredCount,
                 submissionReason: reason,
                 detailedAnalysis: detailedAnalysis,
-                submittedAt: new Date().toISOString()
+                timestamp: new Date().toISOString()
             };
 
-            // Save locally for immediate view on result.html
+            // Session storage mein save karein taki result.html turant dikha sake
             sessionStorage.setItem("last_exam_result", JSON.stringify(resultPayload));
 
-            // Verify email and save to Firestore
-            const isSaved = await verifyAndSubmitTest(studentInfo.email, finalScore, resultPayload);
-
-            if (isSaved) {
-                window.location.href = "result.html";
+            // Firestore database aur Admin Panel syncing ke liye data save karein
+            try {
+                await addDoc(collection(db, "testResults"), {
+                    email: studentInfo.email,
+                    score: finalScore,
+                    candidateName: studentInfo.name,
+                    roll: studentInfo.roll,
+                    totalQuestions: questions.length,
+                    correctCount: correctCount,
+                    incorrectCount: incorrectCount,
+                    unansweredCount: unansweredCount,
+                    submissionReason: reason,
+                    detailedAnalysis: detailedAnalysis,
+                    timestamp: new Date()
+                });
+            } catch (error) {
+                console.error("Error saving data to Firestore:", error);
             }
+
+            window.location.href = "result.html";
         };
 
         renderQuestion();
