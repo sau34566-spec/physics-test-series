@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -197,7 +197,6 @@
         }
 
         @media(max-width:600px) {
-
             header {
                 padding: 12px;
             }
@@ -236,7 +235,6 @@
 <div id="warning" class="warning"></div>
 
 <header>
-
     <div class="student-info">
         <h2 id="student-name">Student</h2>
         <p id="student-roll">Roll: -</p>
@@ -245,14 +243,10 @@
     <div class="timer">
         ⏱ <span id="timer">00:00</span>
     </div>
-
 </header>
 
-
 <div class="container">
-
     <div class="progress-card">
-
         <div class="progress-text">
             <span id="question-count">Question 1 of 10</span>
             <span id="answered-count">Answered: 0</span>
@@ -261,53 +255,37 @@
         <div class="progress-bg">
             <div id="progress-fill" class="progress-fill"></div>
         </div>
-
     </div>
 
-
     <div id="quiz-area">
-
         <div class="loading">
             Loading test...
         </div>
-
     </div>
-
 </div>
-
 
 <script type="module">
 
 "use strict";
 
-
 /* =========================================================
    STUDENT INFORMATION
 ========================================================= */
 
-const studentInfo =
-    JSON.parse(sessionStorage.getItem("student_info") || "null");
-
+const studentInfo = JSON.parse(sessionStorage.getItem("student_info") || "null");
 
 if (!studentInfo) {
-
     alert("Student verification required.");
-
     window.location.href = "index.html";
-
 }
-
 
 /* =========================================================
    TEST CONFIGURATION
 ========================================================= */
 
-const examConfig =
-    JSON.parse(sessionStorage.getItem("active_exam_config") || "null");
-
+const examConfig = JSON.parse(sessionStorage.getItem("active_exam_config") || "null");
 
 const defaultQuestions = [
-
     {
         question: "How do plants make their own food?",
         options: {
@@ -318,7 +296,6 @@ const defaultQuestions = [
         },
         answer: "B"
     },
-
     {
         question: "What is the chemical formula of water?",
         options: {
@@ -329,7 +306,6 @@ const defaultQuestions = [
         },
         answer: "B"
     },
-
     {
         question: "Which is the largest organ in the human body?",
         options: {
@@ -340,7 +316,6 @@ const defaultQuestions = [
         },
         answer: "C"
     },
-
     {
         question: "What do we get from the Sun?",
         options: {
@@ -351,7 +326,6 @@ const defaultQuestions = [
         },
         answer: "A"
     },
-
     {
         question: "Which substance gives blood its red colour?",
         options: {
@@ -362,7 +336,6 @@ const defaultQuestions = [
         },
         answer: "B"
     },
-
     {
         question: "In which medium can sound NOT travel?",
         options: {
@@ -373,7 +346,6 @@ const defaultQuestions = [
         },
         answer: "D"
     },
-
     {
         question: "What is Earth's natural satellite?",
         options: {
@@ -384,7 +356,6 @@ const defaultQuestions = [
         },
         answer: "C"
     },
-
     {
         question: "Which fruit is a rich source of Vitamin C?",
         options: {
@@ -395,7 +366,6 @@ const defaultQuestions = [
         },
         answer: "A"
     },
-
     {
         question: "Approximately what percentage of Earth's atmosphere is oxygen?",
         options: {
@@ -406,7 +376,6 @@ const defaultQuestions = [
         },
         answer: "A"
     },
-
     {
         question: "Which metal is a good conductor of electricity?",
         options: {
@@ -417,12 +386,9 @@ const defaultQuestions = [
         },
         answer: "C"
     }
-
 ];
 
-
 let questions = [];
-
 
 /* =========================================================
    LOAD QUESTIONS
@@ -433,309 +399,233 @@ if (
     Array.isArray(examConfig.questions) &&
     examConfig.questions.length > 0
 ) {
-
     questions = examConfig.questions.map(normalizeQuestion);
-
 } else {
-
     questions = defaultQuestions.map(normalizeQuestion);
-
 }
-
 
 function normalizeQuestion(item) {
-
     const options = item.options || {};
-
     return {
-
-        question:
-            item.question ||
-            item.q ||
-            "Question unavailable",
-
+        question: item.question || item.q || "Question unavailable",
         options: {
-
-            A:
-                typeof options === "object" && !Array.isArray(options)
-                    ? options.A
-                    : options[0],
-
-            B:
-                typeof options === "object" && !Array.isArray(options)
-                    ? options.B
-                    : options[1],
-
-            C:
-                typeof options === "object" && !Array.isArray(options)
-                    ? options.C
-                    : options[2],
-
-            D:
-                typeof options === "object" && !Array.isArray(options)
-                    ? options.D
-                    : options[3]
-
+            A: typeof options === "object" && !Array.isArray(options) ? options.A : options[0],
+            B: typeof options === "object" && !Array.isArray(options) ? options.B : options[1],
+            C: typeof options === "object" && !Array.isArray(options) ? options.C : options[2],
+            D: typeof options === "object" && !Array.isArray(options) ? options.D : options[3]
         },
-
-        answer:
-            item.answer ||
-            item.a ||
-            "A"
-
+        answer: item.answer || item.a || "A"
     };
-
 }
-
 
 /* =========================================================
    RANDOM QUESTION LIMIT
 ========================================================= */
 
-const questionLimit =
-    Number(
-        examConfig?.studentDisplayLimit ||
-        examConfig?.questionLimit ||
-        questions.length
-    );
-
+const questionLimit = Number(
+    examConfig?.studentDisplayLimit ||
+    examConfig?.questionLimit ||
+    questions.length
+);
 
 if (questionLimit > 0 && questionLimit < questions.length) {
-
-    questions =
-        [...questions]
+    questions = [...questions]
         .sort(() => Math.random() - 0.5)
         .slice(0, questionLimit);
-
 }
-
 
 /* =========================================================
    EXAM VARIABLES
 ========================================================= */
 
 let currentQuestion = 0;
-
 let answers = {};
-
 let submitted = false;
 
-let durationMinutes =
-    Number(
-        examConfig?.examDurationMinutes ||
-        examConfig?.durationMinutes ||
-        10
-    );
+let durationMinutes = Number(
+    examConfig?.examDurationMinutes ||
+    examConfig?.durationMinutes ||
+    10
+);
 
 let totalSeconds = durationMinutes * 60;
-
 let timerInterval;
-
 const examTimerKey = "active_exam_end_time";
-
 
 /* =========================================================
    STUDENT DISPLAY
 ========================================================= */
 
 if (studentInfo) {
-
-    document.getElementById("student-name").innerText =
-        studentInfo.name || "Student";
-
-    document.getElementById("student-roll").innerText =
-        "Roll: " + (studentInfo.roll || "-");
-
+    document.getElementById("student-name").innerText = studentInfo.name || "Student";
+    document.getElementById("student-roll").innerText = "Roll: " + (studentInfo.roll || "-");
 }
 
+/* =========================================================
+   STEP 9: STABLE ANSWER SAVE
+========================================================= */
+
+window.saveAnswer = function(option) {
+    if (window.isTestSubmitted || submitted) {
+        return;
+    }
+    answers[currentQuestion] = String(option);
+};
 
 /* =========================================================
-   RENDER QUESTION
+   STEP 9: STABLE QUESTION RENDER (DOM-BASED)
 ========================================================= */
 
 function renderQuestion() {
+    const quizArea = document.getElementById("quiz-area");
 
     if (!questions.length) {
-
-        document.getElementById("quiz-area").innerHTML = `
+        quizArea.innerHTML = `
             <div class="loading">
                 No questions available.
             </div>
         `;
-
         return;
     }
 
-
     const q = questions[currentQuestion];
 
-    let html = `
+    // Clear previous contents
+    quizArea.innerHTML = "";
 
-        <div class="question-card">
+    const card = document.createElement("div");
+    card.className = "question-card";
 
-            <div class="question-number">
-                QUESTION ${currentQuestion + 1}
-            </div>
+    const qNumber = document.createElement("div");
+    qNumber.className = "question-number";
+    qNumber.innerText = `QUESTION ${currentQuestion + 1}`;
 
-            <div class="question">
-                ${escapeHTML(q.question)}
-            </div>
+    const qText = document.createElement("div");
+    qText.className = "question";
+    qText.innerText = q.question; // Safe text rendering (No HTML injection)
 
-            <div class="options">
+    const optionContainer = document.createElement("div");
+    optionContainer.className = "options";
 
-    `;
+    ["A", "B", "C", "D"].forEach(optionKey => {
+        const optionVal = q.options[optionKey];
+        if (optionVal === undefined || optionVal === null) return;
 
+        const label = document.createElement("label");
+        const isSelected = answers[currentQuestion] === optionKey;
+        label.className = `option ${isSelected ? "selected" : ""}`;
 
-    ["A", "B", "C", "D"].forEach(letter => {
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = "question-option";
+        input.value = String(optionKey);
 
-        const optionText = q.options[letter];
-
-        if (optionText === undefined || optionText === null) {
-            return;
+        // Previously selected answer check
+        if (
+            answers[currentQuestion] !== undefined &&
+            answers[currentQuestion] === String(optionKey)
+        ) {
+            input.checked = true;
         }
 
-        const selected =
-            answers[currentQuestion] === letter;
+        // Attach event listener
+        input.addEventListener("change", () => {
+            window.saveAnswer(optionKey);
+            renderQuestion();
+        });
 
-        html += `
+        label.addEventListener("click", () => {
+            if (!input.checked) {
+                input.checked = true;
+                window.saveAnswer(optionKey);
+                renderQuestion();
+            }
+        });
 
-            <label
-                class="option ${selected ? "selected" : ""}"
-                onclick="selectAnswer('${letter}')"
-            >
+        const span = document.createElement("span");
+        const b = document.createElement("b");
+        b.innerText = `${optionKey}. `;
+        span.appendChild(b);
+        span.appendChild(document.createTextNode(String(optionVal)));
 
-                <input
-                    type="radio"
-                    name="question-option"
-                    ${selected ? "checked" : ""}
-                >
-
-                <span>
-                    <b>${letter}.</b>
-                    ${escapeHTML(String(optionText))}
-                </span>
-
-            </label>
-
-        `;
-
+        label.appendChild(input);
+        label.appendChild(span);
+        optionContainer.appendChild(label);
     });
 
+    const buttonsDiv = document.createElement("div");
+    buttonsDiv.className = "buttons";
 
-    html += `
+    // Previous Button
+    const previousButton = document.createElement("button");
+    previousButton.id = "prev-btn";
+    previousButton.className = "prev";
+    previousButton.innerText = "← Previous";
+    previousButton.disabled = currentQuestion === 0;
+    previousButton.onclick = previousQuestion;
 
-            </div>
+    // Next Button
+    const nextButton = document.createElement("button");
+    nextButton.id = "next-btn";
+    nextButton.className = "next";
+    nextButton.innerText = "Save & Next →";
+    nextButton.onclick = nextQuestion;
 
-            <div class="buttons">
+    // Submit Button
+    const submitButton = document.createElement("button");
+    submitButton.id = "submit-btn";
+    submitButton.className = "submit";
+    submitButton.innerText = "Submit Test ✓";
+    submitButton.onclick = confirmSubmit;
 
-                <button
-                    class="prev"
-                    onclick="previousQuestion()"
-                    ${currentQuestion === 0 ? "disabled" : ""}
-                >
-                    ← Previous
-                </button>
+    buttonsDiv.appendChild(previousButton);
 
-                ${
-                    currentQuestion === questions.length - 1
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    if (isLastQuestion) {
+        nextButton.style.display = "none";
+        submitButton.style.display = "inline-flex";
+        buttonsDiv.appendChild(submitButton);
+    } else {
+        nextButton.style.display = "inline-flex";
+        submitButton.style.display = "none";
+        buttonsDiv.appendChild(nextButton);
+    }
 
-                    ?
+    card.appendChild(qNumber);
+    card.appendChild(qText);
+    card.appendChild(optionContainer);
+    card.appendChild(buttonsDiv);
 
-                    `
-                    <button
-                        class="submit"
-                        onclick="confirmSubmit()"
-                    >
-                        Submit Test ✓
-                    </button>
-                    `
-
-                    :
-
-                    `
-                    <button
-                        class="next"
-                        onclick="nextQuestion()"
-                    >
-                        Save & Next →
-                    </button>
-                    `
-                }
-
-            </div>
-
-        </div>
-
-    `;
-
-
-    document.getElementById("quiz-area").innerHTML = html;
-
+    quizArea.appendChild(card);
 
     updateProgress();
-
 }
 
-
 /* =========================================================
-   SELECT ANSWER
-========================================================= */
-
-window.selectAnswer = function(letter) {
-
-    if (submitted) return;
-
-    answers[currentQuestion] = letter;
-
-    renderQuestion();
-
-};
-
-
-/* =========================================================
-   NEXT QUESTION
+   NEXT / PREVIOUS QUESTION
 ========================================================= */
 
 window.nextQuestion = function() {
-
     if (currentQuestion < questions.length - 1) {
-
         currentQuestion++;
-
         renderQuestion();
-
     }
-
 };
-
-
-/* =========================================================
-   PREVIOUS QUESTION
-========================================================= */
 
 window.previousQuestion = function() {
-
     if (currentQuestion > 0) {
-
         currentQuestion--;
-
         renderQuestion();
-
     }
-
 };
-
 
 /* =========================================================
    PROGRESS
 ========================================================= */
 
 function updateProgress() {
-
     const total = questions.length;
-
-    const answered =
-        Object.keys(answers).length;
+    const answered = Object.keys(answers).length;
 
     document.getElementById("question-count").innerText =
         `Question ${currentQuestion + 1} of ${total}`;
@@ -743,76 +633,48 @@ function updateProgress() {
     document.getElementById("answered-count").innerText =
         `Answered: ${answered}`;
 
-    const percentage =
-        total > 0
-            ? (answered / total) * 100
-            : 0;
-
-    document.getElementById("progress-fill").style.width =
-        percentage + "%";
-
+    const percentage = total > 0 ? (answered / total) * 100 : 0;
+    document.getElementById("progress-fill").style.width = percentage + "%";
 }
 
-
 /* =========================================================
-   RELIABLE TIMER (STEP 7)
+   RELIABLE TIMER
 ========================================================= */
 
 function startExamTimer() {
-
     let endTime = Number(sessionStorage.getItem(examTimerKey));
     const now = Date.now();
 
-    // Agar existing timer nahi hai to naya timer create karo
     if (!endTime || endTime <= now) {
-
         endTime = now + (durationMinutes * 60 * 1000);
-
-        sessionStorage.setItem(
-            examTimerKey,
-            String(endTime)
-        );
+        sessionStorage.setItem(examTimerKey, String(endTime));
     }
 
     function updateTimer() {
-
         if (window.isTestSubmitted || submitted) {
             clearInterval(timerInterval);
             return;
         }
 
-        const remaining =
-            Math.max(0, endTime - Date.now());
+        const remaining = Math.max(0, endTime - Date.now());
+        totalSeconds = Math.ceil(remaining / 1000);
 
-        totalSeconds =
-            Math.ceil(remaining / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
 
-        const minutes =
-            Math.floor(totalSeconds / 60);
-
-        const seconds =
-            totalSeconds % 60;
-
-        const timerElement =
-            document.getElementById("timer");
-
+        const timerElement = document.getElementById("timer");
         if (timerElement) {
-
             timerElement.innerText =
                 String(minutes).padStart(2, "0") +
                 ":" +
                 String(seconds).padStart(2, "0");
         }
 
-        // Time over
         if (remaining <= 0) {
-
             clearInterval(timerInterval);
-
             sessionStorage.removeItem(examTimerKey);
 
             if (!window.isTestSubmitted && !submitted) {
-
                 if (typeof window.submitExam === "function") {
                     window.submitExam("Time expired");
                 }
@@ -820,113 +682,66 @@ function startExamTimer() {
         }
     }
 
-    // Immediately display timer
     updateTimer();
-
-    // Start interval
-    timerInterval = setInterval(
-        updateTimer,
-        1000
-    );
+    timerInterval = setInterval(updateTimer, 1000);
 }
-
 
 /* =========================================================
    SUBMIT CONFIRMATION
 ========================================================= */
 
 window.confirmSubmit = function() {
+    const unanswered = questions.length - Object.keys(answers).length;
 
-    const unanswered =
-        questions.length -
-        Object.keys(answers).length;
-
-
-    const message =
-        unanswered > 0
-
-            ?
-
-            `You have ${unanswered} unanswered question(s).\n\nAre you sure you want to submit?`
-
-            :
-
-            "Are you sure you want to submit the test?";
-
+    const message = unanswered > 0
+        ? `You have ${unanswered} unanswered question(s).\n\nAre you sure you want to submit?`
+        : "Are you sure you want to submit the test?";
 
     if (confirm(message)) {
-
         submitExam("Manual submission");
-
     }
-
 };
-
 
 /* =========================================================
    CALCULATE RESULT
 ========================================================= */
 
 function calculateResult() {
-
     let correct = 0;
-
     let incorrect = 0;
-
     let unanswered = 0;
 
-
     questions.forEach((q, index) => {
-
         const selected = answers[index];
 
         if (!selected) {
-
             unanswered++;
-
-        }
-        else if (selected === q.answer) {
-
+        } else if (selected === q.answer) {
             correct++;
-
-        }
-        else {
-
+        } else {
             incorrect++;
-
         }
-
     });
 
-
     const positiveMarks = correct;
-
     const negativeMarks = incorrect * 0.25;
-
-    const score =
-        positiveMarks - negativeMarks;
-
+    const score = positiveMarks - negativeMarks;
 
     return {
-
         correct,
         incorrect,
         unanswered,
         positiveMarks,
         negativeMarks,
         score
-
     };
-
 }
 
-
 /* =========================================================
-   SUBMIT EXAM (STEP 8 UPDATED)
+   SUBMIT EXAM
 ========================================================= */
 
 async function submitExam(reason) {
-
     if (window.isTestSubmitted || submitted) return;
 
     window.isTestSubmitted = true;
@@ -935,120 +750,55 @@ async function submitExam(reason) {
     clearInterval(timerInterval);
     sessionStorage.removeItem(examTimerKey);
 
-
-    const result =
-        calculateResult();
-
+    const result = calculateResult();
     const securityData = getSecurityResultData();
 
     const submission = {
-
         name: studentInfo?.name || "",
-
         roll: studentInfo?.roll || "",
-
         email: studentInfo?.email || "",
-
         correct: result.correct,
-
         incorrect: result.incorrect,
-
         unanswered: result.unanswered,
-
         positiveMarks: result.positiveMarks,
-
         negativeMarks: result.negativeMarks,
-
         score: Number(result.score.toFixed(2)),
-
         totalQuestions: questions.length,
-
         submissionReason: reason,
 
-        // Security information
         tabSwitches: securityData.tabSwitches,
-
         copyAttempts: securityData.copyAttempts,
-
         pasteAttempts: securityData.pasteAttempts,
-
         cutAttempts: securityData.cutAttempts,
-
         contextMenuAttempts: securityData.contextMenuAttempts,
-
         penaltiesApplied: securityData.penaltiesApplied,
-
         submittedAt: new Date().toISOString()
-
     };
 
-
-    /* Save locally as backup */
-
-    const oldResults =
-        JSON.parse(
-            localStorage.getItem("exam_submissions") || "[]"
-        );
-
-
+    const oldResults = JSON.parse(localStorage.getItem("exam_submissions") || "[]");
     oldResults.push(submission);
+    localStorage.setItem("exam_submissions", JSON.stringify(oldResults));
 
-
-    localStorage.setItem(
-        "exam_submissions",
-        JSON.stringify(oldResults)
-    );
-
-
-    /* Save submission for result page */
-
-    sessionStorage.setItem(
-        "last_exam_result",
-        JSON.stringify(submission)
-    );
-
-
-    /* Move to result page */
+    sessionStorage.setItem("last_exam_result", JSON.stringify(submission));
 
     window.location.href = "result.html";
-
 }
 
 window.submitExam = submitExam;
-
-
-/* =========================================================
-   ESCAPE HTML
-========================================================= */
-
-function escapeHTML(value) {
-
-    const div =
-        document.createElement("div");
-
-    div.textContent = value;
-
-    return div.innerHTML;
-
-}
-
 
 /* =========================================================
    START EXAM & TIMER
 ========================================================= */
 
 renderQuestion();
-
 startExamTimer();
 
-
 /* =========================================================
-   ANTI-CHEATING SECURITY (STEP 8 BUG FIX APPLIED)
+   ANTI-CHEATING SECURITY
 ========================================================= */
 
 let securityTabSwitches = 0;
 let securitySubmitted = false;
-
 let copyAttempts = 0;
 let pasteAttempts = 0;
 let cutAttempts = 0;
@@ -1077,7 +827,6 @@ function handleExamViolation() {
         alert("CRITICAL VIOLATION: Tab switch limit exceeded! Your exam is being automatically submitted.");
         
         setTimeout(() => {
-            // IMPORTANT: submitExam() handles setting window.isTestSubmitted flag
             if (typeof window.submitExam === "function") {
                 window.submitExam("Anti-cheating violation: Tab switch limit exceeded");
             }
@@ -1085,14 +834,12 @@ function handleExamViolation() {
     }
 }
 
-// Detect actual tab switching
 document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") {
         handleExamViolation();
     }
 });
 
-// Detect browser/window losing focus
 window.addEventListener("blur", () => {
     setTimeout(() => {
         if (!document.hidden) {
@@ -1101,20 +848,17 @@ window.addEventListener("blur", () => {
     }, 100);
 });
 
-// Save security data before page unload
 window.addEventListener("beforeunload", () => {
     if (!securitySubmitted && !submitted) {
         sessionStorage.setItem("exam_security_tab_switches", String(securityTabSwitches));
     }
 });
 
-// Restore security count if page was accidentally refreshed
 const savedSecurityCount = parseInt(sessionStorage.getItem("exam_security_tab_switches") || "0", 10);
 if (!isNaN(savedSecurityCount)) {
     securityTabSwitches = savedSecurityCount;
 }
 
-// Disable Context Menu
 document.addEventListener("contextmenu", function (event) {
     if (securitySubmitted || submitted || window.isTestSubmitted) return;
     event.preventDefault();
@@ -1122,7 +866,6 @@ document.addEventListener("contextmenu", function (event) {
     showSecurityWarning("⚠️ Right-click is disabled during the examination.");
 });
 
-// Disable Copy
 document.addEventListener("copy", function (event) {
     if (securitySubmitted || submitted || window.isTestSubmitted) return;
     event.preventDefault();
@@ -1130,7 +873,6 @@ document.addEventListener("copy", function (event) {
     showSecurityWarning("⚠️ Copying content is not allowed during the examination.");
 });
 
-// Disable Paste
 document.addEventListener("paste", function (event) {
     if (securitySubmitted || submitted || window.isTestSubmitted) return;
     event.preventDefault();
@@ -1138,17 +880,12 @@ document.addEventListener("paste", function (event) {
     showSecurityWarning("⚠️ Pasting content is not allowed during the examination.");
 });
 
-// Disable Cut
 document.addEventListener("cut", function (event) {
     if (securitySubmitted || submitted || window.isTestSubmitted) return;
     event.preventDefault();
     cutAttempts++;
     showSecurityWarning("⚠️ Cutting content is not allowed during the examination.");
 });
-
-// ==========================================
-// STEP 6 — SECURITY RESULT DATA
-// ==========================================
 
 function getSecurityResultData() {
     return {
@@ -1164,4 +901,4 @@ function getSecurityResultData() {
 </script>
 
 </body>
-</html> 
+</html>
