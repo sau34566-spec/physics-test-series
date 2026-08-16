@@ -1,0 +1,34 @@
+exam-elite/
+├── firebase.json
+├── firestore.rules
+├── firestore.indexes.json
+├── functions/
+│   ├── package.json
+│   └── index.js
+├── public/
+│   ├── index.html               (Landing / Portal Dispatcher)
+│   ├── student/
+│   │   ├── login.html
+│   │   ├── dashboard.html
+│   │   ├── exam.html            (NTA-style Student Portal)
+│   │   └── result.html
+│   ├── institute/
+│   │   ├── login.html
+│   │   ├── dashboard.html
+│   │   ├── exams.html
+│   │   ├── questions.html
+│   │   └── security.html
+│   ├── admin/
+│   │   ├── login.html
+│   │   ├── dashboard.html
+│   │   └── institutes.html
+│   ├── css/
+│   │   ├── style.css            (Base styles)
+│   │   └── exam.css             (Exam UI layout)
+│   └── js/
+│       ├── firebase-config.js   (Web SDK Initialization)
+│       ├── auth.js              (Role-based Auth Routing & RBAC)
+│       ├── security-monitor.js  (Anti-cheating client telemetry)
+│       ├── exam-engine.js       (Offline cache, sync, state management)
+│       └── utils.js
+└── README.md

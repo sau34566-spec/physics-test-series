@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && (request.auth.token.role == 'super_admin' || getUserData().role == 'super_admin');
+    }
+
+    function isInstituteAdmin(instId) {
+      return isSignedIn() && (
+        isSuperAdmin() || 
+        (getUserData().role == 'institute_admin' && getUserData().instituteId == instId)
+      );
+    }
+
+    function isStudentOfInstitute(instId) {
+      return isSignedIn() && getUserData().role == 'student' && getUserData().instituteId == instId;
+    }
+
+    // System Settings & Audit Logs
+    match /auditLogs/{logId} {
+      allow read: if isSuperAdmin();
+      allow write: if isSignedIn();
+    }
+
+    // Institutes
+    match /institutes/{instituteId} {
+      allow read: if isSignedIn();
+      allow write: if isSuperAdmin();
+    }
+
+    // User Accounts
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isInstituteAdmin(resource.data.instituteId));
+      allow write: if isSuperAdmin() || (isInstituteAdmin(request.resource.data.instituteId) && userId != request.auth.uid);
+    }
+
+    // Exams
+    match /exams/{examId} {
+      allow read: if isSignedIn() && (isSuperAdmin() || isInstituteAdmin(resource.data.instituteId) || isStudentOfInstitute(resource.data.instituteId));
+      allow write: if isInstituteAdmin(request.resource.data.instituteId);
+    }
+
+    // Questions: HIDDEN FROM STUDENTS (Protected Source of Truth)
+    match /questions/{questionId} {
+      allow read, write: if isInstituteAdmin(resource.data.instituteId);
+      allow read: if false; // Students interact via Cloud Functions
+    }
+
+    // Exam Attempts
+    match /examAttempts/{attemptId} {
+      allow read: if isSignedIn() && (
+        isSuperAdmin() || 
+        isInstituteAdmin(resource.data.instituteId) || 
+        (getUserData().role == 'student' && resource.data.studentId == request.auth.uid)
+      );
+      allow create: if isStudentOfInstitute(request.resource.data.instituteId);
+      allow update: if isStudentOfInstitute(resource.data.instituteId) 
+                    && resource.data.status == 'IN_PROGRESS' 
+                    && request.resource.data.status in ['IN_PROGRESS', 'SUBMITTED', 'AUTO_SUBMITTED'];
+    }
+
+    // Security Events
+    match /securityEvents/{eventId} {
+      allow create: if isSignedIn();
+      allow read: if isSuperAdmin() || isInstituteAdmin(resource.data.instituteId);
+    }
+  }
+}
