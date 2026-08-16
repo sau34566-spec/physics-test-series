@@ -1103,7 +1103,98 @@ const savedSecurityCount = parseInt(sessionStorage.getItem("exam_security_tab_sw
 if (!isNaN(savedSecurityCount)) {
     securityTabSwitches = savedSecurityCount;
 }
+// ==========================================
+// STEP 5 — COPY / PASTE / RIGHT-CLICK SECURITY
+// ==========================================
 
+let copyAttempts = 0;
+let pasteAttempts = 0;
+let cutAttempts = 0;
+let contextMenuAttempts = 0;
+
+
+// ------------------------------------------
+// RIGHT CLICK DISABLE
+// ------------------------------------------
+
+document.addEventListener("contextmenu", function (event) {
+
+    if (securitySubmitted || window.isTestSubmitted) {
+        return;
+    }
+
+    event.preventDefault();
+
+    contextMenuAttempts++;
+
+    showSecurityWarning(
+        "⚠️ Right-click is disabled during the examination."
+    );
+
+});
+
+
+// ------------------------------------------
+// COPY DISABLE
+// ------------------------------------------
+
+document.addEventListener("copy", function (event) {
+
+    if (securitySubmitted || window.isTestSubmitted) {
+        return;
+    }
+
+    event.preventDefault();
+
+    copyAttempts++;
+
+    showSecurityWarning(
+        "⚠️ Copying content is not allowed during the examination."
+    );
+
+});
+
+
+// ------------------------------------------
+// PASTE DISABLE
+// ------------------------------------------
+
+document.addEventListener("paste", function (event) {
+
+    if (securitySubmitted || window.isTestSubmitted) {
+        return;
+    }
+
+    event.preventDefault();
+
+    pasteAttempts++;
+
+    showSecurityWarning(
+        "⚠️ Pasting content is not allowed during the examination."
+    );
+
+});
+
+
+// ------------------------------------------
+// CUT DISABLE
+// ------------------------------------------
+
+document.addEventListener("cut", function (event) {
+
+    if (securitySubmitted || window.isTestSubmitted) {
+        return;
+    }
+
+    event.preventDefault();
+
+    cutAttempts++;
+
+    showSecurityWarning(
+        "⚠️ Cutting content is not allowed during the examination."
+    );
+
+});
 </script>
 
 </body>
