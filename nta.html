@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1036,6 +1036,73 @@ function escapeHTML(value) {
 renderQuestion();
 
 startTimer();
+
+
+/* =========================================================
+   STEP 4 — Anti-Cheating Security Code
+========================================================= */
+
+let securityTabSwitches = 0;
+let securitySubmitted = false;
+
+function handleExamViolation() {
+    if (securitySubmitted || submitted) return;
+
+    securityTabSwitches++;
+    const warningEl = document.getElementById("warning");
+
+    if (securityTabSwitches === 1) {
+        if (warningEl) {
+            warningEl.style.display = "block";
+            warningEl.innerText = "WARNING 1/2: Tab switching / leaving test window detected! Next attempt will automatically submit your exam.";
+        }
+        alert("WARNING 1/2: Tab switching detected! Returning to another tab or losing focus will automatically submit your exam.");
+    } else if (securityTabSwitches >= 2) {
+        securitySubmitted = true;
+        if (warningEl) {
+            warningEl.style.display = "block";
+            warningEl.innerText = "CRITICAL VIOLATION: Maximum tab switches exceeded! Submitting exam automatically...";
+        }
+        alert("CRITICAL VIOLATION: Tab switch limit exceeded! Your exam is being automatically submitted.");
+        
+        setTimeout(() => {
+            if (typeof window.submitExam === "function") {
+                window.submitExam("Anti-cheating violation: Tab switch limit exceeded");
+            }
+        }, 1200);
+    }
+}
+
+// Detect actual tab switching
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+        handleExamViolation();
+    }
+});
+
+// Detect browser/window losing focus
+window.addEventListener("blur", () => {
+    // Small delay prevents blur from incorrectly counting
+    // when the browser is only rendering/focusing internally.
+    setTimeout(() => {
+        if (!document.hidden) {
+            handleExamViolation();
+        }
+    }, 100);
+});
+
+// Save security data before page unload
+window.addEventListener("beforeunload", () => {
+    if (!securitySubmitted && !submitted) {
+        sessionStorage.setItem("exam_security_tab_switches", String(securityTabSwitches));
+    }
+});
+
+// Restore security count if page was accidentally refreshed
+const savedSecurityCount = parseInt(sessionStorage.getItem("exam_security_tab_switches") || "0", 10);
+if (!isNaN(savedSecurityCount)) {
+    securityTabSwitches = savedSecurityCount;
+}
 
 </script>
 
