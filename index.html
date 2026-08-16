@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exam Elite | Student Portal</title>
+    <title>Exam Elite | Portal & Test</title>
 
     <style>
         * {
@@ -14,6 +14,13 @@
         }
 
         body {
+            background: #f1f5f9;
+            color: #0f172a;
+            min-height: 100vh;
+        }
+
+        /* --- Login View Styles --- */
+        #login-view {
             min-height: 100vh;
             background: linear-gradient(135deg, #0f172a, #1e3a8a);
             display: flex;
@@ -82,7 +89,7 @@
             background: #1d4ed8;
         }
 
-        #message {
+        #message, #login-message {
             display: none;
             margin-top: 15px;
             padding: 10px;
@@ -100,106 +107,666 @@
             background: #dcfce7;
             color: #166534;
         }
+
+        /* --- Exam View Styles --- */
+        #exam-view {
+            display: none;
+        }
+
+        header {
+            background: #0f172a;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .student-info h2 {
+            font-size: 17px;
+        }
+
+        .student-info p {
+            font-size: 12px;
+            color: #cbd5e1;
+            margin-top: 4px;
+        }
+
+        .timer {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 9px 13px;
+            border-radius: 8px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .progress-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #475569;
+        }
+
+        .progress-bg {
+            height: 7px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #2563eb;
+            transition: width .3s;
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 5px 20px rgba(0,0,0,.05);
+        }
+
+        .question-number {
+            font-size: 13px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 12px;
+        }
+
+        .question {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+        }
+
+        .option {
+            border: 2px solid #e2e8f0;
+            background: #f8fafc;
+            border-radius: 9px;
+            padding: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: .2s;
+        }
+
+        .option:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .option.selected {
+            border-color: #2563eb;
+            background: #dbeafe;
+        }
+
+        .option input {
+            width: 17px;
+            height: 17px;
+            accent-color: #2563eb;
+            margin-bottom: 0;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .buttons button {
+            width: auto;
+            padding: 11px 18px;
+        }
+
+        .prev {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .next {
+            background: #2563eb;
+            color: white;
+            margin-left: auto;
+        }
+
+        .submit {
+            background: #10b981;
+            color: white;
+        }
+
+        button:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .warning {
+            display: none;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px 20px;
+            color: #64748b;
+        }
     </style>
 </head>
 
 <body>
 
-<div class="card">
+    <!-- ================= 1. LOGIN VIEW ================= -->
+    <div id="login-view">
+        <div class="card">
+            <h1>Exam Elite</h1>
+            <p class="subtitle">Student Assessment Portal</p>
+            <form id="student-login-form">
+                <label for="student-name-input">Student Name</label>
+                <input type="text" id="student-name-input" placeholder="Enter your full name" required>
 
-    <h1>Exam Elite</h1>
+                <label for="student-roll-input">Roll Number</label>
+                <input type="text" id="student-roll-input" placeholder="Enter your roll number" required>
 
-    <p class="subtitle">
-        Student Assessment Portal
-    </p>
+                <label for="student-email-input">Registered Gmail</label>
+                <input type="email" id="student-email-input" placeholder="student@gmail.com" required>
 
-    <form id="student-login-form">
+                <button type="submit">Continue to Test</button>
+            </form>
+            <div id="login-message"></div>
+        </div>
+    </div>
 
-        <label for="student-name">Student Name</label>
-        <input
-            type="text"
-            id="student-name"
-            placeholder="Enter your full name"
-            required
-        >
+    <!-- ================= 2. EXAM VIEW ================= -->
+    <div id="exam-view">
+        <div id="warning" class="warning"></div>
 
-        <label for="student-roll">Roll Number</label>
-        <input
-            type="text"
-            id="student-roll"
-            placeholder="Enter your roll number"
-            required
-        >
+        <header>
+            <div class="student-info">
+                <h2 id="student-name-display">Student</h2>
+                <p id="student-roll-display">Roll: -</p>
+            </div>
 
-        <label for="student-email">Registered Gmail</label>
-        <input
-            type="email"
-            id="student-email"
-            placeholder="student@gmail.com"
-            required
-        >
+            <div class="timer">
+                ⏱ <span id="timer">00:00</span>
+            </div>
+        </header>
 
-        <button type="submit">
-            Continue to Test
-        </button>
+        <div class="container">
+            <div class="progress-card">
+                <div class="progress-text">
+                    <span id="question-count">Question 1 of 10</span>
+                    <span id="answered-count">Answered: 0</span>
+                </div>
+                <div class="progress-bg">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+            </div>
 
-    </form>
+            <div id="quiz-area">
+                <div class="loading">Loading test...</div>
+            </div>
+        </div>
+    </div>
 
-    <div id="message"></div>
+    <!-- ================= SCRIPT LOGIC ================= -->
+    <script>
+        "use strict";
 
-</div>
+        const loginView = document.getElementById("login-view");
+        const examView = document.getElementById("exam-view");
+        const loginForm = document.getElementById("student-login-form");
+        const loginMessage = document.getElementById("login-message");
 
-<script>
+        // Check if already logged in during session
+        const existingInfo = JSON.parse(sessionStorage.getItem("student_info") || "null");
+        if (existingInfo && existingInfo.email) {
+            startExamApp(existingInfo);
+        }
 
-const form = document.getElementById("student-login-form");
-const message = document.getElementById("message");
+        loginForm.addEventListener("submit", function(event) {
+            event.preventDefault();
+            const name = document.getElementById("student-name-input").value.trim();
+            const roll = document.getElementById("student-roll-input").value.trim();
+            const email = document.getElementById("student-email-input").value.trim().toLowerCase();
 
-form.addEventListener("submit", function(event) {
+            if (!name || !roll || !email) {
+                showLoginMessage("Please fill all details.", "error");
+                return;
+            }
 
-    event.preventDefault();
+            if (!email.endsWith("@gmail.com")) {
+                showLoginMessage("Please enter a valid Gmail address.", "error");
+                return;
+            }
 
-    const name = document.getElementById("student-name").value.trim();
-    const roll = document.getElementById("student-roll").value.trim();
-    const email = document.getElementById("student-email").value.trim().toLowerCase();
+            const studentInfo = { name, roll, email };
+            sessionStorage.setItem("student_info", JSON.stringify(studentInfo));
+            
+            showLoginMessage("Verification successful. Opening test...", "success");
+            setTimeout(() => {
+                startExamApp(studentInfo);
+            }, 800);
+        });
 
-    if (!name || !roll || !email) {
-        showMessage("Please fill all details.", "error");
-        return;
-    }
+        function showLoginMessage(text, type) {
+            loginMessage.innerText = text;
+            loginMessage.className = type;
+            loginMessage.style.display = "block";
+        }
 
-    if (!email.endsWith("@gmail.com")) {
-        showMessage("Please enter a valid Gmail address.", "error");
-        return;
-    }
+        function startExamApp(studentInfo) {
+            loginView.style.display = "none";
+            examView.style.display = "block";
 
-    const studentInfo = {
-        name: name,
-        roll: roll,
-        email: email
-    };
+            document.getElementById("student-name-display").innerText = studentInfo.name || "Student";
+            document.getElementById("student-roll-display").innerText = "Roll: " + (studentInfo.roll || "-");
 
-    sessionStorage.setItem(
-        "student_info",
-        JSON.stringify(studentInfo)
-    );
+            initExamEngine(studentInfo);
+        }
 
-    showMessage("Verification successful. Opening test...", "success");
+        function initExamEngine(studentInfo) {
+            const isAdmin = studentInfo.email === "sauravpandey3221@gmail.com";
 
-    setTimeout(function() {
-        window.location.href = "nta.html";
-    }, 800);
+            // Exam configuration & questions loader
+            const examConfig = JSON.parse(sessionStorage.getItem("active_exam_config") || "null");
 
-});
+            const defaultQuestions = [
+                { question: "How do plants make their own food?", options: { A: "Respiration", B: "Photosynthesis", C: "Digestion", D: "Transpiration" }, answer: "B" },
+                { question: "What is the chemical formula of water?", options: { A: "CO2", B: "H2O", C: "O2", D: "H2SO4" }, answer: "B" },
+                { question: "Which is the largest organ in the human body?", options: { A: "Heart", B: "Liver", C: "Skin", D: "Lungs" }, answer: "C" },
+                { question: "What do we get from the Sun?", options: { A: "Light and Energy", B: "Only Water", C: "Only Air", D: "Only Sound" }, answer: "A" },
+                { question: "Which substance gives blood its red colour?", options: { A: "Platelets", B: "Hemoglobin", C: "Plasma", D: "White Blood Cells" }, answer: "B" },
+                { question: "In which medium can sound NOT travel?", options: { A: "Solid", B: "Liquid", C: "Gas", D: "Vacuum" }, answer: "D" },
+                { question: "What is Earth's natural satellite?", options: { A: "Mars", B: "Sun", C: "Moon", D: "Venus" }, answer: "C" },
+                { question: "Which fruit is a rich source of Vitamin C?", options: { A: "Orange", B: "Rice", C: "Butter", D: "Lentils" }, answer: "A" },
+                { question: "Approximately what percentage of Earth's atmosphere is oxygen?", options: { A: "21%", B: "50%", C: "78%", D: "10%" }, answer: "A" },
+                { question: "Which metal is a good conductor of electricity?", options: { A: "Wood", B: "Plastic", C: "Copper", D: "Rubber" }, answer: "C" }
+            ];
 
-function showMessage(text, type) {
+            function normalizeQuestion(item) {
+                const options = item.options || {};
+                return {
+                    question: item.question || item.q || "Question unavailable",
+                    options: {
+                        A: typeof options === "object" && !Array.isArray(options) ? options.A : options[0],
+                        B: typeof options === "object" && !Array.isArray(options) ? options.B : options[1],
+                        C: typeof options === "object" && !Array.isArray(options) ? options.C : options[2],
+                        D: typeof options === "object" && !Array.isArray(options) ? options.D : options[3]
+                    },
+                    answer: item.answer || item.a || "A"
+                };
+            }
 
-    message.innerText = text;
-    message.className = type;
-    message.style.display = "block";
+            let questions = [];
+            if (examConfig && Array.isArray(examConfig.questions) && examConfig.questions.length > 0) {
+                questions = examConfig.questions.map(normalizeQuestion);
+            } else {
+                questions = defaultQuestions.map(normalizeQuestion);
+            }
 
-}
+            let currentQuestion = 0;
+            let answers = {};
+            let submitted = false;
+            window.isTestSubmitted = false;
 
-</script>
+            window.saveAnswer = function(option) {
+                if (window.isTestSubmitted || submitted) return;
+                answers[currentQuestion] = String(option);
+                saveExamState();
+            };
 
+            function updateProgress() {
+                const total = questions.length;
+                const answered = Object.keys(answers).length;
+
+                document.getElementById("question-count").innerText = `Question ${currentQuestion + 1} of ${total}`;
+                document.getElementById("answered-count").innerText = `Answered: ${answered}`;
+
+                const percentage = total > 0 ? (answered / total) * 100 : 0;
+                document.getElementById("progress-fill").style.width = percentage + "%";
+            }
+
+            function renderQuestion() {
+                const quizArea = document.getElementById("quiz-area");
+                if (!questions.length) {
+                    quizArea.innerHTML = `<div class="loading">No questions available.</div>`;
+                    return;
+                }
+
+                const q = questions[currentQuestion];
+                quizArea.innerHTML = "";
+
+                const card = document.createElement("div");
+                card.className = "question-card";
+
+                const qNumber = document.createElement("div");
+                qNumber.className = "question-number";
+                qNumber.innerText = `QUESTION ${currentQuestion + 1}`;
+
+                const qText = document.createElement("div");
+                qText.className = "question";
+                qText.innerText = q.question;
+
+                const optionContainer = document.createElement("div");
+                optionContainer.className = "options";
+
+                ["A", "B", "C", "D"].forEach(optionKey => {
+                    const optionVal = q.options[optionKey];
+                    if (optionVal === undefined || optionVal === null) return;
+
+                    const label = document.createElement("label");
+                    const isSelected = answers[currentQuestion] === optionKey;
+                    label.className = `option ${isSelected ? "selected" : ""}`;
+
+                    const input = document.createElement("input");
+                    input.type = "radio";
+                    input.name = "question-option";
+                    input.value = String(optionKey);
+
+                    if (answers[currentQuestion] !== undefined && answers[currentQuestion] === String(optionKey)) {
+                        input.checked = true;
+                    }
+
+                    input.addEventListener("change", () => {
+                        window.saveAnswer(optionKey);
+                        renderQuestion();
+                    });
+
+                    label.addEventListener("click", () => {
+                        if (!input.checked) {
+                            input.checked = true;
+                            window.saveAnswer(optionKey);
+                            renderQuestion();
+                        }
+                    });
+
+                    const span = document.createElement("span");
+                    const b = document.createElement("b");
+                    b.innerText = `${optionKey}. `;
+                    span.appendChild(b);
+                    span.appendChild(document.createTextNode(String(optionVal)));
+
+                    label.appendChild(input);
+                    label.appendChild(span);
+                    optionContainer.appendChild(label);
+                });
+
+                const buttonsDiv = document.createElement("div");
+                buttonsDiv.className = "buttons";
+
+                const previousButton = document.createElement("button");
+                previousButton.className = "prev";
+                previousButton.innerText = "← Previous";
+                previousButton.disabled = currentQuestion === 0;
+                previousButton.onclick = window.prevQuestion;
+
+                const nextButton = document.createElement("button");
+                nextButton.className = "next";
+                nextButton.innerText = "Save & Next →";
+                nextButton.onclick = window.nextQuestion;
+
+                const submitButton = document.createElement("button");
+                submitButton.className = "submit";
+                submitButton.innerText = "Submit Test ✓";
+                submitButton.onclick = window.confirmSubmit;
+
+                buttonsDiv.appendChild(previousButton);
+
+                if (currentQuestion === questions.length - 1) {
+                    buttonsDiv.appendChild(submitButton);
+                } else {
+                    buttonsDiv.appendChild(nextButton);
+                }
+
+                card.appendChild(qNumber);
+                card.appendChild(qText);
+                card.appendChild(optionContainer);
+                card.appendChild(buttonsDiv);
+
+                quizArea.appendChild(card);
+                updateProgress();
+            }
+
+            window.nextQuestion = function() {
+                if (currentQuestion < questions.length - 1) {
+                    currentQuestion++;
+                    saveExamState();
+                    renderQuestion();
+                }
+            };
+
+            window.prevQuestion = function() {
+                if (currentQuestion > 0) {
+                    currentQuestion--;
+                    saveExamState();
+                    renderQuestion();
+                }
+            };
+
+            // Timer Logic
+            let durationMinutes = Number(examConfig?.examDurationMinutes || examConfig?.durationMinutes || 10);
+            let timerInterval;
+            const examTimerKey = "active_exam_end_time";
+
+            function startExamTimer() {
+                let endTime = Number(sessionStorage.getItem(examTimerKey));
+                const now = Date.now();
+
+                if (!endTime || endTime <= now) {
+                    endTime = now + (durationMinutes * 60 * 1000);
+                    sessionStorage.setItem(examTimerKey, String(endTime));
+                }
+
+                function updateTimer() {
+                    if (window.isTestSubmitted || submitted) {
+                        clearInterval(timerInterval);
+                        return;
+                    }
+
+                    const remaining = Math.max(0, endTime - Date.now());
+                    const totalSecs = Math.ceil(remaining / 1000);
+                    const minutes = Math.floor(totalSecs / 60);
+                    const seconds = totalSecs % 60;
+
+                    const timerElement = document.getElementById("timer");
+                    if (timerElement) {
+                        timerElement.innerText = String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+                    }
+
+                    if (remaining <= 0) {
+                        clearInterval(timerInterval);
+                        sessionStorage.removeItem(examTimerKey);
+                        if (!window.isTestSubmitted && !submitted) {
+                            window.submitExam("Time expired");
+                        }
+                    }
+                }
+
+                updateTimer();
+                timerInterval = setInterval(updateTimer, 1000);
+            }
+
+            // Security & Anti-Cheat Protections (Bypassed for Admin)
+            let securityTabSwitches = 0;
+            let securitySubmitted = false;
+            let copyAttempts = 0;
+            let pasteAttempts = 0;
+            let cutAttempts = 0;
+            let contextMenuAttempts = 0;
+            let penaltiesApplied = 0;
+
+            function showSecurityWarning(message) {
+                const warningEl = document.getElementById("warning");
+                if (warningEl) {
+                    warningEl.style.display = "block";
+                    warningEl.innerText = message;
+                }
+            }
+
+            function handleExamViolation() {
+                if (isAdmin || securitySubmitted || submitted || window.isTestSubmitted) return;
+
+                securityTabSwitches++;
+
+                if (securityTabSwitches === 1) {
+                    showSecurityWarning("WARNING 1/2: Tab switching detected! Next attempt will automatically submit your exam.");
+                    alert("WARNING 1/2: Tab switching detected! Returning to another tab will automatically submit your exam.");
+                } else if (securityTabSwitches >= 2) {
+                    securitySubmitted = true;
+                    showSecurityWarning("⚠️ Multiple violations detected! Your exam is being submitted.");
+                    alert("CRITICAL VIOLATION: Tab switch limit exceeded! Your exam is being automatically submitted.");
+                    setTimeout(() => {
+                        window.submitExam("Anti-cheating violation: Tab switch limit exceeded");
+                    }, 1200);
+                }
+            }
+
+            if (!isAdmin) {
+                document.addEventListener("visibilitychange", () => {
+                    if (document.visibilityState === "hidden") {
+                        handleExamViolation();
+                    }
+                });
+
+                window.addEventListener("blur", () => {
+                    setTimeout(() => {
+                        if (!document.hidden) {
+                            handleExamViolation();
+                        }
+                    }, 100);
+                });
+
+                document.addEventListener("contextmenu", e => { e.preventDefault(); contextMenuAttempts++; showSecurityWarning("⚠️ Right-click is disabled."); });
+                document.addEventListener("copy", e => { e.preventDefault(); copyAttempts++; showSecurityWarning("⚠️ Copying is not allowed."); });
+                document.addEventListener("paste", e => { e.preventDefault(); pasteAttempts++; showSecurityWarning("⚠️ Pasting is not allowed."); });
+                document.addEventListener("cut", e => { e.preventDefault(); cutAttempts++; showSecurityWarning("⚠️ Cutting is not allowed."); });
+            }
+
+            function saveExamState() {
+                if (window.isTestSubmitted || submitted) return;
+                const state = { currentIndex: currentQuestion, answers };
+                sessionStorage.setItem("active_exam_state", JSON.stringify(state));
+            }
+
+            function restoreExamState() {
+                try {
+                    const savedState = sessionStorage.getItem("active_exam_state");
+                    if (!savedState) return;
+                    const state = JSON.parse(savedState);
+                    if (state.answers) answers = state.answers;
+                    if (Number.isInteger(state.currentIndex) && state.currentIndex >= 0 && state.currentIndex < questions.length) {
+                        currentQuestion = state.currentIndex;
+                    }
+                } catch (e) {
+                    console.warn("State restore error", e);
+                }
+            }
+
+            window.confirmSubmit = function() {
+                const unanswered = questions.length - Object.keys(answers).length;
+                const message = unanswered > 0
+                    ? `You have ${unanswered} unanswered question(s).\n\nAre you sure you want to submit?`
+                    : "Are you sure you want to submit the test?";
+
+                if (confirm(message)) {
+                    window.submitExam("Manual submission");
+                }
+            };
+
+            window.submitExam = async function(reason = "Manual submission") {
+                if (window.isTestSubmitted || submitted) return;
+
+                window.isTestSubmitted = true;
+                submitted = true;
+
+                if (timerInterval) clearInterval(timerInterval);
+                sessionStorage.removeItem(examTimerKey);
+                sessionStorage.removeItem("active_exam_state");
+
+                let correctCount = 0;
+                let incorrectCount = 0;
+                let unansweredCount = 0;
+
+                questions.forEach((question, index) => {
+                    const selectedAnswer = answers[index];
+                    if (!selectedAnswer) {
+                        unansweredCount++;
+                    } else if (String(selectedAnswer).trim().toUpperCase() === String(question.answer).trim().toUpperCase()) {
+                        correctCount++;
+                    } else {
+                        incorrectCount++;
+                    }
+                });
+
+                const positiveMarks = correctCount;
+                const negativeMarks = incorrectCount * 0.25;
+                const finalScore = positiveMarks - negativeMarks;
+
+                const submissionData = {
+                    name: studentInfo?.name || "Student",
+                    roll: studentInfo?.roll || "-",
+                    email: studentInfo?.email || "-",
+                    correct: correctCount,
+                    incorrect: incorrectCount,
+                    unanswered: unansweredCount,
+                    positiveMarks: positiveMarks,
+                    negativeMarks: negativeMarks,
+                    score: Number(finalScore.toFixed(2)),
+                    totalQuestions: questions.length,
+                    submissionReason: reason,
+                    tabSwitches: securityTabSwitches,
+                    submittedAt: new Date().toISOString()
+                };
+
+                const oldSubmissions = JSON.parse(localStorage.getItem("exam_submissions") || "[]");
+                oldSubmissions.push(submissionData);
+                localStorage.setItem("exam_submissions", JSON.stringify(oldSubmissions));
+                sessionStorage.setItem("last_exam_result", JSON.stringify(submissionData));
+
+                window.location.href = "result.html";
+            };
+
+            // Start up
+            restoreExamState();
+            renderQuestion();
+            startExamTimer();
+        }
+    </script>
 </body>
 </html>
