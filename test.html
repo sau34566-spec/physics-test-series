@@ -108,7 +108,7 @@
             document.getElementById("student-display-name").innerText = `Student: ${studentInfo.name} (${studentInfo.roll})`;
         }
 
-        // Load Questions (Fallback to chapter1.json structure if pool is empty)
+        // Default Questions Fallback
         const defaultQuestions = [
             { q: "How do plants make their own food?", options: ["Respiration", "Photosynthesis", "Digestion", "Transpiration"], a: "Photosynthesis" },
             { q: "What is the chemical formula of water?", options: ["CO2", "H2O", "O2", "H2SO4"], a: "H2O" },
@@ -122,12 +122,27 @@
             { q: "Which metal is a good conductor of electricity?", options: ["Wood", "Plastic", "Copper", "Rubber"], a: "Copper" }
         ];
 
+        // Safe Question Normalizer
         if (examConfig && examConfig.questions && examConfig.questions.length > 0) {
-            questions = examConfig.questions.map(item => ({
-                q: item.question || item.q,
-                options: item.options ? [item.options.A, item.options.B, item.options.C, item.options.D] : item.options,
-                a: item.answer ? (typeof item.answer === 'string' && item.answer.length === 1 ? item.options[item.answer] : item.answer) : item.a
-            }));
+            questions = examConfig.questions.map(item => {
+                let opts = [];
+                if (Array.isArray(item.options)) {
+                    opts = item.options;
+                } else if (item.options && typeof item.options === 'object') {
+                    opts = [item.options.A, item.options.B, item.options.C, item.options.D].filter(Boolean);
+                }
+
+                let ans = item.answer || item.a;
+                if (ans && ans.length === 1 && item.options && item.options[ans]) {
+                    ans = item.options[ans];
+                }
+
+                return {
+                    q: item.question || item.q,
+                    options: opts,
+                    a: ans
+                };
+            });
         } else {
             questions = defaultQuestions;
         }
@@ -141,7 +156,7 @@
             const optContainer = document.getElementById("options-container");
             optContainer.innerHTML = "";
 
-            q.options.forEach((opt, idx) => {
+            q.options.forEach((opt) => {
                 const isChecked = userAnswers[currentIndex] === opt ? "checked" : "";
                 optContainer.innerHTML += `
                     <label class="option-label">
@@ -185,7 +200,7 @@
         const timerInterval = setInterval(() => {
             if (totalSeconds <= 0) {
                 clearInterval(timerInterval);
-                submitExam();
+                submitExam("Time expired");
                 return;
             }
             totalSeconds--;
@@ -211,74 +226,84 @@
                 tabSwitchCount++;
                 if (tabSwitchCount === 1) {
                     penaltiesApplied += 1;
-                    showWarning("Tab switch detected! -1 mark penalty applied. Next switch will auto-submit.");
+                    showWarning("Tab switch detected! 1 mark penalty applied. Next switch will auto-submit.");
                 } else if (tabSwitchCount >= 2) {
                     window.isTestSubmitted = true;
                     alert("Multiple tab switches detected! Auto-submitting exam.");
-                    submitExam();
+                    submitExam("Multiple tab switches");
                 }
             }
         });
 
         window.confirmSubmit = () => {
             if (confirm("Are you sure you want to submit the exam?")) {
-                submitExam();
+                submitExam("Manual submission");
             }
         };
 
-        window.submitExam = async () => {
+        window.submitExam = async (reason = "Manual submission") => {
             if (window.isTestSubmitted) return;
             window.isTestSubmitted = true;
             clearInterval(timerInterval);
 
             let correctCount = 0;
+            let incorrectCount = 0;
+            let unansweredCount = 0;
+            let detailedAnalysis = [];
+
             questions.forEach((q, idx) => {
-                if (userAnswers[idx] === q.a) correctCount++;
+                const studentChoice = userAnswers[idx] || "Not Answered";
+                let isCorrect = false;
+
+                if (studentChoice === "Not Answered") {
+                    unansweredCount++;
+                } else if (studentChoice === q.a) {
+                    correctCount++;
+                    isCorrect = true;
+                } else {
+                    incorrectCount++;
+                }
+
+                detailedAnalysis.push({
+                    questionNo: idx + 1,
+                    questionText: q.q,
+                    studentChoice: studentChoice,
+                    correctAnswer: q.a,
+                    isCorrect: isCorrect
+                });
             });
 
+            // Evaluation: +1 for correct, can factor penalties if needed
             let finalScore = Math.max(0, correctCount - penaltiesApplied);
-            const scoreString = `${finalScore}/${questions.length}`;
 
-            const submissionData = {
-                name: studentInfo.name,
-                email: studentInfo.email,
+            const resultPayload = {
+                candidateName: studentInfo.name,
+                candidateEmail: studentInfo.email,
                 roll: studentInfo.roll,
-                score: scoreString,
-                tabSwitches: tabSwitchCount,
-                copiesAttempted: copyPasteAttempts,
-                penaltiesApplied: penaltiesApplied,
+                finalScore: finalScore.toFixed(2),
+                totalQuestions: questions.length,
+                correctCount: correctCount,
+                incorrectCount: incorrectCount,
+                unansweredCount: unansweredCount,
+                penaltyMarks: penaltiesApplied,
+                submissionReason: reason,
+                detailedAnalysis: detailedAnalysis,
                 submittedAt: new Date().toISOString()
             };
 
-            // 1. Save Directly to Firebase Firestore first
+            // 1. Store locally so result.html can display it immediately
+            sessionStorage.setItem("last_exam_result", JSON.stringify(resultPayload));
+
+            // 2. Save to Firebase Firestore
             try {
-                await setDoc(doc(db, "results", `${studentInfo.email}_${Date.now()}`), submissionData);
-                console.log("Data successfully saved to Firestore!");
+                await setDoc(doc(db, "results", `${studentInfo.email}_${Date.now()}`), resultPayload);
+                console.log("Result saved successfully to Firestore.");
             } catch (err) {
-                console.error("Firestore saving failed: ", err);
-                alert("Error saving data to database: " + err.message);
-                return; // Stop execution if database upload fails
+                console.error("Firestore error:", err);
             }
 
-            // 2. LocalStorage Backup (Optional)
-            const existingSubs = JSON.parse(localStorage.getItem("exam_submissions")) || [];
-            existingSubs.push(submissionData);
-            localStorage.setItem("exam_submissions", JSON.stringify(existingSubs));
-
-            // Success Screen
-            document.body.innerHTML = `
-                <div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#0f172a; font-family:sans-serif; text-align:center; padding:20px;">
-                    <div style="background:white; padding:40px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.3); max-width:500px; width:100%;">
-                        <i class="fa-solid fa-circle-check" style="font-size:4rem; color:#10b981; margin-bottom:15px;"></i>
-                        <h2 style="color:#1e293b; margin-bottom:10px;">Exam Submitted Successfully!</h2>
-                        <p style="color:#64748b; font-size:1rem; margin-bottom:20px;">Your responses have been recorded securely.</p>
-                        <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px; font-weight:600; font-size:1.1rem; color:#1e3a8a;">
-                            Final Score: ${scoreString}
-                        </div>
-                        <button onclick="window.location.href='index.html'" style="background:#2563eb; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:700; cursor:pointer;">Back to Home</button>
-                    </div>
-                </div>
-            `;
+            // 3. Redirect to Result Page
+            window.location.href = "result.html";
         };
 
         renderQuestion();
