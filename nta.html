@@ -1,1252 +1,555 @@
  <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Physics Test Series | Student Test</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-<style>
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-    font-family:Inter,sans-serif;
-}
-
-body{
-    background:#0f172a;
-    min-height:100vh;
-    color:#0f172a;
-}
-
-button,input{
-    font:inherit;
-}
-
-.hidden{
-    display:none!important;
-}
-
-/* ================= LOGIN ================= */
-
-#loginScreen{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-}
-
-.login-card{
-    width:100%;
-    max-width:430px;
-    background:white;
-    padding:30px;
-    border-radius:18px;
-    box-shadow:0 20px 50px rgba(0,0,0,.35);
-}
-
-.logo{
-    width:65px;
-    height:65px;
-    border-radius:16px;
-    background:#2563eb;
-    color:white;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    margin:0 auto 18px;
-    font-size:28px;
-}
-
-.login-card h1{
-    text-align:center;
-    font-size:23px;
-    margin-bottom:7px;
-}
-
-.login-card .sub{
-    text-align:center;
-    color:#64748b;
-    font-size:14px;
-    margin-bottom:25px;
-}
-
-.form-group{
-    margin-bottom:16px;
-}
-
-.form-group label{
-    display:block;
-    font-size:13px;
-    font-weight:700;
-    margin-bottom:7px;
-}
-
-.form-group input{
-    width:100%;
-    padding:12px 14px;
-    border:1px solid #cbd5e1;
-    border-radius:9px;
-    outline:none;
-}
-
-.form-group input:focus{
-    border-color:#2563eb;
-    box-shadow:0 0 0 3px rgba(37,99,235,.12);
-}
-
-.primary-btn{
-    width:100%;
-    border:none;
-    padding:13px;
-    border-radius:9px;
-    background:#2563eb;
-    color:white;
-    font-weight:700;
-    cursor:pointer;
-}
-
-.primary-btn:hover{
-    background:#1d4ed8;
-}
-
-/* ================= LOADING ================= */
-
-#loadingScreen{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-}
-
-.loading-card{
-    background:white;
-    padding:35px;
-    border-radius:16px;
-    text-align:center;
-    width:100%;
-    max-width:400px;
-}
-
-.spinner{
-    width:45px;
-    height:45px;
-    border:4px solid #e2e8f0;
-    border-top-color:#2563eb;
-    border-radius:50%;
-    animation:spin 1s linear infinite;
-    margin:0 auto 18px;
-}
-
-@keyframes spin{
-    to{transform:rotate(360deg)}
-}
-
-/* ================= EXAM ================= */
-
-#examScreen{
-    min-height:100vh;
-    background:#f1f5f9;
-}
-
-.exam-header{
-    background:#0f172a;
-    color:white;
-    padding:14px 20px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:15px;
-    position:sticky;
-    top:0;
-    z-index:20;
-}
-
-.student-name{
-    font-size:15px;
-    font-weight:700;
-}
-
-.test-title{
-    font-size:12px;
-    color:#94a3b8;
-    margin-top:3px;
-}
-
-.timer{
-    background:#1e293b;
-    border:1px solid #334155;
-    padding:8px 13px;
-    border-radius:8px;
-    font-weight:800;
-    white-space:nowrap;
-}
-
-.timer.warning{
-    background:#7f1d1d;
-    color:#fecaca;
-}
-
-.exam-container{
-    width:100%;
-    max-width:850px;
-    margin:auto;
-    padding:20px;
-}
-
-.progress-area{
-    background:white;
-    padding:15px;
-    border-radius:12px;
-    margin-bottom:15px;
-}
-
-.progress-top{
-    display:flex;
-    justify-content:space-between;
-    font-size:13px;
-    font-weight:700;
-    margin-bottom:9px;
-}
-
-.progress-bg{
-    height:7px;
-    background:#e2e8f0;
-    border-radius:10px;
-    overflow:hidden;
-}
-
-.progress-fill{
-    height:100%;
-    background:#2563eb;
-    width:0%;
-    transition:.3s;
-}
-
-.question-card{
-    background:white;
-    border-radius:14px;
-    padding:22px;
-    box-shadow:0 5px 20px rgba(15,23,42,.06);
-}
-
-.question-number{
-    color:#2563eb;
-    font-size:13px;
-    font-weight:800;
-    margin-bottom:10px;
-}
-
-.question-text{
-    font-size:18px;
-    line-height:1.6;
-    font-weight:700;
-    margin-bottom:22px;
-}
-
-.options{
-    display:flex;
-    flex-direction:column;
-    gap:11px;
-}
-
-.option{
-    display:flex;
-    align-items:flex-start;
-    gap:11px;
-    padding:14px;
-    border:2px solid #e2e8f0;
-    border-radius:10px;
-    cursor:pointer;
-    transition:.2s;
-}
-
-.option:hover{
-    border-color:#93c5fd;
-    background:#f8fafc;
-}
-
-.option.selected{
-    border-color:#2563eb;
-    background:#eff6ff;
-}
-
-.option input{
-    margin-top:3px;
-    accent-color:#2563eb;
-}
-
-.option-text{
-    line-height:1.45;
-    font-size:14px;
-}
-
-.navigation{
-    display:flex;
-    justify-content:space-between;
-    gap:10px;
-    margin-top:15px;
-}
-
-.nav-btn{
-    padding:11px 18px;
-    border:none;
-    border-radius:9px;
-    cursor:pointer;
-    font-weight:700;
-}
-
-.prev-btn{
-    background:#e2e8f0;
-    color:#334155;
-}
-
-.next-btn{
-    background:#2563eb;
-    color:white;
-}
-
-.submit-btn{
-    background:#10b981;
-    color:white;
-}
-
-.nav-btn:disabled{
-    opacity:.5;
-    cursor:not-allowed;
-}
-
-/* ================= WARNING ================= */
-
-.warning{
-    position:fixed;
-    top:15px;
-    left:50%;
-    transform:translateX(-50%);
-    width:calc(100% - 30px);
-    max-width:550px;
-    background:#991b1b;
-    color:white;
-    padding:13px 16px;
-    border-radius:9px;
-    z-index:999;
-    display:none;
-    box-shadow:0 10px 25px rgba(0,0,0,.3);
-    font-size:13px;
-    font-weight:600;
-    text-align:center;
-}
-
-/* ================= RESULT ================= */
-
-#resultScreen{
-    min-height:100vh;
-    background:#f1f5f9;
-    padding:20px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
-
-.result-card{
-    width:100%;
-    max-width:650px;
-    background:white;
-    padding:30px;
-    border-radius:18px;
-    box-shadow:0 15px 40px rgba(15,23,42,.12);
-}
-
-.success-icon{
-    width:70px;
-    height:70px;
-    border-radius:50%;
-    background:#d1fae5;
-    color:#059669;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-size:32px;
-    margin:0 auto 15px;
-}
-
-.result-card h2{
-    text-align:center;
-    margin-bottom:7px;
-}
-
-.result-sub{
-    text-align:center;
-    color:#64748b;
-    font-size:13px;
-    margin-bottom:22px;
-}
-
-.result-grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:10px;
-}
-
-.result-item{
-    padding:15px;
-    background:#f8fafc;
-    border-radius:10px;
-}
-
-.result-item span{
-    display:block;
-    color:#64748b;
-    font-size:11px;
-    font-weight:700;
-    text-transform:uppercase;
-    margin-bottom:5px;
-}
-
-.result-item strong{
-    font-size:20px;
-}
-
-.status{
-    margin-top:15px;
-    padding:12px;
-    border-radius:9px;
-    text-align:center;
-    font-size:13px;
-    font-weight:700;
-}
-
-.status.success{
-    background:#d1fae5;
-    color:#065f46;
-}
-
-.status.error{
-    background:#fee2e2;
-    color:#991b1b;
-}
-
-@media(max-width:600px){
-
-    .exam-container{
-        padding:12px;
-    }
-
-    .question-card{
-        padding:17px;
-    }
-
-    .question-text{
-        font-size:16px;
-    }
-
-    .exam-header{
-        padding:12px;
-    }
-
-    .result-grid{
-        grid-template-columns:1fr 1fr;
-    }
-
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Exam Elite | Test</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f1f5f9;
+            color: #0f172a;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #0f172a;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .student-info h2 {
+            font-size: 17px;
+        }
+
+        .student-info p {
+            font-size: 12px;
+            color: #cbd5e1;
+            margin-top: 4px;
+        }
+
+        .timer {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 9px 13px;
+            border-radius: 8px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .progress-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #475569;
+        }
+
+        .progress-bg {
+            height: 7px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #2563eb;
+            transition: width .3s;
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 5px 20px rgba(0,0,0,.05);
+        }
+
+        .question-number {
+            font-size: 13px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 12px;
+        }
+
+        .question {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+        }
+
+        .option {
+            border: 2px solid #e2e8f0;
+            background: #f8fafc;
+            border-radius: 9px;
+            padding: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: .2s;
+        }
+
+        .option:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .option.selected {
+            border-color: #2563eb;
+            background: #dbeafe;
+        }
+
+        .option input {
+            width: 17px;
+            height: 17px;
+            accent-color: #2563eb;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 11px 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .prev {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .next {
+            background: #2563eb;
+            color: white;
+            margin-left: auto;
+        }
+
+        .submit {
+            background: #10b981;
+            color: white;
+        }
+
+        button:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .warning {
+            display: none;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px 20px;
+            color: #64748b;
+        }
+
+        @media(max-width:600px) {
+
+            header {
+                padding: 12px;
+            }
+
+            .student-info h2 {
+                font-size: 14px;
+            }
+
+            .timer {
+                font-size: 13px;
+                padding: 8px;
+            }
+
+            .container {
+                padding: 12px;
+            }
+
+            .question-card {
+                padding: 17px;
+            }
+
+            .question {
+                font-size: 16px;
+            }
+
+            .buttons button {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<!-- WARNING -->
-<div id="warning" class="warning">
-    <i class="fa-solid fa-triangle-exclamation"></i>
-    <span id="warningText"></span>
+<div id="warning" class="warning"></div>
+
+<header>
+
+    <div class="student-info">
+        <h2 id="student-name">Student</h2>
+        <p id="student-roll">Roll: -</p>
+    </div>
+
+    <div class="timer">
+        ⏱ <span id="timer">00:00</span>
+    </div>
+
+</header>
+
+
+<div class="container">
+
+    <div class="progress-card">
+
+        <div class="progress-text">
+            <span id="question-count">Question 1 of 10</span>
+            <span id="answered-count">Answered: 0</span>
+        </div>
+
+        <div class="progress-bg">
+            <div id="progress-fill" class="progress-fill"></div>
+        </div>
+
+    </div>
+
+
+    <div id="quiz-area">
+
+        <div class="loading">
+            Loading test...
+        </div>
+
+    </div>
+
 </div>
 
 
-<!-- ================= LOGIN ================= -->
+<script>
 
-<section id="loginScreen">
+"use strict";
 
-    <div class="login-card">
-
-        <div class="logo">
-            <i class="fa-solid fa-atom"></i>
-        </div>
-
-        <h1>Physics Test Series</h1>
-
-        <p class="sub">
-            Enter your details to start the assessment
-        </p>
-
-        <div class="form-group">
-            <label>Student Name</label>
-            <input id="studentName" type="text" placeholder="Enter your name">
-        </div>
-
-        <div class="form-group">
-            <label>Email</label>
-            <input id="studentEmail" type="email" placeholder="student@gmail.com">
-        </div>
-
-        <div class="form-group">
-            <label>Roll Number</label>
-            <input id="studentRoll" type="text" placeholder="Enter roll number">
-        </div>
-
-        <button class="primary-btn" id="startBtn">
-            <i class="fa-solid fa-play"></i>
-            Start Test
-        </button>
-
-    </div>
-
-</section>
-
-
-<!-- ================= LOADING ================= -->
-
-<section id="loadingScreen" class="hidden">
-
-    <div class="loading-card">
-
-        <div class="spinner"></div>
-
-        <h3 id="loadingTitle">
-            Loading Test...
-        </h3>
-
-        <p id="loadingText"
-           style="color:#64748b;font-size:13px;margin-top:8px;">
-            Please wait.
-        </p>
-
-    </div>
-
-</section>
-
-
-<!-- ================= EXAM ================= -->
-
-<section id="examScreen" class="hidden">
-
-    <header class="exam-header">
-
-        <div>
-            <div class="student-name" id="headerStudentName">
-                Student
-            </div>
-
-            <div class="test-title" id="headerTestTitle">
-                Physics Test
-            </div>
-        </div>
-
-        <div class="timer" id="timer">
-            00:00
-        </div>
-
-    </header>
-
-
-    <main class="exam-container">
-
-        <div class="progress-area">
-
-            <div class="progress-top">
-
-                <span id="questionCounter">
-                    Question 1 / 10
-                </span>
-
-                <span id="answeredCounter">
-                    Answered: 0
-                </span>
-
-            </div>
-
-            <div class="progress-bg">
-
-                <div
-                    id="progressFill"
-                    class="progress-fill">
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="question-card">
-
-            <div
-                id="questionNumber"
-                class="question-number">
-                QUESTION 1
-            </div>
-
-            <div
-                id="questionText"
-                class="question-text">
-                Loading...
-            </div>
-
-            <div
-                id="options"
-                class="options">
-            </div>
-
-        </div>
-
-
-        <div class="navigation">
-
-            <button
-                id="prevBtn"
-                class="nav-btn prev-btn">
-                <i class="fa-solid fa-arrow-left"></i>
-                Previous
-            </button>
-
-            <button
-                id="nextBtn"
-                class="nav-btn next-btn">
-                Save & Next
-                <i class="fa-solid fa-arrow-right"></i>
-            </button>
-
-            <button
-                id="submitBtn"
-                class="nav-btn submit-btn hidden">
-                <i class="fa-solid fa-check"></i>
-                Submit Test
-            </button>
-
-        </div>
-
-    </main>
-
-</section>
-
-
-<!-- ================= RESULT ================= -->
-
-<section id="resultScreen" class="hidden">
-
-    <div class="result-card">
-
-        <div class="success-icon">
-            <i class="fa-solid fa-check"></i>
-        </div>
-
-        <h2>Test Submitted</h2>
-
-        <p class="result-sub">
-            Your response has been recorded.
-        </p>
-
-        <div class="result-grid">
-
-            <div class="result-item">
-                <span>Score</span>
-                <strong id="resultScore">0</strong>
-            </div>
-
-            <div class="result-item">
-                <span>Total Marks</span>
-                <strong id="resultTotal">0</strong>
-            </div>
-
-            <div class="result-item">
-                <span>Correct</span>
-                <strong id="resultCorrect">0</strong>
-            </div>
-
-            <div class="result-item">
-                <span>Incorrect</span>
-                <strong id="resultIncorrect">0</strong>
-            </div>
-
-            <div class="result-item">
-                <span>Unattempted</span>
-                <strong id="resultUnattempted">0</strong>
-            </div>
-
-            <div class="result-item">
-                <span>Accuracy</span>
-                <strong id="resultAccuracy">0%</strong>
-            </div>
-
-        </div>
-
-        <div id="saveStatus" class="status success">
-            Result saved successfully.
-        </div>
-
-    </div>
-
-</section>
-
-
-<script type="module">
 
 /* =========================================================
-   FIREBASE
+   STUDENT INFORMATION
 ========================================================= */
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+const studentInfo =
+    JSON.parse(sessionStorage.getItem("student_info") || "null");
 
-import {
-    getFirestore,
-    doc,
-    getDoc,
-    setDoc
+
+if (!studentInfo) {
+
+    alert("Student verification required.");
+
+    window.location.href = "index.html";
+
 }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-
-const firebaseConfig = {
-
-    apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
-
-    authDomain:
-        "physics-test-series-405c7.firebaseapp.com",
-
-    projectId:
-        "physics-test-series-405c7",
-
-    storageBucket:
-        "physics-test-series-405c7.firebasestorage.app",
-
-    messagingSenderId:
-        "758620061190",
-
-    appId:
-        "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
-
-};
-
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
 
 /* =========================================================
-   STATE
+   TEST CONFIGURATION
 ========================================================= */
 
-let student = null;
+const examConfig =
+    JSON.parse(sessionStorage.getItem("active_exam_config") || "null");
 
-let examConfig = null;
+
+/*
+    Temporary default configuration.
+
+    Later admin.html will automatically create
+    active_exam_config.
+*/
+
+const defaultQuestions = [
+
+    {
+        question: "How do plants make their own food?",
+        options: {
+            A: "Respiration",
+            B: "Photosynthesis",
+            C: "Digestion",
+            D: "Transpiration"
+        },
+        answer: "B"
+    },
+
+    {
+        question: "What is the chemical formula of water?",
+        options: {
+            A: "CO2",
+            B: "H2O",
+            C: "O2",
+            D: "H2SO4"
+        },
+        answer: "B"
+    },
+
+    {
+        question: "Which is the largest organ in the human body?",
+        options: {
+            A: "Heart",
+            B: "Liver",
+            C: "Skin",
+            D: "Lungs"
+        },
+        answer: "C"
+    },
+
+    {
+        question: "What do we get from the Sun?",
+        options: {
+            A: "Light and Energy",
+            B: "Only Water",
+            C: "Only Air",
+            D: "Only Sound"
+        },
+        answer: "A"
+    },
+
+    {
+        question: "Which substance gives blood its red colour?",
+        options: {
+            A: "Platelets",
+            B: "Hemoglobin",
+            C: "Plasma",
+            D: "White Blood Cells"
+        },
+        answer: "B"
+    },
+
+    {
+        question: "In which medium can sound NOT travel?",
+        options: {
+            A: "Solid",
+            B: "Liquid",
+            C: "Gas",
+            D: "Vacuum"
+        },
+        answer: "D"
+    },
+
+    {
+        question: "What is Earth's natural satellite?",
+        options: {
+            A: "Mars",
+            B: "Sun",
+            C: "Moon",
+            D: "Venus"
+        },
+        answer: "C"
+    },
+
+    {
+        question: "Which fruit is a rich source of Vitamin C?",
+        options: {
+            A: "Orange",
+            B: "Rice",
+            C: "Butter",
+            D: "Lentils"
+        },
+        answer: "A"
+    },
+
+    {
+        question: "Approximately what percentage of Earth's atmosphere is oxygen?",
+        options: {
+            A: "21%",
+            B: "50%",
+            C: "78%",
+            D: "10%"
+        },
+        answer: "A"
+    },
+
+    {
+        question: "Which metal is a good conductor of electricity?",
+        options: {
+            A: "Wood",
+            B: "Plastic",
+            C: "Copper",
+            D: "Rubber"
+        },
+        answer: "C"
+    }
+
+];
+
 
 let questions = [];
+
+
+/* =========================================================
+   LOAD QUESTIONS
+========================================================= */
+
+if (
+    examConfig &&
+    Array.isArray(examConfig.questions) &&
+    examConfig.questions.length > 0
+) {
+
+    questions = examConfig.questions.map(normalizeQuestion);
+
+} else {
+
+    questions = defaultQuestions.map(normalizeQuestion);
+
+}
+
+
+function normalizeQuestion(item) {
+
+    const options = item.options || {};
+
+    return {
+
+        question:
+            item.question ||
+            item.q ||
+            "Question unavailable",
+
+        options: {
+
+            A:
+                typeof options === "object" && !Array.isArray(options)
+                    ? options.A
+                    : options[0],
+
+            B:
+                typeof options === "object" && !Array.isArray(options)
+                    ? options.B
+                    : options[1],
+
+            C:
+                typeof options === "object" && !Array.isArray(options)
+                    ? options.C
+                    : options[2],
+
+            D:
+                typeof options === "object" && !Array.isArray(options)
+                    ? options.D
+                    : options[3]
+
+        },
+
+        answer:
+            item.answer ||
+            item.a ||
+            "A"
+
+    };
+
+}
+
+
+/* =========================================================
+   RANDOM QUESTION LIMIT
+========================================================= */
+
+const questionLimit =
+    Number(
+        examConfig?.studentDisplayLimit ||
+        examConfig?.questionLimit ||
+        questions.length
+    );
+
+
+if (questionLimit > 0 && questionLimit < questions.length) {
+
+    questions =
+        [...questions]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, questionLimit);
+
+}
+
+
+/* =========================================================
+   EXAM VARIABLES
+========================================================= */
 
 let currentQuestion = 0;
 
 let answers = {};
 
-let timeLeft = 0;
-
-let timerInterval = null;
-
-let tabSwitches = 0;
-
-let copyAttempts = 0;
-
-let isSubmitting = false;
-
-let examStarted = false;
-
-
-/* =========================================================
-   DOM
-========================================================= */
-
-const loginScreen =
-    document.getElementById("loginScreen");
-
-const loadingScreen =
-    document.getElementById("loadingScreen");
-
-const examScreen =
-    document.getElementById("examScreen");
-
-const resultScreen =
-    document.getElementById("resultScreen");
-
-const warning =
-    document.getElementById("warning");
-
-
-/* =========================================================
-   UTILITY
-========================================================= */
-
-function showScreen(screen){
-
-    loginScreen.classList.add("hidden");
-    loadingScreen.classList.add("hidden");
-    examScreen.classList.add("hidden");
-    resultScreen.classList.add("hidden");
-
-    screen.classList.remove("hidden");
-}
-
-
-function showWarning(message){
-
-    document.getElementById("warningText")
-        .textContent = message;
-
-    warning.style.display = "block";
-
-    clearTimeout(window.warningTimeout);
-
-    window.warningTimeout =
-        setTimeout(() => {
-
-            warning.style.display = "none";
-
-        },5000);
-}
-
-
-function setLoading(title,text){
-
-    document.getElementById("loadingTitle")
-        .textContent = title;
-
-    document.getElementById("loadingText")
-        .textContent = text;
-
-}
-
-
-/* =========================================================
-   STUDENT LOGIN
-========================================================= */
-
-document.getElementById("startBtn")
-.addEventListener("click",startStudent);
-
-
-/*
-    First check existing student information.
-    This also allows compatibility with your old index.html
-    which stores student_info in sessionStorage.
-*/
-
-const oldStudent =
-    sessionStorage.getItem("student_info");
-
-if(oldStudent){
-
-    try{
-
-        const parsed =
-            JSON.parse(oldStudent);
-
-        if(
-            parsed &&
-            parsed.name &&
-            parsed.email
-        ){
-
-            document.getElementById("studentName")
-                .value = parsed.name;
-
-            document.getElementById("studentEmail")
-                .value = parsed.email;
-
-            document.getElementById("studentRoll")
-                .value = parsed.roll || "";
-
-        }
-
-    }catch(error){
-
-        console.warn(
-            "Old student data could not be read."
-        );
-
-    }
-
-}
-
-
-async function startStudent(){
-
-    const name =
-        document.getElementById("studentName")
-        .value.trim();
-
-    const email =
-        document.getElementById("studentEmail")
-        .value.trim()
-        .toLowerCase();
-
-    const roll =
-        document.getElementById("studentRoll")
-        .value.trim();
-
-
-    if(!name){
-
-        alert("Please enter your name.");
-        return;
-
-    }
-
-    if(!email || !email.includes("@")){
-
-        alert("Please enter a valid email.");
-        return;
-
-    }
-
-    if(!roll){
-
-        alert("Please enter your roll number.");
-        return;
-
-    }
-
-
-    student = {
-
-        name,
-        email,
-        roll
-
-    };
-
-
-    sessionStorage.setItem(
-        "student_info",
-        JSON.stringify(student)
+let submitted = false;
+
+let durationMinutes =
+    Number(
+        examConfig?.examDurationMinutes ||
+        examConfig?.durationMinutes ||
+        10
     );
 
+let totalSeconds = durationMinutes * 60;
 
-    showScreen(loadingScreen);
-
-    setLoading(
-        "Loading Test...",
-        "Connecting to the test database."
-    );
-
-
-    try{
-
-        await loadExam();
-
-    }catch(error){
-
-        console.error(error);
-
-        showScreen(loginScreen);
-
-        alert(
-            "Test load nahi ho saka.\n\n" +
-            "Firebase/Firestore configuration check karein.\n\n" +
-            error.message
-        );
-
-    }
-
-}
+let timerInterval;
 
 
 /* =========================================================
-   LOAD EXAM CONFIGURATION
+   STUDENT DISPLAY
 ========================================================= */
 
-async function loadExam(){
+if (studentInfo) {
 
-    /*
-       Admin panel will create:
+    document.getElementById("student-name").innerText =
+        studentInfo.name || "Student";
 
-       examConfig/current
-    */
-
-    const configRef =
-        doc(db,"examConfig","current");
-
-    const configSnap =
-        await getDoc(configRef);
-
-
-    if(!configSnap.exists()){
-
-        /*
-          Development fallback.
-
-          Once Admin Panel is ready,
-          this fallback will no longer be needed.
-        */
-
-        throw new Error(
-            "No active test found in Firebase. " +
-            "Please configure the test from Admin Panel."
-        );
-
-    }
-
-
-    examConfig =
-        configSnap.data();
-
-
-    if(
-        examConfig.active === false
-    ){
-
-        throw new Error(
-            "The test is currently inactive."
-        );
-
-    }
-
-
-    /* ================= QUESTIONS ================= */
-
-    /*
-       Admin will save questions in:
-
-       questions/current
-    */
-
-    const questionsRef =
-        doc(db,"questions","current");
-
-    const questionsSnap =
-        await getDoc(questionsRef);
-
-
-    if(!questionsSnap.exists()){
-
-        throw new Error(
-            "Questions not found in Firebase."
-        );
-
-    }
-
-
-    const questionData =
-        questionsSnap.data();
-
-
-    if(
-        !Array.isArray(questionData.questions)
-        ||
-        questionData.questions.length === 0
-    ){
-
-        throw new Error(
-            "No questions are available."
-        );
-
-    }
-
-
-    questions =
-        questionData.questions
-        .map(normalizeQuestion)
-        .filter(q =>
-            q.question &&
-            q.options.length >= 2 &&
-            q.answer
-        );
-
-
-    if(questions.length === 0){
-
-        throw new Error(
-            "Question format is invalid."
-        );
-
-    }
-
-
-    /*
-       Student question limit.
-
-       Example:
-       pool = 50
-       studentLimit = 20
-
-       Student gets 20 random questions.
-    */
-
-    const limit =
-        Number(
-            examConfig.studentQuestionLimit
-        ) || questions.length;
-
-
-    questions =
-        shuffle([...questions])
-        .slice(
-            0,
-            Math.min(limit,questions.length)
-        );
-
-
-    /* ================= TIME ================= */
-
-    const duration =
-        Number(
-            examConfig.examDurationMinutes
-        ) || 60;
-
-
-    timeLeft =
-        duration * 60;
-
-
-    /* ================= HEADER ================= */
-
-    document.getElementById(
-        "headerStudentName"
-    ).textContent =
-        `${student.name} • ${student.roll}`;
-
-
-    document.getElementById(
-        "headerTestTitle"
-    ).textContent =
-        examConfig.testTitle ||
-        "Physics Test Series";
-
-
-    /* ================= START ================= */
-
-    showScreen(examScreen);
-
-    examStarted = true;
-
-    renderQuestion();
-
-    startTimer();
-
-}
-
-
-/* =========================================================
-   QUESTION NORMALIZER
-========================================================= */
-
-function normalizeQuestion(item){
-
-    let options = [];
-
-    if(Array.isArray(item.options)){
-
-        options =
-            item.options
-            .filter(Boolean);
-
-    }
-    else if(item.options){
-
-        options = [
-
-            item.options.A,
-            item.options.B,
-            item.options.C,
-            item.options.D
-
-        ].filter(Boolean);
-
-    }
-
-
-    let answer =
-        item.answer ?? item.a ?? item.correctAnswer;
-
-
-    /*
-       If answer is A/B/C/D,
-       convert it to actual option text.
-    */
-
-    if(
-        typeof answer === "string" &&
-        ["A","B","C","D"]
-        .includes(answer.toUpperCase())
-    ){
-
-        const index =
-            {
-                A:0,
-                B:1,
-                C:2,
-                D:3
-            }[
-                answer.toUpperCase()
-            ];
-
-        answer =
-            options[index];
-
-    }
-
-
-    return {
-
-        id:
-            item.id ||
-            crypto.randomUUID(),
-
-        question:
-            item.question ||
-            item.q ||
-            "",
-
-        options,
-
-        answer:
-
-            String(answer || "").trim()
-
-    };
-
-}
-
-
-/* =========================================================
-   RANDOM SHUFFLE
-========================================================= */
-
-function shuffle(array){
-
-    for(
-        let i=array.length-1;
-        i>0;
-        i--
-    ){
-
-        const j =
-            Math.floor(
-                Math.random()*(i+1)
-            );
-
-        [
-            array[i],
-            array[j]
-        ] =
-        [
-            array[j],
-            array[i]
-        ];
-
-    }
-
-    return array;
+    document.getElementById("student-roll").innerText =
+        "Roll: " + (studentInfo.roll || "-");
 
 }
 
@@ -1255,82 +558,56 @@ function shuffle(array){
    RENDER QUESTION
 ========================================================= */
 
-function renderQuestion(){
+function renderQuestion() {
 
-    if(!questions.length)
+    if (!questions.length) {
+
+        document.getElementById("quiz-area").innerHTML = `
+            <div class="loading">
+                No questions available.
+            </div>
+        `;
+
         return;
+    }
 
 
-    const q =
-        questions[currentQuestion];
+    const q = questions[currentQuestion];
+
+    let html = `
+
+        <div class="question-card">
+
+            <div class="question-number">
+                QUESTION ${currentQuestion + 1}
+            </div>
+
+            <div class="question">
+                ${escapeHTML(q.question)}
+            </div>
+
+            <div class="options">
+
+    `;
 
 
-    document.getElementById(
-        "questionNumber"
-    ).textContent =
-        `QUESTION ${currentQuestion+1}`;
+    ["A", "B", "C", "D"].forEach(letter => {
 
+        const optionText = q.options[letter];
 
-    document.getElementById(
-        "questionText"
-    ).textContent =
-        q.question;
+        if (optionText === undefined || optionText === null) {
+            return;
+        }
 
+        const selected =
+            answers[currentQuestion] === letter;
 
-    document.getElementById(
-        "questionCounter"
-    ).textContent =
-        `Question ${currentQuestion+1} / ${questions.length}`;
+        html += `
 
-
-    const answered =
-        Object.keys(answers).length;
-
-
-    document.getElementById(
-        "answeredCounter"
-    ).textContent =
-        `Answered: ${answered}`;
-
-
-    const progress =
-        (
-            ((currentQuestion+1) /
-            questions.length) *
-            100
-        );
-
-
-    document.getElementById(
-        "progressFill"
-    ).style.width =
-        `${progress}%`;
-
-
-    const container =
-        document.getElementById("options");
-
-
-    container.innerHTML = "";
-
-
-    q.options.forEach(
-        (option,index) => {
-
-            const selected =
-                answers[currentQuestion] === option;
-
-
-            const label =
-                document.createElement("label");
-
-
-            label.className =
-                "option" +
-                (selected ? " selected" : "");
-
-
-            label.innerHTML = `
+            <label
+                class="option ${selected ? "selected" : ""}"
+                onclick="selectAnswer('${letter}')"
+            >
 
                 <input
                     type="radio"
@@ -1338,94 +615,95 @@ function renderQuestion(){
                     ${selected ? "checked" : ""}
                 >
 
-                <span class="option-text">
-                    ${escapeHTML(option)}
+                <span>
+                    <b>${letter}.</b>
+                    ${escapeHTML(String(optionText))}
                 </span>
 
-            `;
+            </label>
+
+        `;
+
+    });
 
 
-            label.addEventListener(
-                "click",
-                () => {
+    html += `
 
-                    answers[currentQuestion] =
-                        option;
+            </div>
 
-                    renderQuestion();
+            <div class="buttons">
 
+                <button
+                    class="prev"
+                    onclick="previousQuestion()"
+                    ${currentQuestion === 0 ? "disabled" : ""}
+                >
+                    ← Previous
+                </button>
+
+                ${
+                    currentQuestion === questions.length - 1
+
+                    ?
+
+                    `
+                    <button
+                        class="submit"
+                        onclick="confirmSubmit()"
+                    >
+                        Submit Test ✓
+                    </button>
+                    `
+
+                    :
+
+                    `
+                    <button
+                        class="next"
+                        onclick="nextQuestion()"
+                    >
+                        Save & Next →
+                    </button>
+                    `
                 }
-            );
+
+            </div>
+
+        </div>
+
+    `;
 
 
-            container.appendChild(label);
-
-        }
-    );
+    document.getElementById("quiz-area").innerHTML = html;
 
 
-    document.getElementById(
-        "prevBtn"
-    ).disabled =
-        currentQuestion === 0;
-
-
-    if(
-        currentQuestion ===
-        questions.length-1
-    ){
-
-        document.getElementById(
-            "nextBtn"
-        ).classList.add("hidden");
-
-        document.getElementById(
-            "submitBtn"
-        ).classList.remove("hidden");
-
-    }
-    else{
-
-        document.getElementById(
-            "nextBtn"
-        ).classList.remove("hidden");
-
-        document.getElementById(
-            "submitBtn"
-        ).classList.add("hidden");
-
-    }
+    updateProgress();
 
 }
 
 
 /* =========================================================
-   HTML ESCAPE
+   SELECT ANSWER
 ========================================================= */
 
-function escapeHTML(value){
+window.selectAnswer = function(letter) {
 
-    return String(value)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
+    if (submitted) return;
 
-}
+    answers[currentQuestion] = letter;
+
+    renderQuestion();
+
+};
 
 
 /* =========================================================
-   NAVIGATION
+   NEXT QUESTION
 ========================================================= */
 
-document.getElementById("nextBtn")
-.addEventListener("click",() => {
+window.nextQuestion = function() {
 
-    if(
-        currentQuestion <
-        questions.length-1
-    ){
+    if (currentQuestion < questions.length - 1) {
 
         currentQuestion++;
 
@@ -1433,13 +711,16 @@ document.getElementById("nextBtn")
 
     }
 
-});
+};
 
 
-document.getElementById("prevBtn")
-.addEventListener("click",() => {
+/* =========================================================
+   PREVIOUS QUESTION
+========================================================= */
 
-    if(currentQuestion > 0){
+window.previousQuestion = function() {
+
+    if (currentQuestion > 0) {
 
         currentQuestion--;
 
@@ -1447,85 +728,85 @@ document.getElementById("prevBtn")
 
     }
 
-});
+};
 
 
-document.getElementById("submitBtn")
-.addEventListener(
-    "click",
-    confirmSubmit
-);
+/* =========================================================
+   PROGRESS
+========================================================= */
+
+function updateProgress() {
+
+    const total = questions.length;
+
+    const answered =
+        Object.keys(answers).length;
+
+    document.getElementById("question-count").innerText =
+        `Question ${currentQuestion + 1} of ${total}`;
+
+    document.getElementById("answered-count").innerText =
+        `Answered: ${answered}`;
+
+    const percentage =
+        total > 0
+            ? (answered / total) * 100
+            : 0;
+
+    document.getElementById("progress-fill").style.width =
+        percentage + "%";
+
+}
 
 
 /* =========================================================
    TIMER
 ========================================================= */
 
-function startTimer(){
+function startTimer() {
 
-    updateTimer();
+    updateTimerDisplay();
 
     timerInterval =
-        setInterval(() => {
+        setInterval(function() {
 
-            if(isSubmitting)
-                return;
+            if (submitted) return;
 
+            totalSeconds--;
 
-            timeLeft--;
-
-            updateTimer();
+            updateTimerDisplay();
 
 
-            if(timeLeft <= 0){
+            if (totalSeconds <= 0) {
 
-                clearInterval(
-                    timerInterval
-                );
+                clearInterval(timerInterval);
 
-                showWarning(
-                    "Time is over. Test is being submitted."
-                );
-
-                submitExam("time_expired");
+                submitExam("Time expired");
 
             }
 
-        },1000);
+        }, 1000);
 
 }
 
 
-function updateTimer(){
+function updateTimerDisplay() {
+
+    const safeSeconds =
+        Math.max(0, totalSeconds);
 
     const minutes =
-        Math.floor(timeLeft/60);
+        Math.floor(safeSeconds / 60);
 
     const seconds =
-        timeLeft%60;
+        safeSeconds % 60;
 
+    document.getElementById("timer").innerText =
 
-    const text =
-        String(minutes)
-        .padStart(2,"0")
+        String(minutes).padStart(2, "0")
+        + ":"
         +
-        ":" +
-        String(seconds)
-        .padStart(2,"0");
-
-
-    const timer =
-        document.getElementById("timer");
-
-
-    timer.textContent = text;
-
-
-    if(timeLeft <= 60){
-
-        timer.classList.add("warning");
-
-    }
+        String(seconds).padStart(2, "0");
 
 }
 
@@ -1534,165 +815,88 @@ function updateTimer(){
    SUBMIT CONFIRMATION
 ========================================================= */
 
-function confirmSubmit(){
+window.confirmSubmit = function() {
 
-    if(isSubmitting)
-        return;
-
-
-    const answered =
+    const unanswered =
+        questions.length -
         Object.keys(answers).length;
 
 
-    const unanswered =
-        questions.length - answered;
-
-
     const message =
-        `Are you sure you want to submit?\n\n` +
-        `Answered: ${answered}\n` +
-        `Unanswered: ${unanswered}`;
+        unanswered > 0
+
+            ?
+
+            `You have ${unanswered} unanswered question(s).\n\nAre you sure you want to submit?`
+
+            :
+
+            "Are you sure you want to submit the test?";
 
 
-    if(confirm(message)){
+    if (confirm(message)) {
 
-        submitExam("manual");
+        submitExam("Manual submission");
 
     }
 
-}
+};
 
 
 /* =========================================================
    CALCULATE RESULT
 ========================================================= */
 
-function calculateResult(){
+function calculateResult() {
 
     let correct = 0;
 
     let incorrect = 0;
 
-    let unattempted = 0;
+    let unanswered = 0;
 
 
-    questions.forEach(
-        (q,index) => {
+    questions.forEach((q, index) => {
 
-            const userAnswer =
-                answers[index];
+        const selected = answers[index];
 
+        if (!selected) {
 
-            if(!userAnswer){
-
-                unattempted++;
-
-            }
-            else if(
-                normalizeAnswer(userAnswer) ===
-                normalizeAnswer(q.answer)
-            ){
-
-                correct++;
-
-            }
-            else{
-
-                incorrect++;
-
-            }
+            unanswered++;
 
         }
-    );
+        else if (selected === q.answer) {
+
+            correct++;
+
+        }
+        else {
+
+            incorrect++;
+
+        }
+
+    });
 
 
-    const positiveMarks =
-        Number(
-            examConfig.positiveMark
-        ) || 1;
+    const positiveMarks = correct;
 
+    const negativeMarks = incorrect * 0.25;
 
-    const negativeMarks =
-        Number(
-            examConfig.negativeMark
-        ) || 0.25;
-
-
-    /*
-       Tab-switch penalty is separate.
-       Admin can see both actual score
-       and security penalty.
-    */
-
-    const rawScore =
-        (
-            correct * positiveMarks
-        )
-        -
-        (
-            incorrect * negativeMarks
-        );
-
-
-    const securityPenalty =
-        tabSwitches >= 1
-        ? Number(
-            examConfig.tabSwitchPenalty
-        ) || 1
-        : 0;
-
-
-    const finalScore =
-        Math.max(
-            0,
-            rawScore - securityPenalty
-        );
-
-
-    const attempted =
-        correct + incorrect;
-
-
-    const accuracy =
-        attempted > 0
-        ? (
-            (correct / attempted) * 100
-        )
-        : 0;
+    const score =
+        positiveMarks - negativeMarks;
 
 
     return {
 
         correct,
-
         incorrect,
-
-        unattempted,
-
-        attempted,
-
-        rawScore,
-
-        securityPenalty,
-
-        finalScore,
-
-        accuracy:
-
-            Number(
-                accuracy.toFixed(2)
-            )
+        unanswered,
+        positiveMarks,
+        negativeMarks,
+        score
 
     };
-
-}
-
-
-function normalizeAnswer(value){
-
-    return String(value || "")
-        .trim()
-        .toLowerCase();
 
 }
 
@@ -1701,347 +905,89 @@ function normalizeAnswer(value){
    SUBMIT EXAM
 ========================================================= */
 
-async function submitExam(reason){
+async function submitExam(reason) {
 
-    if(isSubmitting)
-        return;
+    if (submitted) return;
 
+    submitted = true;
 
-    isSubmitting = true;
-
-    examStarted = false;
-
-
-    if(timerInterval){
-
-        clearInterval(
-            timerInterval
-        );
-
-    }
-
-
-    document.getElementById(
-        "submitBtn"
-    ).disabled = true;
-
-
-    showScreen(loadingScreen);
-
-    setLoading(
-        "Submitting Test...",
-        "Calculating your result and saving it securely."
-    );
+    clearInterval(timerInterval);
 
 
     const result =
         calculateResult();
 
 
-    /*
-       Unique attempt ID.
-    */
-
-    const attemptId =
-        `${Date.now()}_${crypto.randomUUID()}`;
-
-
     const submission = {
 
-        attemptId,
+        name: studentInfo?.name || "",
 
-        name:
-            student.name,
+        roll: studentInfo?.roll || "",
 
-        email:
-            student.email,
+        email: studentInfo?.email || "",
 
-        roll:
-            student.roll,
+        correct: result.correct,
 
-        testId:
-            examConfig.testId ||
-            "physics-test",
+        incorrect: result.incorrect,
 
-        testTitle:
-            examConfig.testTitle ||
-            "Physics Test Series",
+        unanswered: result.unanswered,
 
+        positiveMarks: result.positiveMarks,
 
-        totalQuestions:
-            questions.length,
+        negativeMarks: result.negativeMarks,
 
-        attempted:
-            result.attempted,
+        score: Number(result.score.toFixed(2)),
 
-        correct:
-            result.correct,
+        totalQuestions: questions.length,
 
-        incorrect:
-            result.incorrect,
+        submissionReason: reason,
 
-        unattempted:
-            result.unattempted,
-
-
-        positiveMark:
-            Number(
-                examConfig.positiveMark
-            ) || 1,
-
-        negativeMark:
-            Number(
-                examConfig.negativeMark
-            ) || 0.25,
-
-
-        rawScore:
-            Number(
-                result.rawScore.toFixed(2)
-            ),
-
-        securityPenalty:
-            Number(
-                result.securityPenalty.toFixed(2)
-            ),
-
-        finalScore:
-            Number(
-                result.finalScore.toFixed(2)
-            ),
-
-        accuracy:
-            result.accuracy,
-
-
-        tabSwitches,
-
-        copyAttempts,
-
-
-        submissionReason:
-            reason,
-
-
-        answers:
-
-
-            questions.map(
-                (q,index) => ({
-
-                    questionId:
-                        q.id,
-
-                    question:
-                        q.question,
-
-                    selectedAnswer:
-                        answers[index] ||
-                        null,
-
-                    correctAnswer:
-                        q.answer,
-
-                    isCorrect:
-                        answers[index]
-                        ? normalizeAnswer(
-                            answers[index]
-                          ) ===
-                          normalizeAnswer(
-                            q.answer
-                          )
-                        : false
-
-                })
-            ),
-
-
-        submittedAt:
-            new Date().toISOString()
+        submittedAt: new Date().toISOString()
 
     };
 
 
-    try{
+    /* Save locally as backup */
 
-        /*
-           Save to Firestore.
-
-           Collection:
-           results
-
-           Document:
-           unique attempt ID
-        */
-
-        await setDoc(
-
-            doc(
-                db,
-                "results",
-                attemptId
-            ),
-
-            submission
-
+    const oldResults =
+        JSON.parse(
+            localStorage.getItem("exam_submissions") || "[]"
         );
 
 
-        /*
-           Save locally only as a backup.
-           It is NOT used by Admin Panel.
-        */
-
-        localStorage.setItem(
-            "last_exam_result",
-            JSON.stringify(submission)
-        );
+    oldResults.push(submission);
 
 
-        showResult(
-            submission,
-            true
-        );
+    localStorage.setItem(
+        "exam_submissions",
+        JSON.stringify(oldResults)
+    );
 
 
-    }
-    catch(error){
+    /* Save submission for result page */
 
-        console.error(
-            "Firestore submission error:",
-            error
-        );
-
-
-        /*
-           IMPORTANT:
-           We don't falsely tell the student
-           that Firebase saved the result.
-        */
-
-        localStorage.setItem(
-            "failed_exam_result",
-            JSON.stringify(submission)
-        );
+    sessionStorage.setItem(
+        "last_exam_result",
+        JSON.stringify(submission)
+    );
 
 
-        showResult(
-            submission,
-            false,
-            error.message
-        );
+    /* Move to result page */
 
-    }
+    window.location.href = "result.html";
 
 }
 
 
 /* =========================================================
-   RESULT SCREEN
+   BASIC SECURITY
 ========================================================= */
-
-function showResult(
-    result,
-    saved,
-    errorMessage=""
-){
-
-    showScreen(resultScreen);
-
-
-    document.getElementById(
-        "resultScore"
-    ).textContent =
-        result.finalScore;
-
-
-    document.getElementById(
-        "resultTotal"
-    ).textContent =
-        (
-            result.totalQuestions *
-            result.positiveMark
-        );
-
-
-    document.getElementById(
-        "resultCorrect"
-    ).textContent =
-        result.correct;
-
-
-    document.getElementById(
-        "resultIncorrect"
-    ).textContent =
-        result.incorrect;
-
-
-    document.getElementById(
-        "resultUnattempted"
-    ).textContent =
-        result.unattempted;
-
-
-    document.getElementById(
-        "resultAccuracy"
-    ).textContent =
-        `${result.accuracy}%`;
-
-
-    const status =
-        document.getElementById(
-            "saveStatus"
-        );
-
-
-    if(saved){
-
-        status.className =
-            "status success";
-
-        status.innerHTML =
-            `
-            <i class="fa-solid fa-cloud-arrow-up"></i>
-            Result saved successfully.
-            `;
-
-    }
-    else{
-
-        status.className =
-            "status error";
-
-        status.innerHTML =
-            `
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            Result could not be saved to the server.
-            Please contact the administrator.
-            `;
-
-    }
-
-}
-
-
-/* =========================================================
-   SECURITY
-========================================================= */
-
-/*
-   These protections are only client-side deterrents.
-   They should NOT be treated as a foolproof anti-cheat system.
-*/
-
 
 document.addEventListener(
     "contextmenu",
-    event => {
+    function(event) {
 
-        if(examStarted){
-
-            event.preventDefault();
-
-        }
+        event.preventDefault();
 
     }
 );
@@ -2049,19 +995,9 @@ document.addEventListener(
 
 document.addEventListener(
     "copy",
-    event => {
+    function(event) {
 
-        if(examStarted){
-
-            event.preventDefault();
-
-            copyAttempts++;
-
-            showWarning(
-                "Copying is disabled during the test."
-            );
-
-        }
+        event.preventDefault();
 
     }
 );
@@ -2069,111 +1005,37 @@ document.addEventListener(
 
 document.addEventListener(
     "paste",
-    event => {
+    function(event) {
 
-        if(examStarted){
-
-            event.preventDefault();
-
-            copyAttempts++;
-
-            showWarning(
-                "Pasting is disabled during the test."
-            );
-
-        }
-
-    }
-);
-
-
-/* ================= TAB SWITCH ================= */
-
-document.addEventListener(
-    "visibilitychange",
-    () => {
-
-        if(
-            document.hidden &&
-            examStarted &&
-            !isSubmitting
-        ){
-
-            tabSwitches++;
-
-
-            if(tabSwitches === 1){
-
-                showWarning(
-                    "Tab switch detected. A security penalty has been recorded."
-                );
-
-            }
-            else if(tabSwitches === 2){
-
-                showWarning(
-                    "Second tab switch detected. The test will be submitted."
-                );
-
-
-                setTimeout(
-                    () => {
-
-                        submitExam(
-                            "security_auto_submit"
-                        );
-
-                    },
-                    1200
-                );
-
-            }
-
-        }
-
-    }
-);
-
-
-/* ================= WINDOW BLUR ================= */
-
-/*
-   Do NOT count window.blur separately.
-   Otherwise mobile devices and browser UI can
-   create false tab-switch penalties.
-
-   visibilitychange is used as the primary detector.
-*/
-
-
-/* =========================================================
-   PREVENT ACCIDENTAL RELOAD / CLOSE
-========================================================= */
-
-window.addEventListener(
-    "beforeunload",
-    event => {
-
-        if(
-            examStarted &&
-            !isSubmitting
-        ){
-
-            event.preventDefault();
-
-            event.returnValue = "";
-
-        }
+        event.preventDefault();
 
     }
 );
 
 
 /* =========================================================
-   INITIAL STATE
+   ESCAPE HTML
 ========================================================= */
 
-showScreen(loginScreen);
+function escapeHTML(value) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent = value;
+
+    return div.innerHTML;
+
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+renderQuestion();
+
+startTimer();
 
 </script>
 
