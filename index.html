@@ -3,77 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exam Elite | Portal & Test</title>
-
+    <title>Exam Elite | Professional Assessment Portal</title>
+    <!-- FontAwesome for Professional Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: #f1f5f9;
-            color: #0f172a;
+            background: #0f172a;
+            color: #1e293b;
             min-height: 100vh;
         }
 
-        /* --- Login View Styles --- */
-        #login-view {
+        /* --- PROFESSIONAL MODAL / POPUP STYLES --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-box {
+            background: white;
+            width: 90%;
+            max-width: 420px;
+            padding: 25px;
+            border-radius: 14px;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            animation: modalPop 0.3s ease-in-out;
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-icon {
+            font-size: 45px;
+            color: #2563eb;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 10px;
+        }
+
+        .modal-desc {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+        }
+
+        .btn-primary { background: #2563eb; color: white; flex: 1; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-secondary { background: #e2e8f0; color: #334155; flex: 1; }
+        .btn-secondary:hover { background: #cbd5e1; }
+
+        /* --- SLIDE 1: LOGIN BOX --- */
+        #slide-login {
             min-height: 100vh;
-            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 58, 138, 0.9)), url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
         }
 
-        .card {
+        .login-card {
             width: 100%;
-            max-width: 430px;
-            background: white;
-            padding: 30px;
+            max-width: 440px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 35px;
             border-radius: 16px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
         }
 
-        h1 {
+        .login-card h1 {
             text-align: center;
             color: #0f172a;
-            margin-bottom: 8px;
+            font-size: 26px;
+            margin-bottom: 6px;
         }
 
-        .subtitle {
+        .login-card .subtitle {
             text-align: center;
             color: #64748b;
             font-size: 14px;
             margin-bottom: 25px;
         }
 
-        label {
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .form-group label {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             color: #334155;
-            margin-bottom: 7px;
+            margin-bottom: 6px;
         }
 
-        input {
+        .form-group input {
             width: 100%;
-            padding: 12px;
+            padding: 12px 15px;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
-            margin-bottom: 16px;
-            font-size: 15px;
+            font-size: 14px;
             outline: none;
+            transition: all 0.2s;
         }
 
-        input:focus {
-            border-color: #3b82f6;
+        .form-group input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        button {
+        .submit-btn {
             width: 100%;
             padding: 13px;
             border: none;
@@ -81,691 +161,692 @@
             background: #2563eb;
             color: white;
             font-size: 15px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
         }
 
-        button:hover {
-            background: #1d4ed8;
-        }
+        .submit-btn:hover { background: #1d4ed8; }
 
-        #message, #login-message {
+        /* --- SLIDE 2: INSTRUCTION SLIDE --- */
+        #slide-instructions {
             display: none;
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 8px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 58, 138, 0.9)), url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .instruction-card {
+            background: white;
+            width: 100%;
+            max-width: 650px;
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .instruction-card h2 {
+            color: #0f172a;
+            margin-bottom: 15px;
+            font-size: 22px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .instruction-list {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .instruction-list li {
             font-size: 14px;
-            text-align: center;
+            color: #475569;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            line-height: 1.5;
         }
 
-        .error {
-            background: #fee2e2;
-            color: #991b1b;
+        .instruction-list li i {
+            color: #2563eb;
+            margin-top: 3px;
         }
 
-        .success {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        /* --- Exam View Styles --- */
-        #exam-view {
+        /* --- SLIDE 3: EXAM INTERFACE --- */
+        #slide-exam {
             display: none;
+            background: #f1f5f9;
+            min-height: 100vh;
         }
 
         header {
             background: #0f172a;
             color: white;
-            padding: 15px 20px;
+            padding: 15px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 15px;
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
 
-        .student-info h2 {
-            font-size: 17px;
-        }
+        .student-meta h3 { font-size: 16px; }
+        .student-meta p { font-size: 12px; color: #94a3b8; }
 
-        .student-info p {
-            font-size: 12px;
-            color: #cbd5e1;
-            margin-top: 4px;
-        }
-
-        .timer {
+        .exam-timer {
             background: #fee2e2;
             color: #991b1b;
-            padding: 9px 13px;
+            padding: 8px 14px;
             border-radius: 8px;
             font-weight: bold;
-            white-space: nowrap;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .container {
+        .exam-container {
             max-width: 850px;
-            margin: auto;
-            padding: 20px;
+            margin: 25px auto;
+            padding: 0 20px;
         }
 
-        .progress-card {
+        .progress-box {
             background: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
             border: 1px solid #e2e8f0;
         }
 
-        .progress-text {
+        .progress-info {
             display: flex;
             justify-content: space-between;
             font-size: 13px;
+            color: #64748b;
             margin-bottom: 8px;
-            color: #475569;
+            font-weight: 600;
         }
 
-        .progress-bg {
-            height: 7px;
+        .progress-bar-bg {
+            height: 8px;
             background: #e2e8f0;
-            border-radius: 10px;
+            border-radius: 4px;
             overflow: hidden;
         }
 
-        .progress-fill {
+        .progress-bar-fill {
             height: 100%;
-            width: 0%;
             background: #2563eb;
-            transition: width .3s;
+            width: 0%;
+            transition: width 0.3s ease;
         }
 
-        .question-card {
+        .question-box {
             background: white;
-            border-radius: 12px;
-            padding: 22px;
+            border-radius: 14px;
+            padding: 30px;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 5px 20px rgba(0,0,0,.05);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
         }
 
-        .question-number {
-            font-size: 13px;
-            font-weight: bold;
+        .q-tag {
+            font-size: 12px;
+            font-weight: 700;
             color: #2563eb;
-            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
         }
 
-        .question {
+        .q-text {
             font-size: 18px;
             font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 25px;
             line-height: 1.6;
-            margin-bottom: 20px;
         }
 
-        .options {
+        .options-list {
             display: flex;
             flex-direction: column;
-            gap: 11px;
+            gap: 12px;
+            margin-bottom: 30px;
         }
 
-        .option {
-            border: 2px solid #e2e8f0;
-            background: #f8fafc;
-            border-radius: 9px;
-            padding: 13px;
-            cursor: pointer;
+        .option-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            transition: .2s;
+            gap: 12px;
+            padding: 14px 18px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .option:hover {
-            border-color: #3b82f6;
+        .option-item:hover {
+            border-color: #93c5fd;
             background: #eff6ff;
         }
 
-        .option.selected {
+        .option-item.selected {
             border-color: #2563eb;
             background: #dbeafe;
         }
 
-        .option input {
-            width: 17px;
-            height: 17px;
+        .option-item input {
             accent-color: #2563eb;
-            margin-bottom: 0;
+            width: 18px;
+            height: 18px;
         }
 
-        .buttons {
+        .exam-footer-btns {
             display: flex;
             justify-content: space-between;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 15px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
         }
 
-        .buttons button {
-            width: auto;
-            padding: 11px 18px;
+        .btn-control {
+            padding: 11px 22px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
         }
 
-        .prev {
-            background: #e2e8f0;
-            color: #334155;
-        }
-
-        .next {
-            background: #2563eb;
-            color: white;
-            margin-left: auto;
-        }
-
-        .submit {
-            background: #10b981;
-            color: white;
-        }
-
-        button:disabled {
-            opacity: .5;
-            cursor: not-allowed;
-        }
-
-        .warning {
-            display: none;
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 12px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: bold;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 50px 20px;
-            color: #64748b;
-        }
+        .btn-prev { background: #e2e8f0; color: #334155; }
+        .btn-next { background: #2563eb; color: white; margin-left: auto; }
+        .btn-submit-exam { background: #10b981; color: white; }
     </style>
 </head>
+<body oncontextmenu="return false;">
 
-<body>
-
-    <!-- ================= 1. LOGIN VIEW ================= -->
-    <div id="login-view">
-        <div class="card">
-            <h1>Exam Elite</h1>
-            <p class="subtitle">Student Assessment Portal</p>
-            <form id="student-login-form">
-                <label for="student-name-input">Student Name</label>
-                <input type="text" id="student-name-input" placeholder="Enter your full name" required>
-
-                <label for="student-roll-input">Roll Number</label>
-                <input type="text" id="student-roll-input" placeholder="Enter your roll number" required>
-
-                <label for="student-email-input">Registered Gmail</label>
-                <input type="email" id="student-email-input" placeholder="student@gmail.com" required>
-
-                <button type="submit">Continue to Test</button>
-            </form>
-            <div id="login-message"></div>
+    <!-- ================= CUSTOM MODAL POPUP CONTAINER ================= -->
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div id="modal-icon-container" class="modal-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
+            <h3 id="modal-title" class="modal-title">Alert</h3>
+            <p id="modal-desc" class="modal-desc">Message goes here...</p>
+            <div id="modal-actions" class="modal-actions">
+                <button id="modal-ok-btn" class="modal-btn btn-primary" onclick="closeModal()">OK</button>
+            </div>
         </div>
     </div>
 
-    <!-- ================= 2. EXAM VIEW ================= -->
-    <div id="exam-view">
-        <div id="warning" class="warning"></div>
 
+    <!-- ================= SLIDE 1: PROFESSIONAL LOGIN BOX ================= -->
+    <div id="slide-login">
+        <div class="login-card">
+            <h1>Exam Elite Portal</h1>
+            <p class="subtitle">Secure Candidate Assessment System</p>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label><i class="fa-solid fa-user"></i> Candidate Full Name</label>
+                    <input type="text" id="candidate-name" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-envelope"></i> Registered Gmail Address</label>
+                    <input type="email" id="candidate-email" placeholder="candidate@gmail.com" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Proceed to Instructions</button>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- ================= SLIDE 2: EXAM INSTRUCTIONS ================= -->
+    <div id="slide-instructions">
+        <div class="instruction-card">
+            <h2><i class="fa-solid fa-shield-halved"></i> Examination Instructions & Guidelines</h2>
+            
+            <ul class="instruction-list">
+                <li><i class="fa-solid fa-circle-check"></i> <span><strong>Mandatory Security:</strong> Switching tabs or leaving the test window will trigger a penalty (-1 mark) on the 1st attempt, and automatic test submission on the 2nd attempt.</span></li>
+                <li><i class="fa-solid fa-circle-check"></i> <span><strong>Prohibited Actions:</strong> Copying, pasting, right-clicking, screen capturing, and function keys (F1 to F12) are completely disabled.</span></li>
+                <li><i class="fa-solid fa-circle-check"></i> <span><strong>Randomization:</strong> Questions and options are dynamically randomized for every candidate to ensure absolute integrity.</span></li>
+                <li><i class="fa-solid fa-circle-check"></i> <span><strong>Submissions:</strong> Once the timer expires or you click 'Submit Test', your performance will be instantly evaluated.</span></li>
+            </ul>
+
+            <button type="button" class="submit-btn" onclick="promptStartTest()">Start Test Now</button>
+        </div>
+    </div>
+
+
+    <!-- ================= SLIDE 3: EXAM ACTIVE INTERFACE ================= -->
+    <div id="slide-exam">
         <header>
-            <div class="student-info">
-                <h2 id="student-name-display">Student</h2>
-                <p id="student-roll-display">Roll: -</p>
+            <div class="student-meta">
+                <h3 id="display-name">Candidate Name</h3>
+                <p id="display-email">candidate@gmail.com</p>
             </div>
-
-            <div class="timer">
-                ⏱ <span id="timer">00:00</span>
+            <div class="exam-timer">
+                <i class="fa-solid fa-clock"></i> <span id="timer-clock">00:00</span>
             </div>
         </header>
 
-        <div class="container">
-            <div class="progress-card">
-                <div class="progress-text">
-                    <span id="question-count">Question 1 of 10</span>
-                    <span id="answered-count">Answered: 0</span>
+        <div class="exam-container">
+            <div class="progress-box">
+                <div class="progress-info">
+                    <span id="q-counter">Question 1 of 80</span>
+                    <span id="answered-tracker">Answered: 0</span>
                 </div>
-                <div class="progress-bg">
-                    <div id="progress-fill" class="progress-fill"></div>
+                <div class="progress-bar-bg">
+                    <div id="progress-fill" class="progress-bar-fill"></div>
                 </div>
             </div>
 
-            <div id="quiz-area">
-                <div class="loading">Loading test...</div>
+            <div class="question-box">
+                <div id="question-tag" class="q-tag">Question 1</div>
+                <div id="question-text" class="q-text">Loading question content...</div>
+
+                <div id="options-container" class="options-list">
+                    <!-- Options injected dynamically -->
+                </div>
+
+                <div class="exam-footer-btns">
+                    <button type="button" id="prev-btn" class="btn-control btn-prev" onclick="previousQuestion()">← Previous</button>
+                    <button type="button" id="next-btn" class="btn-control btn-next" onclick="saveAndNext()">Save & Next →</button>
+                    <button type="button" id="submit-exam-btn" class="btn-control btn-submit-exam" style="display:none;" onclick="confirmFinalSubmission()">Submit Test ✓</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ================= SCRIPT LOGIC ================= -->
+
+    <!-- ================= APPLICATION SCRIPT ENGINE ================= -->
     <script>
         "use strict";
 
-        const loginView = document.getElementById("login-view");
-        const examView = document.getElementById("exam-view");
-        const loginForm = document.getElementById("student-login-form");
-        const loginMessage = document.getElementById("login-message");
+        // --- GLOBAL APP STATES ---
+        let questionsPool = [];
+        let activeQuestions = [];
+        let currentIndex = 0;
+        let studentAnswers = {};
+        let tabSwitchCount = 0;
+        let timerInterval = null;
+        let examConfig = {};
+        let candidateInfo = {};
 
-        // Check if already logged in during session
-        const existingInfo = JSON.parse(sessionStorage.getItem("student_info") || "null");
-        if (existingInfo && existingInfo.email) {
-            startExamApp(existingInfo);
+        // --- 1. MODAL CONTROLLER ---
+        function showModal(title, desc, iconClass = "fa-solid fa-circle-exclamation", showCancel = false, onConfirm = null) {
+            document.getElementById("modal-title").innerText = title;
+            document.getElementById("modal-desc").innerText = desc;
+            document.getElementById("modal-icon-container").innerHTML = `<i class="${iconClass}"></i>`;
+            
+            const actions = document.getElementById("modal-actions");
+            if (showCancel) {
+                actions.innerHTML = `
+                    <button class="modal-btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button id="modal-confirm-action" class="modal-btn btn-primary">OK</button>
+                `;
+                document.getElementById("modal-confirm-action").onclick = function() {
+                    closeModal();
+                    if (onConfirm) onConfirm();
+                };
+            } else {
+                actions.innerHTML = `<button class="modal-btn btn-primary" onclick="closeModal()">OK</button>`;
+            }
+            document.getElementById("custom-modal").style.display = "flex";
         }
 
-        loginForm.addEventListener("submit", function(event) {
-            event.preventDefault();
-            const name = document.getElementById("student-name-input").value.trim();
-            const roll = document.getElementById("student-roll-input").value.trim();
-            const email = document.getElementById("student-email-input").value.trim().toLowerCase();
+        function closeModal() {
+            document.getElementById("custom-modal").style.display = "none";
+        }
 
-            if (!name || !roll || !email) {
-                showLoginMessage("Please fill all details.", "error");
-                return;
+        // --- 2. ADMIN CONFIGURATION LOADER ---
+        function loadAdminConfiguration() {
+            // Default configuration if admin hasn't configured yet
+            const defaultConfig = {
+                examDurationMinutes: 10,
+                displayLimit: 5,
+                positiveMarks: 1,
+                negativeMarks: 0.25,
+                authorizedAdminEmails: ["sauravpandey3221@gmail.com"]
+            };
+
+            const saved = localStorage.getItem("exam_admin_config");
+            if (saved) {
+                try { examConfig = JSON.parse(saved); } catch(e) { examConfig = defaultConfig; }
+            } else {
+                examConfig = defaultConfig;
             }
+        }
 
+        // --- 3. LOGIN & GMAIL VERIFICATION ---
+        document.getElementById("login-form").addEventListener("submit", function(e) {
+            e.preventDefault();
+            loadAdminConfiguration();
+
+            const name = document.getElementById("candidate-name").value.trim();
+            const email = document.getElementById("candidate-email").value.trim().toLowerCase();
+
+            // Check mandatory @gmail.com validation
             if (!email.endsWith("@gmail.com")) {
-                showLoginMessage("Please enter a valid Gmail address.", "error");
+                showModal("Invalid Email Address", "This email not found / invalid domain. Please make sure your registered Gmail ends with '@gmail.com'.", "fa-solid fa-triangle-exclamation");
                 return;
             }
 
-            const studentInfo = { name, roll, email };
-            sessionStorage.setItem("student_info", JSON.stringify(studentInfo));
-            
-            showLoginMessage("Verification successful. Opening test...", "success");
-            setTimeout(() => {
-                startExamApp(studentInfo);
-            }, 800);
+            candidateInfo = { name, email };
+            sessionStorage.setItem("student_info", JSON.stringify(candidateInfo));
+
+            // Switch from Slide 1 to Slide 2 (Instructions)
+            document.getElementById("slide-login").style.display = "none";
+            document.getElementById("slide-instructions").style.display = "flex";
         });
 
-        function showLoginMessage(text, type) {
-            loginMessage.innerText = text;
-            loginMessage.className = type;
-            loginMessage.style.display = "block";
+        // --- 4. START TEST PROMPT ---
+        function promptStartTest() {
+            showModal("Are you ready for test?", "Once started, the security protocols (tab switch limitations & fullscreen blocks) will become active.", "fa-solid fa-circle-question", true, function() {
+                launchExamPortal();
+            });
         }
 
-        function startExamApp(studentInfo) {
-            loginView.style.display = "none";
-            examView.style.display = "block";
+        // --- 5. FETCH & SHUFFLE QUESTIONS ---
+        async function fetchQuestionsData() {
+            try {
+                // Fetch from chapter1.json or fallback default questions
+                const response = await fetch('chapter1.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    questionsPool = Array.isArray(data) ? data : (data.questions || []);
+                }
+            } catch (err) {
+                console.warn("Could not fetch chapter1.json, utilizing built-in fallback set.");
+            }
 
-            document.getElementById("student-name-display").innerText = studentInfo.name || "Student";
-            document.getElementById("student-roll-display").innerText = "Roll: " + (studentInfo.roll || "-");
+            // Fallback questions if JSON is missing/empty
+            if (!questionsPool.length) {
+                questionsPool = [
+                    { q: "What is the SI unit of electric charge?", options: ["Coulomb", "Ampere", "Volt", "Ohm"], answer: "Coulomb" },
+                    { q: "Which particle carries a negative charge?", options: ["Proton", "Neutron", "Electron", "Positron"], answer: "Electron" },
+                    { q: "What is the dimension of universal gravitational constant?", options: ["M-1 L3 T-2", "M L2 T-2", "M-1 L2 T-2", "M L3 T-2"], answer: "M-1 L3 T-2" },
+                    { q: "Speed of light in vacuum is denoted by which symbol?", options: ["v", "c", "u", "s"], answer: "c" },
+                    { q: "Which law states that total magnetic flux through a closed surface is zero?", options: ["Gauss's Law for Electricity", "Gauss's Law for Magnetism", "Ampere's Law", "Faraday's Law"], answer: "Gauss's Law for Magnetism" },
+                    { q: "What is the unit of magnetic induction?", options: ["Tesla", "Weber", "Henry", "Farad"], answer: "Tesla" },
+                    { q: "The value of permittivity of free space (ε0) is approximately:", options: ["8.85 x 10^-12 C²/N·m²", "9 x 10^9 N·m²/C²", "3 x 10^8 m/s", "1.6 x 10^-19 C"], answer: "8.85 x 10^-12 C²/N·m²" },
+                    { q: "Planck's constant has the dimensions of:", options: ["Energy", "Momentum", "Angular Momentum", "Power"], answer: "Angular Momentum" }
+                ];
+            }
 
-            initExamEngine(studentInfo);
-        }
+            // Shuffle questions and slice to display limit set by Admin
+            const limit = Number(examConfig.displayLimit || 80);
+            const shuffledPool = [...questionsPool].sort(() => Math.random() - 0.5);
+            const selectedSlice = shuffledPool.slice(0, Math.min(limit, shuffledPool.length));
 
-        function initExamEngine(studentInfo) {
-            const isAdmin = studentInfo.email === "sauravpandey3221@gmail.com";
+            // Normalize and shuffle options for each question to avoid identical patterns among 50+ students
+            activeQuestions = selectedSlice.map((item, idx) => {
+                const questionText = item.question || item.q;
+                let opts = item.options || [item.optA, item.optB, item.optC, item.optD];
+                // Shuffle options
+                const shuffledOpts = [...opts].sort(() => Math.random() - 0.5);
+                const correctAns = item.answer || item.a;
 
-            // Exam configuration & questions loader
-            const examConfig = JSON.parse(sessionStorage.getItem("active_exam_config") || "null");
-
-            const defaultQuestions = [
-                { question: "How do plants make their own food?", options: { A: "Respiration", B: "Photosynthesis", C: "Digestion", D: "Transpiration" }, answer: "B" },
-                { question: "What is the chemical formula of water?", options: { A: "CO2", B: "H2O", C: "O2", D: "H2SO4" }, answer: "B" },
-                { question: "Which is the largest organ in the human body?", options: { A: "Heart", B: "Liver", C: "Skin", D: "Lungs" }, answer: "C" },
-                { question: "What do we get from the Sun?", options: { A: "Light and Energy", B: "Only Water", C: "Only Air", D: "Only Sound" }, answer: "A" },
-                { question: "Which substance gives blood its red colour?", options: { A: "Platelets", B: "Hemoglobin", C: "Plasma", D: "White Blood Cells" }, answer: "B" },
-                { question: "In which medium can sound NOT travel?", options: { A: "Solid", B: "Liquid", C: "Gas", D: "Vacuum" }, answer: "D" },
-                { question: "What is Earth's natural satellite?", options: { A: "Mars", B: "Sun", C: "Moon", D: "Venus" }, answer: "C" },
-                { question: "Which fruit is a rich source of Vitamin C?", options: { A: "Orange", B: "Rice", C: "Butter", D: "Lentils" }, answer: "A" },
-                { question: "Approximately what percentage of Earth's atmosphere is oxygen?", options: { A: "21%", B: "50%", C: "78%", D: "10%" }, answer: "A" },
-                { question: "Which metal is a good conductor of electricity?", options: { A: "Wood", B: "Plastic", C: "Copper", D: "Rubber" }, answer: "C" }
-            ];
-
-            function normalizeQuestion(item) {
-                const options = item.options || {};
                 return {
-                    question: item.question || item.q || "Question unavailable",
-                    options: {
-                        A: typeof options === "object" && !Array.isArray(options) ? options.A : options[0],
-                        B: typeof options === "object" && !Array.isArray(options) ? options.B : options[1],
-                        C: typeof options === "object" && !Array.isArray(options) ? options.C : options[2],
-                        D: typeof options === "object" && !Array.isArray(options) ? options.D : options[3]
-                    },
-                    answer: item.answer || item.a || "A"
+                    id: idx + 1,
+                    question: questionText,
+                    options: shuffledOpts,
+                    answer: correctAns
                 };
+            });
+        }
+
+        // --- 6. LAUNCH EXAM PORTAL ---
+        async function launchExamPortal() {
+            await fetchQuestionsData();
+
+            document.getElementById("slide-instructions").style.display = "none";
+            document.getElementById("slide-exam").style.display = "block";
+
+            document.getElementById("display-name").innerText = candidateInfo.name;
+            document.getElementById("display-email").innerText = candidateInfo.email;
+
+            initSecurityProtections();
+            startTimerEngine();
+            renderQuestion();
+        }
+
+        // --- 7. RENDER DYNAMIC QUESTION & OPTIONS ---
+        function renderQuestion() {
+            if (!activeQuestions.length) return;
+
+            const q = activeQuestions[currentIndex];
+            document.getElementById("question-tag").innerText = `Question ${currentIndex + 1} of ${activeQuestions.length}`;
+            document.getElementById("question-text").innerText = q.question;
+
+            const container = document.getElementById("options-container");
+            container.innerHTML = "";
+
+            q.options.forEach((optValue) => {
+                const isSelected = studentAnswers[currentIndex] === optValue;
+                const div = document.createElement("label");
+                div.className = `option-item ${isSelected ? "selected" : ""}`;
+                
+                div.innerHTML = `
+                    <input type="radio" name="exam_option" value="${escapeHtml(optValue)}" ${isSelected ? "checked" : ""}>
+                    <span>${escapeHtml(optValue)}</span>
+                `;
+
+                div.onclick = function() {
+                    studentAnswers[currentIndex] = optValue;
+                    renderQuestion(); // re-render to highlight selected item
+                    updateProgressTracker();
+                };
+
+                container.appendChild(div);
+            });
+
+            // Toggle Navigation Buttons
+            document.getElementById("prev-btn").style.display = currentIndex === 0 ? "none" : "block";
+            const isLast = currentIndex === activeQuestions.length - 1;
+            document.getElementById("next-btn").style.display = isLast ? "none" : "block";
+            document.getElementById("submit-exam-btn").style.display = isLast ? "block" : "none";
+
+            updateProgressTracker();
+        }
+
+        function updateProgressTracker() {
+            const answeredCount = Object.keys(studentAnswers).length;
+            document.getElementById("answered-tracker").innerText = `Answered: ${answeredCount}`;
+            const percentage = ((currentIndex + 1) / activeQuestions.length) * 100;
+            document.getElementById("progress-fill").style.width = `${percentage}%`;
+            document.getElementById("q-counter").innerText = `Question ${currentIndex + 1} of ${activeQuestions.length}`;
+        }
+
+        function saveAndNext() {
+            if (currentIndex < activeQuestions.length - 1) {
+                currentIndex++;
+                renderQuestion();
             }
+        }
 
-            let questions = [];
-            if (examConfig && Array.isArray(examConfig.questions) && examConfig.questions.length > 0) {
-                questions = examConfig.questions.map(normalizeQuestion);
-            } else {
-                questions = defaultQuestions.map(normalizeQuestion);
+        function previousQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion();
             }
+        }
 
-            let currentQuestion = 0;
-            let answers = {};
-            let submitted = false;
-            window.isTestSubmitted = false;
+        // --- 8. SECURITY & ANTI-CHEAT ENGINE ---
+        function initSecurityProtections() {
+            const isAdmin = examConfig.authorizedAdminEmails && examConfig.authorizedAdminEmails.includes(candidateInfo.email);
+            if (isAdmin) return; // Bypass security checks for Admin
 
-            window.saveAnswer = function(option) {
-                if (window.isTestSubmitted || submitted) return;
-                answers[currentQuestion] = String(option);
-                saveExamState();
-            };
+            // Disable copy, cut, paste, context menu
+            document.addEventListener('copy', e => { e.preventDefault(); showModal("Security Warning", "Copying content is strictly prohibited during the test."); });
+            document.addEventListener('paste', e => { e.preventDefault(); showModal("Security Warning", "Pasting content is strictly prohibited during the test."); });
+            document.addEventListener('cut', e => { e.preventDefault(); showModal("Security Warning", "Cutting content is strictly prohibited during the test."); });
+            document.addEventListener('contextmenu', e => e.preventDefault());
 
-            function updateProgress() {
-                const total = questions.length;
-                const answered = Object.keys(answers).length;
+            // Disable F1 to F12 and PrintScreen shortcut
+            document.addEventListener('keydown', e => {
+                if (e.key === "F1" || e.key === "F2" || e.key === "F3" || e.key === "F4" || 
+                    e.key === "F5" || e.key === "F6" || e.key === "F7" || e.key === "F8" || 
+                    e.key === "F9" || e.key === "F10" || e.key === "F11" || e.key === "F12" || e.key === "PrintScreen") {
+                    e.preventDefault();
+                    showModal("Restricted Key", "Function keys and shortcuts are locked during the examination.");
+                }
+            });
 
-                document.getElementById("question-count").innerText = `Question ${currentQuestion + 1} of ${total}`;
-                document.getElementById("answered-count").innerText = `Answered: ${answered}`;
+            // Tab-Switch / Background Focus Monitoring
+            document.addEventListener("visibilitychange", function() {
+                if (document.hidden) {
+                    handleTabSwitchViolation();
+                }
+            });
 
-                const percentage = total > 0 ? (answered / total) * 100 : 0;
-                document.getElementById("progress-fill").style.width = percentage + "%";
+            window.addEventListener("blur", function() {
+                setTimeout(() => {
+                    if (!document.hasFocus()) {
+                        handleTabSwitchViolation();
+                    }
+                }, 100);
+            });
+        }
+
+        function handleTabSwitchViolation() {
+            tabSwitchCount++;
+
+            if (tabSwitchCount === 1) {
+                showModal("Tab Switch Detected (-1 Mark)", "⚠️ Warning: You left the test window/background! A -1 mark penalty has been applied, and your current question has been replaced with a new question from the pool.", "fa-solid fa-triangle-exclamation");
+                
+                // Trigger question replacement on 1st switch
+                replaceCurrentQuestionFromPool();
+            } else if (tabSwitchCount >= 2) {
+                showModal("Critical Security Violation", "⚠️ Your test score is submitted successfully because you switched tabs or went to the background a second time. Multiple violations lead to auto-submission.", "fa-solid fa-shield-cat", false, function() {
+                    executeFinalSubmission("Auto-submitted due to multiple tab-switch violations");
+                });
             }
+        }
 
-            function renderQuestion() {
-                const quizArea = document.getElementById("quiz-area");
-                if (!questions.length) {
-                    quizArea.innerHTML = `<div class="loading">No questions available.</div>`;
+        function replaceCurrentQuestionFromPool() {
+            if (questionsPool.length > activeQuestions.length) {
+                const newCandidateQ = questionsPool[Math.floor(Math.random() * questionsPool.length)];
+                const opts = newCandidateQ.options || [newCandidateQ.optA, newCandidateQ.optB, newCandidateQ.optC, newCandidateQ.optD];
+                const shuffledOpts = [...opts].sort(() => Math.random() - 0.5);
+
+                activeQuestions[currentIndex] = {
+                    id: 999,
+                    question: newCandidateQ.question || newCandidateQ.q,
+                    options: shuffledOpts,
+                    answer: newCandidateQ.answer || newCandidateQ.a
+                };
+                delete studentAnswers[currentIndex]; // reset answer for new question
+                renderQuestion();
+            }
+        }
+
+        // --- 9. TIMER ENGINE ---
+        function startTimerEngine() {
+            let totalSeconds = Number(examConfig.examDurationMinutes || 10) * 60;
+
+            timerInterval = setInterval(() => {
+                if (totalSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    executeFinalSubmission("Time Expired");
                     return;
                 }
+                totalSeconds--;
+                const mins = Math.floor(totalSeconds / 60);
+                const secs = totalSeconds % 60;
+                document.getElementById("timer-clock").innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }, 1000);
+        }
 
-                const q = questions[currentQuestion];
-                quizArea.innerHTML = "";
+        // --- 10. SUBMISSION & RESULT TRANSITION ---
+        function confirmFinalSubmission() {
+            const unanswered = activeQuestions.length - Object.keys(studentAnswers).length;
+            const promptMsg = unanswered > 0 ? `You have ${unanswered} unanswered question(s). Are you sure you want to submit?` : "Are you sure you want to submit your test?";
+            
+            showModal("Confirm Submission", promptMsg, "fa-solid fa-circle-check", true, function() {
+                executeFinalSubmission("Manual Submission");
+            });
+        }
 
-                const card = document.createElement("div");
-                card.className = "question-card";
+        function executeFinalSubmission(reason) {
+            if (timerInterval) clearInterval(timerInterval);
 
-                const qNumber = document.createElement("div");
-                qNumber.className = "question-number";
-                qNumber.innerText = `QUESTION ${currentQuestion + 1}`;
+            // Calculate Scores
+            let correctCount = 0;
+            let incorrectCount = 0;
+            let unansweredCount = 0;
+            const detailedAnalysis = [];
 
-                const qText = document.createElement("div");
-                qText.className = "question";
-                qText.innerText = q.question;
+            activeQuestions.forEach((q, idx) => {
+                const chosen = studentAnswers[idx];
+                const correct = q.answer;
 
-                const optionContainer = document.createElement("div");
-                optionContainer.className = "options";
-
-                ["A", "B", "C", "D"].forEach(optionKey => {
-                    const optionVal = q.options[optionKey];
-                    if (optionVal === undefined || optionVal === null) return;
-
-                    const label = document.createElement("label");
-                    const isSelected = answers[currentQuestion] === optionKey;
-                    label.className = `option ${isSelected ? "selected" : ""}`;
-
-                    const input = document.createElement("input");
-                    input.type = "radio";
-                    input.name = "question-option";
-                    input.value = String(optionKey);
-
-                    if (answers[currentQuestion] !== undefined && answers[currentQuestion] === String(optionKey)) {
-                        input.checked = true;
-                    }
-
-                    input.addEventListener("change", () => {
-                        window.saveAnswer(optionKey);
-                        renderQuestion();
-                    });
-
-                    label.addEventListener("click", () => {
-                        if (!input.checked) {
-                            input.checked = true;
-                            window.saveAnswer(optionKey);
-                            renderQuestion();
-                        }
-                    });
-
-                    const span = document.createElement("span");
-                    const b = document.createElement("b");
-                    b.innerText = `${optionKey}. `;
-                    span.appendChild(b);
-                    span.appendChild(document.createTextNode(String(optionVal)));
-
-                    label.appendChild(input);
-                    label.appendChild(span);
-                    optionContainer.appendChild(label);
-                });
-
-                const buttonsDiv = document.createElement("div");
-                buttonsDiv.className = "buttons";
-
-                const previousButton = document.createElement("button");
-                previousButton.className = "prev";
-                previousButton.innerText = "← Previous";
-                previousButton.disabled = currentQuestion === 0;
-                previousButton.onclick = window.prevQuestion;
-
-                const nextButton = document.createElement("button");
-                nextButton.className = "next";
-                nextButton.innerText = "Save & Next →";
-                nextButton.onclick = window.nextQuestion;
-
-                const submitButton = document.createElement("button");
-                submitButton.className = "submit";
-                submitButton.innerText = "Submit Test ✓";
-                submitButton.onclick = window.confirmSubmit;
-
-                buttonsDiv.appendChild(previousButton);
-
-                if (currentQuestion === questions.length - 1) {
-                    buttonsDiv.appendChild(submitButton);
+                if (!chosen) {
+                    unansweredCount++;
+                } else if (String(chosen).trim().toLowerCase() === String(correct).trim().toLowerCase()) {
+                    correctCount++;
                 } else {
-                    buttonsDiv.appendChild(nextButton);
+                    incorrectCount++;
                 }
 
-                card.appendChild(qNumber);
-                card.appendChild(qText);
-                card.appendChild(optionContainer);
-                card.appendChild(buttonsDiv);
-
-                quizArea.appendChild(card);
-                updateProgress();
-            }
-
-            window.nextQuestion = function() {
-                if (currentQuestion < questions.length - 1) {
-                    currentQuestion++;
-                    saveExamState();
-                    renderQuestion();
-                }
-            };
-
-            window.prevQuestion = function() {
-                if (currentQuestion > 0) {
-                    currentQuestion--;
-                    saveExamState();
-                    renderQuestion();
-                }
-            };
-
-            // Timer Logic
-            let durationMinutes = Number(examConfig?.examDurationMinutes || examConfig?.durationMinutes || 10);
-            let timerInterval;
-            const examTimerKey = "active_exam_end_time";
-
-            function startExamTimer() {
-                let endTime = Number(sessionStorage.getItem(examTimerKey));
-                const now = Date.now();
-
-                if (!endTime || endTime <= now) {
-                    endTime = now + (durationMinutes * 60 * 1000);
-                    sessionStorage.setItem(examTimerKey, String(endTime));
-                }
-
-                function updateTimer() {
-                    if (window.isTestSubmitted || submitted) {
-                        clearInterval(timerInterval);
-                        return;
-                    }
-
-                    const remaining = Math.max(0, endTime - Date.now());
-                    const totalSecs = Math.ceil(remaining / 1000);
-                    const minutes = Math.floor(totalSecs / 60);
-                    const seconds = totalSecs % 60;
-
-                    const timerElement = document.getElementById("timer");
-                    if (timerElement) {
-                        timerElement.innerText = String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
-                    }
-
-                    if (remaining <= 0) {
-                        clearInterval(timerInterval);
-                        sessionStorage.removeItem(examTimerKey);
-                        if (!window.isTestSubmitted && !submitted) {
-                            window.submitExam("Time expired");
-                        }
-                    }
-                }
-
-                updateTimer();
-                timerInterval = setInterval(updateTimer, 1000);
-            }
-
-            // Security & Anti-Cheat Protections (Bypassed for Admin)
-            let securityTabSwitches = 0;
-            let securitySubmitted = false;
-            let copyAttempts = 0;
-            let pasteAttempts = 0;
-            let cutAttempts = 0;
-            let contextMenuAttempts = 0;
-            let penaltiesApplied = 0;
-
-            function showSecurityWarning(message) {
-                const warningEl = document.getElementById("warning");
-                if (warningEl) {
-                    warningEl.style.display = "block";
-                    warningEl.innerText = message;
-                }
-            }
-
-            function handleExamViolation() {
-                if (isAdmin || securitySubmitted || submitted || window.isTestSubmitted) return;
-
-                securityTabSwitches++;
-
-                if (securityTabSwitches === 1) {
-                    showSecurityWarning("WARNING 1/2: Tab switching detected! Next attempt will automatically submit your exam.");
-                    alert("WARNING 1/2: Tab switching detected! Returning to another tab will automatically submit your exam.");
-                } else if (securityTabSwitches >= 2) {
-                    securitySubmitted = true;
-                    showSecurityWarning("⚠️ Multiple violations detected! Your exam is being submitted.");
-                    alert("CRITICAL VIOLATION: Tab switch limit exceeded! Your exam is being automatically submitted.");
-                    setTimeout(() => {
-                        window.submitExam("Anti-cheating violation: Tab switch limit exceeded");
-                    }, 1200);
-                }
-            }
-
-            if (!isAdmin) {
-                document.addEventListener("visibilitychange", () => {
-                    if (document.visibilityState === "hidden") {
-                        handleExamViolation();
-                    }
+                detailedAnalysis.push({
+                    questionNo: idx + 1,
+                    questionText: q.question,
+                    options: q.options,
+                    correctAnswer: correct,
+                    studentChoice: chosen || "Not Answered",
+                    isCorrect: chosen && String(chosen).trim().toLowerCase() === String(correct).trim().toLowerCase()
                 });
+            });
 
-                window.addEventListener("blur", () => {
-                    setTimeout(() => {
-                        if (!document.hidden) {
-                            handleExamViolation();
-                        }
-                    }, 100);
-                });
+            const posWeight = Number(examConfig.positiveMarks || 1);
+            const negWeight = Number(examConfig.negativeMarks || 0.25);
+            let rawScore = (correctCount * posWeight) - (incorrectCount * negWeight);
+            
+            // Apply tab switch penalty (-1 mark for 1st switch)
+            const penaltyMarks = tabSwitchCount > 0 ? 1 : 0;
+            const finalScore = Math.max(0, rawScore - penaltyMarks);
 
-                document.addEventListener("contextmenu", e => { e.preventDefault(); contextMenuAttempts++; showSecurityWarning("⚠️ Right-click is disabled."); });
-                document.addEventListener("copy", e => { e.preventDefault(); copyAttempts++; showSecurityWarning("⚠️ Copying is not allowed."); });
-                document.addEventListener("paste", e => { e.preventDefault(); pasteAttempts++; showSecurityWarning("⚠️ Pasting is not allowed."); });
-                document.addEventListener("cut", e => { e.preventDefault(); cutAttempts++; showSecurityWarning("⚠️ Cutting is not allowed."); });
-            }
-
-            function saveExamState() {
-                if (window.isTestSubmitted || submitted) return;
-                const state = { currentIndex: currentQuestion, answers };
-                sessionStorage.setItem("active_exam_state", JSON.stringify(state));
-            }
-
-            function restoreExamState() {
-                try {
-                    const savedState = sessionStorage.getItem("active_exam_state");
-                    if (!savedState) return;
-                    const state = JSON.parse(savedState);
-                    if (state.answers) answers = state.answers;
-                    if (Number.isInteger(state.currentIndex) && state.currentIndex >= 0 && state.currentIndex < questions.length) {
-                        currentQuestion = state.currentIndex;
-                    }
-                } catch (e) {
-                    console.warn("State restore error", e);
-                }
-            }
-
-            window.confirmSubmit = function() {
-                const unanswered = questions.length - Object.keys(answers).length;
-                const message = unanswered > 0
-                    ? `You have ${unanswered} unanswered question(s).\n\nAre you sure you want to submit?`
-                    : "Are you sure you want to submit the test?";
-
-                if (confirm(message)) {
-                    window.submitExam("Manual submission");
-                }
+            const resultPackage = {
+                candidateName: candidateInfo.name,
+                candidateEmail: candidateInfo.email,
+                totalQuestions: activeQuestions.length,
+                correctCount,
+                incorrectCount,
+                unansweredCount,
+                penaltyMarks,
+                finalScore: Number(finalScore.toFixed(2)),
+                submissionReason: reason,
+                tabSwitches: tabSwitchCount,
+                detailedAnalysis,
+                submittedAt: new Date().toISOString()
             };
 
-            window.submitExam = async function(reason = "Manual submission") {
-                if (window.isTestSubmitted || submitted) return;
+            // Save to Firestore / Local Storage for Admin and Result View
+            sessionStorage.setItem("last_exam_result", JSON.stringify(resultPackage));
+            const existingSubmissions = JSON.parse(localStorage.getItem("exam_submissions") || "[]");
+            existingSubmissions.push(resultPackage);
+            localStorage.setItem("exam_submissions", JSON.stringify(existingSubmissions));
 
-                window.isTestSubmitted = true;
-                submitted = true;
+            // Mark session as completed so candidate cannot re-attempt without new session
+            sessionStorage.setItem("exam_already_attempted", "true");
 
-                if (timerInterval) clearInterval(timerInterval);
-                sessionStorage.removeItem(examTimerKey);
-                sessionStorage.removeItem("active_exam_state");
+            // Redirect to result.html dashboard
+            window.location.href = "result.html";
+        }
 
-                let correctCount = 0;
-                let incorrectCount = 0;
-                let unansweredCount = 0;
-
-                questions.forEach((question, index) => {
-                    const selectedAnswer = answers[index];
-                    if (!selectedAnswer) {
-                        unansweredCount++;
-                    } else if (String(selectedAnswer).trim().toUpperCase() === String(question.answer).trim().toUpperCase()) {
-                        correctCount++;
-                    } else {
-                        incorrectCount++;
-                    }
-                });
-
-                const positiveMarks = correctCount;
-                const negativeMarks = incorrectCount * 0.25;
-                const finalScore = positiveMarks - negativeMarks;
-
-                const submissionData = {
-                    name: studentInfo?.name || "Student",
-                    roll: studentInfo?.roll || "-",
-                    email: studentInfo?.email || "-",
-                    correct: correctCount,
-                    incorrect: incorrectCount,
-                    unanswered: unansweredCount,
-                    positiveMarks: positiveMarks,
-                    negativeMarks: negativeMarks,
-                    score: Number(finalScore.toFixed(2)),
-                    totalQuestions: questions.length,
-                    submissionReason: reason,
-                    tabSwitches: securityTabSwitches,
-                    submittedAt: new Date().toISOString()
-                };
-
-                const oldSubmissions = JSON.parse(localStorage.getItem("exam_submissions") || "[]");
-                oldSubmissions.push(submissionData);
-                localStorage.setItem("exam_submissions", JSON.stringify(oldSubmissions));
-                sessionStorage.setItem("last_exam_result", JSON.stringify(submissionData));
-
-                window.location.href = "result.html";
-            };
-
-            // Start up
-            restoreExamState();
-            renderQuestion();
-            startExamTimer();
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
         }
     </script>
 </body>
