@@ -1,1351 +1,2181 @@
  <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Assessment Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Security Module Connection -->
-    <script src="security.js" defer></script>
-    <style>
-        :root {
-            --primary: #1e3a8a;
-            --primary-dark: #1e293b;
-            --primary-accent: #3b82f6;
-            --bg-dark: #0f172a;
-            --text-main: #1e293b;
-            --danger: #ef4444;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --gray-light: #f8fafc;
-            --gray-border: #cbd5e1;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; user-select: none; }
-        body { background-color: #f1f5f9; color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
-        .view-section { display: none; flex: 1; flex-direction: column; height: 100vh; width: 100%; overflow-y: auto; }
-        .view-section.active { display: flex; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Physics Test Series | Student Test</title>
 
-        /* Professional Toast Popup */
-        .toast-popup { position: fixed; top: 20px; right: 20px; background: #0f172a; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-size: 0.9rem; z-index: 1000; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--danger); transition: transform 0.3s ease; transform: translateX(120%); }
-        .toast-popup.show { transform: translateX(0); }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-        /* Email Login View */
-        .email-login-container { flex: 1; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); padding: 20px; display: flex; justify-content: center; align-items: center; }
-        .email-card { background: white; width: 100%; max-width: 420px; padding: 35px; border-radius: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 20px; }
-        .email-card h2 { font-size: 1.3rem; color: #0f172a; text-align: center; }
-        .email-card input { width: 100%; padding: 12px; border: 1px solid var(--gray-border); border-radius: 8px; font-size: 0.95rem; outline: none; }
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Inter,sans-serif;
+}
 
-        /* Slide 1: Direct Instructions Page */
-        .instruction-container { flex: 1; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); padding: 20px; display: flex; justify-content: center; align-items: center; overflow-y: auto; }
-        .instruction-card { background: white; width: 100%; max-width: 800px; padding: 35px; border-radius: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 20px; }
-        .instruction-card h2 { font-size: 1.4rem; color: #0f172a; border-bottom: 2px solid var(--gray-border); padding-bottom: 12px; }
-        .instruction-content-box { font-size: 0.9rem; line-height: 1.7; color: #475569; display: flex; flex-direction: column; gap: 12px; max-height: 320px; overflow-y: auto; padding-right: 5px; }
-        .instruction-content-box ul { padding-left: 20px; }
+body{
+    background:#0f172a;
+    min-height:100vh;
+    color:#0f172a;
+}
 
-        /* Schedule Notice View */
-        .schedule-notice-box { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white; padding: 30px; text-align: center; gap: 15px; }
-        .schedule-notice-box i { font-size: 3rem; color: var(--warning); }
-        .schedule-notice-box h2 { font-size: 1.6rem; color: #0f172a; }
-        .schedule-notice-box p { color: #64748b; font-size: 0.95rem; max-width: 450px; }
+button,input{
+    font:inherit;
+}
 
-        /* Header Bar */
-        header { background-color: #0f172a; color: white; height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 10; flex-shrink: 0; }
-        .header-left h1 { font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
-        .header-right { display: flex; align-items: center; gap: 12px; }
-        .timer-container { background: rgba(255, 255, 255, 0.1); padding: 6px 12px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.15); }
-        .timer-container i { color: var(--warning); }
-        @media(min-width: 768px) { .header-left h1 { max-width: none; } }
+.hidden{
+    display:none!important;
+}
 
-        /* Workspace Exam Interface */
-        .workspace { display: flex; flex: 1; height: calc(100vh - 60px); overflow: hidden; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); }
-        .exam-main-panel { flex: 1; display: flex; flex-direction: column; padding: 15px; overflow-y: auto; gap: 15px; max-width: 950px; margin: 0 auto; width: 100%; }
-        
-        .question-card-box { background: white; border: 1px solid var(--gray-border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
-        .question-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gray-border); padding-bottom: 12px; margin-bottom: 15px; flex-wrap: wrap; gap: 8px; }
-        .q-meta { font-size: 0.9rem; font-weight: 600; color: #334155; }
-        .marks-info { display: flex; gap: 10px; font-size: 0.75rem; font-weight: 600; }
-        .positive-mark { color: var(--success); background: #d1fae5; padding: 3px 8px; border-radius: 4px; }
-        .negative-mark { color: var(--danger); background: #fee2e2; padding: 3px 8px; border-radius: 4px; }
-        .question-text { font-size: 1rem; line-height: 1.6; margin-bottom: 20px; color: #0f172a; font-weight: 500; }
-        .options-list { display: flex; flex-direction: column; gap: 10px; }
-        .option-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; border: 1px solid var(--gray-border); border-radius: 8px; cursor: pointer; transition: all 0.2s; background: white; }
-        .option-item:hover { border-color: var(--primary-accent); background: #f8fafc; }
-        .option-item input[type="radio"] { accent-color: var(--primary); width: 18px; height: 18px; flex-shrink: 0; }
-        .option-item label { cursor: pointer; font-size: 0.9rem; width: 100%; color: #334155; }
+/* ================= LOGIN ================= */
 
-        .question-footer-btns { display: flex; justify-content: space-between; align-items: center; background: white; padding: 12px 15px; border: 1px solid var(--gray-border); border-radius: 12px; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-        .footer-left-btns, .footer-right-btns { display: flex; gap: 8px; flex-wrap: wrap; width: 100%; justify-content: space-between; }
-        @media(min-width: 640px) { .footer-left-btns, .footer-right-btns { width: auto; } }
-        
-        .btn { padding: 10px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: none; display: flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap; }
-        .btn-outline { background: white; border: 1px solid var(--gray-border); color: #475569; }
-        .btn-outline:hover { background: var(--gray-light); }
-        .btn-warning { background: var(--warning); color: white; }
-        .btn-warning:hover { background: #d97706; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-success:hover { background: #059669; }
+#loginScreen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
 
-        .sidebar-section { background: white; border: 1px solid var(--gray-border); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-        .palette-header { font-size: 0.9rem; font-weight: 600; color: #334155; border-bottom: 1px solid var(--gray-border); padding-bottom: 8px; }
-        .status-legend { display: flex; gap: 12px; font-size: 0.7rem; font-weight: 500; flex-wrap: wrap; }
-        .legend-item { display: flex; align-items: center; gap: 5px; }
-        .legend-box { width: 15px; height: 15px; border-radius: 3px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.6rem; }
-        .bg-answered { background-color: var(--success); }
-        .bg-not-answered { background-color: var(--danger); }
-        .bg-not-visited { background-color: #cbd5e1; color: #475569 !important; }
-        .bg-marked { background-color: #8b5cf6; }
-        .palette-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 8px; max-height: 140px; overflow-y: auto; padding: 2px; }
-        .q-box { width: 38px; height: 38px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1px solid var(--gray-border); background: #f1f5f9; color: #334155; }
-        .q-box.answered { background-color: var(--success); color: white; border-color: #059669; }
-        .q-box.not-answered { background-color: var(--danger); color: white; border-color: #dc2626; }
-        .q-box.marked { background-color: #8b5cf6; color: white; border-color: #7c3aed; }
-        .q-box.current { border: 2px solid var(--primary-accent); }
-        .submit-exam-btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
-        .submit-exam-btn:hover { background: #1e293b; }
+.login-card{
+    width:100%;
+    max-width:430px;
+    background:white;
+    padding:30px;
+    border-radius:18px;
+    box-shadow:0 20px 50px rgba(0,0,0,.35);
+}
 
-        /* Performance Dashboard View */
-        .dashboard-container { flex: 1; background: #f8fafc; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; max-width: 900px; margin: 0 auto; width: 100%; }
-        .dash-header-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--gray-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .dash-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-        .stat-box { background: white; padding: 18px; border-radius: 12px; border: 1px solid var(--gray-border); display: flex; flex-direction: column; gap: 5px; }
-        .stat-box span:first-child { font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
-        .stat-box span:last-child { font-size: 1.4rem; font-weight: 700; color: #0f172a; }
-        
-        .analysis-section { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--gray-border); display: flex; flex-direction: column; gap: 15px; }
-        .analysis-item { padding: 15px; border: 1px solid var(--gray-border); border-radius: 8px; display: flex; flex-direction: column; gap: 8px; background: #fafafa; }
-        .analysis-item p { font-weight: 600; font-size: 0.9rem; color: #0f172a; }
-        
-        .feedback-section { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--gray-border); display: flex; flex-direction: column; gap: 15px; }
-        .star-rating { display: flex; gap: 8px; font-size: 1.5rem; color: #cbd5e1; cursor: pointer; }
-        .star-rating .rated { color: var(--warning); }
-        .query-box textarea { width: 100%; padding: 12px; border: 1px solid var(--gray-border); border-radius: 8px; resize: vertical; min-height: 80px; outline: none; }
-        
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 100; display: none; padding: 15px; }
-        .modal-card { background: white; width: 100%; max-width: 420px; border-radius: 12px; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.2); }
-    </style>
+.logo{
+    width:65px;
+    height:65px;
+    border-radius:16px;
+    background:#2563eb;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 auto 18px;
+    font-size:28px;
+}
+
+.login-card h1{
+    text-align:center;
+    font-size:23px;
+    margin-bottom:7px;
+}
+
+.login-card .sub{
+    text-align:center;
+    color:#64748b;
+    font-size:14px;
+    margin-bottom:25px;
+}
+
+.form-group{
+    margin-bottom:16px;
+}
+
+.form-group label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    margin-bottom:7px;
+}
+
+.form-group input{
+    width:100%;
+    padding:12px 14px;
+    border:1px solid #cbd5e1;
+    border-radius:9px;
+    outline:none;
+}
+
+.form-group input:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 3px rgba(37,99,235,.12);
+}
+
+.primary-btn{
+    width:100%;
+    border:none;
+    padding:13px;
+    border-radius:9px;
+    background:#2563eb;
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.primary-btn:hover{
+    background:#1d4ed8;
+}
+
+/* ================= LOADING ================= */
+
+#loadingScreen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.loading-card{
+    background:white;
+    padding:35px;
+    border-radius:16px;
+    text-align:center;
+    width:100%;
+    max-width:400px;
+}
+
+.spinner{
+    width:45px;
+    height:45px;
+    border:4px solid #e2e8f0;
+    border-top-color:#2563eb;
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+    margin:0 auto 18px;
+}
+
+@keyframes spin{
+    to{transform:rotate(360deg)}
+}
+
+/* ================= EXAM ================= */
+
+#examScreen{
+    min-height:100vh;
+    background:#f1f5f9;
+}
+
+.exam-header{
+    background:#0f172a;
+    color:white;
+    padding:14px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    position:sticky;
+    top:0;
+    z-index:20;
+}
+
+.student-name{
+    font-size:15px;
+    font-weight:700;
+}
+
+.test-title{
+    font-size:12px;
+    color:#94a3b8;
+    margin-top:3px;
+}
+
+.timer{
+    background:#1e293b;
+    border:1px solid #334155;
+    padding:8px 13px;
+    border-radius:8px;
+    font-weight:800;
+    white-space:nowrap;
+}
+
+.timer.warning{
+    background:#7f1d1d;
+    color:#fecaca;
+}
+
+.exam-container{
+    width:100%;
+    max-width:850px;
+    margin:auto;
+    padding:20px;
+}
+
+.progress-area{
+    background:white;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:15px;
+}
+
+.progress-top{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    font-weight:700;
+    margin-bottom:9px;
+}
+
+.progress-bg{
+    height:7px;
+    background:#e2e8f0;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.progress-fill{
+    height:100%;
+    background:#2563eb;
+    width:0%;
+    transition:.3s;
+}
+
+.question-card{
+    background:white;
+    border-radius:14px;
+    padding:22px;
+    box-shadow:0 5px 20px rgba(15,23,42,.06);
+}
+
+.question-number{
+    color:#2563eb;
+    font-size:13px;
+    font-weight:800;
+    margin-bottom:10px;
+}
+
+.question-text{
+    font-size:18px;
+    line-height:1.6;
+    font-weight:700;
+    margin-bottom:22px;
+}
+
+.options{
+    display:flex;
+    flex-direction:column;
+    gap:11px;
+}
+
+.option{
+    display:flex;
+    align-items:flex-start;
+    gap:11px;
+    padding:14px;
+    border:2px solid #e2e8f0;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.option:hover{
+    border-color:#93c5fd;
+    background:#f8fafc;
+}
+
+.option.selected{
+    border-color:#2563eb;
+    background:#eff6ff;
+}
+
+.option input{
+    margin-top:3px;
+    accent-color:#2563eb;
+}
+
+.option-text{
+    line-height:1.45;
+    font-size:14px;
+}
+
+.navigation{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:15px;
+}
+
+.nav-btn{
+    padding:11px 18px;
+    border:none;
+    border-radius:9px;
+    cursor:pointer;
+    font-weight:700;
+}
+
+.prev-btn{
+    background:#e2e8f0;
+    color:#334155;
+}
+
+.next-btn{
+    background:#2563eb;
+    color:white;
+}
+
+.submit-btn{
+    background:#10b981;
+    color:white;
+}
+
+.nav-btn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+/* ================= WARNING ================= */
+
+.warning{
+    position:fixed;
+    top:15px;
+    left:50%;
+    transform:translateX(-50%);
+    width:calc(100% - 30px);
+    max-width:550px;
+    background:#991b1b;
+    color:white;
+    padding:13px 16px;
+    border-radius:9px;
+    z-index:999;
+    display:none;
+    box-shadow:0 10px 25px rgba(0,0,0,.3);
+    font-size:13px;
+    font-weight:600;
+    text-align:center;
+}
+
+/* ================= RESULT ================= */
+
+#resultScreen{
+    min-height:100vh;
+    background:#f1f5f9;
+    padding:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.result-card{
+    width:100%;
+    max-width:650px;
+    background:white;
+    padding:30px;
+    border-radius:18px;
+    box-shadow:0 15px 40px rgba(15,23,42,.12);
+}
+
+.success-icon{
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    background:#d1fae5;
+    color:#059669;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:32px;
+    margin:0 auto 15px;
+}
+
+.result-card h2{
+    text-align:center;
+    margin-bottom:7px;
+}
+
+.result-sub{
+    text-align:center;
+    color:#64748b;
+    font-size:13px;
+    margin-bottom:22px;
+}
+
+.result-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+}
+
+.result-item{
+    padding:15px;
+    background:#f8fafc;
+    border-radius:10px;
+}
+
+.result-item span{
+    display:block;
+    color:#64748b;
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    margin-bottom:5px;
+}
+
+.result-item strong{
+    font-size:20px;
+}
+
+.status{
+    margin-top:15px;
+    padding:12px;
+    border-radius:9px;
+    text-align:center;
+    font-size:13px;
+    font-weight:700;
+}
+
+.status.success{
+    background:#d1fae5;
+    color:#065f46;
+}
+
+.status.error{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+@media(max-width:600px){
+
+    .exam-container{
+        padding:12px;
+    }
+
+    .question-card{
+        padding:17px;
+    }
+
+    .question-text{
+        font-size:16px;
+    }
+
+    .exam-header{
+        padding:12px;
+    }
+
+    .result-grid{
+        grid-template-columns:1fr 1fr;
+    }
+
+}
+</style>
 </head>
+
 <body>
 
-    <!-- Professional Toast Popup -->
-    <div id="custom-toast" class="toast-popup">
-        <i class="fa-solid fa-triangle-exclamation" style="color: var(--danger); font-size: 1.1rem;"></i>
-        <span id="toast-message">Notification message here.</span>
-    </div>
+<!-- WARNING -->
+<div id="warning" class="warning">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span id="warningText"></span>
+</div>
 
-    <!-- SCHEDULE NOTICE VIEW -->
-    <div id="slide-schedule-notice" class="view-section">
-        <div class="schedule-notice-box">
-            <i class="fa-regular fa-clock"></i>
-            <h2 id="notice-title">Test Not Started Yet</h2>
-            <p id="notice-desc">Please check back during the scheduled window time.</p>
+
+<!-- ================= LOGIN ================= -->
+
+<section id="loginScreen">
+
+    <div class="login-card">
+
+        <div class="logo">
+            <i class="fa-solid fa-atom"></i>
         </div>
-    </div>
 
-    <!-- EMAIL LOGIN VIEW -->
-    <div id="slide-email-login" class="view-section active">
-        <div class="email-login-container">
-            <div class="email-card">
-                <h2>Candidate Verification</h2>
-                <p style="font-size: 0.85rem; color: #64748b;">Enter your registered Gmail address to start the assessment.</p>
-                <input type="email" id="student-email-input" placeholder="e.g. student@gmail.com">
-                <button class="btn btn-success" style="width: 100%; justify-content: center; padding: 12px;" onclick="verifyAndProceedEmail()">Proceed to Instructions</button>
-            </div>
+        <h1>Physics Test Series</h1>
+
+        <p class="sub">
+            Enter your details to start the assessment
+        </p>
+
+        <div class="form-group">
+            <label>Student Name</label>
+            <input id="studentName" type="text" placeholder="Enter your name">
         </div>
-    </div>
 
-    <!-- DIRECT INSTRUCTIONS PAGE -->
-    <div id="slide-instructions" class="view-section">
-        <div class="instruction-container">
-            <div class="instruction-card">
-                <h2>Examination Instructions & Guidelines</h2>
-                <div class="instruction-content-box">
-                    <p><b>Please read the instructions carefully before proceeding:</b></p>
-                    <ul>
-                        <li>The test will open as per the scheduled time window set by the administration.</li>
-                        <li>The countdown timer at the top right of the screen will display the remaining time available for your assessment.</li>
-                        <li>Each correct response carries <b>+1</b> mark, and incorrect answers carry negative marking of <b>-0.25</b> marks.</li>
-                        <li>Tab switching or leaving the screen will result in penalties (1st time: -1 mark, 2nd time: Auto-submit).</li>
-                        <li>Click on <b>Save & Next</b> to record your answer and move forward. You can also bookmark questions using <b>Mark for Review</b>.</li>
-                        <li>Once submitted or when the timer expires, your performance card and analytical breakdown will be automatically generated and synced to the admin database.</li>
-                    </ul>
-                </div>
-                <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 10px; border-top: 1px solid var(--gray-border); padding-top: 15px;">
-                    <button class="btn btn-success" onclick="openReadyConfirmationModal()"><i class="fa-solid fa-play"></i> Start Test</button>
-                </div>
-            </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input id="studentEmail" type="email" placeholder="student@gmail.com">
         </div>
-    </div>
 
-    <!-- Ready Confirmation Modal -->
-    <div class="modal-overlay" id="ready-modal">
-        <div class="modal-card">
-            <div style="background: #0f172a; color: white; padding: 15px 20px; font-weight: 600; font-size: 0.95rem;">Confirmation Required</div>
-            <div style="padding: 20px; font-size: 0.9rem; color: #334155; line-height: 1.5;">
-                Are you ready to begin the test? Once started, the timer cannot be paused.
-            </div>
-            <div style="padding: 12px 20px; display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; border-top: 1px solid var(--gray-border);">
-                <button class="btn btn-outline" onclick="closeReadyModal()">Cancel</button>
-                <button class="btn btn-success" onclick="startExamPortalSession()">I am Ready, Start</button>
-            </div>
+        <div class="form-group">
+            <label>Roll Number</label>
+            <input id="studentRoll" type="text" placeholder="Enter roll number">
         </div>
+
+        <button class="primary-btn" id="startBtn">
+            <i class="fa-solid fa-play"></i>
+            Start Test
+        </button>
+
     </div>
 
-    <!-- EXAM INTERFACE -->
-    <div id="slide-exam" class="view-section">
-        <header>
-            <div class="header-left">
-                <h1>Assessment Portal</h1>
+</section>
+
+
+<!-- ================= LOADING ================= -->
+
+<section id="loadingScreen" class="hidden">
+
+    <div class="loading-card">
+
+        <div class="spinner"></div>
+
+        <h3 id="loadingTitle">
+            Loading Test...
+        </h3>
+
+        <p id="loadingText"
+           style="color:#64748b;font-size:13px;margin-top:8px;">
+            Please wait.
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- ================= EXAM ================= -->
+
+<section id="examScreen" class="hidden">
+
+    <header class="exam-header">
+
+        <div>
+            <div class="student-name" id="headerStudentName">
+                Student
             </div>
-            <div class="header-right">
-                <div class="timer-container">
-                    <i class="fa-regular fa-clock"></i>
-                    <span id="time-left">00:00:00</span>
-                </div>
-            </div>
-        </header>
 
-        <div class="workspace">
-            <div class="exam-main-panel">
-                
-                <div class="question-card-box">
-                    <div class="question-header">
-                        <div class="q-meta" id="question-indicator">Question No. 1</div>
-                        <div class="marks-info">
-                            <span class="positive-mark">+1 Mark</span>
-                            <span class="negative-mark">-0.25 Mark</span>
-                        </div>
-                    </div>
-                    <div class="question-body">
-                        <div class="question-text" id="question-content">Loading question text...</div>
-                        <div class="options-list" id="options-container"></div>
-                    </div>
-                </div>
-
-                <div class="question-footer-btns">
-                    <div class="footer-left-btns">
-                        <button class="btn btn-outline" onclick="markForReviewAndNext()"><i class="fa-solid fa-bookmark"></i> Review</button>
-                        <button class="btn btn-outline" onclick="clearResponse()">Clear</button>
-                    </div>
-                    <div class="footer-right-btns" style="justify-content: flex-end;">
-                        <button class="btn btn-warning" onclick="saveAndNext()"><i class="fa-solid fa-arrow-right"></i> Save & Next</button>
-                    </div>
-                </div>
-
-                <div class="sidebar-section">
-                    <div class="palette-header">Question Palette</div>
-                    <div class="status-legend">
-                        <div class="legend-item"><div class="legend-box bg-answered" id="leg-ans">0</div> Ans</div>
-                        <div class="legend-item"><div class="legend-box bg-not-answered" id="leg-not-ans">0</div> Not Ans</div>
-                        <div class="legend-item"><div class="legend-box bg-not-visited" id="leg-not-vis">0</div> Unvisited</div>
-                        <div class="legend-item"><div class="legend-box bg-marked" id="leg-marked">0</div> Review</div>
-                    </div>
-                    <div class="palette-grid" id="palette-grid"></div>
-                    <button class="submit-exam-btn" onclick="openSubmitModal()">Submit Test</button>
-                </div>
-
+            <div class="test-title" id="headerTestTitle">
+                Physics Test
             </div>
         </div>
-    </div>
 
-    <!-- PERFORMANCE DASHBOARD & ANALYSIS -->
-    <div id="slide-dashboard" class="view-section">
-        <header>
-            <div class="header-left">
-                <h1>Performance Scorecard</h1>
-            </div>
-        </header>
-        <div class="dashboard-container">
-            <div class="dash-header-card">
-                <div>
-                    <h2 style="font-size: 1.1rem; color: #0f172a;">Assessment Result</h2>
-                    <p style="font-size: 0.8rem; color: #64748b;">Evaluation Completed</p>
-                </div>
-                <div style="background: #d1fae5; color: var(--success); padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.8rem;">Submitted</div>
-            </div>
-
-            <div class="dash-stats-grid">
-                <div class="stat-box"><span>Total Score</span><span id="stat-score">0 / 0</span></div>
-                <div class="stat-box"><span>Correct / Incorrect</span><span id="stat-correct-count" style="font-size: 1.2rem;">0 / 0</span></div>
-                <div class="stat-box"><span>Penalty</span><span id="stat-penalty" style="color: var(--danger);">0</span></div>
-                <div class="stat-box"><span>Accuracy</span><span id="stat-accuracy">0%</span></div>
-            </div>
-
-            <div class="analysis-section">
-                <h3>Detailed Question Analysis</h3>
-                <div id="detailed-analysis-container" style="display: flex; flex-direction: column; gap: 15px;"></div>
-            </div>
-
-            <div class="feedback-section">
-                <h3>Feedback & Queries</h3>
-                <div>
-                    <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 8px;">Rate Your Experience <span style="color: var(--danger);">* (Mandatory)</span></label>
-                    <div class="star-rating" id="star-rating-box">
-                        <i class="fa-solid fa-star" onclick="setRating(1)"></i>
-                        <i class="fa-solid fa-star" onclick="setRating(2)"></i>
-                        <i class="fa-solid fa-star" onclick="setRating(3)"></i>
-                        <i class="fa-solid fa-star" onclick="setRating(4)"></i>
-                        <i class="fa-solid fa-star" onclick="setRating(5)"></i>
-                    </div>
-                </div>
-                <div class="query-box">
-                    <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 8px;">Doubts & Queries <span style="color: #64748b; font-weight: normal;">(Optional)</span></label>
-                    <textarea id="user-query-text" placeholder="Write any query or feedback here..."></textarea>
-                </div>
-                <button class="btn btn-success" style="align-self: flex-start; padding: 12px 20px;" onclick="submitFinalFeedbackData()">Save Data to Admin Storage</button>
-            </div>
+        <div class="timer" id="timer">
+            00:00
         </div>
-    </div>
 
-    <!-- Thank You Notice Modal -->
-    <div class="modal-overlay" id="thankyou-modal">
-        <div class="modal-card">
-            <div style="background: var(--success); color: white; padding: 15px 20px; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-circle-check"></i> Thank You Note
+    </header>
+
+
+    <main class="exam-container">
+
+        <div class="progress-area">
+
+            <div class="progress-top">
+
+                <span id="questionCounter">
+                    Question 1 / 10
+                </span>
+
+                <span id="answeredCounter">
+                    Answered: 0
+                </span>
+
             </div>
-            <div style="padding: 20px; font-size: 0.9rem; color: #334155; line-height: 1.6;">
-                Thank you for completing the assessment!<br>
-                Your feedback and responses have been successfully stored.<br>
-                This session is now closed successfully.
+
+            <div class="progress-bg">
+
+                <div
+                    id="progressFill"
+                    class="progress-fill">
+                </div>
+
             </div>
-            <div style="padding: 12px 20px; display: flex; justify-content: flex-end; background: #f8fafc; border-top: 1px solid var(--gray-border);">
-                <button class="btn btn-success" onclick="lockWebsiteSession()">OK</button>
-            </div>
+
         </div>
-    </div>
 
-    <!-- Submit Modal Confirmation -->
-    <div class="modal-overlay" id="submit-modal">
-        <div class="modal-card">
-            <div style="background: #0f172a; color: white; padding: 15px 20px; font-weight: 600; font-size: 0.95rem;">Confirm Exam Submission</div>
-            <div style="padding: 20px; font-size: 0.9rem; color: #334155;">
-                Are you sure you want to submit your test?
+
+        <div class="question-card">
+
+            <div
+                id="questionNumber"
+                class="question-number">
+                QUESTION 1
             </div>
-            <div style="padding: 12px 20px; display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; border-top: 1px solid var(--gray-border);">
-                <button class="btn btn-outline" onclick="closeSubmitModal()">Resume</button>
-                <button class="btn btn-success" onclick="executeFinalSubmit()">Yes, Submit</button>
+
+            <div
+                id="questionText"
+                class="question-text">
+                Loading...
             </div>
+
+            <div
+                id="options"
+                class="options">
+            </div>
+
         </div>
+
+
+        <div class="navigation">
+
+            <button
+                id="prevBtn"
+                class="nav-btn prev-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+                Previous
+            </button>
+
+            <button
+                id="nextBtn"
+                class="nav-btn next-btn">
+                Save & Next
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+
+            <button
+                id="submitBtn"
+                class="nav-btn submit-btn hidden">
+                <i class="fa-solid fa-check"></i>
+                Submit Test
+            </button>
+
+        </div>
+
+    </main>
+
+</section>
+
+
+<!-- ================= RESULT ================= -->
+
+<section id="resultScreen" class="hidden">
+
+    <div class="result-card">
+
+        <div class="success-icon">
+            <i class="fa-solid fa-check"></i>
+        </div>
+
+        <h2>Test Submitted</h2>
+
+        <p class="result-sub">
+            Your response has been recorded.
+        </p>
+
+        <div class="result-grid">
+
+            <div class="result-item">
+                <span>Score</span>
+                <strong id="resultScore">0</strong>
+            </div>
+
+            <div class="result-item">
+                <span>Total Marks</span>
+                <strong id="resultTotal">0</strong>
+            </div>
+
+            <div class="result-item">
+                <span>Correct</span>
+                <strong id="resultCorrect">0</strong>
+            </div>
+
+            <div class="result-item">
+                <span>Incorrect</span>
+                <strong id="resultIncorrect">0</strong>
+            </div>
+
+            <div class="result-item">
+                <span>Unattempted</span>
+                <strong id="resultUnattempted">0</strong>
+            </div>
+
+            <div class="result-item">
+                <span>Accuracy</span>
+                <strong id="resultAccuracy">0%</strong>
+            </div>
+
+        </div>
+
+        <div id="saveStatus" class="status success">
+            Result saved successfully.
+        </div>
+
     </div>
 
-    <script type="module">
-    /* =========================================================
-       FIREBASE FIRESTORE
-       ========================================================= */
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import {
-        getFirestore,
-        doc,
-        getDoc,
-        setDoc,
-        runTransaction,
-        collection,
-        getDocs
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+</section>
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
-        authDomain: "physics-test-series-405c7.firebaseapp.com",
-        projectId: "physics-test-series-405c7",
-        storageBucket: "physics-test-series-405c7.firebasestorage.app",
-        messagingSenderId: "758620061190",
-        appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
+
+<script type="module">
+
+/* =========================================================
+   FIREBASE
+========================================================= */
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc
+}
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+
+const firebaseConfig = {
+
+    apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
+
+    authDomain:
+        "physics-test-series-405c7.firebaseapp.com",
+
+    projectId:
+        "physics-test-series-405c7",
+
+    storageBucket:
+        "physics-test-series-405c7.firebasestorage.app",
+
+    messagingSenderId:
+        "758620061190",
+
+    appId:
+        "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
+
+};
+
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let student = null;
+
+let examConfig = null;
+
+let questions = [];
+
+let currentQuestion = 0;
+
+let answers = {};
+
+let timeLeft = 0;
+
+let timerInterval = null;
+
+let tabSwitches = 0;
+
+let copyAttempts = 0;
+
+let isSubmitting = false;
+
+let examStarted = false;
+
+
+/* =========================================================
+   DOM
+========================================================= */
+
+const loginScreen =
+    document.getElementById("loginScreen");
+
+const loadingScreen =
+    document.getElementById("loadingScreen");
+
+const examScreen =
+    document.getElementById("examScreen");
+
+const resultScreen =
+    document.getElementById("resultScreen");
+
+const warning =
+    document.getElementById("warning");
+
+
+/* =========================================================
+   UTILITY
+========================================================= */
+
+function showScreen(screen){
+
+    loginScreen.classList.add("hidden");
+    loadingScreen.classList.add("hidden");
+    examScreen.classList.add("hidden");
+    resultScreen.classList.add("hidden");
+
+    screen.classList.remove("hidden");
+}
+
+
+function showWarning(message){
+
+    document.getElementById("warningText")
+        .textContent = message;
+
+    warning.style.display = "block";
+
+    clearTimeout(window.warningTimeout);
+
+    window.warningTimeout =
+        setTimeout(() => {
+
+            warning.style.display = "none";
+
+        },5000);
+}
+
+
+function setLoading(title,text){
+
+    document.getElementById("loadingTitle")
+        .textContent = title;
+
+    document.getElementById("loadingText")
+        .textContent = text;
+
+}
+
+
+/* =========================================================
+   STUDENT LOGIN
+========================================================= */
+
+document.getElementById("startBtn")
+.addEventListener("click",startStudent);
+
+
+/*
+    First check existing student information.
+    This also allows compatibility with your old index.html
+    which stores student_info in sessionStorage.
+*/
+
+const oldStudent =
+    sessionStorage.getItem("student_info");
+
+if(oldStudent){
+
+    try{
+
+        const parsed =
+            JSON.parse(oldStudent);
+
+        if(
+            parsed &&
+            parsed.name &&
+            parsed.email
+        ){
+
+            document.getElementById("studentName")
+                .value = parsed.name;
+
+            document.getElementById("studentEmail")
+                .value = parsed.email;
+
+            document.getElementById("studentRoll")
+                .value = parsed.roll || "";
+
+        }
+
+    }catch(error){
+
+        console.warn(
+            "Old student data could not be read."
+        );
+
+    }
+
+}
+
+
+async function startStudent(){
+
+    const name =
+        document.getElementById("studentName")
+        .value.trim();
+
+    const email =
+        document.getElementById("studentEmail")
+        .value.trim()
+        .toLowerCase();
+
+    const roll =
+        document.getElementById("studentRoll")
+        .value.trim();
+
+
+    if(!name){
+
+        alert("Please enter your name.");
+        return;
+
+    }
+
+    if(!email || !email.includes("@")){
+
+        alert("Please enter a valid email.");
+        return;
+
+    }
+
+    if(!roll){
+
+        alert("Please enter your roll number.");
+        return;
+
+    }
+
+
+    student = {
+
+        name,
+        email,
+        roll
+
     };
 
-    const firebaseApp = initializeApp(firebaseConfig);
-    const db = getFirestore(firebaseApp);
 
-    /* =========================================================
-       EXAM STATE
-       ========================================================= */
-    let questionsData = [];
-    let currentQuestionIndex = 0;
-    let userResponses = [];
-    let visitStatus = [];
-    let totalSeconds = 1800;
-    let timerInterval = null;
-    let windowTimerInterval = null;
-    let currentRating = 0;
-    let activeAdminConfig = {};
-    let currentStudentEmail = "";
-    let currentStudentName = "";
-    let currentStudentRoll = "";
-    let testSubmitted = false;
-    let firebaseResultSaved = false;
-    let savingInProgress = false;
-    let tabSwitchCount = 0;
-    let copyPasteAttempts = 0;
-    let penaltiesApplied = 0;
-    let examStartedAt = null;
-    let examSubmittedAt = null;
+    sessionStorage.setItem(
+        "student_info",
+        JSON.stringify(student)
+    );
 
-    const defaultQuestions = [
-        {
-            q: "A particle moves in a straight line with deceleration proportional to its displacement. Its loss of kinetic energy is proportional to:",
-            options: ["x", "x^2", "ln(x)", "e^x"],
-            answer: 1
-        },
-        {
-            q: "The magnetic field at the center of a circular coil of radius R carrying current I is B. Magnetic field on axis at distance R is:",
-            options: ["B / 2", "B / 2√2", "B / 2√3", "B / 4"],
-            answer: 1
-        }
-    ];
 
-    /* =========================================================
-       HELPERS
-       ========================================================= */
-    function normalizeQuestion(q) {
-        if (!q) return { q: "", options: [], answer: 0 };
+    showScreen(loadingScreen);
 
-        let options = q.options || [];
-        if (!Array.isArray(options) && typeof options === "object") {
-            options = [options.A, options.B, options.C, options.D].filter(v => v !== undefined);
-        }
+    setLoading(
+        "Loading Test...",
+        "Connecting to the test database."
+    );
 
-        let answer = q.answer;
-        if (answer === undefined) answer = q.a;
-        if (answer === undefined) answer = q.correctAnswer;
 
-        if (typeof answer === "string") {
-            const upper = answer.trim().toUpperCase();
-            if (/^[ABCD]$/.test(upper)) answer = upper.charCodeAt(0) - 65;
-            else {
-                const numeric = Number(answer);
-                if (!Number.isNaN(numeric)) answer = numeric;
-            }
-        }
+    try{
 
-        answer = Number.isInteger(answer) ? answer : 0;
+        await loadExam();
 
-        return {
-            q: q.q ?? q.question ?? "",
-            options,
-            answer
-        };
-    }
+    }catch(error){
 
-    function getTestId() {
-        return String(
-            activeAdminConfig.testId ||
-            activeAdminConfig.examId ||
-            activeAdminConfig.id ||
-            localStorage.getItem("active_test_id") ||
-            "chapter-1-test"
+        console.error(error);
+
+        showScreen(loginScreen);
+
+        alert(
+            "Test load nahi ho saka.\n\n" +
+            "Firebase/Firestore configuration check karein.\n\n" +
+            error.message
         );
+
     }
 
-    function getTestName() {
-        return String(
-            activeAdminConfig.testName ||
-            activeAdminConfig.examName ||
-            activeAdminConfig.name ||
-            localStorage.getItem("active_test_name") ||
-            "Physics Assessment"
+}
+
+
+/* =========================================================
+   LOAD EXAM CONFIGURATION
+========================================================= */
+
+async function loadExam(){
+
+    /*
+       Admin panel will create:
+
+       examConfig/current
+    */
+
+    const configRef =
+        doc(db,"examConfig","current");
+
+    const configSnap =
+        await getDoc(configRef);
+
+
+    if(!configSnap.exists()){
+
+        /*
+          Development fallback.
+
+          Once Admin Panel is ready,
+          this fallback will no longer be needed.
+        */
+
+        throw new Error(
+            "No active test found in Firebase. " +
+            "Please configure the test from Admin Panel."
         );
+
     }
 
-    function safeId(value) {
-        return String(value || "student")
-            .trim()
-            .toLowerCase()
-            .replace(/[^a-z0-9_-]/g, "_")
-            .slice(0, 120);
-    }
 
-    function showToast(message, type = "error") {
-        const toast = document.getElementById("custom-toast");
-        const msg = document.getElementById("toast-message");
-        if (!toast || !msg) return;
+    examConfig =
+        configSnap.data();
 
-        msg.innerText = message;
-        toast.style.borderLeftColor =
-            type === "success" ? "var(--success)" :
-            type === "warning" ? "var(--warning)" :
-            "var(--danger)";
 
-        toast.classList.add("show");
-        setTimeout(() => toast.classList.remove("show"), 3500);
-    }
+    if(
+        examConfig.active === false
+    ){
 
-    function switchView(viewId) {
-        document.querySelectorAll(".view-section").forEach(el => el.classList.remove("active"));
-        const view = document.getElementById(viewId);
-        if (view) view.classList.add("active");
-    }
-
-    function isAdminSession() {
-        const savedAdmin = localStorage.getItem("persistent_admin_email") || "";
-        return (
-            localStorage.getItem("is_admin_logged_in") === "true" &&
-            currentStudentEmail.toLowerCase() === savedAdmin.toLowerCase()
+        throw new Error(
+            "The test is currently inactive."
         );
+
     }
 
-    function readExistingSecurityPenalty() {
-        const value = parseInt(localStorage.getItem("exam_security_penalties") || "0", 10);
-        return Number.isFinite(value) && value > 0 ? value : 0;
+
+    /* ================= QUESTIONS ================= */
+
+    /*
+       Admin will save questions in:
+
+       questions/current
+    */
+
+    const questionsRef =
+        doc(db,"questions","current");
+
+    const questionsSnap =
+        await getDoc(questionsRef);
+
+
+    if(!questionsSnap.exists()){
+
+        throw new Error(
+            "Questions not found in Firebase."
+        );
+
     }
 
-    function updateSecurityPenalty() {
-        penaltiesApplied = Math.max(penaltiesApplied, readExistingSecurityPenalty());
-        localStorage.setItem("exam_security_penalties", String(penaltiesApplied));
+
+    const questionData =
+        questionsSnap.data();
+
+
+    if(
+        !Array.isArray(questionData.questions)
+        ||
+        questionData.questions.length === 0
+    ){
+
+        throw new Error(
+            "No questions are available."
+        );
+
     }
 
-    function getAnsweredCount() {
-        return userResponses.filter(v => v !== null && v !== undefined).length;
+
+    questions =
+        questionData.questions
+        .map(normalizeQuestion)
+        .filter(q =>
+            q.question &&
+            q.options.length >= 2 &&
+            q.answer
+        );
+
+
+    if(questions.length === 0){
+
+        throw new Error(
+            "Question format is invalid."
+        );
+
     }
 
-    /* =========================================================
-       LOCAL BACKUP
-       ========================================================= */
-    function saveLocalBackup(payload) {
-        try {
-            const keys = [
-                "admin_exam_submissions",
-                "exam_results",
-                "all_student_results",
-                "student_submissions"
+
+    /*
+       Student question limit.
+
+       Example:
+       pool = 50
+       studentLimit = 20
+
+       Student gets 20 random questions.
+    */
+
+    const limit =
+        Number(
+            examConfig.studentQuestionLimit
+        ) || questions.length;
+
+
+    questions =
+        shuffle([...questions])
+        .slice(
+            0,
+            Math.min(limit,questions.length)
+        );
+
+
+    /* ================= TIME ================= */
+
+    const duration =
+        Number(
+            examConfig.examDurationMinutes
+        ) || 60;
+
+
+    timeLeft =
+        duration * 60;
+
+
+    /* ================= HEADER ================= */
+
+    document.getElementById(
+        "headerStudentName"
+    ).textContent =
+        `${student.name} • ${student.roll}`;
+
+
+    document.getElementById(
+        "headerTestTitle"
+    ).textContent =
+        examConfig.testTitle ||
+        "Physics Test Series";
+
+
+    /* ================= START ================= */
+
+    showScreen(examScreen);
+
+    examStarted = true;
+
+    renderQuestion();
+
+    startTimer();
+
+}
+
+
+/* =========================================================
+   QUESTION NORMALIZER
+========================================================= */
+
+function normalizeQuestion(item){
+
+    let options = [];
+
+    if(Array.isArray(item.options)){
+
+        options =
+            item.options
+            .filter(Boolean);
+
+    }
+    else if(item.options){
+
+        options = [
+
+            item.options.A,
+            item.options.B,
+            item.options.C,
+            item.options.D
+
+        ].filter(Boolean);
+
+    }
+
+
+    let answer =
+        item.answer ?? item.a ?? item.correctAnswer;
+
+
+    /*
+       If answer is A/B/C/D,
+       convert it to actual option text.
+    */
+
+    if(
+        typeof answer === "string" &&
+        ["A","B","C","D"]
+        .includes(answer.toUpperCase())
+    ){
+
+        const index =
+            {
+                A:0,
+                B:1,
+                C:2,
+                D:3
+            }[
+                answer.toUpperCase()
             ];
 
-            keys.forEach(key => {
-                let records = [];
-                try {
-                    records = JSON.parse(localStorage.getItem(key) || "[]");
-                    if (!Array.isArray(records)) records = [];
-                } catch {
-                    records = [];
-                }
+        answer =
+            options[index];
 
-                const index = records.findIndex(r =>
-                    r.email === payload.email && r.testId === payload.testId
-                );
-
-                if (index >= 0) records[index] = payload;
-                else records.push(payload);
-
-                localStorage.setItem(key, JSON.stringify(records));
-            });
-
-            localStorage.setItem("latest_exam_submission", JSON.stringify(payload));
-        } catch (e) {
-            console.warn("Local backup failed:", e);
-        }
     }
 
-    /* =========================================================
-       EMAIL LOGIN & ADMIN SYNC (TEST STEP & TIMING CONTROL)
-       ========================================================= */
-    window.onload = async function () {
-        // Fetch Admin Settings / Test Configurations from Firebase or LocalStorage
-        await syncAdminConfigFromCloud();
 
-        const savedAdmin = localStorage.getItem("persistent_admin_email");
+    return {
 
-        if (
-            localStorage.getItem("is_admin_logged_in") === "true" &&
-            savedAdmin
-        ) {
-            currentStudentEmail = savedAdmin;
-            localStorage.setItem("current_test_user_email", savedAdmin);
-            checkTestScheduleWindow();
-        } else {
-            switchView("slide-email-login");
-        }
+        id:
+            item.id ||
+            crypto.randomUUID(),
+
+        question:
+            item.question ||
+            item.q ||
+            "",
+
+        options,
+
+        answer:
+
+            String(answer || "").trim()
+
     };
 
-    async function syncAdminConfigFromCloud() {
-        try {
-            const configRef = doc(db, "adminConfig", "settings");
-            const configSnap = await getDoc(configRef);
-            if (configSnap.exists()) {
-                activeAdminConfig = configSnap.data();
-                localStorage.setItem("admin_test_config", JSON.stringify(activeAdminConfig));
-            }
-        } catch (e) {
-            console.log("Using local configuration fallback.");
-        }
+}
 
-        const adminSettingsStr =
-            localStorage.getItem("admin_test_config") ||
-            localStorage.getItem("admin_settings") ||
-            localStorage.getItem("test_settings");
 
-        try {
-            if (adminSettingsStr) activeAdminConfig = JSON.parse(adminSettingsStr);
-        } catch {
-            activeAdminConfig = {};
-        }
-    }
+/* =========================================================
+   RANDOM SHUFFLE
+========================================================= */
 
-    window.verifyAndProceedEmail = async function () {
-        const input = document.getElementById("student-email-input");
-        const emailInput = input.value.trim().toLowerCase();
+function shuffle(array){
 
-        if (!emailInput || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput)) {
-            showToast("Please enter a valid email address.");
-            return;
-        }
+    for(
+        let i=array.length-1;
+        i>0;
+        i--
+    ){
 
-        // Check if Email Verification / Authorization is Enabled in Admin Config
-        await syncAdminConfigFromCloud();
-        
-        const allowedEmails = activeAdminConfig.allowedEmails || activeAdminConfig.authorizedEmails;
-        if (allowedEmails && Array.isArray(allowedEmails) && allowedEmails.length > 0) {
-            const isAuthorized = allowedEmails.map(e => e.toLowerCase()).includes(emailInput);
-            const savedAdmin = (localStorage.getItem("persistent_admin_email") || "").toLowerCase();
-            
-            if (!isAuthorized && emailInput !== savedAdmin) {
-                showToast("Your email is not authorized by the administrator to take this test.");
-                return;
-            }
-        }
-
-        currentStudentEmail = emailInput;
-        localStorage.setItem("current_test_user_email", emailInput);
-        checkTestScheduleWindow();
-    };
-
-    /* =========================================================
-       SCHEDULE & TIMER CONTROLS
-       ========================================================= */
-    function checkTestScheduleWindow() {
-        const savedAdmin = localStorage.getItem("persistent_admin_email") || "";
-        const isAdmin =
-            localStorage.getItem("is_admin_logged_in") === "true" &&
-            currentStudentEmail.toLowerCase() === savedAdmin.toLowerCase();
-
-        if (!isAdmin && activeAdminConfig.startTime && activeAdminConfig.endTime) {
-            const now = Date.now();
-            const startTime = new Date(activeAdminConfig.startTime).getTime();
-            const endTime = new Date(activeAdminConfig.endTime).getTime();
-
-            if (now < startTime) {
-                document.getElementById("notice-title").innerText = "Test Not Started Yet";
-                document.getElementById("notice-desc").innerText =
-                    `Scheduled Start Time: ${new Date(activeAdminConfig.startTime).toLocaleString()}.`;
-                switchView("slide-schedule-notice");
-                return false;
-            }
-
-            if (now > endTime) {
-                document.getElementById("notice-title").innerText = "Test Window Has Ended";
-                document.getElementById("notice-desc").innerText =
-                    `The scheduled test window ended at ${new Date(activeAdminConfig.endTime).toLocaleString()}.`;
-                switchView("slide-schedule-notice");
-                return false;
-            }
-        }
-
-        switchView("slide-instructions");
-        return true;
-    }
-
-    /* =========================================================
-       READY MODAL
-       ========================================================= */
-    window.openReadyConfirmationModal = function () {
-        document.getElementById("ready-modal").style.display = "flex";
-    };
-
-    window.closeReadyModal = function () {
-        document.getElementById("ready-modal").style.display = "none";
-    };
-
-    /* =========================================================
-       START EXAM (DYNAMIC QUESTIONS & TIMING CONTROL)
-       ========================================================= */
-    window.startExamPortalSession = async function () {
-        closeReadyModal();
-
-        if (!currentStudentEmail) {
-            showToast("Candidate email is missing. Please verify again.");
-            switchView("slide-email-login");
-            return;
-        }
-
-        // Load Questions pool from Firebase or LocalStorage
-        try {
-            const qRef = doc(db, "questionsPool", getTestId());
-            const qSnap = await getDoc(qRef);
-            if (qSnap.exists() && qSnap.data().questions) {
-                questionsData = qSnap.data().questions;
-            }
-        } catch (e) {
-            console.log("Firebase question fetch fallback to local.");
-        }
-
-        if (!questionsData || questionsData.length === 0) {
-            let adminQuestions =
-                localStorage.getItem("admin_live_questions") ||
-                localStorage.getItem("admin_questions") ||
-                localStorage.getItem("questions");
-
-            if (adminQuestions) {
-                try {
-                    questionsData = JSON.parse(adminQuestions);
-                } catch {
-                    questionsData = defaultQuestions;
-                }
-            } else {
-                try {
-                    const res = await fetch("chapter1.json", { cache: "no-store" });
-                    if (res.ok) questionsData = await res.json();
-                    else questionsData = defaultQuestions;
-                } catch {
-                    questionsData = defaultQuestions;
-                }
-            }
-        }
-
-        if (!Array.isArray(questionsData) || questionsData.length === 0) {
-            questionsData = defaultQuestions;
-        }
-
-        questionsData = questionsData.map(normalizeQuestion);
-
-        if (activeAdminConfig.questionCount && !isNaN(activeAdminConfig.questionCount)) {
-            const limit = parseInt(activeAdminConfig.questionCount, 10);
-            if (limit > 0 && limit < questionsData.length) {
-                questionsData = questionsData.slice(0, limit);
-            }
-        }
-
-        // Apply Dynamic Test Duration Controlled from Admin Configuration
-        if (activeAdminConfig.testDuration && !isNaN(activeAdminConfig.testDuration)) {
-            totalSeconds = parseInt(activeAdminConfig.testDuration, 10) * 60;
-        } else if (activeAdminConfig.duration && !isNaN(activeAdminConfig.duration)) {
-            totalSeconds = parseInt(activeAdminConfig.duration, 10) * 60;
-        } else {
-            totalSeconds = questionsData.length * 120;
-        }
-
-        userResponses = new Array(questionsData.length).fill(null);
-        visitStatus = new Array(questionsData.length).fill("not-visited");
-        currentQuestionIndex = 0;
-        visitStatus[0] = "not-answered";
-
-        tabSwitchCount = 0;
-        copyPasteAttempts = 0;
-        penaltiesApplied = 0;
-        localStorage.setItem("exam_security_penalties", "0");
-
-        examStartedAt = new Date().toISOString();
-        testSubmitted = false;
-        firebaseResultSaved = false;
-
-        switchView("slide-exam");
-        renderQuestion();
-        renderPalette();
-        startTimer();
-        startWindowEndWatcher();
-    };
-
-    function startWindowEndWatcher() {
-        clearInterval(windowTimerInterval);
-
-        windowTimerInterval = setInterval(() => {
-            const adminSettingsStr =
-                localStorage.getItem("admin_test_config") ||
-                localStorage.getItem("admin_settings");
-
-            if (!adminSettingsStr || isAdminSession()) return;
-
-            try {
-                const config = JSON.parse(adminSettingsStr);
-                if (config.endTime && Date.now() >= new Date(config.endTime).getTime()) {
-                    clearInterval(windowTimerInterval);
-                    showToast("The scheduled test window has ended. Auto-submitting exam.", "warning");
-                    executeFinalSubmit(true);
-                }
-            } catch {}
-        }, 5000);
-    }
-
-    /* =========================================================
-       QUESTION UI
-       ========================================================= */
-    function renderQuestion() {
-        if (!questionsData.length) return;
-
-        const qData = questionsData[currentQuestionIndex];
-
-        document.getElementById("question-indicator").innerText =
-            `Q. ${currentQuestionIndex + 1} of ${questionsData.length}`;
-
-        document.getElementById("question-content").innerText = qData.q || "";
-
-        const optionsContainer = document.getElementById("options-container");
-        optionsContainer.innerHTML = "";
-
-        qData.options.forEach((opt, idx) => {
-            const item = document.createElement("div");
-            item.className = "option-item";
-
-            const radio = document.createElement("input");
-            radio.type = "radio";
-            radio.name = "exam_option";
-            radio.id = `opt_${idx}`;
-            radio.value = String(idx);
-            radio.checked = userResponses[currentQuestionIndex] === idx;
-
-            radio.onclick = e => {
-                e.stopPropagation();
-                selectOption(idx);
-            };
-
-            const label = document.createElement("label");
-            label.htmlFor = `opt_${idx}`;
-            label.innerHTML = `<b>(${String.fromCharCode(65 + idx)})</b> ${opt}`;
-
-            item.appendChild(radio);
-            item.appendChild(label);
-
-            item.onclick = () => {
-                radio.checked = true;
-                selectOption(idx);
-            };
-
-            optionsContainer.appendChild(item);
-        });
-
-        if (visitStatus[currentQuestionIndex] === "not-visited") {
-            visitStatus[currentQuestionIndex] = "not-answered";
-        }
-
-        renderPalette();
-    }
-
-    window.selectOption = function (idx) {
-        userResponses[currentQuestionIndex] = idx;
-    };
-
-    window.saveAndNext = function () {
-        const selected = userResponses[currentQuestionIndex];
-
-        visitStatus[currentQuestionIndex] =
-            selected !== null && selected !== undefined
-                ? "answered"
-                : "not-answered";
-
-        if (currentQuestionIndex < questionsData.length - 1) {
-            currentQuestionIndex++;
-
-            if (visitStatus[currentQuestionIndex] === "not-visited") {
-                visitStatus[currentQuestionIndex] = "not-answered";
-            }
-
-            renderQuestion();
-        } else {
-            renderPalette();
-        }
-    };
-
-    window.markForReviewAndNext = function () {
-        visitStatus[currentQuestionIndex] = "marked";
-
-        if (currentQuestionIndex < questionsData.length - 1) {
-            currentQuestionIndex++;
-
-            if (visitStatus[currentQuestionIndex] === "not-visited") {
-                visitStatus[currentQuestionIndex] = "not-answered";
-            }
-
-            renderQuestion();
-        } else {
-            renderPalette();
-        }
-    };
-
-    window.clearResponse = function () {
-        userResponses[currentQuestionIndex] = null;
-        visitStatus[currentQuestionIndex] = "not-answered";
-        renderQuestion();
-    };
-
-    window.jumpToQuestion = function (index) {
-        if (index < 0 || index >= questionsData.length) return;
-
-        currentQuestionIndex = index;
-
-        if (visitStatus[currentQuestionIndex] === "not-visited") {
-            visitStatus[currentQuestionIndex] = "not-answered";
-        }
-
-        renderQuestion();
-    };
-
-    function renderPalette() {
-        const grid = document.getElementById("palette-grid");
-        if (!grid) return;
-
-        grid.innerHTML = "";
-
-        const counts = {
-            answered: 0,
-            notAnswered: 0,
-            notVisited: 0,
-            marked: 0
-        };
-
-        questionsData.forEach((q, idx) => {
-            const box = document.createElement("div");
-            box.className = "q-box";
-            box.innerText = idx + 1;
-
-            const status = visitStatus[idx];
-
-            if (status === "answered") {
-                box.classList.add("answered");
-                counts.answered++;
-            } else if (status === "marked") {
-                box.classList.add("marked");
-                counts.marked++;
-            } else if (status === "not-answered") {
-                box.classList.add("not-answered");
-                counts.notAnswered++;
-            } else {
-                counts.notVisited++;
-            }
-
-            if (idx === currentQuestionIndex) box.classList.add("current");
-
-            box.onclick = () => window.jumpToQuestion(idx);
-            grid.appendChild(box);
-        });
-
-        document.getElementById("leg-ans").innerText = counts.answered;
-        document.getElementById("leg-not-ans").innerText = counts.notAnswered;
-        document.getElementById("leg-not-vis").innerText = counts.notVisited;
-        document.getElementById("leg-marked").innerText = counts.marked;
-    }
-
-    /* =========================================================
-       TIMER
-       ========================================================= */
-    function startTimer() {
-        clearInterval(timerInterval);
-
-        timerInterval = setInterval(() => {
-            if (testSubmitted) return;
-
-            if (totalSeconds > 0) {
-                totalSeconds--;
-
-                const hours = Math.floor(totalSeconds / 3600);
-                const minutes = Math.floor((totalSeconds % 3600) / 60);
-                const seconds = totalSeconds % 60;
-
-                document.getElementById("time-left").innerText =
-                    `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-            } else {
-                clearInterval(timerInterval);
-                showToast("Time is up! Your test is automatically submitting.", "warning");
-                executeFinalSubmit(true);
-            }
-        }, 1000);
-    }
-
-    /* =========================================================
-       SUBMIT MODAL
-       ========================================================= */
-    window.openSubmitModal = function () {
-        if (testSubmitted || savingInProgress) return;
-        document.getElementById("submit-modal").style.display = "flex";
-    };
-
-    window.closeSubmitModal = function () {
-        document.getElementById("submit-modal").style.display = "none";
-    };
-
-    window.executeFinalSubmit = async function (autoSubmit = false) {
-        if (testSubmitted || savingInProgress) return;
-
-        if (!autoSubmit) {
-            closeSubmitModal();
-        }
-
-        clearInterval(timerInterval);
-        clearInterval(windowTimerInterval);
-
-        testSubmitted = true;
-        savingInProgress = true;
-        examSubmittedAt = new Date().toISOString();
-
-        updateSecurityPenalty();
-
-        buildPerformanceDashboard();
-        switchView("slide-dashboard");
-
-        const payload = buildSubmissionPayload();
-
-        saveLocalBackup(payload);
-
-        try {
-            await saveResultToFirebase(payload);
-            firebaseResultSaved = true;
-            showToast("Result successfully synced to admin database.", "success");
-        } catch (error) {
-            console.error("Firebase result save error:", error);
-            firebaseResultSaved = false;
-            testSubmitted = false;
-            showToast("Result is shown locally, but Firebase sync failed. Please use Save Data to retry.", "warning");
-        } finally {
-            savingInProgress = false;
-        }
-    };
-
-    /* =========================================================
-       RESULT CALCULATION
-       ========================================================= */
-    function calculateResult() {
-        let correctCount = 0;
-        let incorrectCount = 0;
-        let attemptedCount = 0;
-        let unattemptedCount = 0;
-
-        const questionResults = [];
-
-        questionsData.forEach((q, idx) => {
-            const userAns = userResponses[idx];
-            const attempted = userAns !== null && userAns !== undefined;
-            const correctAnsIdx = Number(q.answer);
-
-            let status = "unattempted";
-
-            if (attempted) {
-                attemptedCount++;
-
-                if (userAns === correctAnsIdx) {
-                    correctCount++;
-                    status = "correct";
-                } else {
-                    incorrectCount++;
-                    status = "incorrect";
-                }
-            } else {
-                unattemptedCount++;
-            }
-
-            const opts = q.options || [];
-
-            questionResults.push({
-                questionNumber: idx + 1,
-                question: q.q || "",
-                options: opts,
-                selectedOptionIndex: attempted ? userAns : null,
-                selectedAnswer: attempted ? (opts[userAns] ?? null) : null,
-                correctOptionIndex: correctAnsIdx,
-                correctAnswer: opts[correctAnsIdx] ?? null,
-                status
-            });
-        });
-
-        const negativeMarks = Number((incorrectCount * 0.25).toFixed(2));
-        const securityPenalty = Number(penaltiesApplied || 0);
-        const rawScore = correctCount - negativeMarks - securityPenalty;
-        const finalScore = Number(Math.max(0, rawScore).toFixed(2));
-        const totalMarks = questionsData.length;
-        const accuracy = attemptedCount > 0
-            ? Number(((correctCount / attemptedCount) * 100).toFixed(2))
-            : 0;
-
-        return {
-            totalQuestions: questionsData.length,
-            totalMarks,
-            attempted: attemptedCount,
-            unattempted: unattemptedCount,
-            correct: correctCount,
-            incorrect: incorrectCount,
-            accuracy,
-            negativeMarks,
-            securityPenalty,
-            penaltiesApplied: securityPenalty,
-            finalScore,
-            questionResults
-        };
-    }
-
-    function buildSubmissionPayload() {
-        const result = calculateResult();
-
-        const answersObject = {};
-        userResponses.forEach((answer, index) => {
-            answersObject[String(index)] = answer;
-        });
-
-        const scoreString = `${result.finalScore}/${result.totalMarks}`;
-
-        return {
-            name: currentStudentName || currentStudentEmail,
-            email: currentStudentEmail,
-            roll: currentStudentRoll || "",
-            testId: getTestId(),
-            testName: getTestName(),
-            score: scoreString,
-            finalScore: result.finalScore,
-            totalMarks: result.totalMarks,
-            totalQuestions: result.totalQuestions,
-            attempted: result.attempted,
-            unattempted: result.unattempted,
-            correct: result.correct,
-            incorrect: result.incorrect,
-            accuracy: result.accuracy,
-            negativeMarks: result.negativeMarks,
-            tabSwitches: tabSwitchCount,
-            copiesAttempted: copyPasteAttempts,
-            penaltiesApplied: result.penaltiesApplied,
-            securityPenalty: result.securityPenalty,
-            answers: answersObject,
-            questionResults: result.questionResults,
-            examStartedAt,
-            submittedAt: examSubmittedAt || new Date().toISOString(),
-            submittedTimestamp: Date.now(),
-            rating: null,
-            query: ""
-        };
-    }
-
-    /* =========================================================
-       FIREBASE RESULT SAVE
-       ========================================================= */
-    async function saveResultToFirebase(payload) {
-        const resultId = `${safeId(payload.email)}__${safeId(payload.testId)}`;
-        const resultRef = doc(db, "results", resultId);
-
-        await runTransaction(db, async transaction => {
-            const existing = await transaction.get(resultRef);
-
-            if (existing.exists()) {
-                const existingData = existing.data();
-                if (existingData.submissionStatus === "submitted") {
-                    throw new Error("ALREADY_SUBMITTED");
-                }
-            }
-
-            transaction.set(
-                resultRef,
-                {
-                    ...payload,
-                    submissionStatus: "submitted",
-                    resultId,
-                    firebaseSavedAt: new Date().toISOString()
-                },
-                { merge: true }
+        const j =
+            Math.floor(
+                Math.random()*(i+1)
             );
-        });
 
-        return resultId;
+        [
+            array[i],
+            array[j]
+        ] =
+        [
+            array[j],
+            array[i]
+        ];
+
     }
 
-    async function mergeFeedbackToFirebase(feedback) {
-        const resultId = `${safeId(currentStudentEmail)}__${safeId(getTestId())}`;
-        const resultRef = doc(db, "results", resultId);
+    return array;
 
-        const existing = await getDoc(resultRef);
+}
 
-        if (!existing.exists()) {
-            const payload = buildSubmissionPayload();
 
-            await setDoc(resultRef, {
-                ...payload,
-                ...feedback,
-                submissionStatus: "submitted",
-                resultId,
-                firebaseSavedAt: new Date().toISOString(),
-                feedbackSavedAt: new Date().toISOString()
-            }, { merge: true });
+/* =========================================================
+   RENDER QUESTION
+========================================================= */
 
-            return;
-        }
+function renderQuestion(){
 
-        await setDoc(resultRef, {
-            ...feedback,
-            feedbackSavedAt: new Date().toISOString()
-        }, { merge: true });
-    }
+    if(!questions.length)
+        return;
 
-    /* =========================================================
-       PERFORMANCE DASHBOARD
-       ========================================================= */
-    function buildPerformanceDashboard() {
-        const result = calculateResult();
 
-        document.getElementById("stat-score").innerText =
-            `${result.finalScore.toFixed(2)} / ${result.totalMarks}`;
+    const q =
+        questions[currentQuestion];
 
-        document.getElementById("stat-correct-count").innerText =
-            `${result.correct} / ${result.incorrect}`;
 
-        document.getElementById("stat-penalty").innerText =
-            `-${(result.negativeMarks + result.securityPenalty).toFixed(2)}`;
+    document.getElementById(
+        "questionNumber"
+    ).textContent =
+        `QUESTION ${currentQuestion+1}`;
 
-        document.getElementById("stat-accuracy").innerText =
-            `${result.accuracy}%`;
 
-        const analysisContainer =
-            document.getElementById("detailed-analysis-container");
+    document.getElementById(
+        "questionText"
+    ).textContent =
+        q.question;
 
-        analysisContainer.innerHTML = "";
 
-        result.questionResults.forEach(item => {
-            const isCorrect = item.status === "correct";
-            const answerStyle = isCorrect
-                ? "color: var(--success); font-weight: 700;"
-                : "color: var(--danger); font-weight: 700;";
+    document.getElementById(
+        "questionCounter"
+    ).textContent =
+        `Question ${currentQuestion+1} / ${questions.length}`;
 
-            const userAnsText = item.selectedAnswer === null
-                ? "Not Answered"
-                : `(${String.fromCharCode(65 + item.selectedOptionIndex)}) ${item.selectedAnswer}`;
 
-            const correctAnsText =
-                `(${String.fromCharCode(65 + item.correctOptionIndex)}) ${item.correctAnswer}`;
+    const answered =
+        Object.keys(answers).length;
 
-            const box = document.createElement("div");
-            box.className = "analysis-item";
 
-            box.innerHTML = `
-                <p>Q${item.questionNumber}: ${item.question}</p>
-                <div style="display:flex;flex-direction:column;gap:4px;font-size:0.85rem;">
-                    <span>Your Answer:
-                        <span style="${answerStyle}">${userAnsText}</span>
-                    </span>
-                    <span style="color:var(--success);">
-                        Correct Answer: <b>${correctAnsText}</b>
-                    </span>
-                    <span style="font-size:0.75rem;color:#64748b;">
-                        Status: ${item.status}
-                    </span>
-                </div>
+    document.getElementById(
+        "answeredCounter"
+    ).textContent =
+        `Answered: ${answered}`;
+
+
+    const progress =
+        (
+            ((currentQuestion+1) /
+            questions.length) *
+            100
+        );
+
+
+    document.getElementById(
+        "progressFill"
+    ).style.width =
+        `${progress}%`;
+
+
+    const container =
+        document.getElementById("options");
+
+
+    container.innerHTML = "";
+
+
+    q.options.forEach(
+        (option,index) => {
+
+            const selected =
+                answers[currentQuestion] === option;
+
+
+            const label =
+                document.createElement("label");
+
+
+            label.className =
+                "option" +
+                (selected ? " selected" : "");
+
+
+            label.innerHTML = `
+
+                <input
+                    type="radio"
+                    name="question-option"
+                    ${selected ? "checked" : ""}
+                >
+
+                <span class="option-text">
+                    ${escapeHTML(option)}
+                </span>
+
             `;
 
-            analysisContainer.appendChild(box);
-        });
+
+            label.addEventListener(
+                "click",
+                () => {
+
+                    answers[currentQuestion] =
+                        option;
+
+                    renderQuestion();
+
+                }
+            );
+
+
+            container.appendChild(label);
+
+        }
+    );
+
+
+    document.getElementById(
+        "prevBtn"
+    ).disabled =
+        currentQuestion === 0;
+
+
+    if(
+        currentQuestion ===
+        questions.length-1
+    ){
+
+        document.getElementById(
+            "nextBtn"
+        ).classList.add("hidden");
+
+        document.getElementById(
+            "submitBtn"
+        ).classList.remove("hidden");
+
+    }
+    else{
+
+        document.getElementById(
+            "nextBtn"
+        ).classList.remove("hidden");
+
+        document.getElementById(
+            "submitBtn"
+        ).classList.add("hidden");
+
     }
 
-    /* =========================================================
-       FEEDBACK
-       ========================================================= */
-    window.setRating = function (stars) {
-        currentRating = stars;
+}
 
-        document.querySelectorAll("#star-rating-box i").forEach((el, idx) => {
-            if (idx < stars) el.classList.add("rated");
-            else el.classList.remove("rated");
-        });
-    };
 
-    window.submitFinalFeedbackData = async function () {
-        if (currentRating === 0) {
-            showToast("Please provide a star rating experience before saving feedback.");
-            return;
-        }
+/* =========================================================
+   HTML ESCAPE
+========================================================= */
 
-        if (savingInProgress) return;
+function escapeHTML(value){
 
-        savingInProgress = true;
+    return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
 
-        const query = document.getElementById("user-query-text").value.trim();
+}
 
-        const feedback = {
-            rating: currentRating,
-            query,
-            feedbackSubmittedAt: new Date().toISOString()
-        };
 
-        try {
-            await mergeFeedbackToFirebase(feedback);
+/* =========================================================
+   NAVIGATION
+========================================================= */
 
-            const localPayload = buildSubmissionPayload();
-            Object.assign(localPayload, feedback);
-            saveLocalBackup(localPayload);
+document.getElementById("nextBtn")
+.addEventListener("click",() => {
 
-            firebaseResultSaved = true;
+    if(
+        currentQuestion <
+        questions.length-1
+    ){
 
-            document.getElementById("thankyou-modal").style.display = "flex";
-        } catch (error) {
-            console.error("Feedback Firebase save error:", error);
+        currentQuestion++;
 
-            const localPayload = buildSubmissionPayload();
-            Object.assign(localPayload, feedback);
-            saveLocalBackup(localPayload);
+        renderQuestion();
 
-            showToast("Feedback local backup me save hua, Firebase sync failed.", "warning");
-        } finally {
-            savingInProgress = false;
-        }
-    };
+    }
 
-    window.lockWebsiteSession = function () {
-        sessionStorage.removeItem("active_exam_config");
-        window.location.reload();
-    };
+});
 
-    /* =========================================================
-       ANTI-CHEATING
-       ========================================================= */
-    document.addEventListener("contextmenu", e => e.preventDefault());
 
-    document.addEventListener("copy", e => {
-        e.preventDefault();
+document.getElementById("prevBtn")
+.addEventListener("click",() => {
 
-        if (!testSubmitted) {
-            copyPasteAttempts++;
-            showToast("Copying is prohibited!", "warning");
-        }
-    });
+    if(currentQuestion > 0){
 
-    document.addEventListener("cut", e => {
-        e.preventDefault();
+        currentQuestion--;
 
-        if (!testSubmitted) {
-            copyPasteAttempts++;
-            showToast("Cut operation is prohibited!", "warning");
-        }
-    });
+        renderQuestion();
 
-    document.addEventListener("paste", e => {
-        e.preventDefault();
+    }
 
-        if (!testSubmitted) {
-            copyPasteAttempts++;
-            showToast("Pasting is prohibited!", "warning");
-        }
-    });
+});
 
-    let lastVisibilityEvent = 0;
 
-    document.addEventListener("visibilitychange", () => {
-        if (document.hidden && !testSubmitted && examStartedAt) {
-            const now = Date.now();
+document.getElementById("submitBtn")
+.addEventListener(
+    "click",
+    confirmSubmit
+);
 
-            if (now - lastVisibilityEvent < 1000) return;
-            lastVisibilityEvent = now;
 
-            tabSwitchCount++;
+/* =========================================================
+   TIMER
+========================================================= */
 
-            if (tabSwitchCount === 1) {
-                penaltiesApplied = Math.max(penaltiesApplied, 1);
-                localStorage.setItem("exam_security_penalties", String(penaltiesApplied));
+function startTimer(){
 
-                showToast(
-                    "Tab switch detected! -1 mark penalty applied. Next switch will auto-submit.",
-                    "warning"
-                );
-            } else if (tabSwitchCount >= 2) {
-                penaltiesApplied = Math.max(penaltiesApplied, 1);
-                localStorage.setItem("exam_security_penalties", String(penaltiesApplied));
+    updateTimer();
 
-                showToast(
-                    "Multiple tab switches detected. Auto-submitting exam.",
-                    "warning"
+    timerInterval =
+        setInterval(() => {
+
+            if(isSubmitting)
+                return;
+
+
+            timeLeft--;
+
+            updateTimer();
+
+
+            if(timeLeft <= 0){
+
+                clearInterval(
+                    timerInterval
                 );
 
-                setTimeout(() => executeFinalSubmit(true), 250);
+                showWarning(
+                    "Time is over. Test is being submitted."
+                );
+
+                submitExam("time_expired");
+
             }
+
+        },1000);
+
+}
+
+
+function updateTimer(){
+
+    const minutes =
+        Math.floor(timeLeft/60);
+
+    const seconds =
+        timeLeft%60;
+
+
+    const text =
+        String(minutes)
+        .padStart(2,"0")
+        +
+        ":" +
+        String(seconds)
+        .padStart(2,"0");
+
+
+    const timer =
+        document.getElementById("timer");
+
+
+    timer.textContent = text;
+
+
+    if(timeLeft <= 60){
+
+        timer.classList.add("warning");
+
+    }
+
+}
+
+
+/* =========================================================
+   SUBMIT CONFIRMATION
+========================================================= */
+
+function confirmSubmit(){
+
+    if(isSubmitting)
+        return;
+
+
+    const answered =
+        Object.keys(answers).length;
+
+
+    const unanswered =
+        questions.length - answered;
+
+
+    const message =
+        `Are you sure you want to submit?\n\n` +
+        `Answered: ${answered}\n` +
+        `Unanswered: ${unanswered}`;
+
+
+    if(confirm(message)){
+
+        submitExam("manual");
+
+    }
+
+}
+
+
+/* =========================================================
+   CALCULATE RESULT
+========================================================= */
+
+function calculateResult(){
+
+    let correct = 0;
+
+    let incorrect = 0;
+
+    let unattempted = 0;
+
+
+    questions.forEach(
+        (q,index) => {
+
+            const userAnswer =
+                answers[index];
+
+
+            if(!userAnswer){
+
+                unattempted++;
+
+            }
+            else if(
+                normalizeAnswer(userAnswer) ===
+                normalizeAnswer(q.answer)
+            ){
+
+                correct++;
+
+            }
+            else{
+
+                incorrect++;
+
+            }
+
         }
-    });
+    );
+
+
+    const positiveMarks =
+        Number(
+            examConfig.positiveMark
+        ) || 1;
+
+
+    const negativeMarks =
+        Number(
+            examConfig.negativeMark
+        ) || 0.25;
+
+
+    /*
+       Tab-switch penalty is separate.
+       Admin can see both actual score
+       and security penalty.
+    */
+
+    const rawScore =
+        (
+            correct * positiveMarks
+        )
+        -
+        (
+            incorrect * negativeMarks
+        );
+
+
+    const securityPenalty =
+        tabSwitches >= 1
+        ? Number(
+            examConfig.tabSwitchPenalty
+        ) || 1
+        : 0;
+
+
+    const finalScore =
+        Math.max(
+            0,
+            rawScore - securityPenalty
+        );
+
+
+    const attempted =
+        correct + incorrect;
+
+
+    const accuracy =
+        attempted > 0
+        ? (
+            (correct / attempted) * 100
+        )
+        : 0;
+
+
+    return {
+
+        correct,
+
+        incorrect,
+
+        unattempted,
+
+        attempted,
+
+        rawScore,
+
+        securityPenalty,
+
+        finalScore,
+
+        accuracy:
+
+            Number(
+                accuracy.toFixed(2)
+            )
+
+    };
+
+}
+
+
+function normalizeAnswer(value){
+
+    return String(value || "")
+        .trim()
+        .toLowerCase();
+
+}
+
+
+/* =========================================================
+   SUBMIT EXAM
+========================================================= */
+
+async function submitExam(reason){
+
+    if(isSubmitting)
+        return;
+
+
+    isSubmitting = true;
+
+    examStarted = false;
+
+
+    if(timerInterval){
+
+        clearInterval(
+            timerInterval
+        );
+
+    }
+
+
+    document.getElementById(
+        "submitBtn"
+    ).disabled = true;
+
+
+    showScreen(loadingScreen);
+
+    setLoading(
+        "Submitting Test...",
+        "Calculating your result and saving it securely."
+    );
+
+
+    const result =
+        calculateResult();
+
+
+    /*
+       Unique attempt ID.
+    */
+
+    const attemptId =
+        `${Date.now()}_${crypto.randomUUID()}`;
+
+
+    const submission = {
+
+        attemptId,
+
+        name:
+            student.name,
+
+        email:
+            student.email,
+
+        roll:
+            student.roll,
+
+        testId:
+            examConfig.testId ||
+            "physics-test",
+
+        testTitle:
+            examConfig.testTitle ||
+            "Physics Test Series",
+
+
+        totalQuestions:
+            questions.length,
+
+        attempted:
+            result.attempted,
+
+        correct:
+            result.correct,
+
+        incorrect:
+            result.incorrect,
+
+        unattempted:
+            result.unattempted,
+
+
+        positiveMark:
+            Number(
+                examConfig.positiveMark
+            ) || 1,
+
+        negativeMark:
+            Number(
+                examConfig.negativeMark
+            ) || 0.25,
+
+
+        rawScore:
+            Number(
+                result.rawScore.toFixed(2)
+            ),
+
+        securityPenalty:
+            Number(
+                result.securityPenalty.toFixed(2)
+            ),
+
+        finalScore:
+            Number(
+                result.finalScore.toFixed(2)
+            ),
+
+        accuracy:
+            result.accuracy,
+
+
+        tabSwitches,
+
+        copyAttempts,
+
+
+        submissionReason:
+            reason,
+
+
+        answers:
+
+
+            questions.map(
+                (q,index) => ({
+
+                    questionId:
+                        q.id,
+
+                    question:
+                        q.question,
+
+                    selectedAnswer:
+                        answers[index] ||
+                        null,
+
+                    correctAnswer:
+                        q.answer,
+
+                    isCorrect:
+                        answers[index]
+                        ? normalizeAnswer(
+                            answers[index]
+                          ) ===
+                          normalizeAnswer(
+                            q.answer
+                          )
+                        : false
+
+                })
+            ),
+
+
+        submittedAt:
+            new Date().toISOString()
+
+    };
+
+
+    try{
+
+        /*
+           Save to Firestore.
+
+           Collection:
+           results
+
+           Document:
+           unique attempt ID
+        */
+
+        await setDoc(
+
+            doc(
+                db,
+                "results",
+                attemptId
+            ),
+
+            submission
+
+        );
+
+
+        /*
+           Save locally only as a backup.
+           It is NOT used by Admin Panel.
+        */
+
+        localStorage.setItem(
+            "last_exam_result",
+            JSON.stringify(submission)
+        );
+
+
+        showResult(
+            submission,
+            true
+        );
+
+
+    }
+    catch(error){
+
+        console.error(
+            "Firestore submission error:",
+            error
+        );
+
+
+        /*
+           IMPORTANT:
+           We don't falsely tell the student
+           that Firebase saved the result.
+        */
+
+        localStorage.setItem(
+            "failed_exam_result",
+            JSON.stringify(submission)
+        );
+
+
+        showResult(
+            submission,
+            false,
+            error.message
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   RESULT SCREEN
+========================================================= */
+
+function showResult(
+    result,
+    saved,
+    errorMessage=""
+){
+
+    showScreen(resultScreen);
+
+
+    document.getElementById(
+        "resultScore"
+    ).textContent =
+        result.finalScore;
+
+
+    document.getElementById(
+        "resultTotal"
+    ).textContent =
+        (
+            result.totalQuestions *
+            result.positiveMark
+        );
+
+
+    document.getElementById(
+        "resultCorrect"
+    ).textContent =
+        result.correct;
+
+
+    document.getElementById(
+        "resultIncorrect"
+    ).textContent =
+        result.incorrect;
+
+
+    document.getElementById(
+        "resultUnattempted"
+    ).textContent =
+        result.unattempted;
+
+
+    document.getElementById(
+        "resultAccuracy"
+    ).textContent =
+        `${result.accuracy}%`;
+
+
+    const status =
+        document.getElementById(
+            "saveStatus"
+        );
+
+
+    if(saved){
+
+        status.className =
+            "status success";
+
+        status.innerHTML =
+            `
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            Result saved successfully.
+            `;
+
+    }
+    else{
+
+        status.className =
+            "status error";
+
+        status.innerHTML =
+            `
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Result could not be saved to the server.
+            Please contact the administrator.
+            `;
+
+    }
+
+}
+
+
+/* =========================================================
+   SECURITY
+========================================================= */
+
+/*
+   These protections are only client-side deterrents.
+   They should NOT be treated as a foolproof anti-cheat system.
+*/
+
+
+document.addEventListener(
+    "contextmenu",
+    event => {
+
+        if(examStarted){
+
+            event.preventDefault();
+
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    "copy",
+    event => {
+
+        if(examStarted){
+
+            event.preventDefault();
+
+            copyAttempts++;
+
+            showWarning(
+                "Copying is disabled during the test."
+            );
+
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    "paste",
+    event => {
+
+        if(examStarted){
+
+            event.preventDefault();
+
+            copyAttempts++;
+
+            showWarning(
+                "Pasting is disabled during the test."
+            );
+
+        }
+
+    }
+);
+
+
+/* ================= TAB SWITCH ================= */
+
+document.addEventListener(
+    "visibilitychange",
+    () => {
+
+        if(
+            document.hidden &&
+            examStarted &&
+            !isSubmitting
+        ){
+
+            tabSwitches++;
+
+
+            if(tabSwitches === 1){
+
+                showWarning(
+                    "Tab switch detected. A security penalty has been recorded."
+                );
+
+            }
+            else if(tabSwitches === 2){
+
+                showWarning(
+                    "Second tab switch detected. The test will be submitted."
+                );
+
+
+                setTimeout(
+                    () => {
+
+                        submitExam(
+                            "security_auto_submit"
+                        );
+
+                    },
+                    1200
+                );
+
+            }
+
+        }
+
+    }
+);
+
+
+/* ================= WINDOW BLUR ================= */
+
+/*
+   Do NOT count window.blur separately.
+   Otherwise mobile devices and browser UI can
+   create false tab-switch penalties.
+
+   visibilitychange is used as the primary detector.
+*/
+
+
+/* =========================================================
+   PREVENT ACCIDENTAL RELOAD / CLOSE
+========================================================= */
+
+window.addEventListener(
+    "beforeunload",
+    event => {
+
+        if(
+            examStarted &&
+            !isSubmitting
+        ){
+
+            event.preventDefault();
+
+            event.returnValue = "";
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   INITIAL STATE
+========================================================= */
+
+showScreen(loginScreen);
+
 </script>
+
 </body>
 </html>
