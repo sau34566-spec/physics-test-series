@@ -242,10 +242,10 @@
           </div>
         </div>
 
-        <!-- NEW: Authorized / Unlimited Admin Emails Option -->
+        <!-- Authorized / Unlimited Admin Emails Option -->
         <div class="form-group" style="margin-top: 0.5rem; margin-bottom: 1.5rem;">
           <label for="config-unlimited-emails"><i class="fa-solid fa-envelope-circle-check" style="color:var(--success);"></i> Authorized Admin / Unlimited Emails (Comma Separated)</label>
-          <textarea id="config-unlimited-emails" rows="2" placeholder="admin1@gmail.com, teacher@gmail.com, saurav@gmail.com"></textarea>
+          <textarea id="config-unlimited-emails" rows="2" placeholder="admin1@gmail.com, teacher@gmail.com, sauravpandey3221@gmail.com"></textarea>
           <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">In emails se login karne wale users bina kisi attempt limit, session expiration, ya timer restriction ke kitni bhi baar test de sakte hain (`nta.html` connected).</p>
         </div>
 
@@ -560,7 +560,7 @@
     async function loadExamSettings() {
       try {
         let data = null;
-        const rawLocal = localStorage.getItem("exam_config");
+        const rawLocal = localStorage.getItem("exam_config") || localStorage.getItem("admin_test_config");
         if(rawLocal) data = JSON.parse(rawLocal);
 
         if(!data) {
@@ -713,6 +713,7 @@
         examDurationMinutes,
         perQuestionSeconds: examDurationMinutes * 60,
         unlimitedEmails: unlimitedEmailsVal, // Connected for nta.html usage
+        authorizedEmails: unlimitedEmailsVal, // Sync alias for nta.html
         windowStart: startTimeMs,
         windowEnd: endTimeMs,
         startTime: startTimeMs,
@@ -726,14 +727,19 @@
         updatedAt: new Date().toISOString()
       };
 
+      // Save to all possible LocalStorage keys to prevent disconnection with nta.html
       localStorage.setItem("exam_config", JSON.stringify(configPayload));
+      localStorage.setItem("admin_test_config", JSON.stringify(configPayload));
       localStorage.setItem("test_settings", JSON.stringify(configPayload));
+      localStorage.setItem("admin_settings", JSON.stringify(configPayload));
+      localStorage.setItem("is_admin_logged_in", "true");
 
       try {
         await setDoc(doc(db, "settings", "testConfig"), {
             totalQuestions: Number(totalPool),
             durationMinutes: Number(examDurationMinutes),
             unlimitedEmails: unlimitedEmailsVal,
+            authorizedEmails: unlimitedEmailsVal,
             updatedAt: new Date().toISOString()
         }, { merge: true });
 
