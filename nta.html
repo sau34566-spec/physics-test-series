@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -329,435 +329,1011 @@
         </div>
     </div>
 
-    <script>
-        let questionsData = [];
-        let currentQuestionIndex = 0;
-        let userResponses = [];
-        let visitStatus = [];
-        let totalSeconds = 1800; 
-        let timerInterval = null;
-        let windowTimerInterval = null;
-        let currentRating = 0;
-        let activeAdminConfig = {};
-        let currentStudentEmail = "";
+    <script type="module">
+    /* =========================================================
+       FIREBASE FIRESTORE
+       ========================================================= */
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+        getFirestore,
+        doc,
+        getDoc,
+        setDoc,
+        runTransaction
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const defaultQuestions = [
-            { q: "A particle moves in a straight line with deceleration proportional to its displacement. Its loss of kinetic energy is proportional to:", options: ["x", "x^2", "ln(x)", "e^x"], answer: 1 },
-            { q: "The magnetic field at the center of a circular coil of radius R carrying current I is B. Magnetic field on axis at distance R is:", options: ["B / 2", "B / 2√2", "B / 2√3", "B / 4"], answer: 1 }
-        ];
+    const firebaseConfig = {
+        apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
+        authDomain: "physics-test-series-405c7.firebaseapp.com",
+        projectId: "physics-test-series-405c7",
+        storageBucket: "physics-test-series-405c7.firebasestorage.app",
+        messagingSenderId: "758620061190",
+        appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
+    };
 
-        window.onload = function() {
-            let savedAdmin = localStorage.getItem('persistent_admin_email');
-            if(localStorage.getItem('is_admin_logged_in') === 'true' && savedAdmin) {
-                currentStudentEmail = savedAdmin;
-                localStorage.setItem('current_test_user_email', savedAdmin);
-                checkTestScheduleWindow();
-            } else {
-                switchView('slide-email-login');
+    const firebaseApp = initializeApp(firebaseConfig);
+    const db = getFirestore(firebaseApp);
+
+    /* =========================================================
+       EXAM STATE
+       ========================================================= */
+    let questionsData = [];
+    let currentQuestionIndex = 0;
+    let userResponses = [];
+    let visitStatus = [];
+    let totalSeconds = 1800;
+    let timerInterval = null;
+    let windowTimerInterval = null;
+    let currentRating = 0;
+    let activeAdminConfig = {};
+    let currentStudentEmail = "";
+    let currentStudentName = "";
+    let currentStudentRoll = "";
+    let testSubmitted = false;
+    let firebaseResultSaved = false;
+    let savingInProgress = false;
+    let tabSwitchCount = 0;
+    let copyPasteAttempts = 0;
+    let penaltiesApplied = 0;
+    let examStartedAt = null;
+    let examSubmittedAt = null;
+
+    const defaultQuestions = [
+        {
+            q: "A particle moves in a straight line with deceleration proportional to its displacement. Its loss of kinetic energy is proportional to:",
+            options: ["x", "x^2", "ln(x)", "e^x"],
+            answer: 1
+        },
+        {
+            q: "The magnetic field at the center of a circular coil of radius R carrying current I is B. Magnetic field on axis at distance R is:",
+            options: ["B / 2", "B / 2√2", "B / 2√3", "B / 4"],
+            answer: 1
+        }
+    ];
+
+    /* =========================================================
+       HELPERS
+       ========================================================= */
+    function normalizeQuestion(q) {
+        if (!q) return { q: "", options: [], answer: 0 };
+
+        let options = q.options || [];
+        if (!Array.isArray(options) && typeof options === "object") {
+            options = [options.A, options.B, options.C, options.D].filter(v => v !== undefined);
+        }
+
+        let answer = q.answer;
+        if (answer === undefined) answer = q.a;
+        if (answer === undefined) answer = q.correctAnswer;
+
+        if (typeof answer === "string") {
+            const upper = answer.trim().toUpperCase();
+            if (/^[ABCD]$/.test(upper)) answer = upper.charCodeAt(0) - 65;
+            else {
+                const numeric = Number(answer);
+                if (!Number.isNaN(numeric)) answer = numeric;
             }
+        }
+
+        answer = Number.isInteger(answer) ? answer : 0;
+
+        return {
+            q: q.q ?? q.question ?? "",
+            options,
+            answer
         };
+    }
 
-        function verifyAndProceedEmail() {
-            const emailInput = document.getElementById('student-email-input').value.trim();
-            if(!emailInput || !emailInput.includes('@')) {
-                showToast("Please enter a valid email address.");
-                return;
-            }
-            if(typeof window.validateStudentEmailInput === 'function') {
-                if(!window.validateStudentEmailInput(emailInput)) {
-                    return;
+    function getTestId() {
+        return String(
+            activeAdminConfig.testId ||
+            activeAdminConfig.examId ||
+            activeAdminConfig.id ||
+            localStorage.getItem("active_test_id") ||
+            "chapter-1-test"
+        );
+    }
+
+    function getTestName() {
+        return String(
+            activeAdminConfig.testName ||
+            activeAdminConfig.examName ||
+            activeAdminConfig.name ||
+            localStorage.getItem("active_test_name") ||
+            "Physics Assessment"
+        );
+    }
+
+    function safeId(value) {
+        return String(value || "student")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9_-]/g, "_")
+            .slice(0, 120);
+    }
+
+    function showToast(message, type = "error") {
+        const toast = document.getElementById("custom-toast");
+        const msg = document.getElementById("toast-message");
+        if (!toast || !msg) return;
+
+        msg.innerText = message;
+        toast.style.borderLeftColor =
+            type === "success" ? "var(--success)" :
+            type === "warning" ? "var(--warning)" :
+            "var(--danger)";
+
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3500);
+    }
+
+    function switchView(viewId) {
+        document.querySelectorAll(".view-section").forEach(el => el.classList.remove("active"));
+        const view = document.getElementById(viewId);
+        if (view) view.classList.add("active");
+    }
+
+    function isAdminSession() {
+        const savedAdmin = localStorage.getItem("persistent_admin_email") || "";
+        return (
+            localStorage.getItem("is_admin_logged_in") === "true" &&
+            currentStudentEmail.toLowerCase() === savedAdmin.toLowerCase()
+        );
+    }
+
+    function readExistingSecurityPenalty() {
+        const value = parseInt(localStorage.getItem("exam_security_penalties") || "0", 10);
+        return Number.isFinite(value) && value > 0 ? value : 0;
+    }
+
+    function updateSecurityPenalty() {
+        penaltiesApplied = Math.max(penaltiesApplied, readExistingSecurityPenalty());
+        localStorage.setItem("exam_security_penalties", String(penaltiesApplied));
+    }
+
+    function getAnsweredCount() {
+        return userResponses.filter(v => v !== null && v !== undefined).length;
+    }
+
+    /* =========================================================
+       LOCAL BACKUP
+       ========================================================= */
+    function saveLocalBackup(payload) {
+        try {
+            const keys = [
+                "admin_exam_submissions",
+                "exam_results",
+                "all_student_results",
+                "student_submissions"
+            ];
+
+            keys.forEach(key => {
+                let records = [];
+                try {
+                    records = JSON.parse(localStorage.getItem(key) || "[]");
+                    if (!Array.isArray(records)) records = [];
+                } catch {
+                    records = [];
                 }
-            }
-            currentStudentEmail = emailInput;
-            localStorage.setItem('current_test_user_email', emailInput);
+
+                const index = records.findIndex(r =>
+                    r.email === payload.email && r.testId === payload.testId
+                );
+
+                if (index >= 0) records[index] = payload;
+                else records.push(payload);
+
+                localStorage.setItem(key, JSON.stringify(records));
+            });
+
+            localStorage.setItem("latest_exam_submission", JSON.stringify(payload));
+        } catch (e) {
+            console.warn("Local backup failed:", e);
+        }
+    }
+
+    /* =========================================================
+       EMAIL LOGIN
+       ========================================================= */
+    window.onload = function () {
+        const savedAdmin = localStorage.getItem("persistent_admin_email");
+
+        if (
+            localStorage.getItem("is_admin_logged_in") === "true" &&
+            savedAdmin
+        ) {
+            currentStudentEmail = savedAdmin;
+            localStorage.setItem("current_test_user_email", savedAdmin);
             checkTestScheduleWindow();
+        } else {
+            switchView("slide-email-login");
+        }
+    };
+
+    window.verifyAndProceedEmail = function () {
+        const input = document.getElementById("student-email-input");
+        const emailInput = input.value.trim().toLowerCase();
+
+        if (!emailInput || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput)) {
+            showToast("Please enter a valid email address.");
+            return;
         }
 
-        function showToast(message) {
-            const toast = document.getElementById('custom-toast');
-            document.getElementById('toast-message').innerText = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3500);
+        if (typeof window.validateStudentEmailInput === "function") {
+            if (!window.validateStudentEmailInput(emailInput)) return;
         }
 
-        function switchView(viewId) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
+        currentStudentEmail = emailInput;
+        localStorage.setItem("current_test_user_email", emailInput);
+        checkTestScheduleWindow();
+    };
+
+    /* =========================================================
+       SCHEDULE
+       ========================================================= */
+    function checkTestScheduleWindow() {
+        const adminSettingsStr =
+            localStorage.getItem("admin_test_config") ||
+            localStorage.getItem("admin_settings") ||
+            localStorage.getItem("test_settings");
+
+        try {
+            activeAdminConfig = adminSettingsStr ? JSON.parse(adminSettingsStr) : {};
+        } catch {
+            activeAdminConfig = {};
         }
 
-        function checkTestScheduleWindow() {
-            let adminSettingsStr = localStorage.getItem('admin_test_config') || localStorage.getItem('admin_settings') || localStorage.getItem('test_settings');
+        const savedAdmin = localStorage.getItem("persistent_admin_email") || "";
+        const isAdmin =
+            localStorage.getItem("is_admin_logged_in") === "true" &&
+            currentStudentEmail.toLowerCase() === savedAdmin.toLowerCase();
+
+        if (!isAdmin && activeAdminConfig.startTime && activeAdminConfig.endTime) {
+            const now = Date.now();
+            const startTime = new Date(activeAdminConfig.startTime).getTime();
+            const endTime = new Date(activeAdminConfig.endTime).getTime();
+
+            if (now < startTime) {
+                document.getElementById("notice-title").innerText = "Test Not Started Yet";
+                document.getElementById("notice-desc").innerText =
+                    `Scheduled Start Time: ${new Date(activeAdminConfig.startTime).toLocaleString()}.`;
+                switchView("slide-schedule-notice");
+                return false;
+            }
+
+            if (now > endTime) {
+                document.getElementById("notice-title").innerText = "Test Window Has Ended";
+                document.getElementById("notice-desc").innerText =
+                    `The scheduled test window ended at ${new Date(activeAdminConfig.endTime).toLocaleString()}.`;
+                switchView("slide-schedule-notice");
+                return false;
+            }
+        }
+
+        switchView("slide-instructions");
+        return true;
+    }
+
+    /* =========================================================
+       READY MODAL
+       ========================================================= */
+    window.openReadyConfirmationModal = function () {
+        document.getElementById("ready-modal").style.display = "flex";
+    };
+
+    window.closeReadyModal = function () {
+        document.getElementById("ready-modal").style.display = "none";
+    };
+
+    /* =========================================================
+       START EXAM
+       ========================================================= */
+    window.startExamPortalSession = async function () {
+        closeReadyModal();
+
+        if (!currentStudentEmail) {
+            showToast("Candidate email is missing. Please verify again.");
+            switchView("slide-email-login");
+            return;
+        }
+
+        let adminQuestions =
+            localStorage.getItem("admin_live_questions") ||
+            localStorage.getItem("admin_questions") ||
+            localStorage.getItem("questions");
+
+        if (adminQuestions) {
             try {
-                activeAdminConfig = adminSettingsStr ? JSON.parse(adminSettingsStr) : {};
-            } catch(e) {
-                activeAdminConfig = {};
-            }
-
-            let savedAdmin = localStorage.getItem('persistent_admin_email');
-            let isAdmin = localStorage.getItem('is_admin_logged_in') === 'true' && currentStudentEmail.toLowerCase() === savedAdmin;
-
-            if(!isAdmin && activeAdminConfig.startTime && activeAdminConfig.endTime) {
-                const now = new Date().getTime();
-                const startTime = new Date(activeAdminConfig.startTime).getTime();
-                const endTime = new Date(activeAdminConfig.endTime).getTime();
-
-                if(now < startTime) {
-                    document.getElementById('notice-title').innerText = "Test Not Started Yet";
-                    document.getElementById('notice-desc').innerText = `Scheduled Start Time: ${new Date(activeAdminConfig.startTime).toLocaleString()}.`;
-                    switchView('slide-schedule-notice');
-                    return false;
-                } else if(now > endTime) {
-                    document.getElementById('notice-title').innerText = "Test Window Has Ended";
-                    document.getElementById('notice-desc').innerText = `The scheduled test window ended at ${new Date(activeAdminConfig.endTime).toLocaleString()}.`;
-                    switchView('slide-schedule-notice');
-                    return false;
-                }
-            }
-            switchView('slide-instructions');
-            return true;
-        }
-
-        function openReadyConfirmationModal() {
-            document.getElementById('ready-modal').style.display = 'flex';
-        }
-
-        function closeReadyModal() {
-            document.getElementById('ready-modal').style.display = 'none';
-        }
-
-        async function startExamPortalSession() {
-            closeReadyModal();
-
-            let adminQuestions = localStorage.getItem('admin_live_questions') || localStorage.getItem('admin_questions') || localStorage.getItem('questions');
-            if(adminQuestions) {
-                try {
-                    questionsData = JSON.parse(adminQuestions);
-                } catch(e) {
-                    questionsData = defaultQuestions;
-                }
-            } else {
-                try {
-                    let res = await fetch('chapter1.json');
-                    if(res.ok) {
-                        questionsData = await res.json();
-                    } else {
-                        questionsData = defaultQuestions;
-                    }
-                } catch(e) {
-                    questionsData = defaultQuestions;
-                }
-            }
-
-            if(!questionsData || questionsData.length === 0) {
+                questionsData = JSON.parse(adminQuestions);
+            } catch {
                 questionsData = defaultQuestions;
             }
+        } else {
+            try {
+                const res = await fetch("chapter1.json", { cache: "no-store" });
+                if (res.ok) questionsData = await res.json();
+                else questionsData = defaultQuestions;
+            } catch {
+                questionsData = defaultQuestions;
+            }
+        }
 
-            if(activeAdminConfig.questionCount && !isNaN(activeAdminConfig.questionCount)) {
-                let limit = parseInt(activeAdminConfig.questionCount);
-                if(limit > 0 && limit < questionsData.length) {
-                    questionsData = questionsData.slice(0, limit);
+        if (!Array.isArray(questionsData) || questionsData.length === 0) {
+            questionsData = defaultQuestions;
+        }
+
+        questionsData = questionsData.map(normalizeQuestion);
+
+        if (activeAdminConfig.questionCount && !isNaN(activeAdminConfig.questionCount)) {
+            const limit = parseInt(activeAdminConfig.questionCount, 10);
+            if (limit > 0 && limit < questionsData.length) {
+                questionsData = questionsData.slice(0, limit);
+            }
+        }
+
+        if (activeAdminConfig.testDuration && !isNaN(activeAdminConfig.testDuration)) {
+            totalSeconds = parseInt(activeAdminConfig.testDuration, 10) * 60;
+        } else {
+            totalSeconds = questionsData.length * 120;
+        }
+
+        userResponses = new Array(questionsData.length).fill(null);
+        visitStatus = new Array(questionsData.length).fill("not-visited");
+        currentQuestionIndex = 0;
+        visitStatus[0] = "not-answered";
+
+        tabSwitchCount = 0;
+        copyPasteAttempts = 0;
+        penaltiesApplied = 0;
+        localStorage.setItem("exam_security_penalties", "0");
+
+        examStartedAt = new Date().toISOString();
+        testSubmitted = false;
+        firebaseResultSaved = false;
+
+        switchView("slide-exam");
+        renderQuestion();
+        renderPalette();
+        startTimer();
+        startWindowEndWatcher();
+    };
+
+    function startWindowEndWatcher() {
+        clearInterval(windowTimerInterval);
+
+        windowTimerInterval = setInterval(() => {
+            const adminSettingsStr =
+                localStorage.getItem("admin_test_config") ||
+                localStorage.getItem("admin_settings");
+
+            if (!adminSettingsStr || isAdminSession()) return;
+
+            try {
+                const config = JSON.parse(adminSettingsStr);
+                if (config.endTime && Date.now() >= new Date(config.endTime).getTime()) {
+                    clearInterval(windowTimerInterval);
+                    showToast("The scheduled test window has ended. Auto-submitting exam.", "warning");
+                    executeFinalSubmit(true);
                 }
-            }
+            } catch {}
+        }, 5000);
+    }
 
-            if(activeAdminConfig.testDuration && !isNaN(activeAdminConfig.testDuration)) {
-                totalSeconds = parseInt(activeAdminConfig.testDuration) * 60;
-            } else {
-                totalSeconds = questionsData.length * 120;
-            }
+    /* =========================================================
+       QUESTION UI
+       ========================================================= */
+    function renderQuestion() {
+        if (!questionsData.length) return;
 
-            userResponses = new Array(questionsData.length).fill(null);
-            visitStatus = new Array(questionsData.length).fill("not-visited");
-            currentQuestionIndex = 0;
-            visitStatus[0] = "not-answered";
+        const qData = questionsData[currentQuestionIndex];
 
-            switchView('slide-exam');
-            renderQuestion();
-            renderPalette();
-            startTimer();
-            startWindowEndWatcher();
-        }
+        document.getElementById("question-indicator").innerText =
+            `Q. ${currentQuestionIndex + 1} of ${questionsData.length}`;
 
-        function startWindowEndWatcher() {
-            clearInterval(windowTimerInterval);
-            windowTimerInterval = setInterval(() => {
-                let adminSettingsStr = localStorage.getItem('admin_test_config') || localStorage.getItem('admin_settings');
-                if(adminSettingsStr) {
-                    try {
-                        let config = JSON.parse(adminSettingsStr);
-                        if(config.endTime) {
-                            const now = new Date().getTime();
-                            const endTime = new Date(config.endTime).getTime();
-                            let savedAdmin = localStorage.getItem('persistent_admin_email');
-                            let isAdmin = localStorage.getItem('is_admin_logged_in') === 'true' && currentStudentEmail.toLowerCase() === savedAdmin;
-                            if(!isAdmin && now >= endTime) {
-                                clearInterval(windowTimerInterval);
-                                showToast("The scheduled test window has ended. Auto-submitting exam.");
-                                executeFinalSubmit();
-                            }
-                        }
-                    } catch(e) {}
-                }
-            }, 5000);
-        }
+        document.getElementById("question-content").innerText = qData.q || "";
 
-        function renderQuestion() {
-            const qData = questionsData[currentQuestionIndex];
-            document.getElementById('question-indicator').innerText = `Q. ${currentQuestionIndex + 1} of ${questionsData.length}`;
-            document.getElementById('question-content').innerText = qData.q || qData.question;
-            
-            const optionsContainer = document.getElementById('options-container');
-            optionsContainer.innerHTML = '';
-            
-            const opts = qData.options || [];
-            opts.forEach((opt, idx) => {
-                const isChecked = userResponses[currentQuestionIndex] === idx ? 'checked' : '';
-                const item = document.createElement('div');
-                item.className = 'option-item';
-                item.innerHTML = `
-                    <input type="radio" name="exam_option" id="opt_${idx}" value="${idx}" ${isChecked} onclick="selectOption(${idx})">
-                    <label for="opt_${idx}"><b>(${String.fromCharCode(65 + idx)})</b> ${opt}</label>
-                `;
-                item.onclick = () => {
-                    document.getElementById(`opt_${idx}`).checked = true;
-                    selectOption(idx);
-                };
-                optionsContainer.appendChild(item);
-            });
+        const optionsContainer = document.getElementById("options-container");
+        optionsContainer.innerHTML = "";
 
-            if(visitStatus[currentQuestionIndex] === "not-visited") {
-                visitStatus[currentQuestionIndex] = "not-answered";
-            }
-            renderPalette();
-        }
+        qData.options.forEach((opt, idx) => {
+            const item = document.createElement("div");
+            item.className = "option-item";
 
-        function selectOption(idx) {
-            userResponses[currentQuestionIndex] = idx;
-        }
+            const radio = document.createElement("input");
+            radio.type = "radio";
+            radio.name = "exam_option";
+            radio.id = `opt_${idx}`;
+            radio.value = String(idx);
+            radio.checked = userResponses[currentQuestionIndex] === idx;
 
-        function saveAndNext() {
-            const selected = userResponses[currentQuestionIndex];
-            if(selected !== null && selected !== undefined) {
-                visitStatus[currentQuestionIndex] = "answered";
-            } else {
-                visitStatus[currentQuestionIndex] = "not-answered";
-            }
-
-            if(currentQuestionIndex < questionsData.length - 1) {
-                currentQuestionIndex++;
-                if(visitStatus[currentQuestionIndex] === "not-visited") {
-                    visitStatus[currentQuestionIndex] = "not-answered";
-                }
-                renderQuestion();
-            } else {
-                renderPalette();
-            }
-        }
-
-        function markForReviewAndNext() {
-            visitStatus[currentQuestionIndex] = "marked";
-            if(currentQuestionIndex < questionsData.length - 1) {
-                currentQuestionIndex++;
-                if(visitStatus[currentQuestionIndex] === "not-visited") {
-                    visitStatus[currentQuestionIndex] = "not-answered";
-                }
-                renderQuestion();
-            } else {
-                renderPalette();
-            }
-        }
-
-        function clearResponse() {
-            userResponses[currentQuestionIndex] = null;
-            visitStatus[currentQuestionIndex] = "not-answered";
-            renderQuestion();
-        }
-
-        function jumpToQuestion(index) {
-            currentQuestionIndex = index;
-            if(visitStatus[currentQuestionIndex] === "not-visited") {
-                visitStatus[currentQuestionIndex] = "not-answered";
-            }
-            renderQuestion();
-        }
-
-        function renderPalette() {
-            const grid = document.getElementById('palette-grid');
-            grid.innerHTML = '';
-            let counts = { answered: 0, notAnswered: 0, notVisited: 0, marked: 0 };
-
-            questionsData.forEach((q, idx) => {
-                const box = document.createElement('div');
-                box.className = `q-box`;
-                box.innerText = idx + 1;
-                const status = visitStatus[idx];
-                
-                if(status === "answered") { box.classList.add('answered'); counts.answered++; }
-                else if(status === "marked") { box.classList.add('marked'); counts.marked++; }
-                else if(status === "not-answered") { box.classList.add('not-answered'); counts.notAnswered++; }
-                else { counts.notVisited++; }
-
-                if(idx === currentQuestionIndex) { box.classList.add('current'); }
-                box.onclick = () => jumpToQuestion(idx);
-                grid.appendChild(box);
-            });
-
-            document.getElementById('leg-ans').innerText = counts.answered;
-            document.getElementById('leg-not-ans').innerText = counts.notAnswered;
-            document.getElementById('leg-not-vis').innerText = counts.notVisited;
-            document.getElementById('leg-marked').innerText = counts.marked;
-        }
-
-        function startTimer() {
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                if(totalSeconds > 0) {
-                    totalSeconds--;
-                    let hours = Math.floor(totalSeconds / 3600);
-                    let minutes = Math.floor((totalSeconds % 3600) / 60);
-                    let seconds = totalSeconds % 60;
-                    document.getElementById('time-left').innerText = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
-                } else {
-                    clearInterval(timerInterval);
-                    showToast("Time is up! Your test is automatically submitting.");
-                    executeFinalSubmit();
-                }
-            }, 1000);
-        }
-
-        function openSubmitModal() {
-            document.getElementById('submit-modal').style.display = 'flex';
-        }
-
-        function closeSubmitModal() {
-            document.getElementById('submit-modal').style.display = 'none';
-        }
-
-        function executeFinalSubmit() {
-            clearInterval(timerInterval);
-            clearInterval(windowTimerInterval);
-            closeSubmitModal();
-            buildPerformanceDashboard();
-            switchView('slide-dashboard');
-        }
-
-        function buildPerformanceDashboard() {
-            let correctCount = 0;
-            let incorrectCount = 0;
-            let attemptedCount = 0;
-
-            questionsData.forEach((q, idx) => {
-                const userAns = userResponses[idx];
-                const correctAnsIdx = q.answer !== undefined ? q.answer : 0;
-                if(userAns !== null && userAns !== undefined) {
-                    attemptedCount++;
-                    if(userAns === correctAnsIdx) {
-                        correctCount++;
-                    } else {
-                        incorrectCount++;
-                    }
-                }
-            });
-
-            let securityPenalties = parseInt(localStorage.getItem('exam_security_penalties') || '0');
-            let totalScore = (correctCount * 1) - (incorrectCount * 0.25) - (securityPenalties * 1);
-            let maxPossibleScore = questionsData.length * 1;
-            let penaltyTotal = ((incorrectCount * 0.25) + (securityPenalties * 1)).toFixed(2);
-            let accuracy = attemptedCount > 0 ? ((correctCount / attemptedCount) * 100).toFixed(1) : 0;
-
-            document.getElementById('stat-score').innerText = `${totalScore.toFixed(2)} / ${maxPossibleScore}`;
-            document.getElementById('stat-correct-count').innerText = `${correctCount} / ${incorrectCount}`;
-            document.getElementById('stat-penalty').innerText = `-${penaltyTotal}`;
-            document.getElementById('stat-accuracy').innerText = `${accuracy}%`;
-
-            const analysisContainer = document.getElementById('detailed-analysis-container');
-            analysisContainer.innerHTML = '';
-
-            questionsData.forEach((q, idx) => {
-                const userAns = userResponses[idx];
-                const correctAnsIdx = q.answer !== undefined ? q.answer : 0;
-                const isAttempted = userAns !== null && userAns !== undefined;
-                const isCorrect = isAttempted && userAns === correctAnsIdx;
-
-                const opts = q.options || [];
-                const userAnsText = isAttempted ? `(${String.fromCharCode(65 + userAns)}) ${opts[userAns] || ''}` : "Not Answered";
-                const correctAnsText = `(${String.fromCharCode(65 + correctAnsIdx)}) ${opts[correctAnsIdx] || ''}`;
-                
-                const userAnsColor = isCorrect ? 'color: var(--success); font-weight: 700;' : 'color: var(--danger); font-weight: 700;';
-
-                const item = document.createElement('div');
-                item.className = 'analysis-item';
-                item.innerHTML = `
-                    <p>Q${idx + 1}: ${q.q || q.question}</p>
-                    <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem;">
-                        <span>Your Answer: <span style="${userAnsColor}">${userAnsText}</span></span>
-                        <span style="color: var(--success);">Correct Answer: <b>${correctAnsText}</b></span>
-                    </div>
-                `;
-                analysisContainer.appendChild(item);
-            });
-        }
-
-        function setRating(stars) {
-            currentRating = stars;
-            const starElements = document.querySelectorAll('#star-rating-box i');
-            starElements.forEach((el, idx) => {
-                if(idx < stars) {
-                    el.classList.add('rated');
-                } else {
-                    el.classList.remove('rated');
-                }
-            });
-        }
-
-        function submitFinalFeedbackData() {
-            if(currentRating === 0) {
-                showToast("Please provide a star rating experience before saving feedback.");
-                return;
-            }
-
-            const score = document.getElementById('stat-score').innerText;
-            const accuracy = document.getElementById('stat-accuracy').innerText;
-            let securityPenalties = parseInt(localStorage.getItem('exam_security_penalties') || '0');
-            
-            const feedbackPayload = {
-                candidateName: currentStudentEmail,
-                email: currentStudentEmail,
-                score: score,
-                accuracy: accuracy,
-                penalties: securityPenalties,
-                rating: currentRating,
-                query: document.getElementById('user-query-text').value,
-                timestamp: new Date().toISOString()
+            radio.onclick = e => {
+                e.stopPropagation();
+                selectOption(idx);
             };
 
-            const storageKeys = ['admin_exam_submissions', 'exam_results', 'all_student_results', 'student_submissions'];
-            
-            storageKeys.forEach(key => {
-                let existingRecords = JSON.parse(localStorage.getItem(key) || '[]');
-                let index = existingRecords.findIndex(r => r.email === currentStudentEmail);
-                if(index !== -1) {
-                    existingRecords[index] = feedbackPayload;
-                } else {
-                    existingRecords.push(feedbackPayload);
-                }
-                localStorage.setItem(key, JSON.stringify(existingRecords));
-            });
+            const label = document.createElement("label");
+            label.htmlFor = `opt_${idx}`;
+            label.innerHTML = `<b>(${String.fromCharCode(65 + idx)})</b> ${opt}`;
 
-            let savedAdmin = localStorage.getItem('persistent_admin_email');
-            let isAdmin = localStorage.getItem('is_admin_logged_in') === 'true' && currentStudentEmail.toLowerCase() === savedAdmin;
-            if(!isAdmin && typeof window.recordEmailAttempt === 'function') {
-                window.recordEmailAttempt(currentStudentEmail);
+            item.appendChild(radio);
+            item.appendChild(label);
+
+            item.onclick = () => {
+                radio.checked = true;
+                selectOption(idx);
+            };
+
+            optionsContainer.appendChild(item);
+        });
+
+        if (visitStatus[currentQuestionIndex] === "not-visited") {
+            visitStatus[currentQuestionIndex] = "not-answered";
+        }
+
+        renderPalette();
+    }
+
+    window.selectOption = function (idx) {
+        userResponses[currentQuestionIndex] = idx;
+    };
+
+    window.saveAndNext = function () {
+        const selected = userResponses[currentQuestionIndex];
+
+        visitStatus[currentQuestionIndex] =
+            selected !== null && selected !== undefined
+                ? "answered"
+                : "not-answered";
+
+        if (currentQuestionIndex < questionsData.length - 1) {
+            currentQuestionIndex++;
+
+            if (visitStatus[currentQuestionIndex] === "not-visited") {
+                visitStatus[currentQuestionIndex] = "not-answered";
             }
 
-            document.getElementById('thankyou-modal').style.display = 'flex';
+            renderQuestion();
+        } else {
+            renderPalette();
+        }
+    };
+
+    window.markForReviewAndNext = function () {
+        visitStatus[currentQuestionIndex] = "marked";
+
+        if (currentQuestionIndex < questionsData.length - 1) {
+            currentQuestionIndex++;
+
+            if (visitStatus[currentQuestionIndex] === "not-visited") {
+                visitStatus[currentQuestionIndex] = "not-answered";
+            }
+
+            renderQuestion();
+        } else {
+            renderPalette();
+        }
+    };
+
+    window.clearResponse = function () {
+        userResponses[currentQuestionIndex] = null;
+        visitStatus[currentQuestionIndex] = "not-answered";
+        renderQuestion();
+    };
+
+    window.jumpToQuestion = function (index) {
+        if (index < 0 || index >= questionsData.length) return;
+
+        currentQuestionIndex = index;
+
+        if (visitStatus[currentQuestionIndex] === "not-visited") {
+            visitStatus[currentQuestionIndex] = "not-answered";
         }
 
-        function lockWebsiteSession() {
-            // Session lock disabled - simply reloads the page
-            window.location.reload();
+        renderQuestion();
+    };
+
+    function renderPalette() {
+        const grid = document.getElementById("palette-grid");
+        if (!grid) return;
+
+        grid.innerHTML = "";
+
+        const counts = {
+            answered: 0,
+            notAnswered: 0,
+            notVisited: 0,
+            marked: 0
+        };
+
+        questionsData.forEach((q, idx) => {
+            const box = document.createElement("div");
+            box.className = "q-box";
+            box.innerText = idx + 1;
+
+            const status = visitStatus[idx];
+
+            if (status === "answered") {
+                box.classList.add("answered");
+                counts.answered++;
+            } else if (status === "marked") {
+                box.classList.add("marked");
+                counts.marked++;
+            } else if (status === "not-answered") {
+                box.classList.add("not-answered");
+                counts.notAnswered++;
+            } else {
+                counts.notVisited++;
+            }
+
+            if (idx === currentQuestionIndex) box.classList.add("current");
+
+            box.onclick = () => window.jumpToQuestion(idx);
+            grid.appendChild(box);
+        });
+
+        document.getElementById("leg-ans").innerText = counts.answered;
+        document.getElementById("leg-not-ans").innerText = counts.notAnswered;
+        document.getElementById("leg-not-vis").innerText = counts.notVisited;
+        document.getElementById("leg-marked").innerText = counts.marked;
+    }
+
+    /* =========================================================
+       TIMER
+       ========================================================= */
+    function startTimer() {
+        clearInterval(timerInterval);
+
+        timerInterval = setInterval(() => {
+            if (testSubmitted) return;
+
+            if (totalSeconds > 0) {
+                totalSeconds--;
+
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+
+                document.getElementById("time-left").innerText =
+                    `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+            } else {
+                clearInterval(timerInterval);
+                showToast("Time is up! Your test is automatically submitting.", "warning");
+                executeFinalSubmit(true);
+            }
+        }, 1000);
+    }
+
+    /* =========================================================
+       SUBMIT MODAL
+       ========================================================= */
+    window.openSubmitModal = function () {
+        if (testSubmitted || savingInProgress) return;
+        document.getElementById("submit-modal").style.display = "flex";
+    };
+
+    window.closeSubmitModal = function () {
+        document.getElementById("submit-modal").style.display = "none";
+    };
+
+    window.executeFinalSubmit = async function (autoSubmit = false) {
+        if (testSubmitted || savingInProgress) return;
+
+        if (!autoSubmit) {
+            closeSubmitModal();
         }
-    </script>
+
+        clearInterval(timerInterval);
+        clearInterval(windowTimerInterval);
+
+        testSubmitted = true;
+        savingInProgress = true;
+        examSubmittedAt = new Date().toISOString();
+
+        updateSecurityPenalty();
+
+        buildPerformanceDashboard();
+        switchView("slide-dashboard");
+
+        const payload = buildSubmissionPayload();
+
+        saveLocalBackup(payload);
+
+        try {
+            await saveResultToFirebase(payload);
+            firebaseResultSaved = true;
+            showToast("Result successfully synced to admin database.", "success");
+        } catch (error) {
+            console.error("Firebase result save error:", error);
+            firebaseResultSaved = false;
+            testSubmitted = false;
+            showToast("Result is shown locally, but Firebase sync failed. Please use Save Data to retry.", "warning");
+        } finally {
+            savingInProgress = false;
+        }
+    };
+
+    /* =========================================================
+       RESULT CALCULATION
+       ========================================================= */
+    function calculateResult() {
+        let correctCount = 0;
+        let incorrectCount = 0;
+        let attemptedCount = 0;
+        let unattemptedCount = 0;
+
+        const questionResults = [];
+
+        questionsData.forEach((q, idx) => {
+            const userAns = userResponses[idx];
+            const attempted = userAns !== null && userAns !== undefined;
+            const correctAnsIdx = Number(q.answer);
+
+            let status = "unattempted";
+
+            if (attempted) {
+                attemptedCount++;
+
+                if (userAns === correctAnsIdx) {
+                    correctCount++;
+                    status = "correct";
+                } else {
+                    incorrectCount++;
+                    status = "incorrect";
+                }
+            } else {
+                unattemptedCount++;
+            }
+
+            const opts = q.options || [];
+
+            questionResults.push({
+                questionNumber: idx + 1,
+                question: q.q || "",
+                options: opts,
+                selectedOptionIndex: attempted ? userAns : null,
+                selectedAnswer: attempted ? (opts[userAns] ?? null) : null,
+                correctOptionIndex: correctAnsIdx,
+                correctAnswer: opts[correctAnsIdx] ?? null,
+                status
+            });
+        });
+
+        const negativeMarks = Number((incorrectCount * 0.25).toFixed(2));
+        const securityPenalty = Number(penaltiesApplied || 0);
+        const rawScore = correctCount - negativeMarks - securityPenalty;
+        const finalScore = Number(Math.max(0, rawScore).toFixed(2));
+        const totalMarks = questionsData.length;
+        const accuracy = attemptedCount > 0
+            ? Number(((correctCount / attemptedCount) * 100).toFixed(2))
+            : 0;
+
+        return {
+            totalQuestions: questionsData.length,
+            totalMarks,
+            attempted: attemptedCount,
+            unattempted: unattemptedCount,
+            correct: correctCount,
+            incorrect: incorrectCount,
+            accuracy,
+            negativeMarks,
+            securityPenalty,
+            penaltiesApplied: securityPenalty,
+            finalScore,
+            questionResults
+        };
+    }
+
+    function buildSubmissionPayload() {
+        const result = calculateResult();
+
+        const answersObject = {};
+        userResponses.forEach((answer, index) => {
+            answersObject[String(index)] = answer;
+        });
+
+        const scoreString = `${result.finalScore}/${result.totalMarks}`;
+
+        return {
+            /* Student identity */
+            name: currentStudentName || currentStudentEmail,
+            email: currentStudentEmail,
+            roll: currentStudentRoll || "",
+
+            /* Test identity */
+            testId: getTestId(),
+            testName: getTestName(),
+
+            /* Score analytics */
+            score: scoreString,
+            finalScore: result.finalScore,
+            totalMarks: result.totalMarks,
+            totalQuestions: result.totalQuestions,
+            attempted: result.attempted,
+            unattempted: result.unattempted,
+            correct: result.correct,
+            incorrect: result.incorrect,
+            accuracy: result.accuracy,
+            negativeMarks: result.negativeMarks,
+
+            /* Anti-cheat */
+            tabSwitches: tabSwitchCount,
+            copiesAttempted: copyPasteAttempts,
+            penaltiesApplied: result.penaltiesApplied,
+            securityPenalty: result.securityPenalty,
+
+            /* Responses */
+            answers: answersObject,
+            questionResults: result.questionResults,
+
+            /* Timing */
+            examStartedAt,
+            submittedAt: examSubmittedAt || new Date().toISOString(),
+            submittedTimestamp: Date.now(),
+
+            /* Feedback is added later */
+            rating: null,
+            query: ""
+        };
+    }
+
+    /* =========================================================
+       FIREBASE RESULT SAVE
+       One result document per email + test.
+       ========================================================= */
+    async function saveResultToFirebase(payload) {
+        const resultId = `${safeId(payload.email)}__${safeId(payload.testId)}`;
+        const resultRef = doc(db, "results", resultId);
+
+        await runTransaction(db, async transaction => {
+            const existing = await transaction.get(resultRef);
+
+            if (existing.exists()) {
+                const existingData = existing.data();
+
+                /*
+                 * If the existing document is already submitted,
+                 * do not overwrite the student's original attempt.
+                 */
+                if (existingData.submissionStatus === "submitted") {
+                    throw new Error("ALREADY_SUBMITTED");
+                }
+            }
+
+            transaction.set(
+                resultRef,
+                {
+                    ...payload,
+                    submissionStatus: "submitted",
+                    resultId,
+                    firebaseSavedAt: new Date().toISOString()
+                },
+                { merge: true }
+            );
+        });
+
+        return resultId;
+    }
+
+    async function mergeFeedbackToFirebase(feedback) {
+        const resultId = `${safeId(currentStudentEmail)}__${safeId(getTestId())}`;
+        const resultRef = doc(db, "results", resultId);
+
+        const existing = await getDoc(resultRef);
+
+        if (!existing.exists()) {
+            /*
+             * If the first result save failed, create the complete
+             * result record now before adding feedback.
+             */
+            const payload = buildSubmissionPayload();
+
+            await setDoc(resultRef, {
+                ...payload,
+                ...feedback,
+                submissionStatus: "submitted",
+                resultId,
+                firebaseSavedAt: new Date().toISOString(),
+                feedbackSavedAt: new Date().toISOString()
+            }, { merge: true });
+
+            return;
+        }
+
+        await setDoc(resultRef, {
+            ...feedback,
+            feedbackSavedAt: new Date().toISOString()
+        }, { merge: true });
+    }
+
+    /* =========================================================
+       PERFORMANCE DASHBOARD
+       ========================================================= */
+    function buildPerformanceDashboard() {
+        const result = calculateResult();
+
+        document.getElementById("stat-score").innerText =
+            `${result.finalScore.toFixed(2)} / ${result.totalMarks}`;
+
+        document.getElementById("stat-correct-count").innerText =
+            `${result.correct} / ${result.incorrect}`;
+
+        document.getElementById("stat-penalty").innerText =
+            `-${(result.negativeMarks + result.securityPenalty).toFixed(2)}`;
+
+        document.getElementById("stat-accuracy").innerText =
+            `${result.accuracy}%`;
+
+        const analysisContainer =
+            document.getElementById("detailed-analysis-container");
+
+        analysisContainer.innerHTML = "";
+
+        result.questionResults.forEach(item => {
+            const isCorrect = item.status === "correct";
+            const answerStyle = isCorrect
+                ? "color: var(--success); font-weight: 700;"
+                : "color: var(--danger); font-weight: 700;";
+
+            const userAnsText = item.selectedAnswer === null
+                ? "Not Answered"
+                : `(${String.fromCharCode(65 + item.selectedOptionIndex)}) ${item.selectedAnswer}`;
+
+            const correctAnsText =
+                `(${String.fromCharCode(65 + item.correctOptionIndex)}) ${item.correctAnswer}`;
+
+            const box = document.createElement("div");
+            box.className = "analysis-item";
+
+            box.innerHTML = `
+                <p>Q${item.questionNumber}: ${item.question}</p>
+                <div style="display:flex;flex-direction:column;gap:4px;font-size:0.85rem;">
+                    <span>Your Answer:
+                        <span style="${answerStyle}">${userAnsText}</span>
+                    </span>
+                    <span style="color:var(--success);">
+                        Correct Answer: <b>${correctAnsText}</b>
+                    </span>
+                    <span style="font-size:0.75rem;color:#64748b;">
+                        Status: ${item.status}
+                    </span>
+                </div>
+            `;
+
+            analysisContainer.appendChild(box);
+        });
+    }
+
+    /* =========================================================
+       FEEDBACK
+       ========================================================= */
+    window.setRating = function (stars) {
+        currentRating = stars;
+
+        document.querySelectorAll("#star-rating-box i").forEach((el, idx) => {
+            if (idx < stars) el.classList.add("rated");
+            else el.classList.remove("rated");
+        });
+    };
+
+    window.submitFinalFeedbackData = async function () {
+        if (currentRating === 0) {
+            showToast("Please provide a star rating experience before saving feedback.");
+            return;
+        }
+
+        if (savingInProgress) return;
+
+        savingInProgress = true;
+
+        const query = document.getElementById("user-query-text").value.trim();
+
+        const feedback = {
+            rating: currentRating,
+            query,
+            feedbackSubmittedAt: new Date().toISOString()
+        };
+
+        try {
+            await mergeFeedbackToFirebase(feedback);
+
+            const localPayload = buildSubmissionPayload();
+            Object.assign(localPayload, feedback);
+            saveLocalBackup(localPayload);
+
+            firebaseResultSaved = true;
+
+            document.getElementById("thankyou-modal").style.display = "flex";
+        } catch (error) {
+            console.error("Feedback Firebase save error:", error);
+
+            const localPayload = buildSubmissionPayload();
+            Object.assign(localPayload, feedback);
+            saveLocalBackup(localPayload);
+
+            showToast("Feedback local backup me save hua, Firebase sync failed.", "warning");
+        } finally {
+            savingInProgress = false;
+        }
+    };
+
+    window.lockWebsiteSession = function () {
+        sessionStorage.removeItem("active_exam_config");
+        window.location.reload();
+    };
+
+    /* =========================================================
+       ANTI-CHEATING
+       ========================================================= */
+    document.addEventListener("contextmenu", e => e.preventDefault());
+
+    document.addEventListener("copy", e => {
+        e.preventDefault();
+
+        if (!testSubmitted) {
+            copyPasteAttempts++;
+            showToast("Copying is prohibited!", "warning");
+        }
+    });
+
+    document.addEventListener("cut", e => {
+        e.preventDefault();
+
+        if (!testSubmitted) {
+            copyPasteAttempts++;
+            showToast("Cut operation is prohibited!", "warning");
+        }
+    });
+
+    document.addEventListener("paste", e => {
+        e.preventDefault();
+
+        if (!testSubmitted) {
+            copyPasteAttempts++;
+            showToast("Pasting is prohibited!", "warning");
+        }
+    });
+
+    let lastVisibilityEvent = 0;
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden && !testSubmitted && examStartedAt) {
+            const now = Date.now();
+
+            /*
+             * Prevent duplicate visibility events from being counted
+             * twice within a short interval.
+             */
+            if (now - lastVisibilityEvent < 1000) return;
+            lastVisibilityEvent = now;
+
+            tabSwitchCount++;
+
+            if (tabSwitchCount === 1) {
+                penaltiesApplied = Math.max(penaltiesApplied, 1);
+                localStorage.setItem("exam_security_penalties", String(penaltiesApplied));
+
+                showToast(
+                    "Tab switch detected! -1 mark penalty applied. Next switch will auto-submit.",
+                    "warning"
+                );
+            } else if (tabSwitchCount >= 2) {
+                penaltiesApplied = Math.max(penaltiesApplied, 1);
+                localStorage.setItem("exam_security_penalties", String(penaltiesApplied));
+
+                showToast(
+                    "Multiple tab switches detected. Auto-submitting exam.",
+                    "warning"
+                );
+
+                setTimeout(() => executeFinalSubmit(true), 250);
+            }
+        }
+    });
+
+    /*
+     * If security.js is present, its validation/attempt recorder
+     * remains compatible with this page.
+     */
+</script>
 </body>
 </html>
