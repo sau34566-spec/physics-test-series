@@ -242,7 +242,6 @@
           </div>
         </div>
 
-        <!-- Authorized / Unlimited Admin Emails Option -->
         <div class="form-group" style="margin-top: 0.5rem; margin-bottom: 1.5rem;">
           <label for="config-unlimited-emails"><i class="fa-solid fa-envelope-circle-check" style="color:var(--success);"></i> Authorized Admin / Unlimited Emails (Comma Separated)</label>
           <textarea id="config-unlimited-emails" rows="2" placeholder="admin1@gmail.com, teacher@gmail.com, sauravpandey3221@gmail.com"></textarea>
@@ -497,7 +496,7 @@
 
     function formatDateTimeLocal(timestamp) {
       if(!timestamp) return "";
-      const d = new Date(timestamp);
+      const d = new Date(Number(timestamp));
       if(isNaN(d.getTime())) return "";
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -574,8 +573,8 @@
           document.getElementById('config-student-limit').value = data.studentLimit || data.questions_per_student || "";
           document.getElementById('config-per-question-timer').value = data.examDurationMinutes ?? (data.perQuestionSeconds ? Math.round(data.perQuestionSeconds / 60) : 60);
 
-          if(data.unlimitedEmails) {
-            document.getElementById('config-unlimited-emails').value = data.unlimitedEmails;
+          if(data.unlimitedEmails || data.authorizedEmails) {
+            document.getElementById('config-unlimited-emails').value = data.unlimitedEmails || data.authorizedEmails;
           }
 
           if(data.windowStart || data.startTime) {
@@ -599,7 +598,7 @@
             if (langRadio) langRadio.checked = true;
           }
 
-          if (data.questions && Array.isArray(data.questions)) {
+          if (data.questions && Array.isArray(data.questions) && data.questions.length > 0) {
             liveQuestionsPool = data.questions;
             localStorage.setItem("live_questions_pool", JSON.stringify(liveQuestionsPool));
             renderQuestionsPool();
@@ -712,8 +711,8 @@
         questions_per_student: studentLimit,
         examDurationMinutes,
         perQuestionSeconds: examDurationMinutes * 60,
-        unlimitedEmails: unlimitedEmailsVal, // Connected for nta.html usage
-        authorizedEmails: unlimitedEmailsVal, // Sync alias for nta.html
+        unlimitedEmails: unlimitedEmailsVal,
+        authorizedEmails: unlimitedEmailsVal,
         windowStart: startTimeMs,
         windowEnd: endTimeMs,
         startTime: startTimeMs,
@@ -727,11 +726,12 @@
         updatedAt: new Date().toISOString()
       };
 
-      // Save to all possible LocalStorage keys to prevent disconnection with nta.html
+      // Push payload to all standard keys used across student modules (`nta.html`)
       localStorage.setItem("exam_config", JSON.stringify(configPayload));
       localStorage.setItem("admin_test_config", JSON.stringify(configPayload));
       localStorage.setItem("test_settings", JSON.stringify(configPayload));
       localStorage.setItem("admin_settings", JSON.stringify(configPayload));
+      localStorage.setItem("live_questions_pool", JSON.stringify(liveQuestionsPool));
       localStorage.setItem("is_admin_logged_in", "true");
 
       try {
@@ -955,9 +955,9 @@
           <strong style="font-size: 0.85rem; color: var(--text-main);">Options & Answer:</strong>
           <ul style="list-style: none; margin-top: 8px; font-size: 0.9rem;">
             <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'A' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">A. ${optA}</li>
-            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'B' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">B. ${optB}</li>
-            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'C' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">C. ${optC}</li>
-            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'D' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: var(--text-muted);'}">D. ${optD}</li>
+            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'B' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: #64748b;'}">B. ${optB}</li>
+            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'C' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: #64748b;'}">C. ${optC}</li>
+            <li style="padding: 6px 10px; margin-bottom: 4px; border-radius: 6px; ${correctAns === 'D' ? 'background: #d1fae5; color: #065f46; font-weight:700;' : 'background: #f8fafc; color: #64748b;'}">D. ${optD}</li>
           </ul>
         </div>
       `;
