@@ -1,369 +1,205 @@
  <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Exam Elite | Student Portal</title>
-  
-  <!-- Font Awesome Icons & Google Fonts -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Elite | Student Portal</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Poppins', sans-serif;
-    }
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
 
-    body {
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-      position: relative;
-      overflow: hidden;
-      color: #334155;
-    }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
 
-    .bg-decorations {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-      z-index: 1;
-      opacity: 0.08;
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 50px;
-      padding: 40px;
-      font-size: 5rem;
-      color: #ffffff;
-    }
+        .card {
+            width: 100%;
+            max-width: 430px;
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
 
-    .login-card {
-      position: relative;
-      z-index: 10;
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(12px);
-      width: 100%;
-      max-width: 440px;
-      padding: 40px 32px;
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.2);
-    }
+        h1 {
+            text-align: center;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
 
-    .brand-header {
-      text-align: center;
-      margin-bottom: 28px;
-    }
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
 
-    .brand-header i {
-      font-size: 2.8rem;
-      color: #2563eb;
-      margin-bottom: 10px;
-    }
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 7px;
+        }
 
-    .brand-header h2 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: #1e293b;
-      letter-spacing: -0.5px;
-    }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 15px;
+            outline: none;
+        }
 
-    .brand-header p {
-      font-size: 0.875rem;
-      color: #64748b;
-      margin-top: 4px;
-    }
+        input:focus {
+            border-color: #3b82f6;
+        }
 
-    .form-group {
-      margin-bottom: 20px;
-    }
+        button {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-    .form-group label {
-      display: block;
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #475569;
-      margin-bottom: 8px;
-    }
+        button:hover {
+            background: #1d4ed8;
+        }
 
-    .input-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
+        #message {
+            display: none;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+        }
 
-    .input-wrapper i {
-      position: absolute;
-      left: 14px;
-      color: #94a3b8;
-      font-size: 1.1rem;
-    }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
 
-    .input-wrapper input {
-      width: 100%;
-      padding: 12px 14px 12px 42px;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      outline: none;
-      transition: all 0.25s ease;
-      background: #f8fafc;
-    }
-
-    .input-wrapper input:focus {
-      border-color: #2563eb;
-      background: #ffffff;
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-    }
-
-    .status-banner {
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      margin-bottom: 20px;
-      display: none;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .status-banner.error {
-      background: #fef2f2;
-      color: #dc2626;
-      border: 1px solid #fecaca;
-    }
-
-    .status-banner.info {
-      background: #eff6ff;
-      color: #1d4ed8;
-      border: 1px solid #bfdbfe;
-    }
-
-    .btn-submit {
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-      color: #ffffff;
-      border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-    }
-
-    .btn-submit:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
-    }
-
-    .btn-submit:disabled {
-      background: #94a3b8;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-  </style>
+        .success {
+            background: #dcfce7;
+            color: #166534;
+        }
+    </style>
 </head>
+
 <body>
 
-  <div class="bg-decorations">
-    <i class="fa-solid fa-graduation-cap"></i>
-    <i class="fa-solid fa-book-open"></i>
-    <i class="fa-solid fa-atom"></i>
-    <i class="fa-solid fa-brain"></i>
-    <i class="fa-solid fa-flask"></i>
-    <i class="fa-solid fa-microscope"></i>
-    <i class="fa-solid fa-calculator"></i>
-    <i class="fa-solid fa-award"></i>
-    <i class="fa-solid fa-globe"></i>
-    <i class="fa-solid fa-pen-nib"></i>
-    <i class="fa-solid fa-laptop-code"></i>
-    <i class="fa-solid fa-school"></i>
-  </div>
+<div class="card">
 
-  <div class="login-card">
-    <div class="brand-header">
-      <i class="fa-solid fa-user-graduate"></i>
-      <h2>Exam Elite Portal</h2>
-      <p>Enter your details to verify exam eligibility</p>
-    </div>
+    <h1>Exam Elite</h1>
 
-    <div id="status-message" class="status-banner"></div>
+    <p class="subtitle">
+        Student Assessment Portal
+    </p>
 
     <form id="student-login-form">
-      <div class="form-group">
-        <label for="student-name">Full Name</label>
-        <div class="input-wrapper">
-          <i class="fa-solid fa-user"></i>
-          <input type="text" id="student-name" placeholder="Enter your full name" required>
-        </div>
-      </div>
 
-      <div class="form-group">
-        <label for="student-email">Email Address</label>
-        <div class="input-wrapper">
-          <i class="fa-solid fa-envelope"></i>
-          <input type="email" id="student-email" placeholder="Enter your email address" required>
-        </div>
-      </div>
+        <label for="student-name">Student Name</label>
+        <input
+            type="text"
+            id="student-name"
+            placeholder="Enter your full name"
+            required
+        >
 
-      <button type="submit" id="start-btn" class="btn-submit">
-        <span>Verify Eligibility</span>
-        <i class="fa-solid fa-circle-check"></i>
-      </button>
+        <label for="student-roll">Roll Number</label>
+        <input
+            type="text"
+            id="student-roll"
+            placeholder="Enter your roll number"
+            required
+        >
+
+        <label for="student-email">Registered Gmail</label>
+        <input
+            type="email"
+            id="student-email"
+            placeholder="student@gmail.com"
+            required
+        >
+
+        <button type="submit">
+            Continue to Test
+        </button>
+
     </form>
-  </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    <div id="message"></div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
-      authDomain: "physics-test-series-405c7.firebaseapp.com",
-      projectId: "physics-test-series-405c7",
-      storageBucket: "physics-test-series-405c7.firebasestorage.app",
-      messagingSenderId: "758620061190",
-      appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87"
+</div>
+
+<script>
+
+const form = document.getElementById("student-login-form");
+const message = document.getElementById("message");
+
+form.addEventListener("submit", function(event) {
+
+    event.preventDefault();
+
+    const name = document.getElementById("student-name").value.trim();
+    const roll = document.getElementById("student-roll").value.trim();
+    const email = document.getElementById("student-email").value.trim().toLowerCase();
+
+    if (!name || !roll || !email) {
+        showMessage("Please fill all details.", "error");
+        return;
+    }
+
+    if (!email.endsWith("@gmail.com")) {
+        showMessage("Please enter a valid Gmail address.", "error");
+        return;
+    }
+
+    const studentInfo = {
+        name: name,
+        roll: roll,
+        email: email
     };
 
-    let db;
-    try {
-      const app = initializeApp(firebaseConfig);
-      db = getFirestore(app);
-    } catch (e) {
-      console.warn("Firebase fallback mode.");
-    }
+    sessionStorage.setItem(
+        "student_info",
+        JSON.stringify(studentInfo)
+    );
 
-    const statusBanner = document.getElementById("status-message");
-    const startBtn = document.getElementById("start-btn");
+    showMessage("Verification successful. Opening test...", "success");
 
-    function showStatus(message, type = "info") {
-      statusBanner.style.display = "flex";
-      statusBanner.className = `status-banner ${type}`;
-      statusBanner.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info'}"></i> <span>${message}</span>`;
-    }
+    setTimeout(function() {
+        window.location.href = "nta.html";
+    }, 800);
 
-    async function checkAdminTimingConfig() {
-      let config = null;
+});
 
-      // 1. Try reading from LocalStorage first (Fastest Sync)
-      try {
-        const rawLocal = localStorage.getItem("exam_config") || localStorage.getItem("test_settings");
-        if (rawLocal) config = JSON.parse(rawLocal);
-      } catch (e) {
-        console.warn("LocalStorage read error", e);
-      }
+function showMessage(text, type) {
 
-      // 2. Try Firestore fallback
-      if (!config && typeof db !== "undefined") {
-        try {
-          const docRef = doc(db, "exam_config", "current_test");
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            config = docSnap.data();
-          }
-        } catch (err) {
-          console.warn("Firestore read error", err);
-        }
-      }
+    message.innerText = text;
+    message.className = type;
+    message.style.display = "block";
 
-      if (!config) {
-        showStatus("Exam schedule has not been set by Admin yet.", "info");
-        return null;
-      }
+}
 
-      const now = Date.now();
-      let startTimeMs = typeof config.windowStart === 'number' ? config.windowStart : new Date(config.windowStart || config.startTime).getTime();
-      let endTimeMs = typeof config.windowEnd === 'number' ? config.windowEnd : new Date(config.windowEnd || config.endTime).getTime();
-
-      if (isNaN(startTimeMs) || isNaN(endTimeMs)) {
-        showStatus("Invalid exam schedule timing set by Admin.", "error");
-        return null;
-      }
-
-      if (now < startTimeMs) {
-        const startDateStr = new Date(startTimeMs).toLocaleString([], { dateStyle:'short', timeStyle:'short' });
-        showStatus(`Test window has not started yet. Starts at ${startDateStr}.`, "error");
-        startBtn.disabled = true;
-        return null;
-      }
-
-      if (now > endTimeMs) {
-        showStatus("Test window has expired (Closed). Admissions to this test are locked.", "error");
-        startBtn.disabled = true;
-        startBtn.innerHTML = `<span>Test Closed</span> <i class="fa-solid fa-lock"></i>`;
-        return null;
-      }
-
-      statusBanner.style.display = "none";
-      startBtn.disabled = false;
-      return config;
-    }
-
-    checkAdminTimingConfig();
-
-    // Check if a student has already submitted their test (Single Attempt Rule)
-    function hasAlreadySubmitted(emailOrRoll) {
-      try {
-        const submissions = JSON.parse(localStorage.getItem("exam_submissions")) || [];
-        return submissions.some(sub => sub.email === emailOrRoll || sub.roll === emailOrRoll);
-      } catch (e) {
-        return false;
-      }
-    }
-
-    document.getElementById("student-login-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const studentEmail = document.getElementById("student-email").value.trim();
-
-      // Check single attempt restriction before proceeding
-      if (hasAlreadySubmitted(studentEmail)) {
-        showStatus("You have already submitted this test. Multiple attempts are not allowed.", "error");
-        return;
-      }
-
-      startBtn.disabled = true;
-      startBtn.innerHTML = `<span>Verifying Details...</span> <i class="fa-solid fa-spinner fa-spin"></i>`;
-
-      const liveConfig = await checkAdminTimingConfig();
-
-      if (!liveConfig) {
-        startBtn.disabled = false;
-        startBtn.innerHTML = `<span>Verify Eligibility</span> <i class="fa-solid fa-circle-check"></i>`;
-        return;
-      }
-
-      const studentName = document.getElementById("student-name").value.trim();
-
-      const studentData = {
-        name: studentName,
-        email: studentEmail,
-        roll: "EXAM-" + Math.floor(100000 + Math.random() * 900000),
-        startTime: Date.now()
-      };
-
-      sessionStorage.setItem("student_info", JSON.stringify(studentData));
-      sessionStorage.setItem("active_exam_config", JSON.stringify(liveConfig));
-
-      window.location.href = "nta.html";
-    });
-  </script>
+</script>
 
 </body>
 </html>
