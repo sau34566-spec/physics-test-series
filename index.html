@@ -7,6 +7,10 @@
     <!-- FontAwesome for Professional Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Firebase SDKs (Compat & Modular v10 or standard CDN) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    
     <style>
         * {
             box-sizing: border-box;
@@ -418,8 +422,8 @@
             <ul class="instruction-list">
                 <li><i class="fa-solid fa-circle-check"></i> <span><strong>Mandatory Security:</strong> Switching tabs or leaving the test window will trigger a penalty (-1 mark) on the 1st attempt, and automatic test submission on the 2nd attempt.</span></li>
                 <li><i class="fa-solid fa-circle-check"></i> <span><strong>Prohibited Actions:</strong> Copying, pasting, right-clicking, screen capturing, and function keys (F1 to F12) are completely disabled.</span></li>
-                <li><i class="fa-solid fa-circle-check"></i> <span><strong>Randomization:</strong> Questions and options are dynamically randomized for every candidate to ensure absolute integrity.</span></li>
-                <li><i class="fa-solid fa-circle-check"></i> <span><strong>Submissions:</strong> Once the timer expires or you click 'Submit Test', your performance will be instantly evaluated.</span></li>
+                <li><i class="fa-solid fa-circle-check"></i> <span><strong>Dynamic Content:</strong> Questions are loaded directly from the admin database (`chapter1.json` or Firebase config).</span></li>
+                <li><i class="fa-solid fa-circle-check"></i> <span><strong>Submissions:</strong> Once the timer expires or you click 'Submit Test', your performance will be instantly saved to Firestore and evaluated.</span></li>
             </ul>
 
             <button type="button" class="submit-btn" onclick="promptStartTest()">Start Test Now</button>
@@ -442,7 +446,7 @@
         <div class="exam-container">
             <div class="progress-box">
                 <div class="progress-info">
-                    <span id="q-counter">Question 1 of 80</span>
+                    <span id="q-counter">Question 1 of 0</span>
                     <span id="answered-tracker">Answered: 0</span>
                 </div>
                 <div class="progress-bar-bg">
@@ -452,7 +456,7 @@
 
             <div class="question-box">
                 <div id="question-tag" class="q-tag">Question 1</div>
-                <div id="question-text" class="q-text">Loading question content...</div>
+                <div id="question-text" class="q-text">Loading question content from Admin configuration...</div>
 
                 <div id="options-container" class="options-list">
                     <!-- Options injected dynamically -->
@@ -471,6 +475,22 @@
     <!-- ================= APPLICATION SCRIPT ENGINE ================= -->
     <script>
         "use strict";
+
+        // --- FIREBASE INITIALIZATION CONFIGURATION ---
+        // Replace with your actual Firebase project configuration or ensure firebase-config.js is initialized
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
 
         // --- GLOBAL APP STATES ---
         let questionsPool = [];
@@ -508,34 +528,39 @@
             document.getElementById("custom-modal").style.display = "none";
         }
 
-        // --- 2. ADMIN CONFIGURATION LOADER ---
-        function loadAdminConfiguration() {
-            // Default configuration if admin hasn't configured yet
+        // --- 2. ADMIN CONFIGURATION LOADER (FROM FIREBASE OR LOCALSTORAGE SYNC) ---
+        async function loadAdminConfiguration() {
             const defaultConfig = {
                 examDurationMinutes: 10,
-                displayLimit: 5,
+                displayLimit: 10,
                 positiveMarks: 1,
                 negativeMarks: 0.25,
                 authorizedAdminEmails: ["sauravpandey3221@gmail.com"]
             };
 
-            const saved = localStorage.getItem("exam_admin_config");
-            if (saved) {
-                try { examConfig = JSON.parse(saved); } catch(e) { examConfig = defaultConfig; }
-            } else {
-                examConfig = defaultConfig;
+            try {
+                // Try fetching admin config from Firestore if available
+                const configDoc = await db.collection("admin_settings").doc("exam_config").get();
+                if (configDoc.exists) {
+                    examConfig = configDoc.data();
+                } else {
+                    const saved = localStorage.getItem("exam_admin_config");
+                    examConfig = saved ? JSON.parse(saved) : defaultConfig;
+                }
+            } catch(e) {
+                const saved = localStorage.getItem("exam_admin_config");
+                examConfig = saved ? JSON.parse(saved) : defaultConfig;
             }
         }
 
         // --- 3. LOGIN & GMAIL VERIFICATION ---
-        document.getElementById("login-form").addEventListener("submit", function(e) {
+        document.getElementById("login-form").addEventListener("submit", async function(e) {
             e.preventDefault();
-            loadAdminConfiguration();
+            await loadAdminConfiguration();
 
             const name = document.getElementById("candidate-name").value.trim();
             const email = document.getElementById("candidate-email").value.trim().toLowerCase();
 
-            // Check mandatory @gmail.com validation
             if (!email.endsWith("@gmail.com")) {
                 showModal("Invalid Email Address", "This email not found / invalid domain. Please make sure your registered Gmail ends with '@gmail.com'.", "fa-solid fa-triangle-exclamation");
                 return;
@@ -544,7 +569,6 @@
             candidateInfo = { name, email };
             sessionStorage.setItem("student_info", JSON.stringify(candidateInfo));
 
-            // Switch from Slide 1 to Slide 2 (Instructions)
             document.getElementById("slide-login").style.display = "none";
             document.getElementById("slide-instructions").style.display = "flex";
         });
@@ -556,45 +580,48 @@
             });
         }
 
-        // --- 5. FETCH & SHUFFLE QUESTIONS ---
+        // --- 5. FETCH QUESTIONS (CHAPTER1.JSON OR FIREBASE ADMIN SET) ---
         async function fetchQuestionsData() {
             try {
-                // Fetch from chapter1.json or fallback default questions
+                // First try fetching questions from chapter1.json as requested
                 const response = await fetch('chapter1.json');
                 if (response.ok) {
                     const data = await response.json();
                     questionsPool = Array.isArray(data) ? data : (data.questions || []);
                 }
             } catch (err) {
-                console.warn("Could not fetch chapter1.json, utilizing built-in fallback set.");
+                console.warn("Could not fetch chapter1.json directly, checking Firestore...");
             }
 
-            // Fallback questions if JSON is missing/empty
+            // If chapter1.json returned nothing, fetch from Firestore admin database
+            if (!questionsPool.length) {
+                try {
+                    const snapshot = await db.collection("exam_questions").get();
+                    if (!snapshot.empty) {
+                        questionsPool = snapshot.docs.map(doc => doc.data());
+                    }
+                } catch(e) {
+                    console.warn("Could not fetch from Firestore, utilizing fallback set.");
+                }
+            }
+
+            // Ultimate fallback if no questions are found anywhere
             if (!questionsPool.length) {
                 questionsPool = [
-                    { q: "What is the SI unit of electric charge?", options: ["Coulomb", "Ampere", "Volt", "Ohm"], answer: "Coulomb" },
-                    { q: "Which particle carries a negative charge?", options: ["Proton", "Neutron", "Electron", "Positron"], answer: "Electron" },
-                    { q: "What is the dimension of universal gravitational constant?", options: ["M-1 L3 T-2", "M L2 T-2", "M-1 L2 T-2", "M L3 T-2"], answer: "M-1 L3 T-2" },
-                    { q: "Speed of light in vacuum is denoted by which symbol?", options: ["v", "c", "u", "s"], answer: "c" },
-                    { q: "Which law states that total magnetic flux through a closed surface is zero?", options: ["Gauss's Law for Electricity", "Gauss's Law for Magnetism", "Ampere's Law", "Faraday's Law"], answer: "Gauss's Law for Magnetism" },
-                    { q: "What is the unit of magnetic induction?", options: ["Tesla", "Weber", "Henry", "Farad"], answer: "Tesla" },
-                    { q: "The value of permittivity of free space (ε0) is approximately:", options: ["8.85 x 10^-12 C²/N·m²", "9 x 10^9 N·m²/C²", "3 x 10^8 m/s", "1.6 x 10^-19 C"], answer: "8.85 x 10^-12 C²/N·m²" },
-                    { q: "Planck's constant has the dimensions of:", options: ["Energy", "Momentum", "Angular Momentum", "Power"], answer: "Angular Momentum" }
+                    { question: "What is the SI unit of electric charge?", options: ["Coulomb", "Ampere", "Volt", "Ohm"], answer: "Coulomb" },
+                    { question: "Which particle carries a negative charge?", options: ["Proton", "Neutron", "Electron", "Positron"], answer: "Electron" }
                 ];
             }
 
-            // Shuffle questions and slice to display limit set by Admin
-            const limit = Number(examConfig.displayLimit || 80);
+            const limit = Number(examConfig.displayLimit || questionsPool.length);
             const shuffledPool = [...questionsPool].sort(() => Math.random() - 0.5);
             const selectedSlice = shuffledPool.slice(0, Math.min(limit, shuffledPool.length));
 
-            // Normalize and shuffle options for each question to avoid identical patterns among 50+ students
             activeQuestions = selectedSlice.map((item, idx) => {
                 const questionText = item.question || item.q;
                 let opts = item.options || [item.optA, item.optB, item.optC, item.optD];
-                // Shuffle options
                 const shuffledOpts = [...opts].sort(() => Math.random() - 0.5);
-                const correctAns = item.answer || item.a;
+                const correctAns = item.answer || item.a || item.correctAnswer;
 
                 return {
                     id: idx + 1,
@@ -643,14 +670,13 @@
 
                 div.onclick = function() {
                     studentAnswers[currentIndex] = optValue;
-                    renderQuestion(); // re-render to highlight selected item
+                    renderQuestion();
                     updateProgressTracker();
                 };
 
                 container.appendChild(div);
             });
 
-            // Toggle Navigation Buttons
             document.getElementById("prev-btn").style.display = currentIndex === 0 ? "none" : "block";
             const isLast = currentIndex === activeQuestions.length - 1;
             document.getElementById("next-btn").style.display = isLast ? "none" : "block";
@@ -684,36 +710,27 @@
         // --- 8. SECURITY & ANTI-CHEAT ENGINE ---
         function initSecurityProtections() {
             const isAdmin = examConfig.authorizedAdminEmails && examConfig.authorizedAdminEmails.includes(candidateInfo.email);
-            if (isAdmin) return; // Bypass security checks for Admin
+            if (isAdmin) return;
 
-            // Disable copy, cut, paste, context menu
-            document.addEventListener('copy', e => { e.preventDefault(); showModal("Security Warning", "Copying content is strictly prohibited during the test."); });
-            document.addEventListener('paste', e => { e.preventDefault(); showModal("Security Warning", "Pasting content is strictly prohibited during the test."); });
-            document.addEventListener('cut', e => { e.preventDefault(); showModal("Security Warning", "Cutting content is strictly prohibited during the test."); });
+            document.addEventListener('copy', e => { e.preventDefault(); showModal("Security Warning", "Copying content is strictly prohibited."); });
+            document.addEventListener('paste', e => { e.preventDefault(); showModal("Security Warning", "Pasting content is strictly prohibited."); });
+            document.addEventListener('cut', e => { e.preventDefault(); showModal("Security Warning", "Cutting content is strictly prohibited."); });
             document.addEventListener('contextmenu', e => e.preventDefault());
 
-            // Disable F1 to F12 and PrintScreen shortcut
             document.addEventListener('keydown', e => {
-                if (e.key === "F1" || e.key === "F2" || e.key === "F3" || e.key === "F4" || 
-                    e.key === "F5" || e.key === "F6" || e.key === "F7" || e.key === "F8" || 
-                    e.key === "F9" || e.key === "F10" || e.key === "F11" || e.key === "F12" || e.key === "PrintScreen") {
+                if (e.key.startsWith("F") || e.key === "PrintScreen") {
                     e.preventDefault();
                     showModal("Restricted Key", "Function keys and shortcuts are locked during the examination.");
                 }
             });
 
-            // Tab-Switch / Background Focus Monitoring
             document.addEventListener("visibilitychange", function() {
-                if (document.hidden) {
-                    handleTabSwitchViolation();
-                }
+                if (document.hidden) handleTabSwitchViolation();
             });
 
             window.addEventListener("blur", function() {
                 setTimeout(() => {
-                    if (!document.hasFocus()) {
-                        handleTabSwitchViolation();
-                    }
+                    if (!document.hasFocus()) handleTabSwitchViolation();
                 }, 100);
             });
         }
@@ -722,12 +739,10 @@
             tabSwitchCount++;
 
             if (tabSwitchCount === 1) {
-                showModal("Tab Switch Detected (-1 Mark)", "⚠️ Warning: You left the test window/background! A -1 mark penalty has been applied, and your current question has been replaced with a new question from the pool.", "fa-solid fa-triangle-exclamation");
-                
-                // Trigger question replacement on 1st switch
+                showModal("Tab Switch Detected (-1 Mark)", "⚠️ Warning: You left the test window! A -1 mark penalty has been applied.", "fa-solid fa-triangle-exclamation");
                 replaceCurrentQuestionFromPool();
             } else if (tabSwitchCount >= 2) {
-                showModal("Critical Security Violation", "⚠️ Your test score is submitted successfully because you switched tabs or went to the background a second time. Multiple violations lead to auto-submission.", "fa-solid fa-shield-cat", false, function() {
+                showModal("Critical Security Violation", "⚠️ Multiple tab switches detected. Your test is being submitted automatically.", "fa-solid fa-shield-cat", false, function() {
                     executeFinalSubmission("Auto-submitted due to multiple tab-switch violations");
                 });
             }
@@ -745,14 +760,15 @@
                     options: shuffledOpts,
                     answer: newCandidateQ.answer || newCandidateQ.a
                 };
-                delete studentAnswers[currentIndex]; // reset answer for new question
+                delete studentAnswers[currentIndex];
                 renderQuestion();
             }
         }
 
-        // --- 9. TIMER ENGINE ---
+        // --- 9. TIMER ENGINE CONNECTED TO ADMIN CONFIG ---
         function startTimerEngine() {
-            let totalSeconds = Number(examConfig.examDurationMinutes || 10) * 60;
+            let durationMins = Number(examConfig.examDurationMinutes || 10);
+            let totalSeconds = durationMins * 60;
 
             timerInterval = setInterval(() => {
                 if (totalSeconds <= 0) {
@@ -767,7 +783,7 @@
             }, 1000);
         }
 
-        // --- 10. SUBMISSION & RESULT TRANSITION ---
+        // --- 10. SUBMISSION DIRECTLY TO FIRESTORE & REDIRECT ---
         function confirmFinalSubmission() {
             const unanswered = activeQuestions.length - Object.keys(studentAnswers).length;
             const promptMsg = unanswered > 0 ? `You have ${unanswered} unanswered question(s). Are you sure you want to submit?` : "Are you sure you want to submit your test?";
@@ -777,10 +793,9 @@
             });
         }
 
-        function executeFinalSubmission(reason) {
+        async function executeFinalSubmission(reason) {
             if (timerInterval) clearInterval(timerInterval);
 
-            // Calculate Scores
             let correctCount = 0;
             let incorrectCount = 0;
             let unansweredCount = 0;
@@ -812,7 +827,6 @@
             const negWeight = Number(examConfig.negativeMarks || 0.25);
             let rawScore = (correctCount * posWeight) - (incorrectCount * negWeight);
             
-            // Apply tab switch penalty (-1 mark for 1st switch)
             const penaltyMarks = tabSwitchCount > 0 ? 1 : 0;
             const finalScore = Math.max(0, rawScore - penaltyMarks);
 
@@ -831,16 +845,18 @@
                 submittedAt: new Date().toISOString()
             };
 
-            // Save to Firestore / Local Storage for Admin and Result View
+            // Save result to Session Storage for Result View Dashboard
             sessionStorage.setItem("last_exam_result", JSON.stringify(resultPackage));
-            const existingSubmissions = JSON.parse(localStorage.getItem("exam_submissions") || "[]");
-            existingSubmissions.push(resultPackage);
-            localStorage.setItem("exam_submissions", JSON.stringify(existingSubmissions));
-
-            // Mark session as completed so candidate cannot re-attempt without new session
             sessionStorage.setItem("exam_already_attempted", "true");
 
-            // Redirect to result.html dashboard
+            // Save directly to Firestore for Admin Panel visibility
+            try {
+                await db.collection("exam_submissions").add(resultPackage);
+            } catch (err) {
+                console.error("Error writing submission to Firestore:", err);
+            }
+
+            // Redirect to result dashboard
             window.location.href = "result.html";
         }
 
