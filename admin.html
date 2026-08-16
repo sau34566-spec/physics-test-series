@@ -726,7 +726,6 @@
         updatedAt: new Date().toISOString()
       };
 
-      // Push payload to all standard keys used across student modules (`nta.html`)
       localStorage.setItem("exam_config", JSON.stringify(configPayload));
       localStorage.setItem("admin_test_config", JSON.stringify(configPayload));
       localStorage.setItem("test_settings", JSON.stringify(configPayload));
