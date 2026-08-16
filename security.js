@@ -1,100 +1,107 @@
- // ==========================================
-// NTA Exam Portal - Advanced Security & Anti-Cheating Script (Fixed Version)
-// ==========================================
+ // security.js - Exam Security & Anti-Cheat Manager
 
-let tabSwitchCount = parseInt(localStorage.getItem('exam_security_penalties') || '0');
-let isExamSubmitted = false;
-let lastBlurTime = 0; // Double trigger prevent karne ke liye
+(function() {
+    // Admin check for unlimited sessions/bypass
+    const studentInfo = JSON.parse(sessionStorage.getItem("student_info")) || {};
+    const isAdmin = studentInfo.email === "sauravpandey3221@gmail.com";
 
-// Create and inject warning banner dynamically if not present
-function createWarningBanner() {
-    if (document.getElementById("warning-banner")) return;
+    let tabSwitchCount = 0;
+    let copyPasteAttempts = 0;
+    let penaltiesApplied = 0;
 
-    const banner = document.createElement("div");
-    banner.id = "warning-banner";
-    banner.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background-color: #ef4444;
-        color: white;
-        text-align: center;
-        padding: 10px;
-        font-weight: 600;
-        font-family: 'Inter', sans-serif;
-        font-size: 0.9rem;
-        z-index: 99999;
-        display: none;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    `;
-    banner.innerText = "⚠️ WARNING: Do not switch tabs or leave the exam window! Your activity is monitored.";
-    document.body.appendChild(banner);
-}
-
-// Show banner temporarily
-function showWarningBannerMessage() {
-    const banner = document.getElementById("warning-banner");
-    if (banner) {
-        banner.style.display = "block";
-        setTimeout(() => {
-            banner.style.display = "none";
-        }, 5000);
-    }
-}
-
-// Handle violation event safely
-function handleSecurityViolation() {
-    if (isExamSubmitted) return;
-
-    const currentTime = Date.now();
-    // 2 seconds ke andar agar dubara blur event trigger ho toh ignore karein (debounce)
-    if (currentTime - lastBlurTime < 2000) {
-        return;
-    }
-    lastBlurTime = currentTime;
-
-    tabSwitchCount++;
-    localStorage.setItem('exam_security_penalties', tabSwitchCount);
-
-    if (tabSwitchCount === 1) {
-        showWarningBannerMessage();
-        if (typeof window.showToast === 'function') {
-            window.showToast("Warning: Tab switching detected! 1 mark penalty applied.");
+    // Warning Banner Injector
+    function ensureWarningBanner() {
+        if (!document.getElementById("warning-banner")) {
+            const banner = document.createElement("div");
+            banner.id = "warning-banner";
+            banner.style.cssText = "display:none; background-color:#fee2e2; border:1px solid #ef4444; color:#991b1b; padding:12px; border-radius:8px; margin-bottom:15px; font-weight:600; text-align:center; font-family:sans-serif; z-index:9999; position:relative;";
+            banner.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span id="warning-msg"></span>`;
+            
+            const container = document.querySelector(".test-container") || document.body;
+            container.insertBefore(banner, container.firstChild);
         }
-    } else if (tabSwitchCount >= 2) {
-        if (typeof window.showToast === 'function') {
-            window.showToast("Multiple violations detected! Auto-submitting exam.");
+    }
+
+    function showWarning(msg) {
+        ensureWarningBanner();
+        const banner = document.getElementById("warning-msg");
+        if (banner) {
+            banner.innerText = msg;
+            const bannerBox = document.getElementById("warning-banner");
+            bannerBox.style.display = "block";
+            setTimeout(() => { bannerBox.style.display = "none"; }, 4000);
+        } else {
+            alert(msg);
         }
-        isExamSubmitted = true;
-        setTimeout(() => {
-            if (typeof window.executeFinalSubmit === 'function') {
-                window.executeFinalSubmit();
-            } else {
-                window.location.reload();
+    }
+
+    // Anti-Cheating Protections (Bypassed if user is admin)
+    if (!isAdmin) {
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        
+        document.addEventListener('copy', e => { 
+            e.preventDefault(); 
+            copyPasteAttempts++; 
+            showWarning("Copying is prohibited!"); 
+        });
+        
+        document.addEventListener('paste', e => { 
+            e.preventDefault(); 
+            copyPasteAttempts++; 
+            showWarning("Pasting is prohibited!"); 
+        });
+
+        document.addEventListener("visibilitychange", function() {
+            if (document.hidden && window.isTestSubmitted !== true) {
+                tabSwitchCount++;
+                if (tabSwitchCount === 1) {
+                    penaltiesApplied += 1;
+                    showWarning("Tab switch detected! -1 mark penalty applied & a new question has been loaded.");
+                    
+                    // Trigger a new question or jump/shuffle to another question in test.html
+                    if (typeof window.loadNewQuestionOnSwitch === "function") {
+                        window.loadNewQuestionOnSwitch();
+                    }
+                } else if (tabSwitchCount >= 2) {
+                    window.isTestSubmitted = true;
+                    alert("Multiple tab switches detected! Auto-submitting exam.");
+                    if (typeof window.submitExam === "function") {
+                        window.submitExam();
+                    }
+                }
             }
-        }, 1500);
-    }
-}
-
-// Initialize listeners on DOM load
-document.addEventListener("DOMContentLoaded", () => {
-    createWarningBanner();
-
-    // Reset or initialize storage if not present
-    if (!localStorage.getItem('exam_security_penalties')) {
-        localStorage.setItem('exam_security_penalties', '0');
+        });
     }
 
-    // Listen to visibility changes (Tab switching)
-    document.addEventListener("visibilitychange", () => {
-        if (document.hidden) {
-            handleSecurityViolation();
-        }
-    });
+    // Accurate Marks Calculation Helper
+    window.calculateExamScore = function(questions, userAnswers) {
+        let correctCount = 0;
+        
+        questions.forEach((q, idx) => {
+            const studentAns = userAnswers[idx];
+            const correctAns = q.a !== undefined ? q.a : q.answer;
 
-    // Listen to window blur (clicking outside window / developer tools)
-    window.addEventListener("blur", () => {
-        handleSecurityViolation();
-    });
-});
+            if (studentAns !== undefined && studentAns !== null && studentAns === correctAns) {
+                correctCount++;
+            }
+        });
+
+        let finalScore = Math.max(0, correctCount - penaltiesApplied);
+        return {
+            correctCount,
+            penaltiesApplied,
+            finalScore,
+            scoreString: `${finalScore}/${questions.length}`,
+            tabSwitches: tabSwitchCount,
+            copiesAttempted: copyPasteAttempts
+        };
+    };
+
+    window.getSecurityStats = function() {
+        return {
+            tabSwitches: tabSwitchCount,
+            copiesAttempted: copyPasteAttempts,
+            penaltiesApplied: penaltiesApplied
+        };
+    };
+})();
