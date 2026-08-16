@@ -922,15 +922,15 @@ function calculateResult() {
 
 
 /* =========================================================
-   SUBMIT EXAM
+   SUBMIT EXAM (STEP 8 UPDATED)
 ========================================================= */
 
 async function submitExam(reason) {
 
-    if (submitted) return;
+    if (window.isTestSubmitted || submitted) return;
 
-    submitted = true;
     window.isTestSubmitted = true;
+    submitted = true;
 
     clearInterval(timerInterval);
     sessionStorage.removeItem(examTimerKey);
@@ -1043,7 +1043,7 @@ startExamTimer();
 
 
 /* =========================================================
-   ANTI-CHEATING SECURITY
+   ANTI-CHEATING SECURITY (STEP 8 BUG FIX APPLIED)
 ========================================================= */
 
 let securityTabSwitches = 0;
@@ -1064,7 +1064,7 @@ function showSecurityWarning(message) {
 }
 
 function handleExamViolation() {
-    if (securitySubmitted || submitted) return;
+    if (securitySubmitted || submitted || window.isTestSubmitted) return;
 
     securityTabSwitches++;
 
@@ -1073,10 +1073,11 @@ function handleExamViolation() {
         alert("WARNING 1/2: Tab switching detected! Returning to another tab or losing focus will automatically submit your exam.");
     } else if (securityTabSwitches >= 2) {
         securitySubmitted = true;
-        showSecurityWarning("CRITICAL VIOLATION: Maximum tab switches exceeded! Submitting exam automatically...");
+        showSecurityWarning("⚠️ Multiple violations detected! Your exam is being submitted.");
         alert("CRITICAL VIOLATION: Tab switch limit exceeded! Your exam is being automatically submitted.");
         
         setTimeout(() => {
+            // IMPORTANT: submitExam() handles setting window.isTestSubmitted flag
             if (typeof window.submitExam === "function") {
                 window.submitExam("Anti-cheating violation: Tab switch limit exceeded");
             }
@@ -1115,7 +1116,7 @@ if (!isNaN(savedSecurityCount)) {
 
 // Disable Context Menu
 document.addEventListener("contextmenu", function (event) {
-    if (securitySubmitted || submitted) return;
+    if (securitySubmitted || submitted || window.isTestSubmitted) return;
     event.preventDefault();
     contextMenuAttempts++;
     showSecurityWarning("⚠️ Right-click is disabled during the examination.");
@@ -1123,7 +1124,7 @@ document.addEventListener("contextmenu", function (event) {
 
 // Disable Copy
 document.addEventListener("copy", function (event) {
-    if (securitySubmitted || submitted) return;
+    if (securitySubmitted || submitted || window.isTestSubmitted) return;
     event.preventDefault();
     copyAttempts++;
     showSecurityWarning("⚠️ Copying content is not allowed during the examination.");
@@ -1131,7 +1132,7 @@ document.addEventListener("copy", function (event) {
 
 // Disable Paste
 document.addEventListener("paste", function (event) {
-    if (securitySubmitted || submitted) return;
+    if (securitySubmitted || submitted || window.isTestSubmitted) return;
     event.preventDefault();
     pasteAttempts++;
     showSecurityWarning("⚠️ Pasting content is not allowed during the examination.");
@@ -1139,7 +1140,7 @@ document.addEventListener("paste", function (event) {
 
 // Disable Cut
 document.addEventListener("cut", function (event) {
-    if (securitySubmitted || submitted) return;
+    if (securitySubmitted || submitted || window.isTestSubmitted) return;
     event.preventDefault();
     cutAttempts++;
     showSecurityWarning("⚠️ Cutting content is not allowed during the examination.");
@@ -1163,4 +1164,4 @@ function getSecurityResultData() {
 </script>
 
 </body>
-</html>
+</html> 
