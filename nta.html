@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -339,7 +339,9 @@
         doc,
         getDoc,
         setDoc,
-        runTransaction
+        runTransaction,
+        collection,
+        getDocs
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -533,9 +535,12 @@
     }
 
     /* =========================================================
-       EMAIL LOGIN
+       EMAIL LOGIN & ADMIN SYNC (TEST STEP & TIMING CONTROL)
        ========================================================= */
-    window.onload = function () {
+    window.onload = async function () {
+        // Fetch Admin Settings / Test Configurations from Firebase or LocalStorage
+        await syncAdminConfigFromCloud();
+
         const savedAdmin = localStorage.getItem("persistent_admin_email");
 
         if (
@@ -550,7 +555,31 @@
         }
     };
 
-    window.verifyAndProceedEmail = function () {
+    async function syncAdminConfigFromCloud() {
+        try {
+            const configRef = doc(db, "adminConfig", "settings");
+            const configSnap = await getDoc(configRef);
+            if (configSnap.exists()) {
+                activeAdminConfig = configSnap.data();
+                localStorage.setItem("admin_test_config", JSON.stringify(activeAdminConfig));
+            }
+        } catch (e) {
+            console.log("Using local configuration fallback.");
+        }
+
+        const adminSettingsStr =
+            localStorage.getItem("admin_test_config") ||
+            localStorage.getItem("admin_settings") ||
+            localStorage.getItem("test_settings");
+
+        try {
+            if (adminSettingsStr) activeAdminConfig = JSON.parse(adminSettingsStr);
+        } catch {
+            activeAdminConfig = {};
+        }
+    }
+
+    window.verifyAndProceedEmail = async function () {
         const input = document.getElementById("student-email-input");
         const emailInput = input.value.trim().toLowerCase();
 
@@ -559,8 +588,18 @@
             return;
         }
 
-        if (typeof window.validateStudentEmailInput === "function") {
-            if (!window.validateStudentEmailInput(emailInput)) return;
+        // Check if Email Verification / Authorization is Enabled in Admin Config
+        await syncAdminConfigFromCloud();
+        
+        const allowedEmails = activeAdminConfig.allowedEmails || activeAdminConfig.authorizedEmails;
+        if (allowedEmails && Array.isArray(allowedEmails) && allowedEmails.length > 0) {
+            const isAuthorized = allowedEmails.map(e => e.toLowerCase()).includes(emailInput);
+            const savedAdmin = (localStorage.getItem("persistent_admin_email") || "").toLowerCase();
+            
+            if (!isAuthorized && emailInput !== savedAdmin) {
+                showToast("Your email is not authorized by the administrator to take this test.");
+                return;
+            }
         }
 
         currentStudentEmail = emailInput;
@@ -569,20 +608,9 @@
     };
 
     /* =========================================================
-       SCHEDULE
+       SCHEDULE & TIMER CONTROLS
        ========================================================= */
     function checkTestScheduleWindow() {
-        const adminSettingsStr =
-            localStorage.getItem("admin_test_config") ||
-            localStorage.getItem("admin_settings") ||
-            localStorage.getItem("test_settings");
-
-        try {
-            activeAdminConfig = adminSettingsStr ? JSON.parse(adminSettingsStr) : {};
-        } catch {
-            activeAdminConfig = {};
-        }
-
         const savedAdmin = localStorage.getItem("persistent_admin_email") || "";
         const isAdmin =
             localStorage.getItem("is_admin_logged_in") === "true" &&
@@ -626,7 +654,7 @@
     };
 
     /* =========================================================
-       START EXAM
+       START EXAM (DYNAMIC QUESTIONS & TIMING CONTROL)
        ========================================================= */
     window.startExamPortalSession = async function () {
         closeReadyModal();
@@ -637,24 +665,37 @@
             return;
         }
 
-        let adminQuestions =
-            localStorage.getItem("admin_live_questions") ||
-            localStorage.getItem("admin_questions") ||
-            localStorage.getItem("questions");
-
-        if (adminQuestions) {
-            try {
-                questionsData = JSON.parse(adminQuestions);
-            } catch {
-                questionsData = defaultQuestions;
+        // Load Questions pool from Firebase or LocalStorage
+        try {
+            const qRef = doc(db, "questionsPool", getTestId());
+            const qSnap = await getDoc(qRef);
+            if (qSnap.exists() && qSnap.data().questions) {
+                questionsData = qSnap.data().questions;
             }
-        } else {
-            try {
-                const res = await fetch("chapter1.json", { cache: "no-store" });
-                if (res.ok) questionsData = await res.json();
-                else questionsData = defaultQuestions;
-            } catch {
-                questionsData = defaultQuestions;
+        } catch (e) {
+            console.log("Firebase question fetch fallback to local.");
+        }
+
+        if (!questionsData || questionsData.length === 0) {
+            let adminQuestions =
+                localStorage.getItem("admin_live_questions") ||
+                localStorage.getItem("admin_questions") ||
+                localStorage.getItem("questions");
+
+            if (adminQuestions) {
+                try {
+                    questionsData = JSON.parse(adminQuestions);
+                } catch {
+                    questionsData = defaultQuestions;
+                }
+            } else {
+                try {
+                    const res = await fetch("chapter1.json", { cache: "no-store" });
+                    if (res.ok) questionsData = await res.json();
+                    else questionsData = defaultQuestions;
+                } catch {
+                    questionsData = defaultQuestions;
+                }
             }
         }
 
@@ -671,8 +712,11 @@
             }
         }
 
+        // Apply Dynamic Test Duration Controlled from Admin Configuration
         if (activeAdminConfig.testDuration && !isNaN(activeAdminConfig.testDuration)) {
             totalSeconds = parseInt(activeAdminConfig.testDuration, 10) * 60;
+        } else if (activeAdminConfig.duration && !isNaN(activeAdminConfig.duration)) {
+            totalSeconds = parseInt(activeAdminConfig.duration, 10) * 60;
         } else {
             totalSeconds = questionsData.length * 120;
         }
@@ -1034,16 +1078,11 @@
         const scoreString = `${result.finalScore}/${result.totalMarks}`;
 
         return {
-            /* Student identity */
             name: currentStudentName || currentStudentEmail,
             email: currentStudentEmail,
             roll: currentStudentRoll || "",
-
-            /* Test identity */
             testId: getTestId(),
             testName: getTestName(),
-
-            /* Score analytics */
             score: scoreString,
             finalScore: result.finalScore,
             totalMarks: result.totalMarks,
@@ -1054,23 +1093,15 @@
             incorrect: result.incorrect,
             accuracy: result.accuracy,
             negativeMarks: result.negativeMarks,
-
-            /* Anti-cheat */
             tabSwitches: tabSwitchCount,
             copiesAttempted: copyPasteAttempts,
             penaltiesApplied: result.penaltiesApplied,
             securityPenalty: result.securityPenalty,
-
-            /* Responses */
             answers: answersObject,
             questionResults: result.questionResults,
-
-            /* Timing */
             examStartedAt,
             submittedAt: examSubmittedAt || new Date().toISOString(),
             submittedTimestamp: Date.now(),
-
-            /* Feedback is added later */
             rating: null,
             query: ""
         };
@@ -1078,7 +1109,6 @@
 
     /* =========================================================
        FIREBASE RESULT SAVE
-       One result document per email + test.
        ========================================================= */
     async function saveResultToFirebase(payload) {
         const resultId = `${safeId(payload.email)}__${safeId(payload.testId)}`;
@@ -1089,11 +1119,6 @@
 
             if (existing.exists()) {
                 const existingData = existing.data();
-
-                /*
-                 * If the existing document is already submitted,
-                 * do not overwrite the student's original attempt.
-                 */
                 if (existingData.submissionStatus === "submitted") {
                     throw new Error("ALREADY_SUBMITTED");
                 }
@@ -1121,10 +1146,6 @@
         const existing = await getDoc(resultRef);
 
         if (!existing.exists()) {
-            /*
-             * If the first result save failed, create the complete
-             * result record now before adding feedback.
-             */
             const payload = buildSubmissionPayload();
 
             await setDoc(resultRef, {
@@ -1299,10 +1320,6 @@
         if (document.hidden && !testSubmitted && examStartedAt) {
             const now = Date.now();
 
-            /*
-             * Prevent duplicate visibility events from being counted
-             * twice within a short interval.
-             */
             if (now - lastVisibilityEvent < 1000) return;
             lastVisibilityEvent = now;
 
@@ -1329,11 +1346,6 @@
             }
         }
     });
-
-    /*
-     * If security.js is present, its validation/attempt recorder
-     * remains compatible with this page.
-     */
 </script>
 </body>
 </html>
