@@ -394,16 +394,6 @@ let questions = [];
    LOAD QUESTIONS
 ========================================================= */
 
-if (
-    examConfig &&
-    Array.isArray(examConfig.questions) &&
-    examConfig.questions.length > 0
-) {
-    questions = examConfig.questions.map(normalizeQuestion);
-} else {
-    questions = defaultQuestions.map(normalizeQuestion);
-}
-
 function normalizeQuestion(item) {
     const options = item.options || {};
     return {
@@ -416,6 +406,16 @@ function normalizeQuestion(item) {
         },
         answer: item.answer || item.a || "A"
     };
+}
+
+if (
+    examConfig &&
+    Array.isArray(examConfig.questions) &&
+    examConfig.questions.length > 0
+) {
+    questions = examConfig.questions.map(normalizeQuestion);
+} else {
+    questions = defaultQuestions.map(normalizeQuestion);
 }
 
 /* =========================================================
@@ -441,6 +441,7 @@ if (questionLimit > 0 && questionLimit < questions.length) {
 let currentQuestion = 0;
 let answers = {};
 let submitted = false;
+window.isTestSubmitted = false;
 
 let durationMinutes = Number(
     examConfig?.examDurationMinutes ||
@@ -502,7 +503,7 @@ function renderQuestion() {
 
     const qText = document.createElement("div");
     qText.className = "question";
-    qText.innerText = q.question; // Safe text rendering (No HTML injection)
+    qText.innerText = q.question;
 
     const optionContainer = document.createElement("div");
     optionContainer.className = "options";
@@ -520,7 +521,6 @@ function renderQuestion() {
         input.name = "question-option";
         input.value = String(optionKey);
 
-        // Previously selected answer check
         if (
             answers[currentQuestion] !== undefined &&
             answers[currentQuestion] === String(optionKey)
@@ -528,7 +528,6 @@ function renderQuestion() {
             input.checked = true;
         }
 
-        // Attach event listener
         input.addEventListener("change", () => {
             window.saveAnswer(optionKey);
             renderQuestion();
@@ -556,7 +555,6 @@ function renderQuestion() {
     const buttonsDiv = document.createElement("div");
     buttonsDiv.className = "buttons";
 
-    // Previous Button
     const previousButton = document.createElement("button");
     previousButton.id = "prev-btn";
     previousButton.className = "prev";
@@ -564,14 +562,12 @@ function renderQuestion() {
     previousButton.disabled = currentQuestion === 0;
     previousButton.onclick = previousQuestion;
 
-    // Next Button
     const nextButton = document.createElement("button");
     nextButton.id = "next-btn";
     nextButton.className = "next";
     nextButton.innerText = "Save & Next →";
     nextButton.onclick = nextQuestion;
 
-    // Submit Button
     const submitButton = document.createElement("button");
     submitButton.id = "submit-btn";
     submitButton.className = "submit";
@@ -698,71 +694,65 @@ window.confirmSubmit = function() {
         : "Are you sure you want to submit the test?";
 
     if (confirm(message)) {
-        submitExam("Manual submission");
+        window.submitExam("Manual submission");
     }
 };
 
 /* =========================================================
-   CALCULATE RESULT
+   STEP 11 — FINAL SUBMIT SYSTEM
 ========================================================= */
 
-function calculateResult() {
-    let correct = 0;
-    let incorrect = 0;
-    let unanswered = 0;
+window.submitExam = async function (reason = "Manual submission") {
 
-    questions.forEach((q, index) => {
-        const selected = answers[index];
-
-        if (!selected) {
-            unanswered++;
-        } else if (selected === q.answer) {
-            correct++;
-        } else {
-            incorrect++;
-        }
-    });
-
-    const positiveMarks = correct;
-    const negativeMarks = incorrect * 0.25;
-    const score = positiveMarks - negativeMarks;
-
-    return {
-        correct,
-        incorrect,
-        unanswered,
-        positiveMarks,
-        negativeMarks,
-        score
-    };
-}
-
-/* =========================================================
-   SUBMIT EXAM
-========================================================= */
-
-async function submitExam(reason) {
     if (window.isTestSubmitted || submitted) return;
 
     window.isTestSubmitted = true;
     submitted = true;
 
-    clearInterval(timerInterval);
-    sessionStorage.removeItem(examTimerKey);
+    if (typeof timerInterval !== "undefined" && timerInterval) {
+        clearInterval(timerInterval);
+    }
 
-    const result = calculateResult();
+    if (typeof examTimerKey !== "undefined") {
+        sessionStorage.removeItem(examTimerKey);
+    }
+
+    // Calculate score
+    let correctCount = 0;
+    let incorrectCount = 0;
+    let unansweredCount = 0;
+
+    questions.forEach((question, index) => {
+        const selectedAnswer = answers[index];
+
+        if (!selectedAnswer) {
+            unansweredCount++;
+        } else if (
+            String(selectedAnswer).trim().toUpperCase() ===
+            String(question.answer).trim().toUpperCase()
+        ) {
+            correctCount++;
+        } else {
+            incorrectCount++;
+        }
+    });
+
+    const positiveMarks = correctCount;
+    const negativeMarks = incorrectCount * 0.25;
+    const finalScore = positiveMarks - negativeMarks;
+
     const securityData = getSecurityResultData();
 
-    const submission = {
-        name: studentInfo?.name || "",
-        roll: studentInfo?.roll || "",
-        email: studentInfo?.email || "",
-        correct: result.correct,
-        incorrect: result.incorrect,
-        unanswered: result.unanswered,
-        positiveMarks: result.positiveMarks,
-        negativeMarks: result.negativeMarks,
-        score: Number(result.score.toFixed(2)),
+    const submissionData = {
+        name: studentInfo?.name || "Student",
+        roll: studentInfo?.roll || "-",
+        email: studentInfo?.email || "-",
+        correct: correctCount,
+        incorrect: incorrectCount,
+        unanswered: unansweredCount,
+        positiveMarks: positiveMarks,
+        negativeMarks: negativeMarks,
+        score: Number(finalScore.toFixed(2)),
         totalQuestions: questions.length,
         submissionReason: reason,
 
@@ -775,16 +765,17 @@ async function submitExam(reason) {
         submittedAt: new Date().toISOString()
     };
 
-    const oldResults = JSON.parse(localStorage.getItem("exam_submissions") || "[]");
-    oldResults.push(submission);
-    localStorage.setItem("exam_submissions", JSON.stringify(oldResults));
+    // Local Storage Save
+    const oldSubmissions = JSON.parse(localStorage.getItem("exam_submissions") || "[]");
+    oldSubmissions.push(submissionData);
+    localStorage.setItem("exam_submissions", JSON.stringify(oldSubmissions));
 
-    sessionStorage.setItem("last_exam_result", JSON.stringify(submission));
+    // Session Storage Save for Result Page
+    sessionStorage.setItem("last_exam_result", JSON.stringify(submissionData));
 
+    // Redirect to Result Page
     window.location.href = "result.html";
-}
-
-window.submitExam = submitExam;
+};
 
 /* =========================================================
    START EXAM & TIMER
