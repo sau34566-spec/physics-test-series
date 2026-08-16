@@ -282,10 +282,111 @@ if (!studentInfo) {
 }
 
 /* =========================================================
-   2. TEST CONFIGURATION & QUESTIONS LOADING
+   2. TEST CONFIGURATION & QUESTIONS LOADING (STEP 15)
 ========================================================= */
 
-const examConfig = JSON.parse(sessionStorage.getItem("active_exam_config") || "null");
+// ==========================================
+// STEP 15 — ACTIVE EXAM CONFIG LOADER
+// ==========================================
+
+function loadActiveExamConfig() {
+
+    try {
+
+        const savedConfig =
+            sessionStorage.getItem("active_exam_config");
+
+        if (!savedConfig) {
+            return null;
+        }
+
+        const config = JSON.parse(savedConfig);
+
+        if (!config || typeof config !== "object") {
+            return null;
+        }
+
+        return config;
+
+    } catch (error) {
+
+        console.error(
+            "Exam configuration could not be loaded:",
+            error
+        );
+
+        return null;
+    }
+}
+
+const examConfig = loadActiveExamConfig();
+
+// ==========================================
+// EXAM CONFIG VALIDATION
+// ==========================================
+
+if (!examConfig) {
+
+    document.body.innerHTML = `
+        <div style="
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            background:#0f172a;
+            padding:20px;
+            font-family:Inter,sans-serif;
+        ">
+
+            <div style="
+                background:white;
+                max-width:450px;
+                width:100%;
+                padding:35px;
+                border-radius:16px;
+                text-align:center;
+            ">
+
+                <div style="
+                    font-size:50px;
+                    margin-bottom:15px;
+                ">
+                    ⚠️
+                </div>
+
+                <h2 style="color:#1e293b;">
+                    Exam Not Available
+                </h2>
+
+                <p style="
+                    color:#64748b;
+                    margin:12px 0 20px;
+                ">
+                    No active examination configuration was found.
+                    Please enter the exam through the official portal.
+                </p>
+
+                <button
+                    onclick="window.location.href='index.html'"
+                    style="
+                        background:#2563eb;
+                        color:white;
+                        border:0;
+                        padding:11px 20px;
+                        border-radius:8px;
+                        font-weight:700;
+                        cursor:pointer;
+                    "
+                >
+                    Back to Portal
+                </button>
+
+            </div>
+        </div>
+    `;
+
+    throw new Error("No active exam configuration found.");
+}
 
 const defaultQuestions = [
     {
