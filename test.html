@@ -76,7 +76,16 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            collection, 
+            query, 
+            where, 
+            getDocs, 
+            addDoc 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
@@ -95,7 +104,6 @@
         let userAnswers = {};
         let tabSwitchCount = 0;
         let copyPasteAttempts = 0;
-        let penaltiesApplied = 0;
         window.isTestSubmitted = false;
 
         const studentInfo = JSON.parse(sessionStorage.getItem("student_info"));
@@ -216,21 +224,20 @@
             setTimeout(() => banner.style.display = "none", 4000);
         }
 
-        // Anti-Cheating listeners
+        // Anti-Cheating: Context menu & Copy-Paste prohibition
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('copy', e => { e.preventDefault(); copyPasteAttempts++; showWarning("Copying prohibited!"); });
         document.addEventListener('paste', e => { e.preventDefault(); copyPasteAttempts++; showWarning("Pasting prohibited!"); });
 
-        document.addEventListener("visibilitychange", function() {
+        // 1. Tab Switch Detection (Auto-submit on 2nd switch)
+        document.addEventListener("visibilitychange", () => {
             if (document.hidden && !window.isTestSubmitted) {
                 tabSwitchCount++;
-                if (tabSwitchCount === 1) {
-                    penaltiesApplied += 1;
-                    showWarning("Tab switch detected! 1 mark penalty applied. Next switch will auto-submit.");
-                } else if (tabSwitchCount >= 2) {
-                    window.isTestSubmitted = true;
-                    alert("Multiple tab switches detected! Auto-submitting exam.");
+                if (tabSwitchCount >= 2) {
+                    alert("Aapne 2 baar tab switch kiya hai. Aapka test automatically submit kiya ja raha hai.");
                     submitExam("Multiple tab switches");
+                } else {
+                    alert("Warning: Tab switch mat kariye! Agli baar test auto-submit ho jayega.");
                 }
             }
         });
@@ -240,6 +247,42 @@
                 submitExam("Manual submission");
             }
         };
+
+        // 2. Email Verification & Firestore Saving function
+        async function verifyAndSubmitTest(userEmail, score, resultPayload) {
+            try {
+                // Check if user has already submitted a test using this email
+                const q = query(collection(db, "testResults"), where("email", "==", userEmail));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    alert("Aap is email se pehle hi test de chuke hain!");
+                    window.location.href = "index.html";
+                    return false;
+                }
+
+                // Save data to Firestore "testResults" collection
+                await addDoc(collection(db, "testResults"), {
+                    email: userEmail,
+                    score: score,
+                    candidateName: resultPayload.candidateName,
+                    roll: resultPayload.roll,
+                    totalQuestions: resultPayload.totalQuestions,
+                    correctCount: resultPayload.correctCount,
+                    incorrectCount: resultPayload.incorrectCount,
+                    unansweredCount: resultPayload.unansweredCount,
+                    submissionReason: resultPayload.submissionReason,
+                    detailedAnalysis: resultPayload.detailedAnalysis,
+                    timestamp: new Date()
+                });
+
+                return true;
+            } catch (error) {
+                console.error("Firestore verification/saving error:", error);
+                alert("Error saving test results: " + error.message);
+                return false;
+            }
+        }
 
         window.submitExam = async (reason = "Manual submission") => {
             if (window.isTestSubmitted) return;
@@ -273,8 +316,7 @@
                 });
             });
 
-            // Evaluation: +1 for correct, can factor penalties if needed
-            let finalScore = Math.max(0, correctCount - penaltiesApplied);
+            let finalScore = Math.max(0, correctCount);
 
             const resultPayload = {
                 candidateName: studentInfo.name,
@@ -285,25 +327,20 @@
                 correctCount: correctCount,
                 incorrectCount: incorrectCount,
                 unansweredCount: unansweredCount,
-                penaltyMarks: penaltiesApplied,
                 submissionReason: reason,
                 detailedAnalysis: detailedAnalysis,
                 submittedAt: new Date().toISOString()
             };
 
-            // 1. Store locally so result.html can display it immediately
+            // Save locally for immediate view on result.html
             sessionStorage.setItem("last_exam_result", JSON.stringify(resultPayload));
 
-            // 2. Save to Firebase Firestore
-            try {
-                await setDoc(doc(db, "results", `${studentInfo.email}_${Date.now()}`), resultPayload);
-                console.log("Result saved successfully to Firestore.");
-            } catch (err) {
-                console.error("Firestore error:", err);
-            }
+            // Verify email and save to Firestore
+            const isSaved = await verifyAndSubmitTest(studentInfo.email, finalScore, resultPayload);
 
-            // 3. Redirect to Result Page
-            window.location.href = "result.html";
+            if (isSaved) {
+                window.location.href = "result.html";
+            }
         };
 
         renderQuestion();
