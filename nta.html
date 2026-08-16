@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -531,6 +531,8 @@ let totalSeconds = durationMinutes * 60;
 
 let timerInterval;
 
+const examTimerKey = "active_exam_end_time";
+
 
 /* =========================================================
    STUDENT DISPLAY
@@ -753,54 +755,79 @@ function updateProgress() {
 
 
 /* =========================================================
-   TIMER
+   RELIABLE TIMER (STEP 7)
 ========================================================= */
 
-function startTimer() {
+function startExamTimer() {
 
-    updateTimerDisplay();
+    let endTime = Number(sessionStorage.getItem(examTimerKey));
+    const now = Date.now();
 
-    timerInterval =
-        setInterval(function() {
+    // Agar existing timer nahi hai to naya timer create karo
+    if (!endTime || endTime <= now) {
 
-            if (submitted) return;
+        endTime = now + (durationMinutes * 60 * 1000);
 
-            totalSeconds--;
+        sessionStorage.setItem(
+            examTimerKey,
+            String(endTime)
+        );
+    }
 
-            updateTimerDisplay();
+    function updateTimer() {
 
+        if (window.isTestSubmitted || submitted) {
+            clearInterval(timerInterval);
+            return;
+        }
 
-            if (totalSeconds <= 0) {
+        const remaining =
+            Math.max(0, endTime - Date.now());
 
-                clearInterval(timerInterval);
+        totalSeconds =
+            Math.ceil(remaining / 1000);
 
-                submitExam("Time expired");
+        const minutes =
+            Math.floor(totalSeconds / 60);
 
+        const seconds =
+            totalSeconds % 60;
+
+        const timerElement =
+            document.getElementById("timer");
+
+        if (timerElement) {
+
+            timerElement.innerText =
+                String(minutes).padStart(2, "0") +
+                ":" +
+                String(seconds).padStart(2, "0");
+        }
+
+        // Time over
+        if (remaining <= 0) {
+
+            clearInterval(timerInterval);
+
+            sessionStorage.removeItem(examTimerKey);
+
+            if (!window.isTestSubmitted && !submitted) {
+
+                if (typeof window.submitExam === "function") {
+                    window.submitExam("Time expired");
+                }
             }
+        }
+    }
 
-        }, 1000);
+    // Immediately display timer
+    updateTimer();
 
-}
-
-
-function updateTimerDisplay() {
-
-    const safeSeconds =
-        Math.max(0, totalSeconds);
-
-    const minutes =
-        Math.floor(safeSeconds / 60);
-
-    const seconds =
-        safeSeconds % 60;
-
-    document.getElementById("timer").innerText =
-
-        String(minutes).padStart(2, "0")
-        + ":"
-        +
-        String(seconds).padStart(2, "0");
-
+    // Start interval
+    timerInterval = setInterval(
+        updateTimer,
+        1000
+    );
 }
 
 
@@ -903,8 +930,10 @@ async function submitExam(reason) {
     if (submitted) return;
 
     submitted = true;
+    window.isTestSubmitted = true;
 
     clearInterval(timerInterval);
+    sessionStorage.removeItem(examTimerKey);
 
 
     const result =
@@ -1005,12 +1034,12 @@ function escapeHTML(value) {
 
 
 /* =========================================================
-   START
+   START EXAM & TIMER
 ========================================================= */
 
 renderQuestion();
 
-startTimer();
+startExamTimer();
 
 
 /* =========================================================
