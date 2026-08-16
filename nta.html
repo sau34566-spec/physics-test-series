@@ -276,7 +276,7 @@
 </div>
 
 
-<script>
+<script type="module">
 
 "use strict";
 
@@ -895,7 +895,7 @@ function calculateResult() {
 
 
 /* =========================================================
-   SUBMIT EXAM (UPDATED WITH SECURITY DATA)
+   SUBMIT EXAM
 ========================================================= */
 
 async function submitExam(reason) {
@@ -934,7 +934,9 @@ async function submitExam(reason) {
 
         totalQuestions: questions.length,
 
-        // Security Info Added
+        submissionReason: reason,
+
+        // Security information
         tabSwitches: securityData.tabSwitches,
 
         copyAttempts: securityData.copyAttempts,
@@ -946,8 +948,6 @@ async function submitExam(reason) {
         contextMenuAttempts: securityData.contextMenuAttempts,
 
         penaltiesApplied: securityData.penaltiesApplied,
-
-        submissionReason: reason,
 
         submittedAt: new Date().toISOString()
 
@@ -985,23 +985,7 @@ async function submitExam(reason) {
 
 }
 
-
-/* =========================================================
-   SECURITY WARNING DISPLAY HELPER
-========================================================= */
-
-function showSecurityWarning(msg) {
-    const warningEl = document.getElementById("warning");
-    if (warningEl) {
-        warningEl.style.display = "block";
-        warningEl.innerText = msg;
-        setTimeout(() => {
-            if (!securitySubmitted) {
-                warningEl.style.display = "none";
-            }
-        }, 3000);
-    }
-}
+window.submitExam = submitExam;
 
 
 /* =========================================================
@@ -1030,30 +1014,37 @@ startTimer();
 
 
 /* =========================================================
-   STEP 4 — Anti-Cheating Security Code
+   ANTI-CHEATING SECURITY
 ========================================================= */
 
 let securityTabSwitches = 0;
 let securitySubmitted = false;
 
+let copyAttempts = 0;
+let pasteAttempts = 0;
+let cutAttempts = 0;
+let contextMenuAttempts = 0;
+let penaltiesApplied = 0;
+
+function showSecurityWarning(message) {
+    const warningEl = document.getElementById("warning");
+    if (warningEl) {
+        warningEl.style.display = "block";
+        warningEl.innerText = message;
+    }
+}
+
 function handleExamViolation() {
     if (securitySubmitted || submitted) return;
 
     securityTabSwitches++;
-    const warningEl = document.getElementById("warning");
 
     if (securityTabSwitches === 1) {
-        if (warningEl) {
-            warningEl.style.display = "block";
-            warningEl.innerText = "WARNING 1/2: Tab switching / leaving test window detected! Next attempt will automatically submit your exam.";
-        }
+        showSecurityWarning("WARNING 1/2: Tab switching / leaving test window detected! Next attempt will automatically submit your exam.");
         alert("WARNING 1/2: Tab switching detected! Returning to another tab or losing focus will automatically submit your exam.");
     } else if (securityTabSwitches >= 2) {
         securitySubmitted = true;
-        if (warningEl) {
-            warningEl.style.display = "block";
-            warningEl.innerText = "CRITICAL VIOLATION: Maximum tab switches exceeded! Submitting exam automatically...";
-        }
+        showSecurityWarning("CRITICAL VIOLATION: Maximum tab switches exceeded! Submitting exam automatically...");
         alert("CRITICAL VIOLATION: Tab switch limit exceeded! Your exam is being automatically submitted.");
         
         setTimeout(() => {
@@ -1093,16 +1084,7 @@ if (!isNaN(savedSecurityCount)) {
     securityTabSwitches = savedSecurityCount;
 }
 
-
-/* =========================================================
-   STEP 5 — COPY / PASTE / RIGHT-CLICK SECURITY
-========================================================= */
-
-let copyAttempts = 0;
-let pasteAttempts = 0;
-let cutAttempts = 0;
-let contextMenuAttempts = 0;
-
+// Disable Context Menu
 document.addEventListener("contextmenu", function (event) {
     if (securitySubmitted || submitted) return;
     event.preventDefault();
@@ -1110,6 +1092,7 @@ document.addEventListener("contextmenu", function (event) {
     showSecurityWarning("⚠️ Right-click is disabled during the examination.");
 });
 
+// Disable Copy
 document.addEventListener("copy", function (event) {
     if (securitySubmitted || submitted) return;
     event.preventDefault();
@@ -1117,6 +1100,7 @@ document.addEventListener("copy", function (event) {
     showSecurityWarning("⚠️ Copying content is not allowed during the examination.");
 });
 
+// Disable Paste
 document.addEventListener("paste", function (event) {
     if (securitySubmitted || submitted) return;
     event.preventDefault();
@@ -1124,6 +1108,7 @@ document.addEventListener("paste", function (event) {
     showSecurityWarning("⚠️ Pasting content is not allowed during the examination.");
 });
 
+// Disable Cut
 document.addEventListener("cut", function (event) {
     if (securitySubmitted || submitted) return;
     event.preventDefault();
@@ -1131,43 +1116,18 @@ document.addEventListener("cut", function (event) {
     showSecurityWarning("⚠️ Cutting content is not allowed during the examination.");
 });
 
-
-/* =========================================================
-   STEP 6 — SECURITY RESULT DATA
-========================================================= */
+// ==========================================
+// STEP 6 — SECURITY RESULT DATA
+// ==========================================
 
 function getSecurityResultData() {
     return {
-        tabSwitches: Number(
-            typeof securityTabSwitches !== "undefined"
-                ? securityTabSwitches
-                : 0
-        ),
-        copyAttempts: Number(
-            typeof copyAttempts !== "undefined"
-                ? copyAttempts
-                : 0
-        ),
-        pasteAttempts: Number(
-            typeof pasteAttempts !== "undefined"
-                ? pasteAttempts
-                : 0
-        ),
-        cutAttempts: Number(
-            typeof cutAttempts !== "undefined"
-                ? cutAttempts
-                : 0
-        ),
-        contextMenuAttempts: Number(
-            typeof contextMenuAttempts !== "undefined"
-                ? contextMenuAttempts
-                : 0
-        ),
-        penaltiesApplied: Number(
-            typeof penaltiesApplied !== "undefined"
-                ? penaltiesApplied
-                : 0
-        )
+        tabSwitches: Number(typeof securityTabSwitches !== "undefined" ? securityTabSwitches : 0),
+        copyAttempts: Number(typeof copyAttempts !== "undefined" ? copyAttempts : 0),
+        pasteAttempts: Number(typeof pasteAttempts !== "undefined" ? pasteAttempts : 0),
+        cutAttempts: Number(typeof cutAttempts !== "undefined" ? cutAttempts : 0),
+        contextMenuAttempts: Number(typeof contextMenuAttempts !== "undefined" ? contextMenuAttempts : 0),
+        penaltiesApplied: Number(typeof penaltiesApplied !== "undefined" ? penaltiesApplied : 0)
     };
 }
 
