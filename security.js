@@ -1,10 +1,10 @@
-// ==========================================
-// NTA Exam Portal - Advanced Security & Anti-Cheating Script
+ // ==========================================
+// NTA Exam Portal - Advanced Security & Anti-Cheating Script (Fixed Version)
 // ==========================================
 
-let tabSwitchCount = 0;
-let totalPenalties = parseInt(localStorage.getItem('exam_security_penalties') || '0');
+let tabSwitchCount = parseInt(localStorage.getItem('exam_security_penalties') || '0');
 let isExamSubmitted = false;
+let lastBlurTime = 0; // Double trigger prevent karne ke liye
 
 // Create and inject warning banner dynamically if not present
 function createWarningBanner() {
@@ -26,136 +26,75 @@ function createWarningBanner() {
         font-size: 0.9rem;
         z-index: 99999;
         display: none;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     `;
-    banner.innerText = "⚠️ WARNING: Tab switching or leaving the test window is strictly prohibited!";
-    document.body.prepend(banner);
+    banner.innerText = "⚠️ WARNING: Do not switch tabs or leave the exam window! Your activity is monitored.";
+    document.body.appendChild(banner);
 }
 
-function showSecurityWarning(msg) {
-    let banner = document.getElementById("warning-banner");
+// Show banner temporarily
+function showWarningBannerMessage() {
+    const banner = document.getElementById("warning-banner");
     if (banner) {
-        banner.innerText = msg;
         banner.style.display = "block";
         setTimeout(() => {
             banner.style.display = "none";
-        }, 4000);
+        }, 5000);
     }
 }
 
-// Security Event Listeners Setup
-document.addEventListener("DOMContentLoaded", () => {
-    createWarningBanner();
+// Handle violation event safely
+function handleSecurityViolation() {
+    if (isExamSubmitted) return;
 
-    // 1. Disable Right Click Context Menu
-    document.addEventListener("contextmenu", (e) => {
-        e.preventDefault();
-        showSecurityWarning("⚠️ Right-click is disabled during the assessment.");
-    });
-
-    // 2. Disable Keyboard Shortcuts (F12, Inspect, Copy, Paste, Cut, Refresh, PrintScreen)
-    document.addEventListener("keydown", (e) => {
-        if (
-            e.key === "F12" ||
-            (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C")) ||
-            (e.ctrlKey && e.key === "U") ||
-            (e.ctrlKey && (e.key === "c" || e.key === "v" || e.key === "x" || e.key === "a" || e.key === "s" || e.key === "r")) ||
-            e.key === "PrintScreen"
-        ) {
-            e.preventDefault();
-            showSecurityWarning("⚠️ This shortcut or key combination is disabled during the exam.");
-            return false;
-        }
-    });
-
-    // 3. Disable Copy, Cut, Paste Actions via Mouse/Clipboard
-    document.addEventListener("copy", (e) => { e.preventDefault(); });
-    document.addEventListener("paste", (e) => { e.preventDefault(); });
-    document.addEventListener("cut", (e) => { e.preventDefault(); });
-
-    // 4. Tab Switch & Background Blur Detection Logic
-    document.addEventListener("visibilitychange", () => {
-        if (document.hidden && !isExamSubmitted) {
-            handleTabSwitchViolation();
-        }
-    });
-
-    window.addEventListener("blur", () => {
-        if (!isExamSubmitted && document.hasFocus() === false) {
-            handleTabSwitchViolation();
-        }
-    });
-});
-
-function handleTabSwitchViolation() {
-    // Check if logged-in user is admin, if yes, skip penalties and auto-submit
-    let currentUserEmail = localStorage.getItem('current_test_user_email') || "";
-    let savedAdminEmail = localStorage.getItem('persistent_admin_email') || "";
-    
-    if (localStorage.getItem('is_admin_logged_in') === 'true' && currentUserEmail.trim().toLowerCase() === savedAdminEmail.trim().toLowerCase()) {
-        return; // Admin bypasses security restrictions during testing
+    const currentTime = Date.now();
+    // 2 seconds ke andar agar dubara blur event trigger ho toh ignore karein (debounce)
+    if (currentTime - lastBlurTime < 2000) {
+        return;
     }
+    lastBlurTime = currentTime;
 
     tabSwitchCount++;
+    localStorage.setItem('exam_security_penalties', tabSwitchCount);
 
     if (tabSwitchCount === 1) {
-        totalPenalties += 1;
-        localStorage.setItem('exam_security_penalties', totalPenalties);
-        showSecurityWarning("⚠️ Warning 1/2: Tab switch detected! -1 Mark penalty applied.");
+        showWarningBannerMessage();
+        if (typeof window.showToast === 'function') {
+            window.showToast("Warning: Tab switching detected! 1 mark penalty applied.");
+        }
     } else if (tabSwitchCount >= 2) {
+        if (typeof window.showToast === 'function') {
+            window.showToast("Multiple violations detected! Auto-submitting exam.");
+        }
         isExamSubmitted = true;
-        showSecurityWarning("🚨 Maximum tab switches reached! Auto-submitting test now.");
-        
         setTimeout(() => {
-            if (typeof window.executeFinalSubmit === "function") {
+            if (typeof window.executeFinalSubmit === 'function') {
                 window.executeFinalSubmit();
             } else {
-                localStorage.setItem('portal_session_locked', 'true');
                 window.location.reload();
             }
         }, 1500);
     }
 }
 
-// 5. Email Domain Validation Check Function
-window.validateStudentEmailInput = function(emailInput) {
-    if (!emailInput || typeof emailInput !== 'string' || !emailInput.includes("@")) {
-        alert("Your email not found");
-        return false;
-    }
-    
-    const emailTrimmed = emailInput.trim().toLowerCase();
-    
-    // Check structure (e.g., must contain localpart, @, and domain with a dot)
-    const parts = emailTrimmed.split("@");
-    if (parts.length !== 2 || !parts[0] || !parts[1].includes(".") || !emailTrimmed.endsWith("@gmail.com")) {
-        alert("Your email not found or invalid domain");
-        return false;
+// Initialize listeners on DOM load
+document.addEventListener("DOMContentLoaded", () => {
+    createWarningBanner();
+
+    // Reset or initialize storage if not present
+    if (!localStorage.getItem('exam_security_penalties')) {
+        localStorage.setItem('exam_security_penalties', '0');
     }
 
-    // Check if admin is logging in with persistent admin email (bypass one-attempt limit)
-    let savedAdmin = (localStorage.getItem('persistent_admin_email') || "").trim().toLowerCase();
-    let isAdmin = localStorage.getItem('is_admin_logged_in') === 'true' && emailTrimmed === savedAdmin;
-
-    if (!isAdmin) {
-        // Check for One Email - One Attempt restriction for normal users
-        let submittedEmails = JSON.parse(localStorage.getItem('submitted_exam_emails') || '[]');
-        if (submittedEmails.includes(emailTrimmed)) {
-            alert("This email has already been used to submit an exam. Only one attempt per email is allowed.");
-            return false;
+    // Listen to visibility changes (Tab switching)
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            handleSecurityViolation();
         }
-    }
+    });
 
-    return true;
-};
-
-// Record used email upon final submission
-window.recordEmailAttempt = function(emailInput) {
-    if (!emailInput) return;
-    let emailTrimmed = emailInput.trim().toLowerCase();
-    let submittedEmails = JSON.parse(localStorage.getItem('submitted_exam_emails') || '[]');
-    if (!submittedEmails.includes(emailTrimmed)) {
-        submittedEmails.push(emailTrimmed);
-        localStorage.setItem('submitted_exam_emails', JSON.stringify(submittedEmails));
-    }
-};
+    // Listen to window blur (clicking outside window / developer tools)
+    window.addEventListener("blur", () => {
+        handleSecurityViolation();
+    });
+});
