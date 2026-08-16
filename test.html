@@ -75,8 +75,25 @@
         let tabSwitchCount = 0;
         window.isTestSubmitted = false;
 
-        const studentInfo = JSON.parse(sessionStorage.getItem("student_info"));
-        const examConfig = JSON.parse(sessionStorage.getItem("active_exam_config"));
+        const studentInfo = JSON.parse(sessionStorage.getItem("student_info") || "null");
+        const examConfig = (() => {
+            const savedConfig =
+                sessionStorage.getItem("active_exam_config") ||
+                localStorage.getItem("active_exam_config") ||
+                localStorage.getItem("exam_config") ||
+                localStorage.getItem("admin_test_config") ||
+                localStorage.getItem("test_settings") ||
+                localStorage.getItem("admin_settings");
+
+            if (!savedConfig) return null;
+
+            try {
+                return JSON.parse(savedConfig);
+            } catch (error) {
+                console.error("Failed to parse exam config:", error);
+                return null;
+            }
+        })();
 
         if (!studentInfo || !studentInfo.email) {
             alert("Unauthorized access! Please login from portal first.");
@@ -132,6 +149,17 @@
             questions = defaultQuestions;
         }
 
+        const questionLimit = Number(
+            examConfig?.studentDisplayLimit ??
+            examConfig?.studentLimit ??
+            examConfig?.questionLimit ??
+            questions.length
+        );
+
+        if (questionLimit > 0 && questionLimit < questions.length) {
+            questions = [...questions].sort(() => Math.random() - 0.5).slice(0, questionLimit);
+        }
+
         function renderQuestion() {
             if (questions.length === 0) return;
             const q = questions[currentIndex];
@@ -166,7 +194,16 @@
         window.prevQuestion = () => { if (currentIndex > 0) { currentIndex--; renderQuestion(); } };
 
         // Timer Setup
-        let durationMinutes = examConfig?.examDurationMinutes || 10;
+        let durationMinutes = Number(
+            examConfig?.examDurationMinutes ??
+            examConfig?.durationMinutes ??
+            (examConfig?.perQuestionSeconds ? examConfig.perQuestionSeconds / 60 : 10)
+        );
+
+        if (!Number.isFinite(durationMinutes) || durationMinutes <= 0) {
+            durationMinutes = 10;
+        }
+
         let totalSeconds = durationMinutes * 60;
         const timerInterval = setInterval(() => {
             if (totalSeconds <= 0) {
@@ -240,16 +277,16 @@
                 });
             });
 
-            let finalScore = Math.max(0, correctCount);
+            let finalScore = Math.max(0, correctCount - incorrectCount * 0.25);
             const resultPayload = {
-                candidateName: studentInfo.name,
+                name: studentInfo.name,
                 email: studentInfo.email,
                 roll: studentInfo.roll,
-                score: finalScore,
+                score: Number(finalScore.toFixed(2)),
                 totalQuestions: questions.length,
-                correctCount: correctCount,
-                incorrectCount: incorrectCount,
-                unansweredCount: unansweredCount,
+                correct: correctCount,
+                incorrect: incorrectCount,
+                unanswered: unansweredCount,
                 submissionReason: reason,
                 detailedAnalysis: detailedAnalysis,
                 timestamp: new Date().toISOString()

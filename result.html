@@ -310,10 +310,29 @@
    GET RESULT
 ===================================================== */
 
-const result =
+function normalizeResult(rawResult) {
+    if (!rawResult) return null;
+
+    const normalized = {
+        name: rawResult.name || rawResult.candidateName || "-",
+        roll: rawResult.roll || "-",
+        email: rawResult.email || "-",
+        score: Number(rawResult.score ?? 0),
+        totalQuestions: Number(rawResult.totalQuestions ?? rawResult.total ?? 0),
+        correct: Number(rawResult.correct ?? rawResult.correctCount ?? 0),
+        incorrect: Number(rawResult.incorrect ?? rawResult.incorrectCount ?? 0),
+        unanswered: Number(rawResult.unanswered ?? rawResult.unansweredCount ?? 0),
+        submissionReason: rawResult.submissionReason || "Manual submission"
+    };
+
+    return normalized;
+}
+
+const result = normalizeResult(
     JSON.parse(
         sessionStorage.getItem("last_exam_result") || "null"
-    );
+    )
+);
 
 
 /* =====================================================

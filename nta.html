@@ -302,8 +302,24 @@ if (!studentInfo) {
    TEST CONFIGURATION
 ========================================================= */
 
-const examConfig =
-    JSON.parse(sessionStorage.getItem("active_exam_config") || "null");
+const examConfig = (() => {
+    const savedConfig =
+        sessionStorage.getItem("active_exam_config") ||
+        localStorage.getItem("active_exam_config") ||
+        localStorage.getItem("exam_config") ||
+        localStorage.getItem("admin_test_config") ||
+        localStorage.getItem("test_settings") ||
+        localStorage.getItem("admin_settings");
+
+    if (!savedConfig) return null;
+
+    try {
+        return JSON.parse(savedConfig);
+    } catch (error) {
+        console.error("Failed to parse exam config:", error);
+        return null;
+    }
+})();
 
 
 /*
@@ -501,8 +517,9 @@ function normalizeQuestion(item) {
 
 const questionLimit =
     Number(
-        examConfig?.studentDisplayLimit ||
-        examConfig?.questionLimit ||
+        examConfig?.studentDisplayLimit ??
+        examConfig?.studentLimit ??
+        examConfig?.questionLimit ??
         questions.length
     );
 
@@ -527,12 +544,15 @@ let answers = {};
 
 let submitted = false;
 
-let durationMinutes =
-    Number(
-        examConfig?.examDurationMinutes ||
-        examConfig?.durationMinutes ||
-        10
-    );
+let durationMinutes = Number(
+    examConfig?.examDurationMinutes ??
+    examConfig?.durationMinutes ??
+    (examConfig?.perQuestionSeconds ? examConfig.perQuestionSeconds / 60 : 10)
+);
+
+if (!Number.isFinite(durationMinutes) || durationMinutes <= 0) {
+    durationMinutes = 10;
+}
 
 let totalSeconds = durationMinutes * 60;
 

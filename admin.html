@@ -728,6 +728,7 @@
         totalPool,
         total_questions: totalPool,
         studentLimit,
+        studentDisplayLimit: studentLimit,
         questions_per_student: studentLimit,
         examDurationMinutes,
         perQuestionSeconds: examDurationMinutes * 60,
@@ -750,8 +751,10 @@
       localStorage.setItem("admin_test_config", JSON.stringify(configPayload));
       localStorage.setItem("test_settings", JSON.stringify(configPayload));
       localStorage.setItem("admin_settings", JSON.stringify(configPayload));
+      localStorage.setItem("active_exam_config", JSON.stringify(configPayload));
       localStorage.setItem("live_questions_pool", JSON.stringify(liveQuestionsPool));
       localStorage.setItem("is_admin_logged_in", "true");
+      sessionStorage.setItem("active_exam_config", JSON.stringify(configPayload));
 
       try {
         await setDoc(doc(db, "settings", "testConfig"), {
