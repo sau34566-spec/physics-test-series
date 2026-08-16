@@ -491,7 +491,6 @@ function renderQuestion() {
 
     const q = questions[currentQuestion];
 
-    // Clear previous contents
     quizArea.innerHTML = "";
 
     const card = document.createElement("div");
@@ -560,13 +559,13 @@ function renderQuestion() {
     previousButton.className = "prev";
     previousButton.innerText = "← Previous";
     previousButton.disabled = currentQuestion === 0;
-    previousButton.onclick = previousQuestion;
+    previousButton.onclick = window.prevQuestion || previousQuestion;
 
     const nextButton = document.createElement("button");
     nextButton.id = "next-btn";
     nextButton.className = "next";
     nextButton.innerText = "Save & Next →";
-    nextButton.onclick = nextQuestion;
+    nextButton.onclick = window.nextQuestion || nextQuestion;
 
     const submitButton = document.createElement("button");
     submitButton.id = "submit-btn";
@@ -601,19 +600,23 @@ function renderQuestion() {
    NEXT / PREVIOUS QUESTION
 ========================================================= */
 
-window.nextQuestion = function() {
+function nextQuestion() {
     if (currentQuestion < questions.length - 1) {
         currentQuestion++;
         renderQuestion();
     }
-};
+}
 
-window.previousQuestion = function() {
+function previousQuestion() {
     if (currentQuestion > 0) {
         currentQuestion--;
         renderQuestion();
     }
-};
+}
+
+window.nextQuestion = nextQuestion;
+window.prevQuestion = previousQuestion;
+window.previousQuestion = previousQuestion;
 
 /* =========================================================
    PROGRESS
@@ -717,7 +720,6 @@ window.submitExam = async function (reason = "Manual submission") {
         sessionStorage.removeItem(examTimerKey);
     }
 
-    // Calculate score
     let correctCount = 0;
     let incorrectCount = 0;
     let unansweredCount = 0;
@@ -765,15 +767,12 @@ window.submitExam = async function (reason = "Manual submission") {
         submittedAt: new Date().toISOString()
     };
 
-    // Local Storage Save
     const oldSubmissions = JSON.parse(localStorage.getItem("exam_submissions") || "[]");
     oldSubmissions.push(submissionData);
     localStorage.setItem("exam_submissions", JSON.stringify(oldSubmissions));
 
-    // Session Storage Save for Result Page
     sessionStorage.setItem("last_exam_result", JSON.stringify(submissionData));
 
-    // Redirect to Result Page
     window.location.href = "result.html";
 };
 
@@ -888,6 +887,84 @@ function getSecurityResultData() {
         penaltiesApplied: Number(typeof penaltiesApplied !== "undefined" ? penaltiesApplied : 0)
     };
 }
+
+/* =========================================================
+   STEP 12 — FINAL INTEGRATION + AUTO SAVE & STATE RECOVERY
+========================================================= */
+
+function saveExamState() {
+    if (window.isTestSubmitted || submitted) return;
+    const state = {
+        currentIndex: currentQuestion,
+        answers: answers
+    };
+    sessionStorage.setItem("active_exam_state", JSON.stringify(state));
+}
+
+function restoreExamState() {
+    try {
+        const savedState = sessionStorage.getItem("active_exam_state");
+        if (!savedState) return;
+
+        const state = JSON.parse(savedState);
+        if (state.answers && typeof state.answers === "object") {
+            answers = state.answers;
+        }
+
+        if (
+            Number.isInteger(state.currentIndex) &&
+            state.currentIndex >= 0 &&
+            state.currentIndex < questions.length
+        ) {
+            currentQuestion = state.currentIndex;
+        }
+    } catch (error) {
+        console.warn("Exam state recovery failed:", error);
+    }
+}
+
+// Save whenever answer changes
+const originalSaveAnswer = window.saveAnswer;
+window.saveAnswer = function (option) {
+    if (typeof originalSaveAnswer === "function") {
+        originalSaveAnswer(option);
+    } else {
+        answers[currentQuestion] = String(option);
+    }
+    saveExamState();
+};
+
+// Save whenever question changes
+const originalNextQuestion = window.nextQuestion;
+window.nextQuestion = function () {
+    if (typeof originalNextQuestion === "function") {
+        originalNextQuestion();
+    }
+    saveExamState();
+};
+
+const originalPrevQuestion = window.prevQuestion;
+window.prevQuestion = function () {
+    if (typeof originalPrevQuestion === "function") {
+        originalPrevQuestion();
+    }
+    saveExamState();
+};
+
+// Restore state before displaying question
+restoreExamState();
+
+// Re-render after restoring state
+if (typeof renderQuestion === "function") {
+    renderQuestion();
+}
+
+// Periodic backup
+setInterval(() => {
+    if (!window.isTestSubmitted) {
+        saveExamState();
+    }
+}, 3000);
 
 </script>
 
