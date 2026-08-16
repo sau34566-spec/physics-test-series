@@ -306,13 +306,6 @@ const examConfig =
     JSON.parse(sessionStorage.getItem("active_exam_config") || "null");
 
 
-/*
-    Temporary default configuration.
-
-    Later admin.html will automatically create
-    active_exam_config.
-*/
-
 const defaultQuestions = [
 
     {
@@ -902,7 +895,7 @@ function calculateResult() {
 
 
 /* =========================================================
-   SUBMIT EXAM
+   SUBMIT EXAM (UPDATED WITH SECURITY DATA)
 ========================================================= */
 
 async function submitExam(reason) {
@@ -917,6 +910,7 @@ async function submitExam(reason) {
     const result =
         calculateResult();
 
+    const securityData = getSecurityResultData();
 
     const submission = {
 
@@ -939,6 +933,19 @@ async function submitExam(reason) {
         score: Number(result.score.toFixed(2)),
 
         totalQuestions: questions.length,
+
+        // Security Info Added
+        tabSwitches: securityData.tabSwitches,
+
+        copyAttempts: securityData.copyAttempts,
+
+        pasteAttempts: securityData.pasteAttempts,
+
+        cutAttempts: securityData.cutAttempts,
+
+        contextMenuAttempts: securityData.contextMenuAttempts,
+
+        penaltiesApplied: securityData.penaltiesApplied,
 
         submissionReason: reason,
 
@@ -980,37 +987,21 @@ async function submitExam(reason) {
 
 
 /* =========================================================
-   BASIC SECURITY
+   SECURITY WARNING DISPLAY HELPER
 ========================================================= */
 
-document.addEventListener(
-    "contextmenu",
-    function(event) {
-
-        event.preventDefault();
-
+function showSecurityWarning(msg) {
+    const warningEl = document.getElementById("warning");
+    if (warningEl) {
+        warningEl.style.display = "block";
+        warningEl.innerText = msg;
+        setTimeout(() => {
+            if (!securitySubmitted) {
+                warningEl.style.display = "none";
+            }
+        }, 3000);
     }
-);
-
-
-document.addEventListener(
-    "copy",
-    function(event) {
-
-        event.preventDefault();
-
-    }
-);
-
-
-document.addEventListener(
-    "paste",
-    function(event) {
-
-        event.preventDefault();
-
-    }
-);
+}
 
 
 /* =========================================================
@@ -1082,8 +1073,6 @@ document.addEventListener("visibilitychange", () => {
 
 // Detect browser/window losing focus
 window.addEventListener("blur", () => {
-    // Small delay prevents blur from incorrectly counting
-    // when the browser is only rendering/focusing internally.
     setTimeout(() => {
         if (!document.hidden) {
             handleExamViolation();
@@ -1103,98 +1092,85 @@ const savedSecurityCount = parseInt(sessionStorage.getItem("exam_security_tab_sw
 if (!isNaN(savedSecurityCount)) {
     securityTabSwitches = savedSecurityCount;
 }
-// ==========================================
-// STEP 5 — COPY / PASTE / RIGHT-CLICK SECURITY
-// ==========================================
+
+
+/* =========================================================
+   STEP 5 — COPY / PASTE / RIGHT-CLICK SECURITY
+========================================================= */
 
 let copyAttempts = 0;
 let pasteAttempts = 0;
 let cutAttempts = 0;
 let contextMenuAttempts = 0;
 
-
-// ------------------------------------------
-// RIGHT CLICK DISABLE
-// ------------------------------------------
-
 document.addEventListener("contextmenu", function (event) {
-
-    if (securitySubmitted || window.isTestSubmitted) {
-        return;
-    }
-
+    if (securitySubmitted || submitted) return;
     event.preventDefault();
-
     contextMenuAttempts++;
-
-    showSecurityWarning(
-        "⚠️ Right-click is disabled during the examination."
-    );
-
+    showSecurityWarning("⚠️ Right-click is disabled during the examination.");
 });
-
-
-// ------------------------------------------
-// COPY DISABLE
-// ------------------------------------------
 
 document.addEventListener("copy", function (event) {
-
-    if (securitySubmitted || window.isTestSubmitted) {
-        return;
-    }
-
+    if (securitySubmitted || submitted) return;
     event.preventDefault();
-
     copyAttempts++;
-
-    showSecurityWarning(
-        "⚠️ Copying content is not allowed during the examination."
-    );
-
+    showSecurityWarning("⚠️ Copying content is not allowed during the examination.");
 });
-
-
-// ------------------------------------------
-// PASTE DISABLE
-// ------------------------------------------
 
 document.addEventListener("paste", function (event) {
-
-    if (securitySubmitted || window.isTestSubmitted) {
-        return;
-    }
-
+    if (securitySubmitted || submitted) return;
     event.preventDefault();
-
     pasteAttempts++;
-
-    showSecurityWarning(
-        "⚠️ Pasting content is not allowed during the examination."
-    );
-
+    showSecurityWarning("⚠️ Pasting content is not allowed during the examination.");
 });
-
-
-// ------------------------------------------
-// CUT DISABLE
-// ------------------------------------------
 
 document.addEventListener("cut", function (event) {
-
-    if (securitySubmitted || window.isTestSubmitted) {
-        return;
-    }
-
+    if (securitySubmitted || submitted) return;
     event.preventDefault();
-
     cutAttempts++;
-
-    showSecurityWarning(
-        "⚠️ Cutting content is not allowed during the examination."
-    );
-
+    showSecurityWarning("⚠️ Cutting content is not allowed during the examination.");
 });
+
+
+/* =========================================================
+   STEP 6 — SECURITY RESULT DATA
+========================================================= */
+
+function getSecurityResultData() {
+    return {
+        tabSwitches: Number(
+            typeof securityTabSwitches !== "undefined"
+                ? securityTabSwitches
+                : 0
+        ),
+        copyAttempts: Number(
+            typeof copyAttempts !== "undefined"
+                ? copyAttempts
+                : 0
+        ),
+        pasteAttempts: Number(
+            typeof pasteAttempts !== "undefined"
+                ? pasteAttempts
+                : 0
+        ),
+        cutAttempts: Number(
+            typeof cutAttempts !== "undefined"
+                ? cutAttempts
+                : 0
+        ),
+        contextMenuAttempts: Number(
+            typeof contextMenuAttempts !== "undefined"
+                ? contextMenuAttempts
+                : 0
+        ),
+        penaltiesApplied: Number(
+            typeof penaltiesApplied !== "undefined"
+                ? penaltiesApplied
+                : 0
+        )
+    };
+}
+
 </script>
 
 </body>
