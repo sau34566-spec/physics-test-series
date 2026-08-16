@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Exam Elite | Test</title>
 
     <style>
@@ -269,7 +268,7 @@
 "use strict";
 
 /* =========================================================
-   STUDENT INFORMATION
+   1. STUDENT INFORMATION
 ========================================================= */
 
 const studentInfo = JSON.parse(sessionStorage.getItem("student_info") || "null");
@@ -277,10 +276,13 @@ const studentInfo = JSON.parse(sessionStorage.getItem("student_info") || "null")
 if (!studentInfo) {
     alert("Student verification required.");
     window.location.href = "index.html";
+} else {
+    document.getElementById("student-name").innerText = studentInfo.name || "Student";
+    document.getElementById("student-roll").innerText = "Roll: " + (studentInfo.roll || "-");
 }
 
 /* =========================================================
-   TEST CONFIGURATION
+   2. TEST CONFIGURATION & QUESTIONS LOADING
 ========================================================= */
 
 const examConfig = JSON.parse(sessionStorage.getItem("active_exam_config") || "null");
@@ -288,111 +290,55 @@ const examConfig = JSON.parse(sessionStorage.getItem("active_exam_config") || "n
 const defaultQuestions = [
     {
         question: "How do plants make their own food?",
-        options: {
-            A: "Respiration",
-            B: "Photosynthesis",
-            C: "Digestion",
-            D: "Transpiration"
-        },
+        options: { A: "Respiration", B: "Photosynthesis", C: "Digestion", D: "Transpiration" },
         answer: "B"
     },
     {
         question: "What is the chemical formula of water?",
-        options: {
-            A: "CO2",
-            B: "H2O",
-            C: "O2",
-            D: "H2SO4"
-        },
+        options: { A: "CO2", B: "H2O", C: "O2", D: "H2SO4" },
         answer: "B"
     },
     {
         question: "Which is the largest organ in the human body?",
-        options: {
-            A: "Heart",
-            B: "Liver",
-            C: "Skin",
-            D: "Lungs"
-        },
+        options: { A: "Heart", B: "Liver", C: "Skin", D: "Lungs" },
         answer: "C"
     },
     {
         question: "What do we get from the Sun?",
-        options: {
-            A: "Light and Energy",
-            B: "Only Water",
-            C: "Only Air",
-            D: "Only Sound"
-        },
+        options: { A: "Light and Energy", B: "Only Water", C: "Only Air", D: "Only Sound" },
         answer: "A"
     },
     {
         question: "Which substance gives blood its red colour?",
-        options: {
-            A: "Platelets",
-            B: "Hemoglobin",
-            C: "Plasma",
-            D: "White Blood Cells"
-        },
+        options: { A: "Platelets", B: "Hemoglobin", C: "Plasma", D: "White Blood Cells" },
         answer: "B"
     },
     {
         question: "In which medium can sound NOT travel?",
-        options: {
-            A: "Solid",
-            B: "Liquid",
-            C: "Gas",
-            D: "Vacuum"
-        },
+        options: { A: "Solid", B: "Liquid", C: "Gas", D: "Vacuum" },
         answer: "D"
     },
     {
         question: "What is Earth's natural satellite?",
-        options: {
-            A: "Mars",
-            B: "Sun",
-            C: "Moon",
-            D: "Venus"
-        },
+        options: { A: "Mars", B: "Sun", C: "Moon", D: "Venus" },
         answer: "C"
     },
     {
         question: "Which fruit is a rich source of Vitamin C?",
-        options: {
-            A: "Orange",
-            B: "Rice",
-            C: "Butter",
-            D: "Lentils"
-        },
+        options: { A: "Orange", B: "Rice", C: "Butter", D: "Lentils" },
         answer: "A"
     },
     {
         question: "Approximately what percentage of Earth's atmosphere is oxygen?",
-        options: {
-            A: "21%",
-            B: "50%",
-            C: "78%",
-            D: "10%"
-        },
+        options: { A: "21%", B: "50%", C: "78%", D: "10%" },
         answer: "A"
     },
     {
         question: "Which metal is a good conductor of electricity?",
-        options: {
-            A: "Wood",
-            B: "Plastic",
-            C: "Copper",
-            D: "Rubber"
-        },
+        options: { A: "Wood", B: "Plastic", C: "Copper", D: "Rubber" },
         answer: "C"
     }
 ];
-
-let questions = [];
-
-/* =========================================================
-   LOAD QUESTIONS
-========================================================= */
 
 function normalizeQuestion(item) {
     const options = item.options || {};
@@ -408,34 +354,20 @@ function normalizeQuestion(item) {
     };
 }
 
-if (
-    examConfig &&
-    Array.isArray(examConfig.questions) &&
-    examConfig.questions.length > 0
-) {
+let questions = [];
+if (examConfig && Array.isArray(examConfig.questions) && examConfig.questions.length > 0) {
     questions = examConfig.questions.map(normalizeQuestion);
 } else {
     questions = defaultQuestions.map(normalizeQuestion);
 }
 
-/* =========================================================
-   RANDOM QUESTION LIMIT
-========================================================= */
-
-const questionLimit = Number(
-    examConfig?.studentDisplayLimit ||
-    examConfig?.questionLimit ||
-    questions.length
-);
-
+const questionLimit = Number(examConfig?.studentDisplayLimit || examConfig?.questionLimit || questions.length);
 if (questionLimit > 0 && questionLimit < questions.length) {
-    questions = [...questions]
-        .sort(() => Math.random() - 0.5)
-        .slice(0, questionLimit);
+    questions = [...questions].sort(() => Math.random() - 0.5).slice(0, questionLimit);
 }
 
 /* =========================================================
-   EXAM VARIABLES
+   3. EXAM VARIABLES & ANSWER SAVE
 ========================================================= */
 
 let currentQuestion = 0;
@@ -443,54 +375,36 @@ let answers = {};
 let submitted = false;
 window.isTestSubmitted = false;
 
-let durationMinutes = Number(
-    examConfig?.examDurationMinutes ||
-    examConfig?.durationMinutes ||
-    10
-);
-
-let totalSeconds = durationMinutes * 60;
-let timerInterval;
-const examTimerKey = "active_exam_end_time";
-
-/* =========================================================
-   STUDENT DISPLAY
-========================================================= */
-
-if (studentInfo) {
-    document.getElementById("student-name").innerText = studentInfo.name || "Student";
-    document.getElementById("student-roll").innerText = "Roll: " + (studentInfo.roll || "-");
-}
-
-/* =========================================================
-   STEP 9: STABLE ANSWER SAVE
-========================================================= */
-
 window.saveAnswer = function(option) {
-    if (window.isTestSubmitted || submitted) {
-        return;
-    }
+    if (window.isTestSubmitted || submitted) return;
     answers[currentQuestion] = String(option);
+    saveExamState();
 };
 
 /* =========================================================
-   STEP 9: STABLE QUESTION RENDER (DOM-BASED)
+   4. QUESTION RENDER & PROGRESS
 ========================================================= */
+
+function updateProgress() {
+    const total = questions.length;
+    const answered = Object.keys(answers).length;
+
+    document.getElementById("question-count").innerText = `Question ${currentQuestion + 1} of ${total}`;
+    document.getElementById("answered-count").innerText = `Answered: ${answered}`;
+
+    const percentage = total > 0 ? (answered / total) * 100 : 0;
+    document.getElementById("progress-fill").style.width = percentage + "%";
+}
 
 function renderQuestion() {
     const quizArea = document.getElementById("quiz-area");
 
     if (!questions.length) {
-        quizArea.innerHTML = `
-            <div class="loading">
-                No questions available.
-            </div>
-        `;
+        quizArea.innerHTML = `<div class="loading">No questions available.</div>`;
         return;
     }
 
     const q = questions[currentQuestion];
-
     quizArea.innerHTML = "";
 
     const card = document.createElement("div");
@@ -520,10 +434,7 @@ function renderQuestion() {
         input.name = "question-option";
         input.value = String(optionKey);
 
-        if (
-            answers[currentQuestion] !== undefined &&
-            answers[currentQuestion] === String(optionKey)
-        ) {
+        if (answers[currentQuestion] !== undefined && answers[currentQuestion] === String(optionKey)) {
             input.checked = true;
         }
 
@@ -555,34 +466,27 @@ function renderQuestion() {
     buttonsDiv.className = "buttons";
 
     const previousButton = document.createElement("button");
-    previousButton.id = "prev-btn";
     previousButton.className = "prev";
     previousButton.innerText = "← Previous";
     previousButton.disabled = currentQuestion === 0;
-    previousButton.onclick = window.prevQuestion || previousQuestion;
+    previousButton.onclick = window.prevQuestion;
 
     const nextButton = document.createElement("button");
-    nextButton.id = "next-btn";
     nextButton.className = "next";
     nextButton.innerText = "Save & Next →";
-    nextButton.onclick = window.nextQuestion || nextQuestion;
+    nextButton.onclick = window.nextQuestion;
 
     const submitButton = document.createElement("button");
-    submitButton.id = "submit-btn";
     submitButton.className = "submit";
     submitButton.innerText = "Submit Test ✓";
-    submitButton.onclick = confirmSubmit;
+    submitButton.onclick = window.confirmSubmit;
 
     buttonsDiv.appendChild(previousButton);
 
     const isLastQuestion = currentQuestion === questions.length - 1;
     if (isLastQuestion) {
-        nextButton.style.display = "none";
-        submitButton.style.display = "inline-flex";
         buttonsDiv.appendChild(submitButton);
     } else {
-        nextButton.style.display = "inline-flex";
-        submitButton.style.display = "none";
         buttonsDiv.appendChild(nextButton);
     }
 
@@ -592,53 +496,37 @@ function renderQuestion() {
     card.appendChild(buttonsDiv);
 
     quizArea.appendChild(card);
-
     updateProgress();
 }
 
 /* =========================================================
-   NEXT / PREVIOUS QUESTION
+   5. QUESTION NAVIGATION
 ========================================================= */
 
-function nextQuestion() {
+window.nextQuestion = function() {
     if (currentQuestion < questions.length - 1) {
         currentQuestion++;
+        saveExamState();
         renderQuestion();
     }
-}
+};
 
-function previousQuestion() {
+window.prevQuestion = function() {
     if (currentQuestion > 0) {
         currentQuestion--;
+        saveExamState();
         renderQuestion();
     }
-}
-
-window.nextQuestion = nextQuestion;
-window.prevQuestion = previousQuestion;
-window.previousQuestion = previousQuestion;
+};
+window.previousQuestion = window.prevQuestion;
 
 /* =========================================================
-   PROGRESS
+   6. STEP 7: RELIABLE TIMER
 ========================================================= */
 
-function updateProgress() {
-    const total = questions.length;
-    const answered = Object.keys(answers).length;
-
-    document.getElementById("question-count").innerText =
-        `Question ${currentQuestion + 1} of ${total}`;
-
-    document.getElementById("answered-count").innerText =
-        `Answered: ${answered}`;
-
-    const percentage = total > 0 ? (answered / total) * 100 : 0;
-    document.getElementById("progress-fill").style.width = percentage + "%";
-}
-
-/* =========================================================
-   RELIABLE TIMER
-========================================================= */
+let durationMinutes = Number(examConfig?.examDurationMinutes || examConfig?.durationMinutes || 10);
+let timerInterval;
+const examTimerKey = "active_exam_end_time";
 
 function startExamTimer() {
     let endTime = Number(sessionStorage.getItem(examTimerKey));
@@ -656,17 +544,14 @@ function startExamTimer() {
         }
 
         const remaining = Math.max(0, endTime - Date.now());
-        totalSeconds = Math.ceil(remaining / 1000);
+        const totalSecs = Math.ceil(remaining / 1000);
 
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
+        const minutes = Math.floor(totalSecs / 60);
+        const seconds = totalSecs % 60;
 
         const timerElement = document.getElementById("timer");
         if (timerElement) {
-            timerElement.innerText =
-                String(minutes).padStart(2, "0") +
-                ":" +
-                String(seconds).padStart(2, "0");
+            timerElement.innerText = String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
         }
 
         if (remaining <= 0) {
@@ -686,105 +571,7 @@ function startExamTimer() {
 }
 
 /* =========================================================
-   SUBMIT CONFIRMATION
-========================================================= */
-
-window.confirmSubmit = function() {
-    const unanswered = questions.length - Object.keys(answers).length;
-
-    const message = unanswered > 0
-        ? `You have ${unanswered} unanswered question(s).\n\nAre you sure you want to submit?`
-        : "Are you sure you want to submit the test?";
-
-    if (confirm(message)) {
-        window.submitExam("Manual submission");
-    }
-};
-
-/* =========================================================
-   STEP 11 — FINAL SUBMIT SYSTEM
-========================================================= */
-
-window.submitExam = async function (reason = "Manual submission") {
-
-    if (window.isTestSubmitted || submitted) return;
-
-    window.isTestSubmitted = true;
-    submitted = true;
-
-    if (typeof timerInterval !== "undefined" && timerInterval) {
-        clearInterval(timerInterval);
-    }
-
-    if (typeof examTimerKey !== "undefined") {
-        sessionStorage.removeItem(examTimerKey);
-    }
-
-    let correctCount = 0;
-    let incorrectCount = 0;
-    let unansweredCount = 0;
-
-    questions.forEach((question, index) => {
-        const selectedAnswer = answers[index];
-
-        if (!selectedAnswer) {
-            unansweredCount++;
-        } else if (
-            String(selectedAnswer).trim().toUpperCase() ===
-            String(question.answer).trim().toUpperCase()
-        ) {
-            correctCount++;
-        } else {
-            incorrectCount++;
-        }
-    });
-
-    const positiveMarks = correctCount;
-    const negativeMarks = incorrectCount * 0.25;
-    const finalScore = positiveMarks - negativeMarks;
-
-    const securityData = getSecurityResultData();
-
-    const submissionData = {
-        name: studentInfo?.name || "Student",
-        roll: studentInfo?.roll || "-",
-        email: studentInfo?.email || "-",
-        correct: correctCount,
-        incorrect: incorrectCount,
-        unanswered: unansweredCount,
-        positiveMarks: positiveMarks,
-        negativeMarks: negativeMarks,
-        score: Number(finalScore.toFixed(2)),
-        totalQuestions: questions.length,
-        submissionReason: reason,
-
-        tabSwitches: securityData.tabSwitches,
-        copyAttempts: securityData.copyAttempts,
-        pasteAttempts: securityData.pasteAttempts,
-        cutAttempts: securityData.cutAttempts,
-        contextMenuAttempts: securityData.contextMenuAttempts,
-        penaltiesApplied: securityData.penaltiesApplied,
-        submittedAt: new Date().toISOString()
-    };
-
-    const oldSubmissions = JSON.parse(localStorage.getItem("exam_submissions") || "[]");
-    oldSubmissions.push(submissionData);
-    localStorage.setItem("exam_submissions", JSON.stringify(oldSubmissions));
-
-    sessionStorage.setItem("last_exam_result", JSON.stringify(submissionData));
-
-    window.location.href = "result.html";
-};
-
-/* =========================================================
-   START EXAM & TIMER
-========================================================= */
-
-renderQuestion();
-startExamTimer();
-
-/* =========================================================
-   ANTI-CHEATING SECURITY
+   7. STEP 4 & 5: ANTI-CHEATING SECURITY & PROTECTION
 ========================================================= */
 
 let securityTabSwitches = 0;
@@ -879,17 +666,17 @@ document.addEventListener("cut", function (event) {
 
 function getSecurityResultData() {
     return {
-        tabSwitches: Number(typeof securityTabSwitches !== "undefined" ? securityTabSwitches : 0),
-        copyAttempts: Number(typeof copyAttempts !== "undefined" ? copyAttempts : 0),
-        pasteAttempts: Number(typeof pasteAttempts !== "undefined" ? pasteAttempts : 0),
-        cutAttempts: Number(typeof cutAttempts !== "undefined" ? cutAttempts : 0),
-        contextMenuAttempts: Number(typeof contextMenuAttempts !== "undefined" ? contextMenuAttempts : 0),
-        penaltiesApplied: Number(typeof penaltiesApplied !== "undefined" ? penaltiesApplied : 0)
+        tabSwitches: Number(securityTabSwitches || 0),
+        copyAttempts: Number(copyAttempts || 0),
+        pasteAttempts: Number(pasteAttempts || 0),
+        cutAttempts: Number(cutAttempts || 0),
+        contextMenuAttempts: Number(contextMenuAttempts || 0),
+        penaltiesApplied: Number(penaltiesApplied || 0)
     };
 }
 
 /* =========================================================
-   STEP 12 — FINAL INTEGRATION + AUTO SAVE & STATE RECOVERY
+   8. STEP 12: AUTO SAVE & STATE RECOVERY
 ========================================================= */
 
 function saveExamState() {
@@ -911,11 +698,7 @@ function restoreExamState() {
             answers = state.answers;
         }
 
-        if (
-            Number.isInteger(state.currentIndex) &&
-            state.currentIndex >= 0 &&
-            state.currentIndex < questions.length
-        ) {
+        if (Number.isInteger(state.currentIndex) && state.currentIndex >= 0 && state.currentIndex < questions.length) {
             currentQuestion = state.currentIndex;
         }
     } catch (error) {
@@ -923,48 +706,100 @@ function restoreExamState() {
     }
 }
 
-// Save whenever answer changes
-const originalSaveAnswer = window.saveAnswer;
-window.saveAnswer = function (option) {
-    if (typeof originalSaveAnswer === "function") {
-        originalSaveAnswer(option);
-    } else {
-        answers[currentQuestion] = String(option);
-    }
-    saveExamState();
-};
-
-// Save whenever question changes
-const originalNextQuestion = window.nextQuestion;
-window.nextQuestion = function () {
-    if (typeof originalNextQuestion === "function") {
-        originalNextQuestion();
-    }
-    saveExamState();
-};
-
-const originalPrevQuestion = window.prevQuestion;
-window.prevQuestion = function () {
-    if (typeof originalPrevQuestion === "function") {
-        originalPrevQuestion();
-    }
-    saveExamState();
-};
-
-// Restore state before displaying question
-restoreExamState();
-
-// Re-render after restoring state
-if (typeof renderQuestion === "function") {
-    renderQuestion();
-}
-
-// Periodic backup
 setInterval(() => {
     if (!window.isTestSubmitted) {
         saveExamState();
     }
 }, 3000);
+
+/* =========================================================
+   9. STEP 11: FINAL SINGLE SUBMIT SYSTEM
+========================================================= */
+
+window.confirmSubmit = function() {
+    const unanswered = questions.length - Object.keys(answers).length;
+    const message = unanswered > 0
+        ? `You have ${unanswered} unanswered question(s).\n\nAre you sure you want to submit?`
+        : "Are you sure you want to submit the test?";
+
+    if (confirm(message)) {
+        window.submitExam("Manual submission");
+    }
+};
+
+window.submitExam = async function (reason = "Manual submission") {
+    if (window.isTestSubmitted || submitted) return;
+
+    window.isTestSubmitted = true;
+    submitted = true;
+
+    if (timerInterval) clearInterval(timerInterval);
+    sessionStorage.removeItem(examTimerKey);
+    sessionStorage.removeItem("active_exam_state");
+
+    let correctCount = 0;
+    let incorrectCount = 0;
+    let unansweredCount = 0;
+
+    questions.forEach((question, index) => {
+        const selectedAnswer = answers[index];
+
+        if (!selectedAnswer) {
+            unansweredCount++;
+        } else if (
+            String(selectedAnswer).trim().toUpperCase() ===
+            String(question.answer).trim().toUpperCase()
+        ) {
+            correctCount++;
+        } else {
+            incorrectCount++;
+        }
+    });
+
+    const positiveMarks = correctCount;
+    const negativeMarks = incorrectCount * 0.25;
+    const finalScore = positiveMarks - negativeMarks;
+
+    const securityData = getSecurityResultData();
+
+    const submissionData = {
+        name: studentInfo?.name || "Student",
+        roll: studentInfo?.roll || "-",
+        email: studentInfo?.email || "-",
+        correct: correctCount,
+        incorrect: incorrectCount,
+        unanswered: unansweredCount,
+        positiveMarks: positiveMarks,
+        negativeMarks: negativeMarks,
+        score: Number(finalScore.toFixed(2)),
+        totalQuestions: questions.length,
+        submissionReason: reason,
+
+        tabSwitches: securityData.tabSwitches,
+        copyAttempts: securityData.copyAttempts,
+        pasteAttempts: securityData.pasteAttempts,
+        cutAttempts: securityData.cutAttempts,
+        contextMenuAttempts: securityData.contextMenuAttempts,
+        penaltiesApplied: securityData.penaltiesApplied,
+        submittedAt: new Date().toISOString()
+    };
+
+    const oldSubmissions = JSON.parse(localStorage.getItem("exam_submissions") || "[]");
+    oldSubmissions.push(submissionData);
+    localStorage.setItem("exam_submissions", JSON.stringify(oldSubmissions));
+
+    sessionStorage.setItem("last_exam_result", JSON.stringify(submissionData));
+
+    window.location.href = "result.html";
+};
+
+/* =========================================================
+   10. INITIALIZATION
+========================================================= */
+
+restoreExamState();
+renderQuestion();
+startExamTimer();
 
 </script>
 
