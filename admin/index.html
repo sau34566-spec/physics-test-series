@@ -832,48 +832,525 @@
             ================================================== -->
 
             <section
-                class="admin-section"
-                id="examSettingsSection"
-            >
+    class="admin-section"
+    id="examSettingsSection"
+>
 
-                <div class="section-heading">
+    <div class="section-heading">
+
+        <div>
+
+            <span>
+                EXAMINATION CONFIGURATION
+            </span>
+
+            <h2>
+                Exam Settings
+            </h2>
+
+            <p>
+                Configure all examination parameters from this panel.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <form id="examSettingsForm" class="settings-form">
+
+
+        <!-- ================================
+             BASIC EXAM SETTINGS
+        ================================= -->
+
+        <div class="settings-card">
+
+            <div class="settings-card-header">
+
+                <div>
+                    <span>01</span>
+
+                    <div>
+                        <h3>Basic Examination Settings</h3>
+
+                        <p>
+                            Configure the basic examination information.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="settings-grid">
+
+                <div class="admin-input-group">
+
+                    <label for="examTitle">
+                        Exam Title
+                    </label>
+
+                    <input
+                        type="text"
+                        id="examTitle"
+                        placeholder="Physics Test Series"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="admin-input-group">
+
+                    <label for="totalQuestions">
+                        Total Question Pool
+                    </label>
+
+                    <input
+                        type="number"
+                        id="totalQuestions"
+                        min="1"
+                        value="100"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="admin-input-group">
+
+                    <label for="questionsToDisplay">
+                        Questions Shown to Student
+                    </label>
+
+                    <input
+                        type="number"
+                        id="questionsToDisplay"
+                        min="1"
+                        value="80"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="admin-input-group">
+
+                    <label for="durationMinutes">
+                        Test Duration (Minutes)
+                    </label>
+
+                    <input
+                        type="number"
+                        id="durationMinutes"
+                        min="1"
+                        value="60"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="admin-input-group">
+
+                    <label for="marksPerQuestion">
+                        Marks per Question
+                    </label>
+
+                    <input
+                        type="number"
+                        id="marksPerQuestion"
+                        min="0"
+                        step="0.5"
+                        value="4"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="admin-input-group">
+
+                    <label for="negativeMarks">
+                        Negative Marks
+                    </label>
+
+                    <input
+                        type="number"
+                        id="negativeMarks"
+                        min="0"
+                        step="0.5"
+                        value="1"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================
+             EXAM TIMING
+        ================================= -->
+
+        <div class="settings-card">
+
+            <div class="settings-card-header">
+
+                <div>
+
+                    <span>02</span>
 
                     <div>
 
-                        <span>
-                            CONFIGURATION
-                        </span>
-
-                        <h2>
-                            Exam Settings
-                        </h2>
+                        <h3>
+                            Examination Timing
+                        </h3>
 
                         <p>
-                            Configure examination parameters.
+                            Control when the examination becomes available.
                         </p>
 
                     </div>
 
                 </div>
 
+            </div>
 
-                <div class="coming-soon-panel">
 
-                    <span>
-                        ⚙️
-                    </span>
+            <div class="settings-grid">
 
-                    <h3>
-                        Exam Configuration
-                    </h3>
+                <div class="admin-input-group">
 
-                    <p>
-                        Detailed exam settings will be implemented in the next development step.
-                    </p>
+                    <label for="examStartTime">
+                        Start Time
+                    </label>
+
+                    <input
+                        type="datetime-local"
+                        id="examStartTime"
+                    >
 
                 </div>
 
-            </section>
+
+                <div class="admin-input-group">
+
+                    <label for="examEndTime">
+                        End Time
+                    </label>
+
+                    <input
+                        type="datetime-local"
+                        id="examEndTime"
+                    >
+
+                </div>
+
+
+                <div class="admin-input-group">
+
+                    <label for="examStatusSetting">
+                        Examination Status
+                    </label>
+
+                    <select id="examStatusSetting">
+
+                        <option value="draft">
+                            Draft
+                        </option>
+
+                        <option value="scheduled">
+                            Scheduled
+                        </option>
+
+                        <option value="live">
+                            Live
+                        </option>
+
+                        <option value="paused">
+                            Paused
+                        </option>
+
+                        <option value="ended">
+                            Ended
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================
+             QUESTION SETTINGS
+        ================================= -->
+
+        <div class="settings-card">
+
+            <div class="settings-card-header">
+
+                <div>
+
+                    <span>03</span>
+
+                    <div>
+
+                        <h3>
+                            Question Configuration
+                        </h3>
+
+                        <p>
+                            Configure question source and randomization.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="settings-grid">
+
+                <div class="admin-input-group">
+
+                    <label for="questionSource">
+                        Question Source
+                    </label>
+
+                    <input
+                        type="text"
+                        id="questionSource"
+                        value="chapterq.json"
+                        readonly
+                    >
+
+                </div>
+
+
+                <label class="setting-toggle">
+
+                    <input
+                        type="checkbox"
+                        id="randomQuestions"
+                        checked
+                    >
+
+                    <span>
+                        Randomize Questions
+                    </span>
+
+                </label>
+
+
+                <label class="setting-toggle">
+
+                    <input
+                        type="checkbox"
+                        id="randomOptions"
+                        checked
+                    >
+
+                    <span>
+                        Randomize Options
+                    </span>
+
+                </label>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================
+             SECURITY SETTINGS
+        ================================= -->
+
+        <div class="settings-card">
+
+            <div class="settings-card-header">
+
+                <div>
+
+                    <span>04</span>
+
+                    <div>
+
+                        <h3>
+                            Examination Security
+                        </h3>
+
+                        <p>
+                            Configure examination security controls.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="settings-grid">
+
+
+                <div class="admin-input-group">
+
+                    <label for="tabSwitchPenalty">
+                        Tab Switch Penalty
+                    </label>
+
+                    <input
+                        type="number"
+                        id="tabSwitchPenalty"
+                        min="0"
+                        step="0.5"
+                        value="1"
+                    >
+
+                </div>
+
+
+                <div class="admin-input-group">
+
+                    <label for="maxTabSwitches">
+                        Maximum Tab Switches
+                    </label>
+
+                    <input
+                        type="number"
+                        id="maxTabSwitches"
+                        min="1"
+                        value="2"
+                    >
+
+                </div>
+
+
+                <label class="setting-toggle">
+
+                    <input
+                        type="checkbox"
+                        id="disableCopy"
+                        checked
+                    >
+
+                    <span>
+                        Disable Copy
+                    </span>
+
+                </label>
+
+
+                <label class="setting-toggle">
+
+                    <input
+                        type="checkbox"
+                        id="disablePaste"
+                        checked
+                    >
+
+                    <span>
+                        Disable Paste
+                    </span>
+
+                </label>
+
+
+                <label class="setting-toggle">
+
+                    <input
+                        type="checkbox"
+                        id="disableScreenshot"
+                        checked
+                    >
+
+                    <span>
+                        Disable Screenshot
+                    </span>
+
+                </label>
+
+
+                <label class="setting-toggle">
+
+                    <input
+                        type="checkbox"
+                        id="disableRefresh"
+                        checked
+                    >
+
+                    <span>
+                        Disable Refresh
+                    </span>
+
+                </label>
+
+
+                <label class="setting-toggle">
+
+                    <input
+                        type="checkbox"
+                        id="disableFunctionKeys"
+                        checked
+                    >
+
+                    <span>
+                        Disable F1-F12 Keys
+                    </span>
+
+                </label>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================
+             SAVE
+        ================================= -->
+
+        <div class="settings-actions">
+
+            <button
+                type="button"
+                class="secondary-btn"
+                id="resetExamSettingsBtn"
+            >
+                Reset
+            </button>
+
+
+            <button
+                type="submit"
+                class="primary-btn"
+                id="saveExamSettingsBtn"
+            >
+                💾 Save Examination Settings
+            </button>
+
+        </div>
+
+
+        <!-- SAVE MESSAGE -->
+
+        <div
+            id="examSettingsMessage"
+            class="settings-message"
+            style="display:none;"
+        ></div>
+
+
+    </form>
+
+</section>
 
 
             <!-- =================================================
