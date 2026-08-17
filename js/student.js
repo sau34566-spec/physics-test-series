@@ -4,7 +4,7 @@
 // Existing index.html design preserved
 // ============================================================
 
-import { auth, db } from "./firebase-config.js";
+import { db } from "./firebase-config.js";
 
 import {
     collection,
@@ -17,7 +17,8 @@ import {
     setDoc,
     updateDoc,
     serverTimestamp,
-    onSnapshot
+    onSnapshot,
+    runTransaction
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
@@ -30,7 +31,6 @@ const $ = (id) => document.getElementById(id);
 const loginScreen = $("loginScreen");
 const instructionScreen = $("instructionScreen");
 const examScreen = $("examScreen");
-
 const resultScreen = $("resultScreen");
 const feedbackScreen = $("feedbackScreen");
 
@@ -89,13 +89,14 @@ let settingsUnsubscribe = null;
 
 let questionStartTime = null;
 
-
-// Feedback state
 let selectedRating = 0;
+
+let securityHandlersEnabled = false;
+let lastViolationTime = 0;
 
 
 // ============================================================
-// DEFAULTS
+// DEFAULT SETTINGS
 // ============================================================
 
 const DEFAULT_SETTINGS = {
@@ -162,6 +163,14 @@ function normalizeEmail(email) {
 }
 
 
+function normalizeName(name) {
+
+    return String(name || "")
+        .trim()
+        .replace(/\s+/g, " ");
+}
+
+
 function escapeHTML(value) {
 
     return String(value ?? "")
@@ -205,15 +214,12 @@ function showScreen(screen) {
 
     document
         .querySelectorAll(".screen")
-        .forEach(
-            (item) => {
+        .forEach((item) => {
 
-                item.classList.remove(
-                    "active"
-                );
-            }
-        );
-
+            item.classList.remove(
+                "active"
+            );
+        });
 
     if (screen) {
 
@@ -229,7 +235,7 @@ function formatTime(seconds) {
     const safeSeconds =
         Math.max(
             0,
-            seconds
+            Number(seconds) || 0
         );
 
     const minutes =
@@ -240,7 +246,6 @@ function formatTime(seconds) {
     const secs =
         safeSeconds % 60;
 
-
     return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 }
 
@@ -250,6 +255,20 @@ function showMessage(message) {
     console.log(
         "[Exam]",
         message
+    );
+
+    // Existing design is preserved.
+    // Browser alert is used so important messages
+    // are actually visible to the student.
+
+    window.alert(message);
+}
+
+
+function isValidEmail(email) {
+
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        email
     );
 }
 
@@ -267,9 +286,9 @@ function listenExamSettings() {
             "current"
         );
 
-
     settingsUnsubscribe =
         onSnapshot(
+
             settingsRef,
 
             (snapshot) => {
@@ -285,27 +304,25 @@ function listenExamSettings() {
                     return;
                 }
 
-
                 examSettings = {
                     ...DEFAULT_SETTINGS,
                     ...snapshot.data()
                 };
 
-
                 applySettingsToUI();
-
 
                 console.log(
                     "Exam settings updated:",
                     examSettings
                 );
 
-
                 if (
                     examStarted &&
                     !examSubmitted &&
-                    examSettings.examStatus ===
-                        "ended"
+                    String(
+                        examSettings.examStatus ||
+                        ""
+                    ).toLowerCase() === "ended"
                 ) {
 
                     submitExam(
@@ -321,11 +338,9 @@ function listenExamSettings() {
                     error
                 );
 
-
                 examSettings = {
                     ...DEFAULT_SETTINGS
                 };
-
 
                 applySettingsToUI();
             }
@@ -334,7 +349,7 @@ function listenExamSettings() {
 
 
 // ============================================================
-// APPLY SETTINGS TO EXISTING DESIGN
+// APPLY SETTINGS
 // ============================================================
 
 function applySettingsToUI() {
@@ -343,13 +358,11 @@ function applySettingsToUI() {
         return;
     }
 
-
     const questionCount =
         Number(
             examSettings.questionsToDisplay
         ) ||
         DEFAULT_SETTINGS.questionsToDisplay;
-
 
     const duration =
         Number(
@@ -357,13 +370,11 @@ function applySettingsToUI() {
         ) ||
         DEFAULT_SETTINGS.durationMinutes;
 
-
     const marks =
         Number(
             examSettings.marksPerQuestion
         ) ||
         DEFAULT_SETTINGS.marksPerQuestion;
-
 
     const negative =
         Number(
@@ -440,20 +451,17 @@ function isExamLive() {
         return false;
     }
 
-
-    const status =
+    return (
         String(
             examSettings.examStatus ||
             "draft"
-        ).toLowerCase();
-
-
-    return status === "live";
+        ).toLowerCase() === "live"
+    );
 }
 
 
 // ============================================================
-// CHECK ONE EMAIL = ONE ATTEMPT
+// CHECK PREVIOUS ATTEMPT
 // ============================================================
 
 async function hasPreviousAttempt(email) {
@@ -461,64 +469,102 @@ async function hasPreviousAttempt(email) {
     const normalizedEmail =
         normalizeEmail(email);
 
-
     if (!normalizedEmail) {
         return false;
     }
 
-
     try {
 
-        const candidatesRef =
-            collection(
+        // --------------------------------------------
+        // CHECK CANDIDATE RECORD
+        // --------------------------------------------
+
+        const candidateRef =
+            doc(
                 db,
-                "candidates"
+                "candidates",
+                normalizedEmail
             );
-
-
-        const candidateQuery =
-            query(
-                candidatesRef,
-                where(
-                    "email",
-                    "==",
-                    normalizedEmail
-                )
-            );
-
 
         const candidateSnapshot =
-            await getDocs(
-                candidateQuery
-            );
+            await getDoc(candidateRef);
 
-
-        for (
-            const candidateDoc
-            of candidateSnapshot.docs
-        ) {
+        if (candidateSnapshot.exists()) {
 
             const data =
-                candidateDoc.data();
-
+                candidateSnapshot.data();
 
             const status =
                 String(
                     data.status || ""
                 ).toLowerCase();
 
-
             if (
-                status === "completed" ||
-                status === "auto_submitted" ||
-                status === "submitted" ||
-                status === "disqualified"
+                [
+                    "completed",
+                    "auto_submitted",
+                    "submitted",
+                    "disqualified",
+                    "active"
+                ].includes(status)
             ) {
 
                 return true;
             }
         }
 
+
+        // --------------------------------------------
+        // CHECK ATTEMPTS COLLECTION
+        // --------------------------------------------
+
+        const attemptsRef =
+            collection(
+                db,
+                "attempts"
+            );
+
+        const attemptQuery =
+            query(
+                attemptsRef,
+                where(
+                    "candidateEmail",
+                    "==",
+                    normalizedEmail
+                )
+            );
+
+        const attemptSnapshot =
+            await getDocs(
+                attemptQuery
+            );
+
+        for (
+            const attemptDoc
+            of attemptSnapshot.docs
+        ) {
+
+            const data =
+                attemptDoc.data();
+
+            const status =
+                String(
+                    data.status || ""
+                ).toLowerCase();
+
+            if (
+                [
+                    "active",
+                    "submitted",
+                    "auto_submitted",
+                    "completed",
+                    "disqualified"
+                ].includes(status)
+            ) {
+
+                return true;
+            }
+        }
 
         return false;
 
@@ -545,15 +591,13 @@ if (loginBtn) {
         async () => {
 
             const name =
-                candidateNameInput
-                    ?.value
-                    ?.trim() || "";
-
+                normalizeName(
+                    candidateNameInput?.value
+                );
 
             const email =
                 normalizeEmail(
-                    candidateEmailInput
-                        ?.value
+                    candidateEmailInput?.value
                 );
 
 
@@ -581,10 +625,7 @@ if (loginBtn) {
             }
 
 
-            if (
-                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/
-                    .test(email)
-            ) {
+            if (!isValidEmail(email)) {
 
                 showMessage(
                     "Please enter a valid email address."
@@ -654,10 +695,8 @@ if (loginBtn) {
             loginBtn.disabled =
                 true;
 
-
             const originalText =
                 loginBtn.textContent;
-
 
             loginBtn.textContent =
                 "Checking...";
@@ -674,7 +713,7 @@ if (loginBtn) {
                 if (alreadyAttempted) {
 
                     showMessage(
-                        "This email has already completed an examination attempt."
+                        "This email has already used an examination attempt."
                     );
 
                     return;
@@ -702,7 +741,6 @@ if (loginBtn) {
                     error
                 );
 
-
                 showMessage(
                     "Unable to verify your examination access. Please try again."
                 );
@@ -721,7 +759,7 @@ if (loginBtn) {
 
 
 // ============================================================
-// CREATE CANDIDATE RECORD
+// CREATE / VERIFY CANDIDATE RECORD
 // ============================================================
 
 async function createCandidateRecord() {
@@ -733,30 +771,34 @@ async function createCandidateRecord() {
             candidate.email
         );
 
-
     const existing =
         await getDoc(
             candidateRef
         );
 
 
-    if (
-        existing.exists() &&
-        [
-            "completed",
-            "auto_submitted",
-            "submitted",
-            "disqualified"
-        ].includes(
+    if (existing.exists()) {
+
+        const status =
             String(
                 existing.data().status || ""
-            ).toLowerCase()
-        )
-    ) {
+            ).toLowerCase();
 
-        throw new Error(
-            "Candidate already attempted the examination."
-        );
+
+        if (
+            [
+                "active",
+                "completed",
+                "auto_submitted",
+                "submitted",
+                "disqualified"
+            ].includes(status)
+        ) {
+
+            throw new Error(
+                "Candidate already attempted the examination."
+            );
+        }
     }
 
 
@@ -770,7 +812,7 @@ async function createCandidateRecord() {
                 candidate.email,
 
             status:
-                "not_started",
+                "verified",
 
             loginTime:
                 serverTimestamp(),
@@ -800,22 +842,18 @@ if (backToLoginBtn) {
                 email: ""
             };
 
-
             if (candidateNameInput) {
                 candidateNameInput.value = "";
             }
-
 
             if (candidateEmailInput) {
                 candidateEmailInput.value = "";
             }
 
-
             if (instructionAgreement) {
                 instructionAgreement.checked =
                     false;
             }
-
 
             showScreen(
                 loginScreen
@@ -901,7 +939,6 @@ if (confirmStartBtn) {
                 "show"
             );
 
-
             await startExam();
         }
     );
@@ -919,7 +956,6 @@ async function loadQuestions() {
             db,
             "questionBank"
         );
-
 
     const snapshot =
         await getDocs(
@@ -946,17 +982,6 @@ async function loadQuestions() {
     }
 
 
-    const displayCount =
-        Math.min(
-            Number(
-                examSettings.questionsToDisplay
-            ) ||
-            loadedQuestions.length,
-
-            loadedQuestions.length
-        );
-
-
     if (
         examSettings.randomQuestions !==
         false
@@ -967,6 +992,17 @@ async function loadQuestions() {
                 loadedQuestions
             );
     }
+
+
+    const displayCount =
+        Math.min(
+            Number(
+                examSettings.questionsToDisplay
+            ) ||
+            loadedQuestions.length,
+
+            loadedQuestions.length
+        );
 
 
     loadedQuestions =
@@ -984,9 +1020,7 @@ async function loadQuestions() {
 // NORMALIZE QUESTION
 // ============================================================
 
-function normalizeQuestion(
-    question
-) {
+function normalizeQuestion(question) {
 
     return {
 
@@ -1052,6 +1086,87 @@ function normalizeQuestion(
 
 
 // ============================================================
+// ATOMIC ATTEMPT CLAIM
+// ============================================================
+
+async function claimCandidateAttempt() {
+
+    const candidateRef =
+        doc(
+            db,
+            "candidates",
+            candidate.email
+        );
+
+
+    await runTransaction(
+        db,
+        async (transaction) => {
+
+            const candidateSnapshot =
+                await transaction.get(
+                    candidateRef
+                );
+
+
+            if (candidateSnapshot.exists()) {
+
+                const data =
+                    candidateSnapshot.data();
+
+                const status =
+                    String(
+                        data.status || ""
+                    ).toLowerCase();
+
+
+                if (
+                    [
+                        "active",
+                        "completed",
+                        "auto_submitted",
+                        "submitted",
+                        "disqualified"
+                    ].includes(status)
+                ) {
+
+                    throw new Error(
+                        "This email has already used an examination attempt."
+                    );
+                }
+            }
+
+
+            transaction.set(
+                candidateRef,
+                {
+
+                    name:
+                        candidate.name,
+
+                    email:
+                        candidate.email,
+
+                    status:
+                        "active",
+
+                    testStartTime:
+                        serverTimestamp(),
+
+                    updatedAt:
+                        serverTimestamp()
+
+                },
+                {
+                    merge: true
+                }
+            );
+        }
+    );
+}
+
+
+// ============================================================
 // START EXAM
 // ============================================================
 
@@ -1078,6 +1193,17 @@ async function startExam() {
             true;
 
 
+        // --------------------------------------------
+        // ATOMIC EMAIL CLAIM
+        // --------------------------------------------
+
+        await claimCandidateAttempt();
+
+
+        // --------------------------------------------
+        // LOAD QUESTIONS
+        // --------------------------------------------
+
         questions =
             await loadQuestions();
 
@@ -1095,6 +1221,10 @@ async function startExam() {
             );
         }
 
+
+        // --------------------------------------------
+        // RANDOM OPTIONS
+        // --------------------------------------------
 
         if (
             examSettings.randomOptions !==
@@ -1118,18 +1248,14 @@ async function startExam() {
                             );
 
 
-                        const shuffled =
-                            shuffle(
-                                optionObjects
-                            );
-
-
                         return {
 
                             ...question,
 
                             displayOptions:
-                                shuffled
+                                shuffle(
+                                    optionObjects
+                                )
                         };
                     }
                 );
@@ -1159,6 +1285,10 @@ async function startExam() {
                 );
         }
 
+
+        // --------------------------------------------
+        // ATTEMPT ID
+        // --------------------------------------------
 
         attemptId =
             `${candidate.email}_${Date.now()}`;
@@ -1201,6 +1331,10 @@ async function startExam() {
             Date.now();
 
 
+        // --------------------------------------------
+        // CREATE ATTEMPT
+        // --------------------------------------------
+
         await setDoc(
             doc(
                 db,
@@ -1239,16 +1373,13 @@ async function startExam() {
                 currentQuestion:
                     1,
 
+                answered:
+                    0,
+
+                answers:
+                    {},
+
                 updatedAt:
-                    serverTimestamp()
-            }
-        );
-
-
-        await updateCandidateStatus(
-            "active",
-            {
-                testStartTime:
                     serverTimestamp()
             }
         );
@@ -1274,10 +1405,19 @@ async function startExam() {
         );
 
 
+        // If start failed after candidate was claimed,
+        // do not silently mark the attempt as completed.
+        // Admin reset can be used if necessary.
+
+        examStarted =
+            false;
+
+
         showMessage(
             error.message ||
             "Unable to start the examination."
         );
+
 
     } finally {
 
@@ -1364,28 +1504,12 @@ function renderQuestion() {
                 );
 
 
-            const oldText =
-                button.querySelector(
-                    ".option-text"
-                );
+            const labelText =
+                displayOption?.text || "";
 
 
-            if (oldText) {
-
-                oldText.textContent =
-                    displayOption?.text ||
-                    "";
-
-            } else {
-
-                const labelText =
-                    displayOption?.text ||
-                    "";
-
-
-                button.innerHTML =
-                    `<span>${String.fromCharCode(65 + index)}</span> ${escapeHTML(labelText)}`;
-            }
+            button.innerHTML =
+                `<span>${String.fromCharCode(65 + index)}</span> ${escapeHTML(labelText)}`;
 
 
             const savedAnswer =
@@ -1397,9 +1521,7 @@ function renderQuestion() {
             button.classList.toggle(
                 "selected",
 
-                String(
-                    savedAnswer
-                ) ===
+                String(savedAnswer) ===
                 String(
                     displayOption?.originalIndex
                 )
@@ -1441,7 +1563,7 @@ optionButtons.forEach(
 
         button.addEventListener(
             "click",
-            () => {
+            async () => {
 
                 if (
                     !examStarted ||
@@ -1465,7 +1587,8 @@ optionButtons.forEach(
 
                 answers[
                     question.id
-                ] = optionIndex;
+                ] =
+                    optionIndex;
 
 
                 optionButtons.forEach(
@@ -1479,10 +1602,61 @@ optionButtons.forEach(
                 button.classList.add(
                     "selected"
                 );
+
+
+                // Save answer immediately
+                await saveCurrentAnswers();
             }
         );
     }
 );
+
+
+// ============================================================
+// SAVE ANSWERS
+// ============================================================
+
+async function saveCurrentAnswers() {
+
+    if (!attemptId) {
+        return;
+    }
+
+
+    try {
+
+        await updateDoc(
+            doc(
+                db,
+                "attempts",
+                attemptId
+            ),
+            {
+
+                answers:
+                    answers,
+
+                answered:
+                    Object.keys(
+                        answers
+                    ).length,
+
+                currentQuestion:
+                    currentQuestionIndex + 1,
+
+                updatedAt:
+                    serverTimestamp()
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Answer save error:",
+            error
+        );
+    }
+}
 
 
 // ============================================================
@@ -1493,7 +1667,7 @@ if (previousBtn) {
 
     previousBtn.addEventListener(
         "click",
-        () => {
+        async () => {
 
             if (
                 currentQuestionIndex <= 0
@@ -1505,6 +1679,8 @@ if (previousBtn) {
             currentQuestionIndex--;
 
             renderQuestion();
+
+            await updateAttemptProgress();
         }
     );
 }
@@ -1526,6 +1702,9 @@ if (saveNextBtn) {
             ) {
                 return;
             }
+
+
+            await saveCurrentAnswers();
 
 
             if (
@@ -1579,6 +1758,9 @@ async function updateAttemptProgress() {
                     Object.keys(
                         answers
                     ).length,
+
+                answers:
+                    answers,
 
                 updatedAt:
                     serverTimestamp()
@@ -1672,10 +1854,6 @@ function updateTimerUI() {
 // SECURITY MONITORING
 // ============================================================
 
-let securityHandlersEnabled =
-    false;
-
-
 function enableSecurityControls() {
 
     if (securityHandlersEnabled) {
@@ -1727,6 +1905,18 @@ function enableSecurityControls() {
         "beforeunload",
         handleBeforeUnload
     );
+
+
+    // Best effort screenshot protection
+    if (
+        examSettings?.disableScreenshot
+    ) {
+
+        document.addEventListener(
+            "keyup",
+            handleScreenshotKey
+        );
+    }
 }
 
 
@@ -1770,6 +1960,21 @@ async function handleWindowBlur() {
     }
 
 
+    // Prevent visibility + blur from immediately
+    // creating duplicate violations.
+
+    const now =
+        Date.now();
+
+
+    if (
+        now - lastViolationTime <
+        1000
+    ) {
+        return;
+    }
+
+
     await registerViolation(
         "window_blur"
     );
@@ -1795,7 +2000,6 @@ async function handleCopy(event) {
     ) {
 
         event.preventDefault();
-
 
         await registerViolation(
             "copy_attempt"
@@ -1823,7 +2027,6 @@ async function handlePaste(event) {
     ) {
 
         event.preventDefault();
-
 
         await registerViolation(
             "paste_attempt"
@@ -1856,6 +2059,41 @@ async function handleContextMenu(event) {
 
 
 // ============================================================
+// SCREENSHOT KEY
+// ============================================================
+
+async function handleScreenshotKey(event) {
+
+    if (
+        !examStarted ||
+        examSubmitted
+    ) {
+        return;
+    }
+
+
+    if (
+        !examSettings?.disableScreenshot
+    ) {
+        return;
+    }
+
+
+    // PrintScreen detection is best-effort only.
+    if (
+        event.key === "PrintScreen"
+    ) {
+
+        event.preventDefault();
+
+        await registerViolation(
+            "screenshot_attempt"
+        );
+    }
+}
+
+
+// ============================================================
 // KEYBOARD SECURITY
 // ============================================================
 
@@ -1877,8 +2115,9 @@ async function handleKeyDown(event) {
 
     const blockedFunctionKey =
         examSettings?.disableFunctionKeys &&
-        /^f([1-9]|1[0-2])$/
-            .test(key);
+        /^f([1-9]|1[0-2])$/.test(
+            key
+        );
 
 
     const blockedShortcut =
@@ -1897,16 +2136,31 @@ async function handleKeyDown(event) {
         ].includes(key);
 
 
+    const screenshotShortcut =
+        examSettings?.disableScreenshot &&
+        (
+            key === "printscreen" ||
+            (
+                event.metaKey &&
+                event.shiftKey &&
+                key === "4"
+            )
+        );
+
+
     if (
         blockedFunctionKey ||
-        blockedShortcut
+        blockedShortcut ||
+        screenshotShortcut
     ) {
 
         event.preventDefault();
 
 
         await registerViolation(
-            "keyboard_shortcut_attempt"
+            screenshotShortcut
+                ? "screenshot_attempt"
+                : "keyboard_shortcut_attempt"
         );
     }
 }
@@ -1916,7 +2170,7 @@ async function handleKeyDown(event) {
 // REFRESH PROTECTION
 // ============================================================
 
-async function handleBeforeUnload(event) {
+function handleBeforeUnload(event) {
 
     if (
         !examStarted ||
@@ -1949,6 +2203,23 @@ async function registerViolation(type) {
     ) {
         return;
     }
+
+
+    const now =
+        Date.now();
+
+
+    // Prevent accidental duplicate events
+    if (
+        now - lastViolationTime <
+        1000
+    ) {
+        return;
+    }
+
+
+    lastViolationTime =
+        now;
 
 
     violationCount++;
@@ -2032,7 +2303,7 @@ async function registerViolation(type) {
         if (
             maxViolations > 0 &&
             violationCount >=
-                maxViolations
+            maxViolations
         ) {
 
             await submitExam(
@@ -2053,15 +2324,9 @@ async function registerViolation(type) {
 
 // ============================================================
 // CORRECT ANSWER NORMALIZER
-// Supports:
-// A/B/C/D
-// 0/1/2/3
-// "A"/"B"/"C"/"D"
 // ============================================================
 
-function getCorrectAnswerIndex(
-    answer
-) {
+function getCorrectAnswerIndex(answer) {
 
     if (
         typeof answer === "number" &&
@@ -2081,6 +2346,7 @@ function getCorrectAnswerIndex(
 
 
     const letterMap = {
+
         A: 0,
         B: 1,
         C: 2,
@@ -2160,15 +2426,11 @@ function formatAnswer(answer) {
 function calculateResult() {
 
     let correct = 0;
-
     let wrong = 0;
-
     let attempted = 0;
-
     let unattempted = 0;
 
     let rawMarks = 0;
-
     let negativeMarks = 0;
 
 
@@ -2194,10 +2456,6 @@ function calculateResult() {
                         question.correctAnswer
                     );
 
-
-                // --------------------------------------------
-                // UNATTEMPTED
-                // --------------------------------------------
 
                 if (!hasAnswer) {
 
@@ -2248,10 +2506,6 @@ function calculateResult() {
                     );
 
 
-                // --------------------------------------------
-                // CORRECT
-                // --------------------------------------------
-
                 if (isCorrect) {
 
                     correct++;
@@ -2294,10 +2548,6 @@ function calculateResult() {
                     };
                 }
 
-
-                // --------------------------------------------
-                // WRONG
-                // --------------------------------------------
 
                 wrong++;
 
@@ -2357,12 +2607,10 @@ function calculateResult() {
 
     const percentage =
         maxMarks > 0
-
             ? (
                 finalMarks /
                 maxMarks
             ) * 100
-
             : 0;
 
 
@@ -2425,6 +2673,10 @@ async function submitExam(
 
 
     try {
+
+        // Save latest answers first.
+        await saveCurrentAnswers();
+
 
         const result =
             calculateResult();
@@ -2503,6 +2755,27 @@ async function submitExam(
                     finalMarks:
                         result.finalMarks,
 
+                    rawMarks:
+                        result.rawMarks,
+
+                    negativeMarks:
+                        result.negativeMarks,
+
+                    securityPenalty:
+                        result.securityPenalty,
+
+                    correct:
+                        result.correct,
+
+                    wrong:
+                        result.wrong,
+
+                    unattempted:
+                        result.unattempted,
+
+                    answered:
+                        result.attempted,
+
                     updatedAt:
                         serverTimestamp()
                 }
@@ -2545,7 +2818,7 @@ async function submitExam(
 
 
         // --------------------------------------------
-        // STORE RESULT LOCALLY
+        // LOCAL RESULT
         // --------------------------------------------
 
         window.examResult =
@@ -2553,7 +2826,7 @@ async function submitExam(
 
 
         // --------------------------------------------
-        // SHOW RESULT SCREEN
+        // SHOW RESULT
         // --------------------------------------------
 
         showResultScreen(
@@ -2600,30 +2873,26 @@ function showResultScreen(result) {
     }
 
 
-    // --------------------------------------------
-    // CANDIDATE
-    // --------------------------------------------
-
     setText(
         "resultCandidateName",
         result.candidateName ||
-            candidate.name ||
-            "—"
+        candidate.name ||
+        "—"
     );
 
 
     setText(
         "resultCandidateEmail",
         result.candidateEmail ||
-            candidate.email ||
-            "—"
+        candidate.email ||
+        "—"
     );
 
 
     setText(
         "resultExamTitle",
         result.examTitle ||
-            "Online Examination"
+        "Online Examination"
     );
 
 
@@ -2634,10 +2903,6 @@ function showResultScreen(result) {
         )
     );
 
-
-    // --------------------------------------------
-    // SUMMARY
-    // --------------------------------------------
 
     setText(
         "resultTotalQuestions",
@@ -2668,10 +2933,6 @@ function showResultScreen(result) {
         result.unattempted ?? 0
     );
 
-
-    // --------------------------------------------
-    // MARKS
-    // --------------------------------------------
 
     setText(
         "resultRawMarks",
@@ -2706,10 +2967,6 @@ function showResultScreen(result) {
         `${result.percentage ?? 0}%`
     );
 
-
-    // --------------------------------------------
-    // SUBMISSION MESSAGE
-    // --------------------------------------------
 
     const message =
         $("resultSubmissionMessage");
@@ -2749,18 +3006,10 @@ function showResultScreen(result) {
     }
 
 
-    // --------------------------------------------
-    // QUESTION REVIEW
-    // --------------------------------------------
-
     renderQuestionReview(
         result.questionResults || []
     );
 
-
-    // --------------------------------------------
-    // SHOW SCREEN
-    // --------------------------------------------
 
     showScreen(
         resultScreen
@@ -2772,10 +3021,7 @@ function showResultScreen(result) {
 // SET TEXT
 // ============================================================
 
-function setText(
-    id,
-    value
-) {
+function setText(id, value) {
 
     const element =
         $(id);
@@ -2790,12 +3036,10 @@ function setText(
 
 
 // ============================================================
-// SUBMISSION TYPE LABEL
+// SUBMISSION TYPE
 // ============================================================
 
-function formatSubmissionType(
-    type
-) {
+function formatSubmissionType(type) {
 
     const labels = {
 
@@ -2981,7 +3225,7 @@ function renderQuestionReview(
 
 
 // ============================================================
-// FEEDBACK - OPEN
+// FEEDBACK OPEN
 // ============================================================
 
 const openFeedbackBtn =
@@ -3062,7 +3306,7 @@ function updateFeedbackStars() {
                 button.classList.toggle(
                     "active",
                     rating <=
-                        selectedRating
+                    selectedRating
                 );
             }
         );
@@ -3231,11 +3475,6 @@ if (skipFeedbackBtn) {
         "click",
         () => {
 
-            showMessage(
-                "Feedback skipped."
-            );
-
-
             showScreen(
                 resultScreen
             );
@@ -3313,7 +3552,31 @@ function disableExamControls() {
         saveNextBtn.disabled =
             true;
     }
+
+
+    examStarted =
+        false;
 }
+
+
+// ============================================================
+// CLEANUP
+// ============================================================
+
+window.addEventListener(
+    "pagehide",
+    () => {
+
+        clearInterval(
+            timerInterval
+        );
+
+        if (settingsUnsubscribe) {
+
+            settingsUnsubscribe();
+        }
+    }
+);
 
 
 // ============================================================
@@ -3329,5 +3592,5 @@ showScreen(
 
 
 console.log(
-    "Student Examination Portal initialized."
+    "Student Examination Portal initialized successfully."
 );
