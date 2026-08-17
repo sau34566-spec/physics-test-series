@@ -1,1795 +1,133 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Admin Portal | Online Examination</title>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Admin Control Panel</title>
 
     <!-- Admin CSS -->
-    <link rel="stylesheet" href="../css/admin.css">
+    <link
+        rel="stylesheet"
+        href="../css/admin.css"
+    >
+
 </head>
 
+
 <body>
+
 
     <!-- =====================================================
          ADMIN LOGIN SCREEN
     ====================================================== -->
 
-    <section class="admin-login-screen" id="adminLoginScreen">
-
-        <div class="admin-login-background"></div>
-
-        <div class="admin-login-card">
-
-            <!-- Brand -->
-            <div class="admin-brand">
-
-                <div class="admin-brand-icon">🛡️</div>
-
-                <span class="admin-label">
-                    ADMINISTRATION
-                </span>
-
-                <h1>
-                    Examination Control Center
-                </h1>
-
-                <p>
-                    Authorized administrators only
-                </p>
-
-            </div>
-
-
-            <!-- Login Form -->
-            <form
-                class="admin-login-form"
-                id="adminLoginForm"
-                novalidate
-            >
-
-                <!-- Email -->
-                <div class="admin-input-group">
-
-                    <label for="adminEmail">
-                        Admin Email
-                    </label>
-
-                    <input
-                        type="email"
-                        id="adminEmail"
-                        placeholder="admin@gmail.com"
-                        autocomplete="email"
-                        required
-                    >
-
-                </div>
-
-
-                <!-- Password -->
-                <div class="admin-input-group">
-
-                    <label for="adminPassword">
-                        Password
-                    </label>
-
-                    <input
-                        type="password"
-                        id="adminPassword"
-                        placeholder="Enter your password"
-                        autocomplete="current-password"
-                        required
-                    >
-
-                </div>
-
-
-                <!-- Login Error / Status Message -->
-                <div
-                    id="adminLoginMessage"
-                    class="admin-login-message"
-                    style="display: none;"
-                    role="alert"
-                    aria-live="polite"
-                ></div>
-
-
-                <!-- Login Button -->
-                <button
-                    type="submit"
-                    class="admin-login-btn"
-                    id="adminLoginBtn"
-                >
-                    Sign In to Dashboard
-                </button>
-
-            </form>
-
-
-            <!-- Security Notice -->
-            <div class="admin-login-security">
-
-                <span>🔐</span>
-
-                <p>
-                    Protected administrator environment
-                </p>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         ADMIN DASHBOARD
-    ====================================================== -->
-
     <section
-        class="admin-dashboard"
-        id="adminDashboard"
+        class="admin-screen active"
+        id="adminLoginScreen"
     >
 
-        <!-- =================================================
-             SIDEBAR
-        ================================================== -->
+        <main class="admin-login-page">
 
-        <aside
-            class="admin-sidebar"
-            id="adminSidebar"
-        >
+            <div class="admin-login-overlay"></div>
 
-            <!-- Sidebar Brand -->
-            <div class="sidebar-brand">
 
-                <div class="sidebar-brand-icon">
-                    🎓
-                </div>
+            <section class="admin-login-card">
 
-                <div>
 
-                    <strong>
-                        ExamControl
-                    </strong>
+                <!-- BRAND -->
 
-                    <span>
-                        Administration
+                <div class="admin-login-brand">
+
+                    <div class="admin-brand-icon">
+                        🛡️
+                    </div>
+
+                    <span class="admin-small-label">
+                        SECURE ADMINISTRATION
                     </span>
 
-                </div>
-
-            </div>
-
-
-            <!-- Navigation -->
-            <nav class="sidebar-navigation">
-
-                <button
-                    type="button"
-                    class="nav-item active"
-                    data-section="dashboard"
-                >
-                    <span>📊</span>
-                    Dashboard
-                </button>
-
-
-                <button
-                    type="button"
-                    class="nav-item"
-                    data-section="examSettings"
-                >
-                    <span>⚙️</span>
-                    Exam Settings
-                </button>
-
-
-                <button
-                    type="button"
-                    class="nav-item"
-                    data-section="questions"
-                >
-                    <span>📝</span>
-                    Question Bank
-                </button>
-
-
-                <button
-                    type="button"
-                    class="nav-item"
-                    data-section="candidates"
-                >
-                    <span>👥</span>
-                    Candidates
-                </button>
-
-
-                <button
-                    type="button"
-                    class="nav-item"
-                    data-section="monitoring"
-                >
-                    <span>🖥️</span>
-                    Live Monitoring
-                </button>
-
-
-                <button
-                    type="button"
-                    class="nav-item"
-                    data-section="violations"
-                >
-                    <span>🚨</span>
-                    Security Violations
-                </button>
-
-
-                <button
-                    type="button"
-                    class="nav-item"
-                    data-section="results"
-                >
-                    <span>🏆</span>
-                    Results
-                </button>
-
-
-                <button
-                    type="button"
-                    class="nav-item"
-                    data-section="feedback"
-                >
-                    <span>💬</span>
-                    Feedback
-                </button>
-
-
-                <button
-                    type="button"
-                    class="nav-item"
-                    data-section="analytics"
-                >
-                    <span>📈</span>
-                    Analytics
-                </button>
-
-
-                <button
-                    type="button"
-                    class="nav-item"
-                    data-section="admins"
-                >
-                    <span>👤</span>
-                    Authorized Admins
-                </button>
-
-
-                <button
-                    type="button"
-                    class="nav-item"
-                    data-section="activity"
-                >
-                    <span>📋</span>
-                    Activity Logs
-                </button>
-
-            </nav>
-
-
-            <!-- Logout -->
-            <div class="sidebar-bottom">
-
-                <button
-                    type="button"
-                    class="logout-btn"
-                    id="adminLogoutBtn"
-                >
-                    <span>🚪</span>
-                    Logout
-                </button>
-
-            </div>
-
-        </aside>
-
-
-        <!-- =================================================
-             MAIN AREA
-        ================================================== -->
-
-        <main class="admin-main">
-
-
-            <!-- TOP HEADER -->
-            <header class="admin-topbar">
-
-                <button
-                    type="button"
-                    class="mobile-menu-btn"
-                    id="mobileMenuBtn"
-                >
-                    ☰
-                </button>
-
-
-                <div class="topbar-title">
-
-                    <span>
-                        ADMIN PANEL
-                    </span>
-
-                    <h1 id="pageTitle">
-                        Dashboard
+                    <h1>
+                        Admin Control Panel
                     </h1>
 
+                    <p>
+                        Authorized Examination Management System
+                    </p>
+
                 </div>
 
 
-                <div class="topbar-right">
+                <!-- LOGIN FORM -->
+
+                <form id="adminLoginForm">
 
 
-                    <!-- Exam Status -->
-                    <div class="exam-status-badge">
+                    <div class="admin-input-group">
 
-                        <span
-                            class="status-dot"
-                            id="statusDot"
-                        ></span>
+                        <label for="adminEmail">
+                            Administrator Email
+                        </label>
 
-                        <span id="examStatus">
-                            System Ready
-                        </span>
-
-                    </div>
-
-
-                    <!-- Admin Profile -->
-                    <div class="admin-profile">
-
-                        <div
-                            class="profile-avatar"
-                            id="profileAvatar"
+                        <input
+                            type="email"
+                            id="adminEmail"
+                            placeholder="admin@gmail.com"
+                            autocomplete="email"
+                            required
                         >
-                            A
-                        </div>
-
-                        <div class="profile-info">
-
-                            <strong id="adminName">
-                                Administrator
-                            </strong>
-
-                            <span>
-                                Authorized Admin
-                            </span>
-
-                        </div>
 
                     </div>
 
-                </div>
 
-            </header>
+                    <div class="admin-input-group">
 
+                        <label for="adminPassword">
+                            Password
+                        </label>
 
-            <!-- =================================================
-                 DASHBOARD SECTION
-            ================================================== -->
-
-            <section
-                class="admin-section active"
-                id="dashboardSection"
-            >
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span>
-                            OVERVIEW
-                        </span>
-
-                        <h2>
-                            Examination Dashboard
-                        </h2>
-
-                        <p>
-                            Monitor your examination system from one place.
-                        </p>
+                        <input
+                            type="password"
+                            id="adminPassword"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required
+                        >
 
                     </div>
 
 
                     <button
-                        type="button"
-                        class="refresh-btn"
-                        id="refreshDashboard"
+                        type="submit"
+                        class="admin-login-btn"
+                        id="adminLoginBtn"
                     >
-                        ↻ Refresh
+                        Sign In to Dashboard
                     </button>
 
-                </div>
+
+                    <div
+                        id="adminLoginMessage"
+                        class="admin-login-message"
+                        style="display:none;"
+                    ></div>
 
 
-                <!-- STAT CARDS -->
-                <div class="stats-grid">
+                </form>
 
 
-                    <div class="stat-card">
+                <div class="admin-login-footer">
 
-                        <div class="stat-icon blue">
-                            📝
-                        </div>
-
-                        <div>
-
-                            <span>
-                                Total Questions
-                            </span>
-
-                            <strong id="totalQuestions">
-                                100
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <div class="stat-icon purple">
-                            🎯
-                        </div>
-
-                        <div>
-
-                            <span>
-                                Questions Displayed
-                            </span>
-
-                            <strong id="displayQuestions">
-                                80
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <div class="stat-icon green">
-                            👥
-                        </div>
-
-                        <div>
-
-                            <span>
-                                Total Candidates
-                            </span>
-
-                            <strong id="totalCandidates">
-                                0
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <div class="stat-icon orange">
-                            ✅
-                        </div>
-
-                        <div>
-
-                            <span>
-                                Completed
-                            </span>
-
-                            <strong id="completedCandidates">
-                                0
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <div class="stat-icon cyan">
-                            🟢
-                        </div>
-
-                        <div>
-
-                            <span>
-                                Active Tests
-                            </span>
-
-                            <strong id="activeCandidates">
-                                0
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <div class="stat-icon red">
-                            🚨
-                        </div>
-
-                        <div>
-
-                            <span>
-                                Violations
-                            </span>
-
-                            <strong id="totalViolations">
-                                0
-                            </strong>
-
-                        </div>
-
-                    </div>
+                    🔒 Authorized Access Only
 
                 </div>
 
-
-                <!-- DASHBOARD GRID -->
-                <div class="dashboard-grid">
-
-
-                    <!-- EXAM CONTROL -->
-                    <div class="panel-card">
-
-                        <div class="panel-header">
-
-                            <div>
-
-                                <span>
-                                    EXAMINATION STATUS
-                                </span>
-
-                                <h3>
-                                    Current Examination
-                                </h3>
-
-                            </div>
-
-                            <span
-                                class="large-status"
-                                id="largeExamStatus"
-                            >
-                                DRAFT
-                            </span>
-
-                        </div>
-
-
-                        <div class="exam-control-info">
-
-
-                            <div>
-
-                                <span>
-                                    Exam Title
-                                </span>
-
-                                <strong id="dashboardExamTitle">
-                                    Online Examination
-                                </strong>
-
-                            </div>
-
-
-                            <div>
-
-                                <span>
-                                    Duration
-                                </span>
-
-                                <strong id="dashboardDuration">
-                                    60 Minutes
-                                </strong>
-
-                            </div>
-
-
-                            <div>
-
-                                <span>
-                                    Questions
-                                </span>
-
-                                <strong id="dashboardQuestionCount">
-                                    80
-                                </strong>
-
-                            </div>
-
-
-                            <div>
-
-                                <span>
-                                    Marks / Question
-                                </span>
-
-                                <strong id="dashboardMarks">
-                                    +4
-                                </strong>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="exam-control-actions">
-
-                            <button
-                                type="button"
-                                class="control-btn start"
-                                id="startExamBtn"
-                            >
-                                ▶ Start Exam
-                            </button>
-
-                            <button
-                                type="button"
-                                class="control-btn pause"
-                                id="pauseExamBtn"
-                            >
-                                ⏸ Pause
-                            </button>
-
-                            <button
-                                type="button"
-                                class="control-btn end"
-                                id="endExamBtn"
-                            >
-                                ■ End Exam
-                            </button>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- QUICK ACTIONS -->
-                    <div class="panel-card">
-
-                        <div class="panel-header">
-
-                            <div>
-
-                                <span>
-                                    QUICK ACTIONS
-                                </span>
-
-                                <h3>
-                                    Manage Examination
-                                </h3>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="quick-actions">
-
-
-                            <button
-                                type="button"
-                                class="quick-action"
-                                data-section="examSettings"
-                            >
-
-                                <span>⚙️</span>
-
-                                <div>
-
-                                    <strong>
-                                        Exam Settings
-                                    </strong>
-
-                                    <small>
-                                        Configure examination
-                                    </small>
-
-                                </div>
-
-                            </button>
-
-
-                            <button
-                                type="button"
-                                class="quick-action"
-                                data-section="questions"
-                            >
-
-                                <span>📚</span>
-
-                                <div>
-
-                                    <strong>
-                                        Question Bank
-                                    </strong>
-
-                                    <small>
-                                        Manage questions
-                                    </small>
-
-                                </div>
-
-                            </button>
-
-
-                            <button
-                                type="button"
-                                class="quick-action"
-                                data-section="results"
-                            >
-
-                                <span>🏆</span>
-
-                                <div>
-
-                                    <strong>
-                                        View Results
-                                    </strong>
-
-                                    <small>
-                                        Check candidate performance
-                                    </small>
-
-                                </div>
-
-                            </button>
-
-
-                            <button
-                                type="button"
-                                class="quick-action"
-                                data-section="violations"
-                            >
-
-                                <span>🚨</span>
-
-                                <div>
-
-                                    <strong>
-                                        Security Monitor
-                                    </strong>
-
-                                    <small>
-                                        Review violations
-                                    </small>
-
-                                </div>
-
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- RECENT ACTIVITY -->
-                <div class="panel-card">
-
-                    <div class="panel-header">
-
-                        <div>
-
-                            <span>
-                                RECENT ACTIVITY
-                            </span>
-
-                            <h3>
-                                System Activity
-                            </h3>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="empty-state">
-
-                        <div>
-                            📋
-                        </div>
-
-                        <h4>
-                            No recent activity
-                        </h4>
-
-                        <p>
-                            Administrative activities will appear here.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 EXAM SETTINGS
-            ================================================== -->
-
-            <section
-    class="admin-section"
-    id="examSettingsSection"
->
-
-    <div class="section-heading">
-
-        <div>
-
-            <span>
-                EXAMINATION CONFIGURATION
-            </span>
-
-            <h2>
-                Exam Settings
-            </h2>
-
-            <p>
-                Configure all examination parameters from this panel.
-            </p>
-
-        </div>
-
-    </div>
-
-
-    <form id="examSettingsForm" class="settings-form">
-
-
-        <!-- ================================
-             BASIC EXAM SETTINGS
-        ================================= -->
-
-        <div class="settings-card">
-
-            <div class="settings-card-header">
-
-                <div>
-                    <span>01</span>
-
-                    <div>
-                        <h3>Basic Examination Settings</h3>
-
-                        <p>
-                            Configure the basic examination information.
-                        </p>
-                    </div>
-                </div>
-
-            </div>
-
-
-            <div class="settings-grid">
-
-                <div class="admin-input-group">
-
-                    <label for="examTitle">
-                        Exam Title
-                    </label>
-
-                    <input
-                        type="text"
-                        id="examTitle"
-                        placeholder="Physics Test Series"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="admin-input-group">
-
-                    <label for="totalQuestions">
-                        Total Question Pool
-                    </label>
-
-                    <input
-                        type="number"
-                        id="totalQuestions"
-                        min="1"
-                        value="100"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="admin-input-group">
-
-                    <label for="questionsToDisplay">
-                        Questions Shown to Student
-                    </label>
-
-                    <input
-                        type="number"
-                        id="questionsToDisplay"
-                        min="1"
-                        value="80"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="admin-input-group">
-
-                    <label for="durationMinutes">
-                        Test Duration (Minutes)
-                    </label>
-
-                    <input
-                        type="number"
-                        id="durationMinutes"
-                        min="1"
-                        value="60"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="admin-input-group">
-
-                    <label for="marksPerQuestion">
-                        Marks per Question
-                    </label>
-
-                    <input
-                        type="number"
-                        id="marksPerQuestion"
-                        min="0"
-                        step="0.5"
-                        value="4"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="admin-input-group">
-
-                    <label for="negativeMarks">
-                        Negative Marks
-                    </label>
-
-                    <input
-                        type="number"
-                        id="negativeMarks"
-                        min="0"
-                        step="0.5"
-                        value="1"
-                        required
-                    >
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- ================================
-             EXAM TIMING
-        ================================= -->
-
-        <div class="settings-card">
-
-            <div class="settings-card-header">
-
-                <div>
-
-                    <span>02</span>
-
-                    <div>
-
-                        <h3>
-                            Examination Timing
-                        </h3>
-
-                        <p>
-                            Control when the examination becomes available.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="settings-grid">
-
-                <div class="admin-input-group">
-
-                    <label for="examStartTime">
-                        Start Time
-                    </label>
-
-                    <input
-                        type="datetime-local"
-                        id="examStartTime"
-                    >
-
-                </div>
-
-
-                <div class="admin-input-group">
-
-                    <label for="examEndTime">
-                        End Time
-                    </label>
-
-                    <input
-                        type="datetime-local"
-                        id="examEndTime"
-                    >
-
-                </div>
-
-
-                <div class="admin-input-group">
-
-                    <label for="examStatusSetting">
-                        Examination Status
-                    </label>
-
-                    <select id="examStatusSetting">
-
-                        <option value="draft">
-                            Draft
-                        </option>
-
-                        <option value="scheduled">
-                            Scheduled
-                        </option>
-
-                        <option value="live">
-                            Live
-                        </option>
-
-                        <option value="paused">
-                            Paused
-                        </option>
-
-                        <option value="ended">
-                            Ended
-                        </option>
-
-                    </select>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- ================================
-             QUESTION SETTINGS
-        ================================= -->
-
-        <div class="settings-card">
-
-            <div class="settings-card-header">
-
-                <div>
-
-                    <span>03</span>
-
-                    <div>
-
-                        <h3>
-                            Question Configuration
-                        </h3>
-
-                        <p>
-                            Configure question source and randomization.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="settings-grid">
-
-                <div class="admin-input-group">
-
-                    <label for="questionSource">
-                        Question Source
-                    </label>
-
-                    <input
-                        type="text"
-                        id="questionSource"
-                        value="chapterq.json"
-                        readonly
-                    >
-
-                </div>
-
-
-                <label class="setting-toggle">
-
-                    <input
-                        type="checkbox"
-                        id="randomQuestions"
-                        checked
-                    >
-
-                    <span>
-                        Randomize Questions
-                    </span>
-
-                </label>
-
-
-                <label class="setting-toggle">
-
-                    <input
-                        type="checkbox"
-                        id="randomOptions"
-                        checked
-                    >
-
-                    <span>
-                        Randomize Options
-                    </span>
-
-                </label>
-
-            </div>
-
-        </div>
-
-
-        <!-- ================================
-             SECURITY SETTINGS
-        ================================= -->
-
-        <div class="settings-card">
-
-            <div class="settings-card-header">
-
-                <div>
-
-                    <span>04</span>
-
-                    <div>
-
-                        <h3>
-                            Examination Security
-                        </h3>
-
-                        <p>
-                            Configure examination security controls.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="settings-grid">
-
-
-                <div class="admin-input-group">
-
-                    <label for="tabSwitchPenalty">
-                        Tab Switch Penalty
-                    </label>
-
-                    <input
-                        type="number"
-                        id="tabSwitchPenalty"
-                        min="0"
-                        step="0.5"
-                        value="1"
-                    >
-
-                </div>
-
-
-                <div class="admin-input-group">
-
-                    <label for="maxTabSwitches">
-                        Maximum Tab Switches
-                    </label>
-
-                    <input
-                        type="number"
-                        id="maxTabSwitches"
-                        min="1"
-                        value="2"
-                    >
-
-                </div>
-
-
-                <label class="setting-toggle">
-
-                    <input
-                        type="checkbox"
-                        id="disableCopy"
-                        checked
-                    >
-
-                    <span>
-                        Disable Copy
-                    </span>
-
-                </label>
-
-
-                <label class="setting-toggle">
-
-                    <input
-                        type="checkbox"
-                        id="disablePaste"
-                        checked
-                    >
-
-                    <span>
-                        Disable Paste
-                    </span>
-
-                </label>
-
-
-                <label class="setting-toggle">
-
-                    <input
-                        type="checkbox"
-                        id="disableScreenshot"
-                        checked
-                    >
-
-                    <span>
-                        Disable Screenshot
-                    </span>
-
-                </label>
-
-
-                <label class="setting-toggle">
-
-                    <input
-                        type="checkbox"
-                        id="disableRefresh"
-                        checked
-                    >
-
-                    <span>
-                        Disable Refresh
-                    </span>
-
-                </label>
-
-
-                <label class="setting-toggle">
-
-                    <input
-                        type="checkbox"
-                        id="disableFunctionKeys"
-                        checked
-                    >
-
-                    <span>
-                        Disable F1-F12 Keys
-                    </span>
-
-                </label>
-
-            </div>
-
-        </div>
-
-
-        <!-- ================================
-             SAVE
-        ================================= -->
-
-        <div class="settings-actions">
-
-            <button
-                type="button"
-                class="secondary-btn"
-                id="resetExamSettingsBtn"
-            >
-                Reset
-            </button>
-
-
-            <button
-                type="submit"
-                class="primary-btn"
-                id="saveExamSettingsBtn"
-            >
-                💾 Save Examination Settings
-            </button>
-
-        </div>
-
-
-        <!-- SAVE MESSAGE -->
-
-        <div
-            id="examSettingsMessage"
-            class="settings-message"
-            style="display:none;"
-        ></div>
-
-
-    </form>
-
-</section>
-
-
-            <!-- =================================================
-                 QUESTION BANK
-            ================================================== -->
-
-            <section
-                class="admin-section"
-                id="questionsSection"
-            >
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span>
-                            QUESTION MANAGEMENT
-                        </span>
-
-                        <h2>
-                            Question Bank
-                        </h2>
-
-                        <p>
-                            Manage and organize examination questions.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="coming-soon-panel">
-
-                    <span>
-                        📚
-                    </span>
-
-                    <h3>
-                        Question Bank
-                    </h3>
-
-                    <p>
-                        Question management will be implemented in the upcoming development step.
-                    </p>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 CANDIDATES
-            ================================================== -->
-
-            <section
-                class="admin-section"
-                id="candidatesSection"
-            >
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span>
-                            CANDIDATE MANAGEMENT
-                        </span>
-
-                        <h2>
-                            Candidates
-                        </h2>
-
-                        <p>
-                            Manage examination candidates.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="coming-soon-panel">
-
-                    <span>
-                        👥
-                    </span>
-
-                    <h3>
-                        Candidate Management
-                    </h3>
-
-                    <p>
-                        Candidate information will appear here.
-                    </p>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 LIVE MONITORING
-            ================================================== -->
-
-            <section
-                class="admin-section"
-                id="monitoringSection"
-            >
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span>
-                            LIVE SYSTEM
-                        </span>
-
-                        <h2>
-                            Live Monitoring
-                        </h2>
-
-                        <p>
-                            Monitor active examinations.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="coming-soon-panel">
-
-                    <span>
-                        🖥️
-                    </span>
-
-                    <h3>
-                        Live Examination Monitoring
-                    </h3>
-
-                    <p>
-                        Active candidates will appear here.
-                    </p>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 SECURITY VIOLATIONS
-            ================================================== -->
-
-            <section
-                class="admin-section"
-                id="violationsSection"
-            >
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span>
-                            SECURITY
-                        </span>
-
-                        <h2>
-                            Security Violations
-                        </h2>
-
-                        <p>
-                            Review examination security events.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="coming-soon-panel">
-
-                    <span>
-                        🚨
-                    </span>
-
-                    <h3>
-                        Security Monitor
-                    </h3>
-
-                    <p>
-                        Examination security events will appear here.
-                    </p>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 RESULTS
-            ================================================== -->
-
-            <section
-                class="admin-section"
-                id="resultsSection"
-            >
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span>
-                            PERFORMANCE
-                        </span>
-
-                        <h2>
-                            Candidate Results
-                        </h2>
-
-                        <p>
-                            Review examination performance.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="coming-soon-panel">
-
-                    <span>
-                        🏆
-                    </span>
-
-                    <h3>
-                        Examination Results
-                    </h3>
-
-                    <p>
-                        Candidate results will appear here.
-                    </p>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 FEEDBACK
-            ================================================== -->
-
-            <section
-                class="admin-section"
-                id="feedbackSection"
-            >
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span>
-                            FEEDBACK
-                        </span>
-
-                        <h2>
-                            Candidate Feedback
-                        </h2>
-
-                        <p>
-                            Review candidate feedback and queries.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="coming-soon-panel">
-
-                    <span>
-                        💬
-                    </span>
-
-                    <h3>
-                        Feedback Management
-                    </h3>
-
-                    <p>
-                        Candidate feedback will appear here.
-                    </p>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 ANALYTICS
-            ================================================== -->
-
-            <section
-                class="admin-section"
-                id="analyticsSection"
-            >
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span>
-                            ANALYTICS
-                        </span>
-
-                        <h2>
-                            Performance Analytics
-                        </h2>
-
-                        <p>
-                            Analyze examination performance.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="coming-soon-panel">
-
-                    <span>
-                        📈
-                    </span>
-
-                    <h3>
-                        Examination Analytics
-                    </h3>
-
-                    <p>
-                        Performance charts will appear here.
-                    </p>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 AUTHORIZED ADMINS
-            ================================================== -->
-
-            <section
-                class="admin-section"
-                id="adminsSection"
-            >
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span>
-                            ACCESS CONTROL
-                        </span>
-
-                        <h2>
-                            Authorized Administrators
-                        </h2>
-
-                        <p>
-                            Manage authorized administrator accounts.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="coming-soon-panel">
-
-                    <span>
-                        👤
-                    </span>
-
-                    <h3>
-                        Admin Management
-                    </h3>
-
-                    <p>
-                        Authorized administrator management will be implemented later.
-                    </p>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 ACTIVITY LOGS
-            ================================================== -->
-
-            <section
-                class="admin-section"
-                id="activitySection"
-            >
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span>
-                            AUDIT
-                        </span>
-
-                        <h2>
-                            Activity Logs
-                        </h2>
-
-                        <p>
-                            Review administrator activities.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="coming-soon-panel">
-
-                    <span>
-                        📋
-                    </span>
-
-                    <h3>
-                        Administrative Activity
-                    </h3>
-
-                    <p>
-                        Admin activity logs will appear here.
-                    </p>
-
-                </div>
 
             </section>
 
@@ -1798,66 +136,1426 @@
     </section>
 
 
+
     <!-- =====================================================
-         CONFIRMATION MODAL
+         ADMIN DASHBOARD
     ====================================================== -->
 
-    <div
-        class="admin-modal"
-        id="adminModal"
+    <section
+        class="admin-screen"
+        id="adminDashboard"
     >
 
-        <div class="admin-modal-card">
 
-            <div
-                class="admin-modal-icon"
-                id="modalIcon"
-            >
-                ⚠️
-            </div>
+        <!-- =================================================
+             SIDEBAR
+        ================================================== -->
 
-            <h2 id="modalTitle">
-                Confirm Action
-            </h2>
-
-            <p id="modalMessage">
-                Are you sure you want to continue?
-            </p>
+        <aside class="admin-sidebar">
 
 
-            <div class="admin-modal-actions">
+            <!-- SIDEBAR BRAND -->
 
-                <button
-                    type="button"
-                    class="modal-cancel-btn"
-                    id="modalCancelBtn"
-                >
-                    Cancel
-                </button>
+            <div class="admin-sidebar-brand">
 
-                <button
-                    type="button"
-                    class="modal-confirm-btn"
-                    id="modalConfirmBtn"
-                >
-                    Confirm
-                </button>
+                <div class="admin-brand-icon">
+                    🎓
+                </div>
+
+                <div>
+
+                    <strong>
+                        Examination
+                    </strong>
+
+                    <span>
+                        Admin Panel
+                    </span>
+
+                </div>
 
             </div>
 
-        </div>
 
-    </div>
+            <!-- ADMIN PROFILE -->
+
+            <div class="admin-profile">
+
+                <div class="admin-avatar">
+                    A
+                </div>
+
+                <div>
+
+                    <strong id="adminName">
+                        Administrator
+                    </strong>
+
+                    <span>
+                        Authorized Admin
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- NAVIGATION -->
+
+            <nav class="admin-navigation">
+
+
+                <button
+                    type="button"
+                    class="admin-nav-item active"
+                    data-section="dashboardSection"
+                >
+
+                    <span>
+                        📊
+                    </span>
+
+                    Dashboard
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-section="examSettingsSection"
+                >
+
+                    <span>
+                        ⚙️
+                    </span>
+
+                    Exam Settings
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-section="questionManagerSection"
+                >
+
+                    <span>
+                        📝
+                    </span>
+
+                    Question Manager
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-section="studentsSection"
+                >
+
+                    <span>
+                        👨‍🎓
+                    </span>
+
+                    Students
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-section="resultsSection"
+                >
+
+                    <span>
+                        📈
+                    </span>
+
+                    Results
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-section="feedbackSection"
+                >
+
+                    <span>
+                        💬
+                    </span>
+
+                    Feedback
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-section="securitySection"
+                >
+
+                    <span>
+                        🔐
+                    </span>
+
+                    Security Logs
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="admin-nav-item"
+                    data-section="authorizedAdminsSection"
+                >
+
+                    <span>
+                        👤
+                    </span>
+
+                    Authorized Admins
+
+                </button>
+
+
+            </nav>
+
+
+            <!-- LOGOUT -->
+
+            <div class="admin-sidebar-footer">
+
+                <button
+                    type="button"
+                    class="admin-logout-btn"
+                    id="logoutBtn"
+                >
+
+                    <span>
+                        🚪
+                    </span>
+
+                    Logout
+
+                </button>
+
+            </div>
+
+
+        </aside>
+
+
+
+        <!-- =================================================
+             MAIN CONTENT
+        ================================================== -->
+
+        <main class="admin-main">
+
+
+            <!-- =================================================
+                 TOP HEADER
+            ================================================== -->
+
+            <header class="admin-topbar">
+
+
+                <div>
+
+                    <span class="admin-page-label">
+                        ADMINISTRATION
+                    </span>
+
+                    <h1 id="adminPageTitle">
+                        Dashboard
+                    </h1>
+
+                </div>
+
+
+                <div class="admin-topbar-status">
+
+                    <span class="status-dot"></span>
+
+                    System Online
+
+                </div>
+
+
+            </header>
+
+
+
+            <!-- =================================================
+                 CONTENT AREA
+            ================================================== -->
+
+            <div class="admin-content">
+
+
+                <!-- =================================================
+                     DASHBOARD SECTION
+                ================================================== -->
+
+                <section
+                    class="admin-section active"
+                    id="dashboardSection"
+                >
+
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <span>
+                                OVERVIEW
+                            </span>
+
+                            <h2>
+                                Examination Dashboard
+                            </h2>
+
+                            <p>
+                                Monitor and manage your examination system.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- STAT CARDS -->
+
+                    <div class="admin-stat-grid">
+
+
+                        <div class="admin-stat-card">
+
+                            <div class="stat-icon">
+                                📝
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Questions
+                                </span>
+
+                                <strong
+                                    id="dashboardQuestionCount"
+                                >
+                                    80
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="admin-stat-card">
+
+                            <div class="stat-icon">
+                                ⏱️
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Duration
+                                </span>
+
+                                <strong
+                                    id="dashboardDuration"
+                                >
+                                    60 Minutes
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="admin-stat-card">
+
+                            <div class="stat-icon">
+                                🎯
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Marks / Question
+                                </span>
+
+                                <strong
+                                    id="dashboardMarks"
+                                >
+                                    +4
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="admin-stat-card">
+
+                            <div class="stat-icon">
+                                👨‍🎓
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Students
+                                </span>
+
+                                <strong
+                                    id="dashboardStudents"
+                                >
+                                    0
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- CURRENT EXAM -->
+
+                    <div class="admin-card">
+
+                        <div class="admin-card-header">
+
+                            <div>
+
+                                <span>
+                                    CURRENT EXAMINATION
+                                </span>
+
+                                <h3
+                                    id="dashboardExamTitle"
+                                >
+                                    Physics Test Series
+                                </h3>
+
+                            </div>
+
+
+                            <span
+                                class="exam-status-badge"
+                                id="dashboardExamStatus"
+                            >
+                                DRAFT
+                            </span>
+
+                        </div>
+
+
+                        <div class="exam-overview-grid">
+
+
+                            <div>
+
+                                <small>
+                                    Question Pool
+                                </small>
+
+                                <strong
+                                    id="totalQuestions"
+                                >
+                                    100
+                                </strong>
+
+                            </div>
+
+
+                            <div>
+
+                                <small>
+                                    Display Questions
+                                </small>
+
+                                <strong
+                                    id="displayQuestions"
+                                >
+                                    80
+                                </strong>
+
+                            </div>
+
+
+                            <div>
+
+                                <small>
+                                    Duration
+                                </small>
+
+                                <strong>
+                                    <span
+                                        id="dashboardExamDuration"
+                                    >
+                                        60
+                                    </span>
+                                    Minutes
+                                </strong>
+
+                            </div>
+
+
+                            <div>
+
+                                <small>
+                                    Negative Marking
+                                </small>
+
+                                <strong>
+                                    -
+                                    <span
+                                        id="dashboardNegativeMarks"
+                                    >
+                                        1
+                                    </span>
+                                </strong>
+
+                            </div>
+
+
+                        </div>
+
+                    </div>
+
+
+                </section>
+
+
+
+                <!-- =================================================
+                     EXAM SETTINGS SECTION
+                ================================================== -->
+
+                <section
+                    class="admin-section"
+                    id="examSettingsSection"
+                >
+
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <span>
+                                EXAMINATION CONFIGURATION
+                            </span>
+
+                            <h2>
+                                Exam Settings
+                            </h2>
+
+                            <p>
+                                Configure all examination parameters
+                                from this panel.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <form
+                        id="examSettingsForm"
+                        class="settings-form"
+                    >
+
+
+                        <!-- =========================================
+                             BASIC SETTINGS
+                        ========================================== -->
+
+                        <div class="settings-card">
+
+
+                            <div class="settings-card-header">
+
+                                <div>
+
+                                    <span>
+                                        01
+                                    </span>
+
+                                    <div>
+
+                                        <h3>
+                                            Basic Examination Settings
+                                        </h3>
+
+                                        <p>
+                                            Configure basic examination
+                                            information.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="settings-grid">
+
+
+                                <div class="admin-input-group">
+
+                                    <label for="examTitle">
+                                        Exam Title
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        id="examTitle"
+                                        placeholder="Physics Test Series"
+                                        required
+                                    >
+
+                                </div>
+
+
+                                <div class="admin-input-group">
+
+                                    <label for="totalQuestions">
+                                        Total Question Pool
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        id="totalQuestions"
+                                        min="1"
+                                        value="100"
+                                        required
+                                    >
+
+                                </div>
+
+
+                                <div class="admin-input-group">
+
+                                    <label for="questionsToDisplay">
+                                        Questions Shown to Student
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        id="questionsToDisplay"
+                                        min="1"
+                                        value="80"
+                                        required
+                                    >
+
+                                </div>
+
+
+                                <div class="admin-input-group">
+
+                                    <label for="durationMinutes">
+                                        Test Duration (Minutes)
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        id="durationMinutes"
+                                        min="1"
+                                        value="60"
+                                        required
+                                    >
+
+                                </div>
+
+
+                                <div class="admin-input-group">
+
+                                    <label for="marksPerQuestion">
+                                        Marks per Question
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        id="marksPerQuestion"
+                                        min="0"
+                                        step="0.5"
+                                        value="4"
+                                        required
+                                    >
+
+                                </div>
+
+
+                                <div class="admin-input-group">
+
+                                    <label for="negativeMarks">
+                                        Negative Marks
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        id="negativeMarks"
+                                        min="0"
+                                        step="0.5"
+                                        value="1"
+                                        required
+                                    >
+
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- =========================================
+                             TIMING
+                        ========================================== -->
+
+                        <div class="settings-card">
+
+
+                            <div class="settings-card-header">
+
+                                <div>
+
+                                    <span>
+                                        02
+                                    </span>
+
+                                    <div>
+
+                                        <h3>
+                                            Examination Timing
+                                        </h3>
+
+                                        <p>
+                                            Control when the examination
+                                            becomes available.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="settings-grid">
+
+
+                                <div class="admin-input-group">
+
+                                    <label for="examStartTime">
+                                        Start Time
+                                    </label>
+
+                                    <input
+                                        type="datetime-local"
+                                        id="examStartTime"
+                                    >
+
+                                </div>
+
+
+                                <div class="admin-input-group">
+
+                                    <label for="examEndTime">
+                                        End Time
+                                    </label>
+
+                                    <input
+                                        type="datetime-local"
+                                        id="examEndTime"
+                                    >
+
+                                </div>
+
+
+                                <div class="admin-input-group">
+
+                                    <label for="examStatusSetting">
+                                        Examination Status
+                                    </label>
+
+                                    <select
+                                        id="examStatusSetting"
+                                    >
+
+                                        <option value="draft">
+                                            Draft
+                                        </option>
+
+                                        <option value="scheduled">
+                                            Scheduled
+                                        </option>
+
+                                        <option value="live">
+                                            Live
+                                        </option>
+
+                                        <option value="paused">
+                                            Paused
+                                        </option>
+
+                                        <option value="ended">
+                                            Ended
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- =========================================
+                             QUESTION CONFIGURATION
+                        ========================================== -->
+
+                        <div class="settings-card">
+
+
+                            <div class="settings-card-header">
+
+                                <div>
+
+                                    <span>
+                                        03
+                                    </span>
+
+                                    <div>
+
+                                        <h3>
+                                            Question Configuration
+                                        </h3>
+
+                                        <p>
+                                            Configure question source
+                                            and randomization.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="settings-grid">
+
+
+                                <div class="admin-input-group">
+
+                                    <label for="questionSource">
+                                        Question Source
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        id="questionSource"
+                                        value="chapterq.json"
+                                        readonly
+                                    >
+
+                                </div>
+
+
+                                <label class="setting-toggle">
+
+                                    <input
+                                        type="checkbox"
+                                        id="randomQuestions"
+                                        checked
+                                    >
+
+                                    <span>
+                                        Randomize Questions
+                                    </span>
+
+                                </label>
+
+
+                                <label class="setting-toggle">
+
+                                    <input
+                                        type="checkbox"
+                                        id="randomOptions"
+                                        checked
+                                    >
+
+                                    <span>
+                                        Randomize Options
+                                    </span>
+
+                                </label>
+
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- =========================================
+                             SECURITY
+                        ========================================== -->
+
+                        <div class="settings-card">
+
+
+                            <div class="settings-card-header">
+
+                                <div>
+
+                                    <span>
+                                        04
+                                    </span>
+
+                                    <div>
+
+                                        <h3>
+                                            Examination Security
+                                        </h3>
+
+                                        <p>
+                                            Configure examination
+                                            security controls.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="settings-grid">
+
+
+                                <div class="admin-input-group">
+
+                                    <label for="tabSwitchPenalty">
+                                        Tab Switch Penalty
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        id="tabSwitchPenalty"
+                                        min="0"
+                                        step="0.5"
+                                        value="1"
+                                    >
+
+                                </div>
+
+
+                                <div class="admin-input-group">
+
+                                    <label for="maxTabSwitches">
+                                        Maximum Tab Switches
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        id="maxTabSwitches"
+                                        min="1"
+                                        value="2"
+                                    >
+
+                                </div>
+
+
+                                <label class="setting-toggle">
+
+                                    <input
+                                        type="checkbox"
+                                        id="disableCopy"
+                                        checked
+                                    >
+
+                                    <span>
+                                        Disable Copy
+                                    </span>
+
+                                </label>
+
+
+                                <label class="setting-toggle">
+
+                                    <input
+                                        type="checkbox"
+                                        id="disablePaste"
+                                        checked
+                                    >
+
+                                    <span>
+                                        Disable Paste
+                                    </span>
+
+                                </label>
+
+
+                                <label class="setting-toggle">
+
+                                    <input
+                                        type="checkbox"
+                                        id="disableScreenshot"
+                                        checked
+                                    >
+
+                                    <span>
+                                        Disable Screenshot
+                                    </span>
+
+                                </label>
+
+
+                                <label class="setting-toggle">
+
+                                    <input
+                                        type="checkbox"
+                                        id="disableRefresh"
+                                        checked
+                                    >
+
+                                    <span>
+                                        Disable Refresh
+                                    </span>
+
+                                </label>
+
+
+                                <label class="setting-toggle">
+
+                                    <input
+                                        type="checkbox"
+                                        id="disableFunctionKeys"
+                                        checked
+                                    >
+
+                                    <span>
+                                        Disable F1-F12 Keys
+                                    </span>
+
+                                </label>
+
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- =========================================
+                             SAVE ACTIONS
+                        ========================================== -->
+
+                        <div class="settings-actions">
+
+
+                            <button
+                                type="button"
+                                class="secondary-btn"
+                                id="resetExamSettingsBtn"
+                            >
+                                Reset
+                            </button>
+
+
+                            <button
+                                type="submit"
+                                class="primary-btn"
+                                id="saveExamSettingsBtn"
+                            >
+                                💾 Save Examination Settings
+                            </button>
+
+
+                        </div>
+
+
+                        <!-- MESSAGE -->
+
+                        <div
+                            id="examSettingsMessage"
+                            class="settings-message"
+                            style="display:none;"
+                        ></div>
+
+
+                    </form>
+
+
+                </section>
+
+
+
+                <!-- =================================================
+                     QUESTION MANAGER
+                ================================================== -->
+
+                <section
+                    class="admin-section"
+                    id="questionManagerSection"
+                >
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <span>
+                                QUESTION BANK
+                            </span>
+
+                            <h2>
+                                Question Manager
+                            </h2>
+
+                            <p>
+                                Manage and upload examination questions.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="admin-card">
+
+                        <div class="placeholder-content">
+
+                            <div class="placeholder-icon">
+                                📝
+                            </div>
+
+                            <h3>
+                                Question Manager
+                            </h3>
+
+                            <p>
+                                Question upload and question-bank
+                                management will be connected here.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =================================================
+                     STUDENTS
+                ================================================== -->
+
+                <section
+                    class="admin-section"
+                    id="studentsSection"
+                >
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <span>
+                                CANDIDATE MANAGEMENT
+                            </span>
+
+                            <h2>
+                                Students
+                            </h2>
+
+                            <p>
+                                View examination candidates and attempts.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="admin-card">
+
+                        <div class="placeholder-content">
+
+                            <div class="placeholder-icon">
+                                👨‍🎓
+                            </div>
+
+                            <h3>
+                                Student Management
+                            </h3>
+
+                            <p>
+                                Student data will appear here after
+                                Firestore integration.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =================================================
+                     RESULTS
+                ================================================== -->
+
+                <section
+                    class="admin-section"
+                    id="resultsSection"
+                >
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <span>
+                                PERFORMANCE
+                            </span>
+
+                            <h2>
+                                Examination Results
+                            </h2>
+
+                            <p>
+                                View candidate performance and scores.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="admin-card">
+
+                        <div class="placeholder-content">
+
+                            <div class="placeholder-icon">
+                                📈
+                            </div>
+
+                            <h3>
+                                Results Dashboard
+                            </h3>
+
+                            <p>
+                                Candidate results will appear here.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =================================================
+                     FEEDBACK
+                ================================================== -->
+
+                <section
+                    class="admin-section"
+                    id="feedbackSection"
+                >
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <span>
+                                CANDIDATE FEEDBACK
+                            </span>
+
+                            <h2>
+                                Feedback
+                            </h2>
+
+                            <p>
+                                Review candidate feedback and queries.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="admin-card">
+
+                        <div class="placeholder-content">
+
+                            <div class="placeholder-icon">
+                                💬
+                            </div>
+
+                            <h3>
+                                Feedback Management
+                            </h3>
+
+                            <p>
+                                Feedback submitted by candidates
+                                will appear here.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =================================================
+                     SECURITY LOGS
+                ================================================== -->
+
+                <section
+                    class="admin-section"
+                    id="securitySection"
+                >
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <span>
+                                SECURITY
+                            </span>
+
+                            <h2>
+                                Security Logs
+                            </h2>
+
+                            <p>
+                                Monitor examination security events.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="admin-card">
+
+                        <div class="placeholder-content">
+
+                            <div class="placeholder-icon">
+                                🔐
+                            </div>
+
+                            <h3>
+                                Security Monitoring
+                            </h3>
+
+                            <p>
+                                Tab switches, violations and security
+                                events will appear here.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =================================================
+                     AUTHORIZED ADMINS
+                ================================================== -->
+
+                <section
+                    class="admin-section"
+                    id="authorizedAdminsSection"
+                >
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <span>
+                                ACCESS CONTROL
+                            </span>
+
+                            <h2>
+                                Authorized Administrators
+                            </h2>
+
+                            <p>
+                                Manage administrators authorized to
+                                access this control panel.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="admin-card">
+
+                        <div class="placeholder-content">
+
+                            <div class="placeholder-icon">
+                                👤
+                            </div>
+
+                            <h3>
+                                Authorized Admins
+                            </h3>
+
+                            <p>
+                                Administrator management will be
+                                connected to Firestore here.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+            </div>
+
+        </main>
+
+    </section>
+
 
 
     <!-- =====================================================
-         ADMIN JAVASCRIPT
+         FIREBASE / ADMIN JAVASCRIPT
     ====================================================== -->
 
     <script
         type="module"
         src="../js/admin.js"
     ></script>
+
 
 </body>
 
