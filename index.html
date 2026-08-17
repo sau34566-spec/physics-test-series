@@ -1,15 +1,78 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Portal</title>
+
+    <title>Online Examination Portal</title>
+
+    <link rel="stylesheet" href="css/student.css">
 </head>
+
 <body>
 
-    <h1>Student Portal</h1>
-    <p>Online Examination Portal</p>
+    <main class="login-page">
+
+        <!-- Educational Background -->
+        <div class="background-overlay"></div>
+
+        <section class="login-card">
+
+            <div class="brand">
+                <div class="brand-icon">🎓</div>
+
+                <h1>Online Examination</h1>
+
+                <p>Secure Student Examination Portal</p>
+            </div>
+
+            <div class="login-form">
+
+                <div class="input-group">
+                    <label for="candidateName">
+                        Candidate Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="candidateName"
+                        placeholder="Enter your full name"
+                        autocomplete="name"
+                    >
+                </div>
+
+                <div class="input-group">
+                    <label for="candidateEmail">
+                        Gmail Address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="candidateEmail"
+                        placeholder="example@gmail.com"
+                        autocomplete="email"
+                    >
+                </div>
+
+                <button
+                    type="button"
+                    class="login-btn"
+                    id="loginBtn"
+                >
+                    Continue to Examination
+                </button>
+
+            </div>
+
+            <div class="login-footer">
+                <span>🔒 Secure Examination Environment</span>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="js/student.js"></script>
 
 </body>
 </html>
