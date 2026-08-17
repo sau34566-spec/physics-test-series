@@ -199,7 +199,304 @@
             </div>
         </main>
     </section>
+<!-- =========================================================
+     RESULT SCREEN
+     ========================================================= -->
 
+<section id="resultScreen" class="screen">
+
+    <div class="result-container">
+
+        <div class="result-header">
+            <div class="result-icon">✓</div>
+
+            <h1>Test Submitted Successfully</h1>
+
+            <p id="resultSubmissionMessage">
+                Your examination has been submitted.
+            </p>
+        </div>
+
+
+        <!-- Candidate Information -->
+
+        <div class="result-card">
+
+            <div class="result-card-title">
+                Candidate Information
+            </div>
+
+            <div class="result-info-grid">
+
+                <div>
+                    <span>Name</span>
+                    <strong id="resultCandidateName">—</strong>
+                </div>
+
+                <div>
+                    <span>Email</span>
+                    <strong id="resultCandidateEmail">—</strong>
+                </div>
+
+                <div>
+                    <span>Exam</span>
+                    <strong id="resultExamTitle">—</strong>
+                </div>
+
+                <div>
+                    <span>Submission</span>
+                    <strong id="resultSubmissionType">—</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Score Summary -->
+
+        <div class="result-card">
+
+            <div class="result-card-title">
+                Performance Summary
+            </div>
+
+            <div class="result-stats">
+
+                <div class="result-stat">
+                    <span>Total Questions</span>
+                    <strong id="resultTotalQuestions">0</strong>
+                </div>
+
+                <div class="result-stat">
+                    <span>Attempted</span>
+                    <strong id="resultAttempted">0</strong>
+                </div>
+
+                <div class="result-stat">
+                    <span>Correct</span>
+                    <strong id="resultCorrect">0</strong>
+                </div>
+
+                <div class="result-stat">
+                    <span>Wrong</span>
+                    <strong id="resultWrong">0</strong>
+                </div>
+
+                <div class="result-stat">
+                    <span>Unattempted</span>
+                    <strong id="resultUnattempted">0</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Marks -->
+
+        <div class="result-card">
+
+            <div class="result-card-title">
+                Marks
+            </div>
+
+            <div class="marks-summary">
+
+                <div>
+                    <span>Raw Marks</span>
+                    <strong id="resultRawMarks">0</strong>
+                </div>
+
+                <div>
+                    <span>Negative Marks</span>
+                    <strong id="resultNegativeMarks">0</strong>
+                </div>
+
+                <div>
+                    <span>Security Penalty</span>
+                    <strong id="resultSecurityPenalty">0</strong>
+                </div>
+
+                <div class="final-score">
+                    <span>Final Marks</span>
+                    <strong id="resultFinalMarks">0</strong>
+                </div>
+
+                <div class="percentage-score">
+                    <span>Percentage</span>
+                    <strong id="resultPercentage">0%</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Question Review -->
+
+        <div class="result-card">
+
+            <div class="result-card-title">
+                Question Review
+            </div>
+
+            <div id="questionReviewList"
+                 class="question-review-list">
+            </div>
+
+        </div>
+
+
+        <!-- Continue to Feedback -->
+
+        <div class="result-actions">
+
+            <button
+                type="button"
+                id="openFeedbackBtn"
+                class="primary-btn">
+
+                Give Feedback
+
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     FEEDBACK SCREEN
+     ========================================================= -->
+
+<section id="feedbackScreen" class="screen">
+
+    <div class="feedback-container">
+
+        <div class="feedback-header">
+
+            <div class="feedback-icon">
+                ★
+            </div>
+
+            <h1>Share Your Feedback</h1>
+
+            <p>
+                Help us improve your examination experience.
+            </p>
+
+        </div>
+
+
+        <div class="feedback-card">
+
+            <div class="feedback-card-title">
+                Rate Your Experience
+            </div>
+
+
+            <div
+                id="feedbackStars"
+                class="feedback-stars"
+                aria-label="Rating"
+            >
+
+                <button
+                    type="button"
+                    data-rating="1"
+                    aria-label="1 star">
+                    ★
+                </button>
+
+                <button
+                    type="button"
+                    data-rating="2"
+                    aria-label="2 stars">
+                    ★
+                </button>
+
+                <button
+                    type="button"
+                    data-rating="3"
+                    aria-label="3 stars">
+                    ★
+                </button>
+
+                <button
+                    type="button"
+                    data-rating="4"
+                    aria-label="4 stars">
+                    ★
+                </button>
+
+                <button
+                    type="button"
+                    data-rating="5"
+                    aria-label="5 stars">
+                    ★
+                </button>
+
+            </div>
+
+
+            <p
+                id="selectedRatingText"
+                class="selected-rating-text"
+            >
+                Select a rating from 1 to 5.
+            </p>
+
+
+            <label for="feedbackText">
+                Feedback
+            </label>
+
+            <textarea
+                id="feedbackText"
+                rows="5"
+                maxlength="2000"
+                placeholder="Tell us about your examination experience..."
+            ></textarea>
+
+
+            <label for="doubtText">
+                Doubt / Query
+            </label>
+
+            <textarea
+                id="doubtText"
+                rows="4"
+                maxlength="1500"
+                placeholder="Any doubt or query you want to share?"
+            ></textarea>
+
+
+            <div class="feedback-actions">
+
+                <button
+                    type="button"
+                    id="skipFeedbackBtn"
+                    class="secondary-btn">
+                    Skip
+                </button>
+
+                <button
+                    type="button"
+                    id="submitFeedbackBtn"
+                    class="primary-btn">
+                    Submit Feedback
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
 
     <!-- ======================================
          CONFIRMATION MODAL
