@@ -2,894 +2,170 @@ import { auth, db } from "./firebase-config.js";
 
 import {
     signInWithEmailAndPassword,
-    signOut
+    signOut,
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-// =========================================
-// ADMIN PORTAL
-// Firebase Authentication connected
-// Authorized Admin verification will be added
-// in the next step.
-// =========================================
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    // =====================================
-    // DOM ELEMENTS
-    // =====================================
-
-    const loginScreen =
-        document.getElementById("adminLoginScreen");
-
-    const dashboard =
-        document.getElementById("adminDashboard");
-
-    const loginForm =
-        document.getElementById("adminLoginForm");
-
-    const logoutBtn =
-        document.getElementById("logoutBtn");
-
-    const mobileMenuBtn =
-        document.getElementById("mobileMenuBtn");
-
-    const sidebar =
-        document.getElementById("adminSidebar");
-
-    const navItems =
-        document.querySelectorAll(".nav-item");
-
-    const quickActions =
-        document.querySelectorAll(".quick-action");
-
-    const sections =
-        document.querySelectorAll(".admin-section");
-
-    const pageTitle =
-        document.getElementById("pageTitle");
-
-    const adminModal =
-        document.getElementById("adminModal");
-
-    const modalCancelBtn =
-        document.getElementById("modalCancelBtn");
-
-    const modalConfirmBtn =
-        document.getElementById("modalConfirmBtn");
-
-    const modalTitle =
-        document.getElementById("modalTitle");
-
-    const modalMessage =
-        document.getElementById("modalMessage");
+import {
+    collection,
+    query,
+    where,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
-    // =====================================
-    // CHECK REQUIRED ELEMENTS
-    // =====================================
+const adminLoginScreen = document.getElementById("adminLoginScreen");
+const adminDashboard = document.getElementById("adminDashboard");
 
-    if (!loginScreen ||
-        !dashboard ||
-        !loginForm) {
+const adminEmail = document.getElementById("adminEmail");
+const adminPassword = document.getElementById("adminPassword");
+const adminLoginBtn = document.getElementById("adminLoginBtn");
+const adminLoginMessage = document.getElementById("adminLoginMessage");
 
-        console.error(
-            "Required Admin Portal elements were not found."
-        );
 
+// ===============================
+// ADMIN LOGIN
+// ===============================
+
+adminLoginBtn.addEventListener("click", async () => {
+
+    const email = adminEmail.value.trim().toLowerCase();
+    const password = adminPassword.value;
+
+    if (!email || !password) {
+        showLoginMessage("Please enter your email and password.");
         return;
     }
 
+    try {
 
-    // =====================================
-    // FIREBASE ADMIN LOGIN
-    // =====================================
+        adminLoginBtn.disabled = true;
+        adminLoginBtn.textContent = "Signing in...";
 
-    loginForm.addEventListener(
-        "submit",
-        async (event) => {
+        // Firebase Authentication
+        const userCredential =
+            await signInWithEmailAndPassword(auth, email, password);
 
-            event.preventDefault();
+        const user = userCredential.user;
 
-            const email =
-                document
-                    .getElementById("adminEmail")
-                    .value
-                    .trim()
-                    .toLowerCase();
+        // Check authorized admin
+        const adminsRef = collection(db, "admins");
 
-            const password =
-                document
-                    .getElementById("adminPassword")
-                    .value;
-
-
-            // Empty field validation
-            if (!email || !password) {
-
-                alert(
-                    "Please enter your administrator email and password."
-                );
-
-                return;
-            }
-
-
-            try {
-
-                // Firebase Authentication
-                const userCredential =
-                    await signInWithEmailAndPassword(
-                        auth,
-                        email,
-                        password
-                    );
-
-
-                const user =
-                    userCredential.user;
-
-
-                console.log(
-                    "Administrator authenticated:",
-                    user.email
-                );
-
-
-                // Show dashboard
-                loginScreen.style.display =
-                    "none";
-
-                dashboard.classList.add(
-                    "active"
-                );
-
-
-                // Clear password field
-                document
-                    .getElementById("adminPassword")
-                    .value = "";
-
-
-            } catch (error) {
-
-                console.error(
-                    "Admin login error:",
-                    error
-                );
-
-
-                let message =
-                    "Unable to sign in. Please check your email and password.";
-
-
-                // Firebase error handling
-                if (
-                    error.code ===
-                    "auth/invalid-credential"
-                ) {
-
-                    message =
-                        "The email or password is incorrect.";
-
-                }
-
-                else if (
-                    error.code ===
-                    "auth/invalid-email"
-                ) {
-
-                    message =
-                        "Please enter a valid administrator email address.";
-
-                }
-
-                else if (
-                    error.code ===
-                    "auth/too-many-requests"
-                ) {
-
-                    message =
-                        "Too many unsuccessful login attempts. Please try again later.";
-
-                }
-
-                else if (
-                    error.code ===
-                    "auth/user-disabled"
-                ) {
-
-                    message =
-                        "This administrator account has been disabled.";
-
-                }
-
-                else if (
-                    error.code ===
-                    "auth/network-request-failed"
-                ) {
-
-                    message =
-                        "Network error. Please check your internet connection and try again.";
-
-                }
-
-
-                alert(message);
-
-            }
-
-        }
-    );
-
-
-    // =====================================
-    // NAVIGATION
-    // =====================================
-
-    function openSection(sectionName) {
-
-        sections.forEach(
-            section => {
-
-                section.classList.remove(
-                    "active"
-                );
-
-            }
+        const q = query(
+            adminsRef,
+            where("email", "==", user.email.toLowerCase())
         );
 
+        const snapshot = await getDocs(q);
 
-        navItems.forEach(
-            item => {
+        if (snapshot.empty) {
 
-                item.classList.remove(
-                    "active"
-                );
+            await signOut(auth);
 
-            }
-        );
-
-
-        const targetSection =
-            document.getElementById(
-                `${sectionName}Section`
+            showLoginMessage(
+                "This account is not authorized to access the Admin Panel."
             );
-
-
-        const targetNav =
-            document.querySelector(
-                `[data-section="${sectionName}"]`
-            );
-
-
-        if (targetSection) {
-
-            targetSection.classList.add(
-                "active"
-            );
-
-        }
-
-
-        if (targetNav) {
-
-            targetNav.classList.add(
-                "active"
-            );
-
-        }
-
-
-        const titles = {
-
-            dashboard:
-                "Dashboard",
-
-            examSettings:
-                "Exam Settings",
-
-            questions:
-                "Question Bank",
-
-            candidates:
-                "Candidates",
-
-            monitoring:
-                "Live Monitoring",
-
-            violations:
-                "Security Violations",
-
-            results:
-                "Candidate Results",
-
-            feedback:
-                "Candidate Feedback",
-
-            analytics:
-                "Performance Analytics",
-
-            admins:
-                "Authorized Administrators",
-
-            activity:
-                "Activity Logs"
-
-        };
-
-
-        if (pageTitle) {
-
-            pageTitle.textContent =
-                titles[sectionName] ||
-                "Dashboard";
-
-        }
-
-
-        if (sidebar) {
-
-            sidebar.classList.remove(
-                "mobile-open"
-            );
-
-        }
-
-
-        window.scrollTo({
-
-            top: 0,
-
-            behavior: "smooth"
-
-        });
-
-    }
-
-
-    navItems.forEach(
-        item => {
-
-            item.addEventListener(
-                "click",
-                () => {
-
-                    const section =
-                        item.dataset.section;
-
-                    openSection(section);
-
-                }
-            );
-
-        }
-    );
-
-
-    quickActions.forEach(
-        item => {
-
-            item.addEventListener(
-                "click",
-                () => {
-
-                    const section =
-                        item.dataset.section;
-
-                    openSection(section);
-
-                }
-            );
-
-        }
-    );
-
-
-    // =====================================
-    // MOBILE MENU
-    // =====================================
-
-    if (mobileMenuBtn && sidebar) {
-
-        mobileMenuBtn.addEventListener(
-            "click",
-            () => {
-
-                sidebar.classList.toggle(
-                    "mobile-open"
-                );
-
-            }
-        );
-
-    }
-
-
-    // =====================================
-    // FIREBASE LOGOUT
-    // =====================================
-
-    if (logoutBtn) {
-
-        logoutBtn.addEventListener(
-            "click",
-            () => {
-
-                showConfirmation(
-
-                    "Sign Out",
-
-                    "Are you sure you want to sign out of the administrator dashboard?",
-
-                    "🚪",
-
-                    async () => {
-
-                        try {
-
-                            await signOut(auth);
-
-
-                            dashboard.classList.remove(
-                                "active"
-                            );
-
-
-                            loginScreen.style.display =
-                                "flex";
-
-
-                            loginForm.reset();
-
-
-                            console.log(
-                                "Administrator signed out successfully."
-                            );
-
-
-                        } catch (error) {
-
-                            console.error(
-                                "Logout error:",
-                                error
-                            );
-
-
-                            alert(
-                                "Unable to sign out. Please try again."
-                            );
-
-                        }
-
-                    }
-
-                );
-
-            }
-        );
-
-    }
-
-
-    // =====================================
-    // EXAM CONTROL BUTTONS
-    // =====================================
-
-    const startExamBtn =
-        document.getElementById(
-            "startExamBtn"
-        );
-
-    const pauseExamBtn =
-        document.getElementById(
-            "pauseExamBtn"
-        );
-
-    const endExamBtn =
-        document.getElementById(
-            "endExamBtn"
-        );
-
-
-    // =====================================
-    // START EXAM
-    // =====================================
-
-    if (startExamBtn) {
-
-        startExamBtn.addEventListener(
-            "click",
-            () => {
-
-                showConfirmation(
-
-                    "Start Examination",
-
-                    "Are you sure you want to start the examination?",
-
-                    "▶️",
-
-                    () => {
-
-                        const largeExamStatus =
-                            document.getElementById(
-                                "largeExamStatus"
-                            );
-
-                        const examStatus =
-                            document.getElementById(
-                                "examStatus"
-                            );
-
-                        const statusDot =
-                            document.getElementById(
-                                "statusDot"
-                            );
-
-
-                        if (largeExamStatus) {
-
-                            largeExamStatus.textContent =
-                                "LIVE";
-
-                        }
-
-
-                        if (examStatus) {
-
-                            examStatus.textContent =
-                                "Exam Live";
-
-                        }
-
-
-                        if (statusDot) {
-
-                            statusDot.style.background =
-                                "#22c55e";
-
-                        }
-
-                    }
-
-                );
-
-            }
-        );
-
-    }
-
-
-    // =====================================
-    // PAUSE EXAM
-    // =====================================
-
-    if (pauseExamBtn) {
-
-        pauseExamBtn.addEventListener(
-            "click",
-            () => {
-
-                showConfirmation(
-
-                    "Pause Examination",
-
-                    "Are you sure you want to pause the examination?",
-
-                    "⏸️",
-
-                    () => {
-
-                        const largeExamStatus =
-                            document.getElementById(
-                                "largeExamStatus"
-                            );
-
-                        const examStatus =
-                            document.getElementById(
-                                "examStatus"
-                            );
-
-                        const statusDot =
-                            document.getElementById(
-                                "statusDot"
-                            );
-
-
-                        if (largeExamStatus) {
-
-                            largeExamStatus.textContent =
-                                "PAUSED";
-
-                        }
-
-
-                        if (examStatus) {
-
-                            examStatus.textContent =
-                                "Exam Paused";
-
-                        }
-
-
-                        if (statusDot) {
-
-                            statusDot.style.background =
-                                "#f59e0b";
-
-                        }
-
-                    }
-
-                );
-
-            }
-        );
-
-    }
-
-
-    // =====================================
-    // END EXAM
-    // =====================================
-
-    if (endExamBtn) {
-
-        endExamBtn.addEventListener(
-            "click",
-            () => {
-
-                showConfirmation(
-
-                    "End Examination",
-
-                    "Ending the examination may affect all active candidates. Continue?",
-
-                    "⚠️",
-
-                    () => {
-
-                        const largeExamStatus =
-                            document.getElementById(
-                                "largeExamStatus"
-                            );
-
-                        const examStatus =
-                            document.getElementById(
-                                "examStatus"
-                            );
-
-                        const statusDot =
-                            document.getElementById(
-                                "statusDot"
-                            );
-
-
-                        if (largeExamStatus) {
-
-                            largeExamStatus.textContent =
-                                "ENDED";
-
-                        }
-
-
-                        if (examStatus) {
-
-                            examStatus.textContent =
-                                "Exam Ended";
-
-                        }
-
-
-                        if (statusDot) {
-
-                            statusDot.style.background =
-                                "#ef4444";
-
-                        }
-
-                    }
-
-                );
-
-            }
-        );
-
-    }
-
-
-    // =====================================
-    // REFRESH DASHBOARD
-    // =====================================
-
-    const refreshBtn =
-        document.getElementById(
-            "refreshDashboard"
-        );
-
-
-    if (refreshBtn) {
-
-        refreshBtn.addEventListener(
-            "click",
-            () => {
-
-                refreshBtn.textContent =
-                    "✓ Updated";
-
-
-                setTimeout(
-                    () => {
-
-                        refreshBtn.textContent =
-                            "↻ Refresh";
-
-                    },
-                    1200
-                );
-
-            }
-        );
-
-    }
-
-
-    // =====================================
-    // CONFIRMATION MODAL
-    // =====================================
-
-    let confirmationCallback =
-        null;
-
-
-    function showConfirmation(
-        title,
-        message,
-        icon,
-        callback
-    ) {
-
-        if (!adminModal) {
-
-            if (
-                confirm(message)
-            ) {
-
-                callback();
-
-            }
 
             return;
         }
 
+        const adminData = snapshot.docs[0].data();
 
-        if (modalTitle) {
+        if (adminData.active !== true) {
 
-            modalTitle.textContent =
-                title;
+            await signOut(auth);
 
-        }
-
-
-        if (modalMessage) {
-
-            modalMessage.textContent =
-                message;
-
-        }
-
-
-        const modalIcon =
-            document.getElementById(
-                "modalIcon"
+            showLoginMessage(
+                "Your administrator account is currently inactive."
             );
 
-
-        if (modalIcon) {
-
-            modalIcon.textContent =
-                icon;
-
+            return;
         }
 
+        // Login successful
+        showDashboard();
 
-        confirmationCallback =
-            callback;
+    } catch (error) {
 
+        console.error("Admin login error:", error);
 
-        adminModal.classList.add(
-            "show"
+        showLoginMessage(
+            "Invalid email or password. Please try again."
         );
 
+    } finally {
+
+        adminLoginBtn.disabled = false;
+        adminLoginBtn.textContent = "Sign In";
+    }
+});
+
+
+// ===============================
+// SHOW LOGIN MESSAGE
+// ===============================
+
+function showLoginMessage(message) {
+
+    if (adminLoginMessage) {
+        adminLoginMessage.textContent = message;
+        adminLoginMessage.style.display = "block";
+    } else {
+        alert(message);
+    }
+}
+
+
+// ===============================
+// SHOW DASHBOARD
+// ===============================
+
+function showDashboard() {
+
+    if (adminLoginScreen) {
+        adminLoginScreen.classList.remove("active");
     }
 
-
-    // =====================================
-    // MODAL CANCEL
-    // =====================================
-
-    if (modalCancelBtn) {
-
-        modalCancelBtn.addEventListener(
-            "click",
-            () => {
-
-                adminModal.classList.remove(
-                    "show"
-                );
+    if (adminDashboard) {
+        adminDashboard.classList.add("active");
+    }
+}
 
 
-                confirmationCallback =
-                    null;
+// ===============================
+// AUTH STATE
+// ===============================
 
-            }
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        return;
+    }
+
+    try {
+
+        const adminsRef = collection(db, "admins");
+
+        const q = query(
+            adminsRef,
+            where("email", "==", user.email.toLowerCase())
         );
 
+        const snapshot = await getDocs(q);
+
+        if (
+            !snapshot.empty &&
+            snapshot.docs[0].data().active === true
+        ) {
+            showDashboard();
+        } else {
+            await signOut(auth);
+        }
+
+    } catch (error) {
+
+        console.error("Authorization check failed:", error);
+
+        await signOut(auth);
     }
-
-
-    // =====================================
-    // MODAL CONFIRM
-    // =====================================
-
-    if (modalConfirmBtn) {
-
-        modalConfirmBtn.addEventListener(
-            "click",
-            async () => {
-
-                if (
-                    typeof confirmationCallback ===
-                    "function"
-                ) {
-
-                    await confirmationCallback();
-
-                }
-
-
-                adminModal.classList.remove(
-                    "show"
-                );
-
-
-                confirmationCallback =
-                    null;
-
-            }
-        );
-
-    }
-
-
-    // =====================================
-    // CLOSE MODAL ON BACKDROP CLICK
-    // =====================================
-
-    if (adminModal) {
-
-        adminModal.addEventListener(
-            "click",
-            event => {
-
-                if (
-                    event.target ===
-                    adminModal
-                ) {
-
-                    adminModal.classList.remove(
-                        "show"
-                    );
-
-
-                    confirmationCallback =
-                        null;
-
-                }
-
-            }
-        );
-
-    }
-
 });
