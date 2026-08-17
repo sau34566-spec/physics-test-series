@@ -2,570 +2,223 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Examination Portal</title>
-
-    <link
-        rel="stylesheet"
-        href="css/student.css"
-    >
-
+    
+    <!-- CSS Path -->
+    <link rel="stylesheet" href="css/student.css">
 </head>
-
 
 <body>
 
     <!-- ======================================
          LOGIN SCREEN
     ======================================= -->
-
-    <section
-        class="screen active"
-        id="loginScreen"
-    >
-
+    <section class="screen active" id="loginScreen">
         <main class="login-page">
-
             <div class="background-overlay"></div>
-
             <section class="login-card">
-
                 <div class="brand">
-
-                    <div class="brand-icon">
-                        🎓
-                    </div>
-
-                    <h1>
-                        Online Examination
-                    </h1>
-
-                    <p>
-                        Secure Student Examination Portal
-                    </p>
-
+                    <div class="brand-icon">🎓</div>
+                    <h1>Online Examination</h1>
+                    <p>Secure Student Examination Portal</p>
                 </div>
-
 
                 <div class="login-form">
-
                     <div class="input-group">
-
-                        <label for="candidateName">
-                            Candidate Name
-                        </label>
-
-                        <input
-                            type="text"
-                            id="candidateName"
-                            placeholder="Enter your full name"
-                            autocomplete="name"
-                        >
-
+                        <label for="candidateName">Candidate Name</label>
+                        <input type="text" id="candidateName" placeholder="Enter your full name" autocomplete="name">
                     </div>
 
-
                     <div class="input-group">
-
-                        <label for="candidateEmail">
-                            Gmail Address
-                        </label>
-
-                        <input
-                            type="email"
-                            id="candidateEmail"
-                            placeholder="example@gmail.com"
-                            autocomplete="email"
-                        >
-
+                        <label for="candidateEmail">Gmail Address</label>
+                        <input type="email" id="candidateEmail" placeholder="example@gmail.com" autocomplete="email">
                     </div>
 
-
-                    <button
-                        type="button"
-                        class="login-btn"
-                        id="loginBtn"
-                    >
+                    <button type="button" class="login-btn" id="loginBtn">
                         Continue to Examination
                     </button>
-
                 </div>
-
 
                 <div class="login-footer">
-
-                    <span>
-                        🔒 Secure Examination Environment
-                    </span>
-
+                    <span>🔒 Secure Examination Environment</span>
                 </div>
-
             </section>
-
         </main>
-
     </section>
-
 
 
     <!-- ======================================
          INSTRUCTIONS SCREEN
     ======================================= -->
-
-    <section
-        class="screen"
-        id="instructionScreen"
-    >
-
+    <section class="screen" id="instructionScreen">
         <main class="instruction-page">
-
             <div class="instruction-overlay"></div>
 
-
             <section class="instruction-card">
-
                 <div class="instruction-header">
-
-                    <div class="exam-icon">
-                        📚
-                    </div>
-
+                    <div class="exam-icon">📚</div>
                     <div>
-
-                        <span class="small-label">
-                            EXAMINATION
-                        </span>
-
-                        <h1>
-                            Test Instructions
-                        </h1>
-
-                        <p>
-                            Please read all instructions carefully
-                            before starting your examination.
-                        </p>
-
+                        <span class="small-label">EXAMINATION</span>
+                        <h1>Test Instructions</h1>
+                        <p>Please read all instructions carefully before starting your examination.</p>
                     </div>
-
                 </div>
-
 
                 <!-- Exam Summary -->
-
                 <div class="exam-summary">
-
                     <div class="summary-item">
-
-                        <span class="summary-icon">
-                            📝
-                        </span>
-
+                        <span class="summary-icon">📝</span>
                         <div>
-
-                            <small>
-                                Questions
-                            </small>
-
-                            <strong id="instructionQuestions">
-                                80
-                            </strong>
-
+                            <small>Questions</small>
+                            <strong id="instructionQuestions">80</strong>
                         </div>
-
                     </div>
 
-
                     <div class="summary-item">
-
-                        <span class="summary-icon">
-                            ⏱️
-                        </span>
-
+                        <span class="summary-icon">⏱️</span>
                         <div>
-
-                            <small>
-                                Duration
-                            </small>
-
-                            <strong id="instructionDuration">
-                                60 Minutes
-                            </strong>
-
+                            <small>Duration</small>
+                            <strong id="instructionDuration">60 Minutes</strong>
                         </div>
-
                     </div>
 
-
                     <div class="summary-item">
-
-                        <span class="summary-icon">
-                            🎯
-                        </span>
-
+                        <span class="summary-icon">🎯</span>
                         <div>
-
-                            <small>
-                                Marks / Question
-                            </small>
-
-                            <strong id="instructionMarks">
-                                +4
-                            </strong>
-
+                            <small>Marks / Question</small>
+                            <strong id="instructionMarks">+4</strong>
                         </div>
-
                     </div>
 
-
                     <div class="summary-item">
-
-                        <span class="summary-icon">
-                            ⚠️
-                        </span>
-
+                        <span class="summary-icon">⚠️</span>
                         <div>
-
-                            <small>
-                                Negative Marking
-                            </small>
-
-                            <strong id="instructionNegative">
-                                -1
-                            </strong>
-
+                            <small>Negative Marking</small>
+                            <strong id="instructionNegative">-1</strong>
                         </div>
-
                     </div>
-
                 </div>
-
 
                 <!-- Rules -->
-
                 <div class="rules-section">
-
-                    <h2>
-                        Important Instructions
-                    </h2>
-
+                    <h2>Important Instructions</h2>
 
                     <div class="rule">
-
-                        <span class="rule-number">
-                            01
-                        </span>
-
-                        <p>
-                            Make sure you have a stable internet
-                            connection before starting the test.
-                        </p>
-
+                        <span class="rule-number">01</span>
+                        <p>Make sure you have a stable internet connection before starting the test.</p>
                     </div>
-
 
                     <div class="rule">
-
-                        <span class="rule-number">
-                            02
-                        </span>
-
-                        <p>
-                            Once the test starts, the examination
-                            timer will begin immediately.
-                        </p>
-
+                        <span class="rule-number">02</span>
+                        <p>Once the test starts, the examination timer will begin immediately.</p>
                     </div>
-
 
                     <div class="rule">
-
-                        <span class="rule-number">
-                            03
-                        </span>
-
-                        <p>
-                            Do not leave the examination tab.
-                            Tab switching may result in a penalty.
-                        </p>
-
+                        <span class="rule-number">03</span>
+                        <p>Do not leave the examination tab. Tab switching may result in a penalty.</p>
                     </div>
-
 
                     <div class="rule">
-
-                        <span class="rule-number">
-                            04
-                        </span>
-
-                        <p>
-                            Copy, paste and other prohibited
-                            examination actions may be restricted.
-                        </p>
-
+                        <span class="rule-number">04</span>
+                        <p>Copy, paste and other prohibited examination actions may be restricted.</p>
                     </div>
-
 
                     <div class="rule">
-
-                        <span class="rule-number">
-                            05
-                        </span>
-
-                        <p>
-                            The examination may be automatically
-                            submitted when the timer expires.
-                        </p>
-
+                        <span class="rule-number">05</span>
+                        <p>The examination may be automatically submitted when the timer expires.</p>
                     </div>
-
 
                     <div class="rule">
-
-                        <span class="rule-number">
-                            06
-                        </span>
-
-                        <p>
-                            Review your answers carefully before
-                            submitting the examination.
-                        </p>
-
+                        <span class="rule-number">06</span>
+                        <p>Review your answers carefully before submitting the examination.</p>
                     </div>
-
                 </div>
-
 
                 <!-- Agreement -->
-
                 <div class="agreement">
-
                     <label>
-
-                        <input
-                            type="checkbox"
-                            id="instructionAgreement"
-                        >
-
-                        <span>
-                            I have read and understood all
-                            examination instructions.
-                        </span>
-
+                        <input type="checkbox" id="instructionAgreement">
+                        <span>I have read and understood all examination instructions.</span>
                     </label>
-
                 </div>
-
 
                 <!-- Action -->
-
                 <div class="instruction-actions">
-
-                    <button
-                        type="button"
-                        class="secondary-btn"
-                        id="backToLoginBtn"
-                    >
-                        ← Back
+                    <button type="button" class="secondary-btn" id="backToLoginBtn">← Back</button>
+                    <button type="button" class="start-test-btn" id="startTestBtn">
+                        Start Test <span>→</span>
                     </button>
-
-
-                    <button
-                        type="button"
-                        class="start-test-btn"
-                        id="startTestBtn"
-                    >
-                        Start Test
-                        <span>→</span>
-                    </button>
-
                 </div>
-
             </section>
-
         </main>
-
     </section>
-
 
 
     <!-- ======================================
          EXAM SCREEN
     ======================================= -->
-
-    <section
-        class="screen"
-        id="examScreen"
-    >
-
+    <section class="screen" id="examScreen">
         <main class="exam-page">
-
             <header class="exam-header">
-
                 <div class="exam-title">
-
-                    <span>
-                        ONLINE EXAMINATION
-                    </span>
-
-                    <h1>
-                        Examination Test
-                    </h1>
-
+                    <span>ONLINE EXAMINATION</span>
+                    <h1>Examination Test</h1>
                 </div>
-
 
                 <div class="timer-box">
-
-                    <span>
-                        TIME REMAINING
-                    </span>
-
-                    <strong id="examTimer">
-                        60:00
-                    </strong>
-
+                    <span>TIME REMAINING</span>
+                    <strong id="examTimer">60:00</strong>
                 </div>
-
             </header>
 
-
             <div class="exam-content">
-
                 <div class="question-card">
-
                     <div class="question-top">
-
-                        <span class="question-number">
-                            Question
-                            <strong id="questionNumber">
-                                1
-                            </strong>
-                        </span>
-
-                        <span class="question-progress">
-                            1 / 80
-                        </span>
-
+                        <span class="question-number">Question <strong id="questionNumber">1</strong></span>
+                        <span class="question-progress">1 / 80</span>
                     </div>
-
 
                     <div class="question-text">
-
                         Your question will appear here.
-
                     </div>
-
 
                     <div class="options">
-
-                        <button class="option">
-                            <span>A</span>
-                            Option A
-                        </button>
-
-                        <button class="option">
-                            <span>B</span>
-                            Option B
-                        </button>
-
-                        <button class="option">
-                            <span>C</span>
-                            Option C
-                        </button>
-
-                        <button class="option">
-                            <span>D</span>
-                            Option D
-                        </button>
-
+                        <button class="option"><span>A</span> Option A</button>
+                        <button class="option"><span>B</span> Option B</button>
+                        <button class="option"><span>C</span> Option C</button>
+                        <button class="option"><span>D</span> Option D</button>
                     </div>
-
 
                     <div class="question-actions">
-
-                        <button
-                            class="secondary-btn"
-                            id="previousBtn"
-                        >
-                            ← Previous
-                        </button>
-
-                        <button
-                            class="save-next-btn"
-                            id="saveNextBtn"
-                        >
-                            Save & Next →
-                        </button>
-
+                        <button class="secondary-btn" id="previousBtn">← Previous</button>
+                        <button class="save-next-btn" id="saveNextBtn">Save & Next →</button>
                     </div>
-
                 </div>
-
             </div>
-
         </main>
-
     </section>
-
 
 
     <!-- ======================================
          CONFIRMATION MODAL
     ======================================= -->
-
-    <div
-        class="modal"
-        id="startTestModal"
-    >
-
+    <div class="modal" id="startTestModal">
         <div class="modal-card">
-
-            <div class="modal-icon">
-                🚀
-            </div>
-
-            <h2>
-                Are you ready for the test?
-            </h2>
-
-            <p>
-                Once the test begins, your timer will start
-                immediately. Please make sure you are ready
-                before continuing.
-            </p>
-
+            <div class="modal-icon">🚀</div>
+            <h2>Are you ready for the test?</h2>
+            <p>Once the test begins, your timer will start immediately. Please make sure you are ready before continuing.</p>
 
             <div class="modal-actions">
-
-                <button
-                    class="modal-cancel"
-                    id="cancelStartBtn"
-                >
-                    Cancel
-                </button>
-
-                <button
-                    class="modal-confirm"
-                    id="confirmStartBtn"
-                >
-                    OK, Start Test
-                </button>
-
+                <button class="modal-cancel" id="cancelStartBtn">Cancel</button>
+                <button class="modal-confirm" id="confirmStartBtn">OK, Start Test</button>
             </div>
-
         </div>
-
     </div>
 
-
-    <script src="js/student.js"></script>
+    <!-- JavaScript Path (Loaded as module for Firebase integration) -->
+    <script type="module" src="js/student.js"></script>
 
 </body>
 
