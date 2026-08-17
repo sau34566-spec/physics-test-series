@@ -1,11 +1,22 @@
 import { auth, db } from "./firebase-config.js";
+
+import {
+    signInWithEmailAndPassword,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
 // =========================================
-// ADMIN PORTAL - STEP 5
-// Temporary frontend logic
-// Firebase Authentication will be connected later.
+// ADMIN PORTAL
+// Firebase Authentication connected
+// Authorized Admin verification will be added
+// in the next step.
 // =========================================
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    // =====================================
+    // DOM ELEMENTS
+    // =====================================
 
     const loginScreen =
         document.getElementById("adminLoginScreen");
@@ -54,12 +65,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // =====================================
-    // TEMPORARY LOGIN
+    // CHECK REQUIRED ELEMENTS
+    // =====================================
+
+    if (!loginScreen ||
+        !dashboard ||
+        !loginForm) {
+
+        console.error(
+            "Required Admin Portal elements were not found."
+        );
+
+        return;
+    }
+
+
+    // =====================================
+    // FIREBASE ADMIN LOGIN
     // =====================================
 
     loginForm.addEventListener(
         "submit",
-        event => {
+        async (event) => {
 
             event.preventDefault();
 
@@ -67,7 +94,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 document
                     .getElementById("adminEmail")
                     .value
-                    .trim();
+                    .trim()
+                    .toLowerCase();
 
             const password =
                 document
@@ -75,27 +103,120 @@ document.addEventListener("DOMContentLoaded", () => {
                     .value;
 
 
+            // Empty field validation
             if (!email || !password) {
 
                 alert(
-                    "Please enter your admin email and password."
+                    "Please enter your administrator email and password."
                 );
 
                 return;
             }
 
 
-            /*
-             * Temporary frontend login.
-             *
-             * Firebase Authentication and
-             * authorized-admin verification
-             * will be added later.
-             */
+            try {
 
-            loginScreen.style.display = "none";
+                // Firebase Authentication
+                const userCredential =
+                    await signInWithEmailAndPassword(
+                        auth,
+                        email,
+                        password
+                    );
 
-            dashboard.classList.add("active");
+
+                const user =
+                    userCredential.user;
+
+
+                console.log(
+                    "Administrator authenticated:",
+                    user.email
+                );
+
+
+                // Show dashboard
+                loginScreen.style.display =
+                    "none";
+
+                dashboard.classList.add(
+                    "active"
+                );
+
+
+                // Clear password field
+                document
+                    .getElementById("adminPassword")
+                    .value = "";
+
+
+            } catch (error) {
+
+                console.error(
+                    "Admin login error:",
+                    error
+                );
+
+
+                let message =
+                    "Unable to sign in. Please check your email and password.";
+
+
+                // Firebase error handling
+                if (
+                    error.code ===
+                    "auth/invalid-credential"
+                ) {
+
+                    message =
+                        "The email or password is incorrect.";
+
+                }
+
+                else if (
+                    error.code ===
+                    "auth/invalid-email"
+                ) {
+
+                    message =
+                        "Please enter a valid administrator email address.";
+
+                }
+
+                else if (
+                    error.code ===
+                    "auth/too-many-requests"
+                ) {
+
+                    message =
+                        "Too many unsuccessful login attempts. Please try again later.";
+
+                }
+
+                else if (
+                    error.code ===
+                    "auth/user-disabled"
+                ) {
+
+                    message =
+                        "This administrator account has been disabled.";
+
+                }
+
+                else if (
+                    error.code ===
+                    "auth/network-request-failed"
+                ) {
+
+                    message =
+                        "Network error. Please check your internet connection and try again.";
+
+                }
+
+
+                alert(message);
+
+            }
 
         }
     );
@@ -107,18 +228,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function openSection(sectionName) {
 
-        sections.forEach(section => {
+        sections.forEach(
+            section => {
 
-            section.classList.remove("active");
+                section.classList.remove(
+                    "active"
+                );
 
-        });
+            }
+        );
 
 
-        navItems.forEach(item => {
+        navItems.forEach(
+            item => {
 
-            item.classList.remove("active");
+                item.classList.remove(
+                    "active"
+                );
 
-        });
+            }
+        );
 
 
         const targetSection =
@@ -135,141 +264,211 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (targetSection) {
 
-            targetSection.classList.add("active");
+            targetSection.classList.add(
+                "active"
+            );
 
         }
 
 
         if (targetNav) {
 
-            targetNav.classList.add("active");
+            targetNav.classList.add(
+                "active"
+            );
 
         }
 
 
         const titles = {
 
-            dashboard: "Dashboard",
+            dashboard:
+                "Dashboard",
 
-            examSettings: "Exam Settings",
+            examSettings:
+                "Exam Settings",
 
-            questions: "Question Bank",
+            questions:
+                "Question Bank",
 
-            candidates: "Candidates",
+            candidates:
+                "Candidates",
 
-            monitoring: "Live Monitoring",
+            monitoring:
+                "Live Monitoring",
 
-            violations: "Security Violations",
+            violations:
+                "Security Violations",
 
-            results: "Candidate Results",
+            results:
+                "Candidate Results",
 
-            feedback: "Candidate Feedback",
+            feedback:
+                "Candidate Feedback",
 
-            analytics: "Performance Analytics",
+            analytics:
+                "Performance Analytics",
 
-            admins: "Authorized Administrators",
+            admins:
+                "Authorized Administrators",
 
-            activity: "Activity Logs"
+            activity:
+                "Activity Logs"
 
         };
 
 
-        pageTitle.textContent =
-            titles[sectionName] ||
-            "Dashboard";
+        if (pageTitle) {
+
+            pageTitle.textContent =
+                titles[sectionName] ||
+                "Dashboard";
+
+        }
 
 
-        sidebar.classList.remove(
-            "mobile-open"
-        );
+        if (sidebar) {
+
+            sidebar.classList.remove(
+                "mobile-open"
+            );
+
+        }
 
 
         window.scrollTo({
+
             top: 0,
+
             behavior: "smooth"
+
         });
 
     }
 
 
-    navItems.forEach(item => {
+    navItems.forEach(
+        item => {
 
-        item.addEventListener(
-            "click",
-            () => {
-
-                const section =
-                    item.dataset.section;
-
-                openSection(section);
-
-            }
-        );
-
-    });
-
-
-    quickActions.forEach(item => {
-
-        item.addEventListener(
-            "click",
-            () => {
-
-                const section =
-                    item.dataset.section;
-
-                openSection(section);
-
-            }
-        );
-
-    });
-
-
-    // =====================================
-    // MOBILE MENU
-    // =====================================
-
-    mobileMenuBtn.addEventListener(
-        "click",
-        () => {
-
-            sidebar.classList.toggle(
-                "mobile-open"
-            );
-
-        }
-    );
-
-
-    // =====================================
-    // LOGOUT
-    // =====================================
-
-    logoutBtn.addEventListener(
-        "click",
-        () => {
-
-            showConfirmation(
-                "Sign Out",
-                "Are you sure you want to sign out of the administrator dashboard?",
-                "🚪",
+            item.addEventListener(
+                "click",
                 () => {
 
-                    dashboard.classList.remove(
-                        "active"
-                    );
+                    const section =
+                        item.dataset.section;
 
-                    loginScreen.style.display =
-                        "flex";
-
-                    loginForm.reset();
+                    openSection(section);
 
                 }
             );
 
         }
     );
+
+
+    quickActions.forEach(
+        item => {
+
+            item.addEventListener(
+                "click",
+                () => {
+
+                    const section =
+                        item.dataset.section;
+
+                    openSection(section);
+
+                }
+            );
+
+        }
+    );
+
+
+    // =====================================
+    // MOBILE MENU
+    // =====================================
+
+    if (mobileMenuBtn && sidebar) {
+
+        mobileMenuBtn.addEventListener(
+            "click",
+            () => {
+
+                sidebar.classList.toggle(
+                    "mobile-open"
+                );
+
+            }
+        );
+
+    }
+
+
+    // =====================================
+    // FIREBASE LOGOUT
+    // =====================================
+
+    if (logoutBtn) {
+
+        logoutBtn.addEventListener(
+            "click",
+            () => {
+
+                showConfirmation(
+
+                    "Sign Out",
+
+                    "Are you sure you want to sign out of the administrator dashboard?",
+
+                    "🚪",
+
+                    async () => {
+
+                        try {
+
+                            await signOut(auth);
+
+
+                            dashboard.classList.remove(
+                                "active"
+                            );
+
+
+                            loginScreen.style.display =
+                                "flex";
+
+
+                            loginForm.reset();
+
+
+                            console.log(
+                                "Administrator signed out successfully."
+                            );
+
+
+                        } catch (error) {
+
+                            console.error(
+                                "Logout error:",
+                                error
+                            );
+
+
+                            alert(
+                                "Unable to sign out. Please try again."
+                            );
+
+                        }
+
+                    }
+
+                );
+
+            }
+        );
+
+    }
 
 
     // =====================================
@@ -292,98 +491,215 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-    startExamBtn.addEventListener(
-        "click",
-        () => {
+    // =====================================
+    // START EXAM
+    // =====================================
 
-            showConfirmation(
-                "Start Examination",
-                "Are you sure you want to start the examination?",
-                "▶️",
-                () => {
+    if (startExamBtn) {
 
-                    document.getElementById(
-                        "largeExamStatus"
-                    ).textContent = "LIVE";
+        startExamBtn.addEventListener(
+            "click",
+            () => {
 
-                    document.getElementById(
-                        "examStatus"
-                    ).textContent = "Exam Live";
+                showConfirmation(
 
-                    document.getElementById(
-                        "statusDot"
-                    ).style.background =
-                        "#22c55e";
+                    "Start Examination",
 
-                }
-            );
+                    "Are you sure you want to start the examination?",
 
-        }
-    );
+                    "▶️",
 
+                    () => {
 
-    pauseExamBtn.addEventListener(
-        "click",
-        () => {
+                        const largeExamStatus =
+                            document.getElementById(
+                                "largeExamStatus"
+                            );
 
-            showConfirmation(
-                "Pause Examination",
-                "Are you sure you want to pause the examination?",
-                "⏸️",
-                () => {
+                        const examStatus =
+                            document.getElementById(
+                                "examStatus"
+                            );
 
-                    document.getElementById(
-                        "largeExamStatus"
-                    ).textContent = "PAUSED";
-
-                    document.getElementById(
-                        "examStatus"
-                    ).textContent = "Exam Paused";
-
-                    document.getElementById(
-                        "statusDot"
-                    ).style.background =
-                        "#f59e0b";
-
-                }
-            );
-
-        }
-    );
+                        const statusDot =
+                            document.getElementById(
+                                "statusDot"
+                            );
 
 
-    endExamBtn.addEventListener(
-        "click",
-        () => {
+                        if (largeExamStatus) {
 
-            showConfirmation(
-                "End Examination",
-                "Ending the examination may affect all active candidates. Continue?",
-                "⚠️",
-                () => {
+                            largeExamStatus.textContent =
+                                "LIVE";
 
-                    document.getElementById(
-                        "largeExamStatus"
-                    ).textContent = "ENDED";
+                        }
 
-                    document.getElementById(
-                        "examStatus"
-                    ).textContent = "Exam Ended";
 
-                    document.getElementById(
-                        "statusDot"
-                    ).style.background =
-                        "#ef4444";
+                        if (examStatus) {
 
-                }
-            );
+                            examStatus.textContent =
+                                "Exam Live";
 
-        }
-    );
+                        }
+
+
+                        if (statusDot) {
+
+                            statusDot.style.background =
+                                "#22c55e";
+
+                        }
+
+                    }
+
+                );
+
+            }
+        );
+
+    }
 
 
     // =====================================
-    // REFRESH
+    // PAUSE EXAM
+    // =====================================
+
+    if (pauseExamBtn) {
+
+        pauseExamBtn.addEventListener(
+            "click",
+            () => {
+
+                showConfirmation(
+
+                    "Pause Examination",
+
+                    "Are you sure you want to pause the examination?",
+
+                    "⏸️",
+
+                    () => {
+
+                        const largeExamStatus =
+                            document.getElementById(
+                                "largeExamStatus"
+                            );
+
+                        const examStatus =
+                            document.getElementById(
+                                "examStatus"
+                            );
+
+                        const statusDot =
+                            document.getElementById(
+                                "statusDot"
+                            );
+
+
+                        if (largeExamStatus) {
+
+                            largeExamStatus.textContent =
+                                "PAUSED";
+
+                        }
+
+
+                        if (examStatus) {
+
+                            examStatus.textContent =
+                                "Exam Paused";
+
+                        }
+
+
+                        if (statusDot) {
+
+                            statusDot.style.background =
+                                "#f59e0b";
+
+                        }
+
+                    }
+
+                );
+
+            }
+        );
+
+    }
+
+
+    // =====================================
+    // END EXAM
+    // =====================================
+
+    if (endExamBtn) {
+
+        endExamBtn.addEventListener(
+            "click",
+            () => {
+
+                showConfirmation(
+
+                    "End Examination",
+
+                    "Ending the examination may affect all active candidates. Continue?",
+
+                    "⚠️",
+
+                    () => {
+
+                        const largeExamStatus =
+                            document.getElementById(
+                                "largeExamStatus"
+                            );
+
+                        const examStatus =
+                            document.getElementById(
+                                "examStatus"
+                            );
+
+                        const statusDot =
+                            document.getElementById(
+                                "statusDot"
+                            );
+
+
+                        if (largeExamStatus) {
+
+                            largeExamStatus.textContent =
+                                "ENDED";
+
+                        }
+
+
+                        if (examStatus) {
+
+                            examStatus.textContent =
+                                "Exam Ended";
+
+                        }
+
+
+                        if (statusDot) {
+
+                            statusDot.style.background =
+                                "#ef4444";
+
+                        }
+
+                    }
+
+                );
+
+            }
+        );
+
+    }
+
+
+    // =====================================
+    // REFRESH DASHBOARD
     // =====================================
 
     const refreshBtn =
@@ -392,29 +708,38 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-    refreshBtn.addEventListener(
-        "click",
-        () => {
+    if (refreshBtn) {
 
-            refreshBtn.textContent =
-                "✓ Updated";
-
-            setTimeout(() => {
+        refreshBtn.addEventListener(
+            "click",
+            () => {
 
                 refreshBtn.textContent =
-                    "↻ Refresh";
+                    "✓ Updated";
 
-            }, 1200);
 
-        }
-    );
+                setTimeout(
+                    () => {
+
+                        refreshBtn.textContent =
+                            "↻ Refresh";
+
+                    },
+                    1200
+                );
+
+            }
+        );
+
+    }
 
 
     // =====================================
     // CONFIRMATION MODAL
     // =====================================
 
-    let confirmationCallback = null;
+    let confirmationCallback =
+        null;
 
 
     function showConfirmation(
@@ -424,15 +749,48 @@ document.addEventListener("DOMContentLoaded", () => {
         callback
     ) {
 
-        modalTitle.textContent =
-            title;
+        if (!adminModal) {
 
-        modalMessage.textContent =
-            message;
+            if (
+                confirm(message)
+            ) {
 
-        document.getElementById(
-            "modalIcon"
-        ).textContent = icon;
+                callback();
+
+            }
+
+            return;
+        }
+
+
+        if (modalTitle) {
+
+            modalTitle.textContent =
+                title;
+
+        }
+
+
+        if (modalMessage) {
+
+            modalMessage.textContent =
+                message;
+
+        }
+
+
+        const modalIcon =
+            document.getElementById(
+                "modalIcon"
+            );
+
+
+        if (modalIcon) {
+
+            modalIcon.textContent =
+                icon;
+
+        }
 
 
         confirmationCallback =
@@ -446,64 +804,92 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    modalCancelBtn.addEventListener(
-        "click",
-        () => {
+    // =====================================
+    // MODAL CANCEL
+    // =====================================
 
-            adminModal.classList.remove(
-                "show"
-            );
+    if (modalCancelBtn) {
 
-            confirmationCallback =
-                null;
-
-        }
-    );
-
-
-    modalConfirmBtn.addEventListener(
-        "click",
-        () => {
-
-            if (
-                typeof confirmationCallback ===
-                "function"
-            ) {
-
-                confirmationCallback();
-
-            }
-
-
-            adminModal.classList.remove(
-                "show"
-            );
-
-            confirmationCallback =
-                null;
-
-        }
-    );
-
-
-    adminModal.addEventListener(
-        "click",
-        event => {
-
-            if (
-                event.target === adminModal
-            ) {
+        modalCancelBtn.addEventListener(
+            "click",
+            () => {
 
                 adminModal.classList.remove(
                     "show"
                 );
 
+
                 confirmationCallback =
                     null;
 
             }
+        );
 
-        }
-    );
+    }
+
+
+    // =====================================
+    // MODAL CONFIRM
+    // =====================================
+
+    if (modalConfirmBtn) {
+
+        modalConfirmBtn.addEventListener(
+            "click",
+            async () => {
+
+                if (
+                    typeof confirmationCallback ===
+                    "function"
+                ) {
+
+                    await confirmationCallback();
+
+                }
+
+
+                adminModal.classList.remove(
+                    "show"
+                );
+
+
+                confirmationCallback =
+                    null;
+
+            }
+        );
+
+    }
+
+
+    // =====================================
+    // CLOSE MODAL ON BACKDROP CLICK
+    // =====================================
+
+    if (adminModal) {
+
+        adminModal.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target ===
+                    adminModal
+                ) {
+
+                    adminModal.classList.remove(
+                        "show"
+                    );
+
+
+                    confirmationCallback =
+                        null;
+
+                }
+
+            }
+        );
+
+    }
 
 });
