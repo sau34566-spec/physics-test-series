@@ -1,3 +1,4 @@
+import { auth, db } from "./firebase-config.js";
 // =========================================
 // ADMIN PORTAL - STEP 5
 // Temporary frontend logic
