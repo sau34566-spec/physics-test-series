@@ -2,55 +2,121 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Admin Portal | Online Examination</title>
 
-    <!-- CSS Path (Relative Path for subfolder) -->
+    <!-- Admin CSS -->
     <link rel="stylesheet" href="../css/admin.css">
-
 </head>
 
 <body>
 
-    <!-- =========================================
-         ADMIN LOGIN
-    ========================================== -->
+    <!-- =====================================================
+         ADMIN LOGIN SCREEN
+    ====================================================== -->
+
     <section class="admin-login-screen" id="adminLoginScreen">
 
         <div class="admin-login-background"></div>
 
         <div class="admin-login-card">
 
+            <!-- Brand -->
             <div class="admin-brand">
+
                 <div class="admin-brand-icon">🛡️</div>
-                <span class="admin-label">ADMINISTRATION</span>
-                <h1>Examination Control Center</h1>
-                <p>Authorized administrators only</p>
+
+                <span class="admin-label">
+                    ADMINISTRATION
+                </span>
+
+                <h1>
+                    Examination Control Center
+                </h1>
+
+                <p>
+                    Authorized administrators only
+                </p>
+
             </div>
 
-            <form class="admin-login-form" id="adminLoginForm">
 
+            <!-- Login Form -->
+            <form
+                class="admin-login-form"
+                id="adminLoginForm"
+                novalidate
+            >
+
+                <!-- Email -->
                 <div class="admin-input-group">
-                    <label for="adminEmail">Admin Email</label>
-                    <input type="email" id="adminEmail" placeholder="admin@example.com" autocomplete="email" required>
+
+                    <label for="adminEmail">
+                        Admin Email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="adminEmail"
+                        placeholder="admin@gmail.com"
+                        autocomplete="email"
+                        required
+                    >
+
                 </div>
 
+
+                <!-- Password -->
                 <div class="admin-input-group">
-                    <label for="adminPassword">Password</label>
-                    <input type="password" id="adminPassword" placeholder="Enter your password" autocomplete="current-password" required>
+
+                    <label for="adminPassword">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="adminPassword"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+
                 </div>
 
-                <button type="submit" class="admin-login-btn">
+
+                <!-- Login Error / Status Message -->
+                <div
+                    id="adminLoginMessage"
+                    class="admin-login-message"
+                    style="display: none;"
+                    role="alert"
+                    aria-live="polite"
+                ></div>
+
+
+                <!-- Login Button -->
+                <button
+                    type="submit"
+                    class="admin-login-btn"
+                    id="adminLoginBtn"
+                >
                     Sign In to Dashboard
                 </button>
 
             </form>
 
+
+            <!-- Security Notice -->
             <div class="admin-login-security">
+
                 <span>🔐</span>
-                <p>Protected administrator environment</p>
+
+                <p>
+                    Protected administrator environment
+                </p>
+
             </div>
 
         </div>
@@ -58,259 +124,663 @@
     </section>
 
 
-    <!-- =========================================
+    <!-- =====================================================
          ADMIN DASHBOARD
-    ========================================== -->
-    <section class="admin-dashboard" id="adminDashboard">
+    ====================================================== -->
 
-        <!-- SIDEBAR -->
-        <aside class="admin-sidebar" id="adminSidebar">
+    <section
+        class="admin-dashboard"
+        id="adminDashboard"
+    >
 
+        <!-- =================================================
+             SIDEBAR
+        ================================================== -->
+
+        <aside
+            class="admin-sidebar"
+            id="adminSidebar"
+        >
+
+            <!-- Sidebar Brand -->
             <div class="sidebar-brand">
-                <div class="sidebar-brand-icon">🎓</div>
-                <div>
-                    <strong>ExamControl</strong>
-                    <span>Administration</span>
+
+                <div class="sidebar-brand-icon">
+                    🎓
                 </div>
+
+                <div>
+
+                    <strong>
+                        ExamControl
+                    </strong>
+
+                    <span>
+                        Administration
+                    </span>
+
+                </div>
+
             </div>
 
+
+            <!-- Navigation -->
             <nav class="sidebar-navigation">
-                <button class="nav-item active" data-section="dashboard">
-                    <span>📊</span> Dashboard
+
+                <button
+                    type="button"
+                    class="nav-item active"
+                    data-section="dashboard"
+                >
+                    <span>📊</span>
+                    Dashboard
                 </button>
 
-                <button class="nav-item" data-section="examSettings">
-                    <span>⚙️</span> Exam Settings
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    data-section="examSettings"
+                >
+                    <span>⚙️</span>
+                    Exam Settings
                 </button>
 
-                <button class="nav-item" data-section="questions">
-                    <span>📝</span> Question Bank
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    data-section="questions"
+                >
+                    <span>📝</span>
+                    Question Bank
                 </button>
 
-                <button class="nav-item" data-section="candidates">
-                    <span>👥</span> Candidates
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    data-section="candidates"
+                >
+                    <span>👥</span>
+                    Candidates
                 </button>
 
-                <button class="nav-item" data-section="monitoring">
-                    <span>🖥️</span> Live Monitoring
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    data-section="monitoring"
+                >
+                    <span>🖥️</span>
+                    Live Monitoring
                 </button>
 
-                <button class="nav-item" data-section="violations">
-                    <span>🚨</span> Security Violations
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    data-section="violations"
+                >
+                    <span>🚨</span>
+                    Security Violations
                 </button>
 
-                <button class="nav-item" data-section="results">
-                    <span>🏆</span> Results
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    data-section="results"
+                >
+                    <span>🏆</span>
+                    Results
                 </button>
 
-                <button class="nav-item" data-section="feedback">
-                    <span>💬</span> Feedback
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    data-section="feedback"
+                >
+                    <span>💬</span>
+                    Feedback
                 </button>
 
-                <button class="nav-item" data-section="analytics">
-                    <span>📈</span> Analytics
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    data-section="analytics"
+                >
+                    <span>📈</span>
+                    Analytics
                 </button>
 
-                <button class="nav-item" data-section="admins">
-                    <span>👤</span> Authorized Admins
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    data-section="admins"
+                >
+                    <span>👤</span>
+                    Authorized Admins
                 </button>
 
-                <button class="nav-item" data-section="activity">
-                    <span>📋</span> Activity Logs
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    data-section="activity"
+                >
+                    <span>📋</span>
+                    Activity Logs
                 </button>
+
             </nav>
 
+
+            <!-- Logout -->
             <div class="sidebar-bottom">
-                <button class="logout-btn" id="logoutBtn">
-                    <span>🚪</span> Logout
+
+                <button
+                    type="button"
+                    class="logout-btn"
+                    id="adminLogoutBtn"
+                >
+                    <span>🚪</span>
+                    Logout
                 </button>
+
             </div>
 
         </aside>
 
 
-        <!-- MAIN AREA -->
+        <!-- =================================================
+             MAIN AREA
+        ================================================== -->
+
         <main class="admin-main">
+
 
             <!-- TOP HEADER -->
             <header class="admin-topbar">
-                <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+
+                <button
+                    type="button"
+                    class="mobile-menu-btn"
+                    id="mobileMenuBtn"
+                >
+                    ☰
+                </button>
+
 
                 <div class="topbar-title">
-                    <span>ADMIN PANEL</span>
-                    <h1 id="pageTitle">Dashboard</h1>
+
+                    <span>
+                        ADMIN PANEL
+                    </span>
+
+                    <h1 id="pageTitle">
+                        Dashboard
+                    </h1>
+
                 </div>
+
 
                 <div class="topbar-right">
+
+
+                    <!-- Exam Status -->
                     <div class="exam-status-badge">
-                        <span class="status-dot" id="statusDot"></span>
-                        <span id="examStatus">System Ready</span>
+
+                        <span
+                            class="status-dot"
+                            id="statusDot"
+                        ></span>
+
+                        <span id="examStatus">
+                            System Ready
+                        </span>
+
                     </div>
 
+
+                    <!-- Admin Profile -->
                     <div class="admin-profile">
-                        <div class="profile-avatar">A</div>
-                        <div class="profile-info">
-                            <strong id="adminName">Administrator</strong>
-                            <span>Authorized Admin</span>
+
+                        <div
+                            class="profile-avatar"
+                            id="profileAvatar"
+                        >
+                            A
                         </div>
+
+                        <div class="profile-info">
+
+                            <strong id="adminName">
+                                Administrator
+                            </strong>
+
+                            <span>
+                                Authorized Admin
+                            </span>
+
+                        </div>
+
                     </div>
+
                 </div>
+
             </header>
 
 
-            <!-- =====================================
+            <!-- =================================================
                  DASHBOARD SECTION
-            ====================================== -->
-            <section class="admin-section active" id="dashboardSection">
+            ================================================== -->
+
+            <section
+                class="admin-section active"
+                id="dashboardSection"
+            >
 
                 <div class="section-heading">
+
                     <div>
-                        <span>OVERVIEW</span>
-                        <h2>Examination Dashboard</h2>
-                        <p>Monitor your examination system from one place.</p>
+
+                        <span>
+                            OVERVIEW
+                        </span>
+
+                        <h2>
+                            Examination Dashboard
+                        </h2>
+
+                        <p>
+                            Monitor your examination system from one place.
+                        </p>
+
                     </div>
 
-                    <button class="refresh-btn" id="refreshDashboard">↻ Refresh</button>
+
+                    <button
+                        type="button"
+                        class="refresh-btn"
+                        id="refreshDashboard"
+                    >
+                        ↻ Refresh
+                    </button>
+
                 </div>
+
 
                 <!-- STAT CARDS -->
                 <div class="stats-grid">
 
-                    <div class="stat-card">
-                        <div class="stat-icon blue">📝</div>
-                        <div>
-                            <span>Total Questions</span>
-                            <strong id="totalQuestions">100</strong>
-                        </div>
-                    </div>
 
                     <div class="stat-card">
-                        <div class="stat-icon purple">🎯</div>
-                        <div>
-                            <span>Questions Displayed</span>
-                            <strong id="displayQuestions">80</strong>
+
+                        <div class="stat-icon blue">
+                            📝
                         </div>
+
+                        <div>
+
+                            <span>
+                                Total Questions
+                            </span>
+
+                            <strong id="totalQuestions">
+                                100
+                            </strong>
+
+                        </div>
+
                     </div>
 
-                    <div class="stat-card">
-                        <div class="stat-icon green">👥</div>
-                        <div>
-                            <span>Total Candidates</span>
-                            <strong id="totalCandidates">0</strong>
-                        </div>
-                    </div>
 
                     <div class="stat-card">
-                        <div class="stat-icon orange">✅</div>
-                        <div>
-                            <span>Completed</span>
-                            <strong id="completedCandidates">0</strong>
+
+                        <div class="stat-icon purple">
+                            🎯
                         </div>
+
+                        <div>
+
+                            <span>
+                                Questions Displayed
+                            </span>
+
+                            <strong id="displayQuestions">
+                                80
+                            </strong>
+
+                        </div>
+
                     </div>
 
-                    <div class="stat-card">
-                        <div class="stat-icon cyan">🟢</div>
-                        <div>
-                            <span>Active Tests</span>
-                            <strong id="activeCandidates">0</strong>
-                        </div>
-                    </div>
 
                     <div class="stat-card">
-                        <div class="stat-icon red">🚨</div>
-                        <div>
-                            <span>Violations</span>
-                            <strong id="totalViolations">0</strong>
+
+                        <div class="stat-icon green">
+                            👥
                         </div>
+
+                        <div>
+
+                            <span>
+                                Total Candidates
+                            </span>
+
+                            <strong id="totalCandidates">
+                                0
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon orange">
+                            ✅
+                        </div>
+
+                        <div>
+
+                            <span>
+                                Completed
+                            </span>
+
+                            <strong id="completedCandidates">
+                                0
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon cyan">
+                            🟢
+                        </div>
+
+                        <div>
+
+                            <span>
+                                Active Tests
+                            </span>
+
+                            <strong id="activeCandidates">
+                                0
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon red">
+                            🚨
+                        </div>
+
+                        <div>
+
+                            <span>
+                                Violations
+                            </span>
+
+                            <strong id="totalViolations">
+                                0
+                            </strong>
+
+                        </div>
+
                     </div>
 
                 </div>
 
 
-                <!-- EXAM CONTROL -->
+                <!-- DASHBOARD GRID -->
                 <div class="dashboard-grid">
 
+
+                    <!-- EXAM CONTROL -->
                     <div class="panel-card">
+
                         <div class="panel-header">
+
                             <div>
-                                <span>EXAMINATION STATUS</span>
-                                <h3>Current Examination</h3>
+
+                                <span>
+                                    EXAMINATION STATUS
+                                </span>
+
+                                <h3>
+                                    Current Examination
+                                </h3>
+
                             </div>
-                            <span class="large-status" id="largeExamStatus">DRAFT</span>
+
+                            <span
+                                class="large-status"
+                                id="largeExamStatus"
+                            >
+                                DRAFT
+                            </span>
+
                         </div>
+
 
                         <div class="exam-control-info">
-                            <div>
-                                <span>Exam Title</span>
-                                <strong id="dashboardExamTitle">Online Examination</strong>
-                            </div>
+
 
                             <div>
-                                <span>Duration</span>
-                                <strong id="dashboardDuration">60 Minutes</strong>
+
+                                <span>
+                                    Exam Title
+                                </span>
+
+                                <strong id="dashboardExamTitle">
+                                    Online Examination
+                                </strong>
+
                             </div>
 
-                            <div>
-                                <span>Questions</span>
-                                <strong id="dashboardQuestionCount">80</strong>
-                            </div>
 
                             <div>
-                                <span>Marks / Question</span>
-                                <strong id="dashboardMarks">+4</strong>
+
+                                <span>
+                                    Duration
+                                </span>
+
+                                <strong id="dashboardDuration">
+                                    60 Minutes
+                                </strong>
+
                             </div>
+
+
+                            <div>
+
+                                <span>
+                                    Questions
+                                </span>
+
+                                <strong id="dashboardQuestionCount">
+                                    80
+                                </strong>
+
+                            </div>
+
+
+                            <div>
+
+                                <span>
+                                    Marks / Question
+                                </span>
+
+                                <strong id="dashboardMarks">
+                                    +4
+                                </strong>
+
+                            </div>
+
                         </div>
+
 
                         <div class="exam-control-actions">
-                            <button class="control-btn start" id="startExamBtn">▶ Start Exam</button>
-                            <button class="control-btn pause" id="pauseExamBtn">⏸ Pause</button>
-                            <button class="control-btn end" id="endExamBtn">■ End Exam</button>
+
+                            <button
+                                type="button"
+                                class="control-btn start"
+                                id="startExamBtn"
+                            >
+                                ▶ Start Exam
+                            </button>
+
+                            <button
+                                type="button"
+                                class="control-btn pause"
+                                id="pauseExamBtn"
+                            >
+                                ⏸ Pause
+                            </button>
+
+                            <button
+                                type="button"
+                                class="control-btn end"
+                                id="endExamBtn"
+                            >
+                                ■ End Exam
+                            </button>
+
                         </div>
+
                     </div>
 
 
                     <!-- QUICK ACTIONS -->
                     <div class="panel-card">
+
                         <div class="panel-header">
+
                             <div>
-                                <span>QUICK ACTIONS</span>
-                                <h3>Manage Examination</h3>
+
+                                <span>
+                                    QUICK ACTIONS
+                                </span>
+
+                                <h3>
+                                    Manage Examination
+                                </h3>
+
                             </div>
+
                         </div>
+
 
                         <div class="quick-actions">
-                            <button class="quick-action" data-section="examSettings">
+
+
+                            <button
+                                type="button"
+                                class="quick-action"
+                                data-section="examSettings"
+                            >
+
                                 <span>⚙️</span>
+
                                 <div>
-                                    <strong>Exam Settings</strong>
-                                    <small>Configure examination</small>
+
+                                    <strong>
+                                        Exam Settings
+                                    </strong>
+
+                                    <small>
+                                        Configure examination
+                                    </small>
+
                                 </div>
+
                             </button>
 
-                            <button class="quick-action" data-section="questions">
+
+                            <button
+                                type="button"
+                                class="quick-action"
+                                data-section="questions"
+                            >
+
                                 <span>📚</span>
+
                                 <div>
-                                    <strong>Question Bank</strong>
-                                    <small>Manage questions</small>
+
+                                    <strong>
+                                        Question Bank
+                                    </strong>
+
+                                    <small>
+                                        Manage questions
+                                    </small>
+
                                 </div>
+
                             </button>
 
-                            <button class="quick-action" data-section="results">
+
+                            <button
+                                type="button"
+                                class="quick-action"
+                                data-section="results"
+                            >
+
                                 <span>🏆</span>
+
                                 <div>
-                                    <strong>View Results</strong>
-                                    <small>Check candidate performance</small>
+
+                                    <strong>
+                                        View Results
+                                    </strong>
+
+                                    <small>
+                                        Check candidate performance
+                                    </small>
+
                                 </div>
+
                             </button>
 
-                            <button class="quick-action" data-section="violations">
+
+                            <button
+                                type="button"
+                                class="quick-action"
+                                data-section="violations"
+                            >
+
                                 <span>🚨</span>
+
                                 <div>
-                                    <strong>Security Monitor</strong>
-                                    <small>Review violations</small>
+
+                                    <strong>
+                                        Security Monitor
+                                    </strong>
+
+                                    <small>
+                                        Review violations
+                                    </small>
+
                                 </div>
+
                             </button>
+
                         </div>
+
                     </div>
 
                 </div>
@@ -318,166 +788,532 @@
 
                 <!-- RECENT ACTIVITY -->
                 <div class="panel-card">
+
                     <div class="panel-header">
+
                         <div>
-                            <span>RECENT ACTIVITY</span>
-                            <h3>System Activity</h3>
+
+                            <span>
+                                RECENT ACTIVITY
+                            </span>
+
+                            <h3>
+                                System Activity
+                            </h3>
+
                         </div>
+
                     </div>
+
 
                     <div class="empty-state">
-                        <div>📋</div>
-                        <h4>No recent activity</h4>
-                        <p>Administrative activities will appear here.</p>
+
+                        <div>
+                            📋
+                        </div>
+
+                        <h4>
+                            No recent activity
+                        </h4>
+
+                        <p>
+                            Administrative activities will appear here.
+                        </p>
+
                     </div>
+
                 </div>
 
             </section>
 
 
-            <!-- =====================================
-                 PLACEHOLDER SECTIONS
-            ====================================== -->
-            <section class="admin-section" id="examSettingsSection">
+            <!-- =================================================
+                 EXAM SETTINGS
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="examSettingsSection"
+            >
+
                 <div class="section-heading">
+
                     <div>
-                        <span>CONFIGURATION</span>
-                        <h2>Exam Settings</h2>
-                        <p>Configure examination parameters.</p>
+
+                        <span>
+                            CONFIGURATION
+                        </span>
+
+                        <h2>
+                            Exam Settings
+                        </h2>
+
+                        <p>
+                            Configure examination parameters.
+                        </p>
+
                     </div>
+
                 </div>
+
+
                 <div class="coming-soon-panel">
-                    <span>⚙️</span>
-                    <h3>Exam Configuration</h3>
-                    <p>Detailed exam settings will be implemented in the next development step.</p>
+
+                    <span>
+                        ⚙️
+                    </span>
+
+                    <h3>
+                        Exam Configuration
+                    </h3>
+
+                    <p>
+                        Detailed exam settings will be implemented in the next development step.
+                    </p>
+
                 </div>
+
             </section>
 
-            <section class="admin-section" id="questionsSection">
+
+            <!-- =================================================
+                 QUESTION BANK
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="questionsSection"
+            >
+
                 <div class="section-heading">
+
                     <div>
-                        <span>QUESTION MANAGEMENT</span>
-                        <h2>Question Bank</h2>
-                        <p>Manage and organize examination questions.</p>
+
+                        <span>
+                            QUESTION MANAGEMENT
+                        </span>
+
+                        <h2>
+                            Question Bank
+                        </h2>
+
+                        <p>
+                            Manage and organize examination questions.
+                        </p>
+
                     </div>
+
                 </div>
+
+
                 <div class="coming-soon-panel">
-                    <span>📚</span>
-                    <h3>Question Bank</h3>
-                    <p>Question management will be implemented in the upcoming development step.</p>
+
+                    <span>
+                        📚
+                    </span>
+
+                    <h3>
+                        Question Bank
+                    </h3>
+
+                    <p>
+                        Question management will be implemented in the upcoming development step.
+                    </p>
+
                 </div>
+
             </section>
 
-            <section class="admin-section" id="candidatesSection">
+
+            <!-- =================================================
+                 CANDIDATES
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="candidatesSection"
+            >
+
                 <div class="section-heading">
+
                     <div>
-                        <span>CANDIDATE MANAGEMENT</span>
-                        <h2>Candidates</h2>
+
+                        <span>
+                            CANDIDATE MANAGEMENT
+                        </span>
+
+                        <h2>
+                            Candidates
+                        </h2>
+
+                        <p>
+                            Manage examination candidates.
+                        </p>
+
                     </div>
+
                 </div>
+
+
                 <div class="coming-soon-panel">
-                    <span>👥</span>
-                    <h3>Candidate Management</h3>
-                    <p>Candidate information will appear here.</p>
+
+                    <span>
+                        👥
+                    </span>
+
+                    <h3>
+                        Candidate Management
+                    </h3>
+
+                    <p>
+                        Candidate information will appear here.
+                    </p>
+
                 </div>
+
             </section>
 
-            <section class="admin-section" id="monitoringSection">
+
+            <!-- =================================================
+                 LIVE MONITORING
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="monitoringSection"
+            >
+
                 <div class="section-heading">
+
                     <div>
-                        <span>LIVE SYSTEM</span>
-                        <h2>Live Monitoring</h2>
+
+                        <span>
+                            LIVE SYSTEM
+                        </span>
+
+                        <h2>
+                            Live Monitoring
+                        </h2>
+
+                        <p>
+                            Monitor active examinations.
+                        </p>
+
                     </div>
+
                 </div>
+
+
                 <div class="coming-soon-panel">
-                    <span>🖥️</span>
-                    <h3>Live Examination Monitoring</h3>
-                    <p>Active candidates will appear here.</p>
+
+                    <span>
+                        🖥️
+                    </span>
+
+                    <h3>
+                        Live Examination Monitoring
+                    </h3>
+
+                    <p>
+                        Active candidates will appear here.
+                    </p>
+
                 </div>
+
             </section>
 
-            <section class="admin-section" id="violationsSection">
+
+            <!-- =================================================
+                 SECURITY VIOLATIONS
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="violationsSection"
+            >
+
                 <div class="section-heading">
+
                     <div>
-                        <span>SECURITY</span>
-                        <h2>Security Violations</h2>
+
+                        <span>
+                            SECURITY
+                        </span>
+
+                        <h2>
+                            Security Violations
+                        </h2>
+
+                        <p>
+                            Review examination security events.
+                        </p>
+
                     </div>
+
                 </div>
+
+
                 <div class="coming-soon-panel">
-                    <span>🚨</span>
-                    <h3>Security Monitor</h3>
-                    <p>Examination security events will appear here.</p>
+
+                    <span>
+                        🚨
+                    </span>
+
+                    <h3>
+                        Security Monitor
+                    </h3>
+
+                    <p>
+                        Examination security events will appear here.
+                    </p>
+
                 </div>
+
             </section>
 
-            <section class="admin-section" id="resultsSection">
+
+            <!-- =================================================
+                 RESULTS
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="resultsSection"
+            >
+
                 <div class="section-heading">
+
                     <div>
-                        <span>PERFORMANCE</span>
-                        <h2>Candidate Results</h2>
+
+                        <span>
+                            PERFORMANCE
+                        </span>
+
+                        <h2>
+                            Candidate Results
+                        </h2>
+
+                        <p>
+                            Review examination performance.
+                        </p>
+
                     </div>
+
                 </div>
+
+
                 <div class="coming-soon-panel">
-                    <span>🏆</span>
-                    <h3>Examination Results</h3>
-                    <p>Candidate results will appear here.</p>
+
+                    <span>
+                        🏆
+                    </span>
+
+                    <h3>
+                        Examination Results
+                    </h3>
+
+                    <p>
+                        Candidate results will appear here.
+                    </p>
+
                 </div>
+
             </section>
 
-            <section class="admin-section" id="feedbackSection">
+
+            <!-- =================================================
+                 FEEDBACK
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="feedbackSection"
+            >
+
                 <div class="section-heading">
+
                     <div>
-                        <span>FEEDBACK</span>
-                        <h2>Candidate Feedback</h2>
+
+                        <span>
+                            FEEDBACK
+                        </span>
+
+                        <h2>
+                            Candidate Feedback
+                        </h2>
+
+                        <p>
+                            Review candidate feedback and queries.
+                        </p>
+
                     </div>
+
                 </div>
+
+
                 <div class="coming-soon-panel">
-                    <span>💬</span>
-                    <h3>Feedback Management</h3>
-                    <p>Candidate feedback will appear here.</p>
+
+                    <span>
+                        💬
+                    </span>
+
+                    <h3>
+                        Feedback Management
+                    </h3>
+
+                    <p>
+                        Candidate feedback will appear here.
+                    </p>
+
                 </div>
+
             </section>
 
-            <section class="admin-section" id="analyticsSection">
+
+            <!-- =================================================
+                 ANALYTICS
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="analyticsSection"
+            >
+
                 <div class="section-heading">
+
                     <div>
-                        <span>ANALYTICS</span>
-                        <h2>Performance Analytics</h2>
+
+                        <span>
+                            ANALYTICS
+                        </span>
+
+                        <h2>
+                            Performance Analytics
+                        </h2>
+
+                        <p>
+                            Analyze examination performance.
+                        </p>
+
                     </div>
+
                 </div>
+
+
                 <div class="coming-soon-panel">
-                    <span>📈</span>
-                    <h3>Examination Analytics</h3>
-                    <p>Performance charts will appear here.</p>
+
+                    <span>
+                        📈
+                    </span>
+
+                    <h3>
+                        Examination Analytics
+                    </h3>
+
+                    <p>
+                        Performance charts will appear here.
+                    </p>
+
                 </div>
+
             </section>
 
-            <section class="admin-section" id="adminsSection">
+
+            <!-- =================================================
+                 AUTHORIZED ADMINS
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="adminsSection"
+            >
+
                 <div class="section-heading">
+
                     <div>
-                        <span>ACCESS CONTROL</span>
-                        <h2>Authorized Administrators</h2>
+
+                        <span>
+                            ACCESS CONTROL
+                        </span>
+
+                        <h2>
+                            Authorized Administrators
+                        </h2>
+
+                        <p>
+                            Manage authorized administrator accounts.
+                        </p>
+
                     </div>
+
                 </div>
+
+
                 <div class="coming-soon-panel">
-                    <span>👤</span>
-                    <h3>Admin Management</h3>
-                    <p>Authorized administrator management will be implemented later.</p>
+
+                    <span>
+                        👤
+                    </span>
+
+                    <h3>
+                        Admin Management
+                    </h3>
+
+                    <p>
+                        Authorized administrator management will be implemented later.
+                    </p>
+
                 </div>
+
             </section>
 
-            <section class="admin-section" id="activitySection">
+
+            <!-- =================================================
+                 ACTIVITY LOGS
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="activitySection"
+            >
+
                 <div class="section-heading">
+
                     <div>
-                        <span>AUDIT</span>
-                        <h2>Activity Logs</h2>
+
+                        <span>
+                            AUDIT
+                        </span>
+
+                        <h2>
+                            Activity Logs
+                        </h2>
+
+                        <p>
+                            Review administrator activities.
+                        </p>
+
                     </div>
+
                 </div>
+
+
                 <div class="coming-soon-panel">
-                    <span>📋</span>
-                    <h3>Administrative Activity</h3>
-                    <p>Admin activity logs will appear here.</p>
+
+                    <span>
+                        📋
+                    </span>
+
+                    <h3>
+                        Administrative Activity
+                    </h3>
+
+                    <p>
+                        Admin activity logs will appear here.
+                    </p>
+
                 </div>
+
             </section>
 
         </main>
@@ -485,24 +1321,66 @@
     </section>
 
 
-    <!-- =========================================
+    <!-- =====================================================
          CONFIRMATION MODAL
-    ========================================== -->
-    <div class="admin-modal" id="adminModal">
+    ====================================================== -->
+
+    <div
+        class="admin-modal"
+        id="adminModal"
+    >
+
         <div class="admin-modal-card">
-            <div class="admin-modal-icon" id="modalIcon">⚠️</div>
-            <h2 id="modalTitle">Confirm Action</h2>
-            <p id="modalMessage">Are you sure you want to continue?</p>
+
+            <div
+                class="admin-modal-icon"
+                id="modalIcon"
+            >
+                ⚠️
+            </div>
+
+            <h2 id="modalTitle">
+                Confirm Action
+            </h2>
+
+            <p id="modalMessage">
+                Are you sure you want to continue?
+            </p>
+
 
             <div class="admin-modal-actions">
-                <button class="modal-cancel-btn" id="modalCancelBtn">Cancel</button>
-                <button class="modal-confirm-btn" id="modalConfirmBtn">Confirm</button>
+
+                <button
+                    type="button"
+                    class="modal-cancel-btn"
+                    id="modalCancelBtn"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    class="modal-confirm-btn"
+                    id="modalConfirmBtn"
+                >
+                    Confirm
+                </button>
+
             </div>
+
         </div>
+
     </div>
 
-    <!-- JavaScript Path (Loaded as module for Firebase integration & Subfolder reference) -->
-    <script type="module" src="../js/admin.js"></script>
+
+    <!-- =====================================================
+         ADMIN JAVASCRIPT
+    ====================================================== -->
+
+    <script
+        type="module"
+        src="../js/admin.js"
+    ></script>
 
 </body>
 
