@@ -1089,3 +1089,392 @@ body {
         flex: 1;
     }
 }
+/* =========================================================
+   RESULT + FEEDBACK
+   ========================================================= */
+
+.result-container,
+.feedback-container {
+    width: min(100% - 32px, 1000px);
+    margin: 0 auto;
+    padding: 30px 0 50px;
+}
+
+
+.result-header,
+.feedback-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+
+.result-icon,
+.feedback-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 15px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    font-size: 28px;
+    font-weight: 700;
+
+    background: rgba(255,255,255,.08);
+}
+
+
+.result-header h1,
+.feedback-header h1 {
+    margin: 0 0 8px;
+}
+
+
+.result-header p,
+.feedback-header p {
+    margin: 0;
+    opacity: .75;
+}
+
+
+/* Cards */
+
+.result-card,
+.feedback-card {
+    border-radius: 16px;
+    padding: 22px;
+    margin-bottom: 18px;
+
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.10);
+}
+
+
+.result-card-title,
+.feedback-card-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+
+
+/* Candidate Info */
+
+.result-info-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 16px;
+}
+
+
+.result-info-grid div,
+.result-stat,
+.marks-summary > div {
+    padding: 14px;
+
+    border-radius: 12px;
+
+    background: rgba(255,255,255,.035);
+}
+
+
+.result-info-grid span,
+.result-stat span,
+.marks-summary span {
+    display: block;
+
+    font-size: 12px;
+    opacity: .65;
+
+    margin-bottom: 6px;
+}
+
+
+.result-info-grid strong,
+.result-stat strong,
+.marks-summary strong {
+    display: block;
+
+    font-size: 17px;
+}
+
+
+/* Stats */
+
+.result-stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(5, minmax(0, 1fr));
+
+    gap: 12px;
+}
+
+
+/* Marks */
+
+.marks-summary {
+    display: grid;
+
+    grid-template-columns:
+        repeat(5, minmax(0, 1fr));
+
+    gap: 12px;
+}
+
+
+.marks-summary .final-score {
+    border: 1px solid rgba(0, 200, 120, .35);
+}
+
+
+.marks-summary .percentage-score {
+    border: 1px solid rgba(80, 150, 255, .35);
+}
+
+
+.final-score strong,
+.percentage-score strong {
+    font-size: 24px;
+}
+
+
+/* Question Review */
+
+.question-review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+
+.question-review-item {
+    padding: 16px;
+
+    border-radius: 12px;
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    background: rgba(255,255,255,.025);
+}
+
+
+.question-review-item.correct {
+    border-left: 4px solid #22c55e;
+}
+
+
+.question-review-item.wrong {
+    border-left: 4px solid #ef4444;
+}
+
+
+.question-review-item.unattempted {
+    border-left: 4px solid #9ca3af;
+}
+
+
+.review-question {
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+
+.review-row {
+    display: grid;
+
+    grid-template-columns:
+        160px 1fr;
+
+    gap: 10px;
+
+    font-size: 14px;
+
+    margin-top: 7px;
+}
+
+
+.review-label {
+    opacity: .6;
+}
+
+
+.review-status {
+    margin-top: 12px;
+
+    font-weight: 700;
+}
+
+
+/* Actions */
+
+.result-actions,
+.feedback-actions {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    margin-top: 20px;
+}
+
+
+.primary-btn,
+.secondary-btn {
+    min-height: 44px;
+
+    padding: 0 22px;
+
+    border-radius: 10px;
+
+    border: 0;
+
+    cursor: pointer;
+
+    font-weight: 700;
+}
+
+
+.secondary-btn {
+    background: rgba(255,255,255,.08);
+}
+
+
+/* Feedback */
+
+.feedback-stars {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    margin: 20px 0 10px;
+}
+
+
+.feedback-stars button {
+    border: 0;
+    background: transparent;
+
+    font-size: 36px;
+
+    opacity: .35;
+
+    cursor: pointer;
+
+    transition: .15s ease;
+}
+
+
+.feedback-stars button:hover,
+.feedback-stars button.active {
+    opacity: 1;
+
+    transform: scale(1.08);
+}
+
+
+.selected-rating-text {
+    text-align: center;
+
+    opacity: .65;
+
+    margin-bottom: 24px;
+}
+
+
+.feedback-card label {
+    display: block;
+
+    margin: 18px 0 8px;
+
+    font-weight: 600;
+}
+
+
+.feedback-card textarea {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    resize: vertical;
+
+    padding: 13px;
+
+    border-radius: 10px;
+
+    border: 1px solid rgba(255,255,255,.12);
+
+    background: rgba(255,255,255,.04);
+
+    color: inherit;
+
+    font: inherit;
+
+    outline: none;
+}
+
+
+.feedback-card textarea:focus {
+    border-color: rgba(255,255,255,.30);
+}
+
+
+/* Mobile */
+
+@media (max-width: 768px) {
+
+    .result-info-grid,
+    .result-stats,
+    .marks-summary {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .review-row {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .result-container,
+    .feedback-container {
+        width: min(100% - 20px, 1000px);
+    }
+
+    .result-card,
+    .feedback-card {
+        padding: 16px;
+    }
+
+    .result-info-grid,
+    .result-stats,
+    .marks-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .feedback-stars button {
+        font-size: 30px;
+    }
+
+    .result-actions,
+    .feedback-actions {
+        flex-direction: column;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+        width: 100%;
+    }
+
+}
