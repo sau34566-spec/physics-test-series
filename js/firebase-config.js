@@ -6,8 +6,9 @@ import {
   getFirestore
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
   authDomain: "physics-test-series-405c7.firebaseapp.com",
   projectId: "physics-test-series-405c7",
   storageBucket: "physics-test-series-405c7.firebasestorage.app",
