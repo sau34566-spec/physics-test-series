@@ -1,6 +1,6 @@
 // ============================================================
 // EXAMCONTROL ADMIN PORTAL
-// FULL FIREBASE + FIRESTORE ADMIN CONTROL
+// Firebase Auth + Firestore
 // ============================================================
 
 import {
@@ -28,123 +28,73 @@ import {
 // ============================================================
 
 const firebaseConfig = {
-
-    apiKey:
-        "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
-
-    authDomain:
-        "physics-test-series-405c7.firebaseapp.com",
-
-    projectId:
-        "physics-test-series-405c7",
-
-    storageBucket:
-        "physics-test-series-405c7.firebasestorage.app",
-
-    messagingSenderId:
-        "758620061190",
-
-    appId:
-        "1:758620061190:web:dbbc7759c95b5e7d8b8d87",
-
-    measurementId:
-        "G-Z5QVQMZ082"
-
+    apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
+    authDomain: "physics-test-series-405c7.firebaseapp.com",
+    projectId: "physics-test-series-405c7",
+    storageBucket: "physics-test-series-405c7.firebasestorage.app",
+    messagingSenderId: "758620061190",
+    appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87",
+    measurementId: "G-Z5QVQMZ082"
 };
 
 
 // ============================================================
-// FIREBASE INITIALIZATION
+// INITIALIZE FIREBASE
 // ============================================================
 
-const app =
-    initializeApp(firebaseConfig);
-
-const auth =
-    getAuth(app);
-
-const db =
-    getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 
 // ============================================================
-// DOM ELEMENTS
+// DOM
 // ============================================================
 
-const loginScreen =
-    document.getElementById(
-        "adminLoginScreen"
-    );
+const $ = (id) => document.getElementById(id);
 
-const dashboard =
-    document.getElementById(
-        "adminDashboard"
-    );
+const loginScreen = $("adminLoginScreen");
+const dashboard = $("adminDashboard");
 
-const loginForm =
-    document.getElementById(
-        "adminLoginForm"
-    );
+const loginForm = $("adminLoginForm");
+const loginBtn = $("adminLoginBtn");
+const loginMessage = $("adminLoginMessage");
 
-const loginBtn =
-    document.getElementById(
-        "adminLoginBtn"
-    );
+const logoutBtn = $("logoutBtn");
+const mobileMenuBtn = $("mobileMenuBtn");
+const sidebar = $("adminSidebar");
 
-const loginMessage =
-    document.getElementById(
-        "adminLoginMessage"
-    );
+const pageTitle = $("pageTitle");
+const adminName = $("adminName");
 
-const logoutBtn =
-    document.getElementById(
-        "logoutBtn"
-    );
+const navItems = document.querySelectorAll(".nav-item");
+const quickActions = document.querySelectorAll(".quick-action");
+const sections = document.querySelectorAll(".admin-section");
 
-const mobileMenuBtn =
-    document.getElementById(
-        "mobileMenuBtn"
-    );
+const adminModal = $("adminModal");
+const modalTitle = $("modalTitle");
+const modalMessage = $("modalMessage");
+const modalIcon = $("modalIcon");
+const modalCancelBtn = $("modalCancelBtn");
+const modalConfirmBtn = $("modalConfirmBtn");
 
-const sidebar =
-    document.getElementById(
-        "adminSidebar"
-    );
+const refreshBtn = $("refreshDashboard");
 
-const navItems =
-    document.querySelectorAll(
-        ".nav-item"
-    );
+const startExamBtn = $("startExamBtn");
+const pauseExamBtn = $("pauseExamBtn");
+const endExamBtn = $("endExamBtn");
 
-const quickActions =
-    document.querySelectorAll(
-        ".quick-action"
-    );
-
-const sections =
-    document.querySelectorAll(
-        ".admin-section"
-    );
-
-const pageTitle =
-    document.getElementById(
-        "pageTitle"
-    );
-
-const adminName =
-    document.getElementById(
-        "adminName"
-    );
+const examSettingsForm = $("examSettingsForm");
+const saveExamSettingsBtn = $("saveExamSettingsBtn");
+const resetExamSettingsBtn = $("resetExamSettingsBtn");
 
 
 // ============================================================
-// INITIAL STATE
+// STATE
 // ============================================================
 
 let currentAdmin = null;
-
 let currentExamSettings = null;
-
 let confirmationCallback = null;
 
 
@@ -152,132 +102,172 @@ let confirmationCallback = null;
 // LOGIN MESSAGE
 // ============================================================
 
-function showLoginMessage(
-    message,
-    type = "error"
-) {
+function showLoginMessage(message, type = "error") {
 
-    if (!loginMessage) {
-        return;
-    }
+    if (!loginMessage) return;
 
-
-    loginMessage.textContent =
-        message;
-
-    loginMessage.style.display =
-        "block";
-
+    loginMessage.textContent = message;
+    loginMessage.style.display = "block";
 
     if (type === "success") {
 
-        loginMessage.style.background =
-            "#ecfdf5";
-
-        loginMessage.style.color =
-            "#047857";
-
-        loginMessage.style.border =
-            "1px solid #a7f3d0";
+        loginMessage.style.background = "#ecfdf5";
+        loginMessage.style.color = "#047857";
+        loginMessage.style.border = "1px solid #a7f3d0";
 
     } else {
 
-        loginMessage.style.background =
-            "#fef2f2";
-
-        loginMessage.style.color =
-            "#b91c1c";
-
-        loginMessage.style.border =
-            "1px solid #fecaca";
-
+        loginMessage.style.background = "#fef2f2";
+        loginMessage.style.color = "#b91c1c";
+        loginMessage.style.border = "1px solid #fecaca";
     }
-
 }
 
-
-// ============================================================
-// HIDE LOGIN MESSAGE
-// ============================================================
 
 function hideLoginMessage() {
 
-    if (!loginMessage) {
-        return;
+    if (loginMessage) {
+        loginMessage.style.display = "none";
     }
-
-    loginMessage.style.display =
-        "none";
-
 }
 
 
 // ============================================================
-// SHOW LOGIN
+// LOGIN / DASHBOARD
 // ============================================================
 
 function showLogin() {
 
     if (dashboard) {
-
-        dashboard.classList.remove(
-            "active"
-        );
-
-        dashboard.style.display =
-            "none";
-
+        dashboard.style.display = "none";
+        dashboard.classList.remove("active");
     }
-
 
     if (loginScreen) {
-
-        loginScreen.style.display =
-            "flex";
-
-        loginScreen.classList.add(
-            "active"
-        );
-
+        loginScreen.style.display = "flex";
+        loginScreen.classList.add("active");
     }
-
 }
 
-
-// ============================================================
-// SHOW DASHBOARD
-// ============================================================
 
 function showDashboard() {
 
     if (loginScreen) {
-
-        loginScreen.style.display =
-            "none";
-
-        loginScreen.classList.remove(
-            "active"
-        );
-
+        loginScreen.style.display = "none";
+        loginScreen.classList.remove("active");
     }
-
 
     if (dashboard) {
-
-        dashboard.style.display =
-            "flex";
-
-        dashboard.classList.add(
-            "active"
-        );
-
+        dashboard.style.display = "flex";
+        dashboard.classList.add("active");
     }
-
 }
 
 
 // ============================================================
-// ADMIN LOGIN
+// FIREBASE AUTH ERROR
+// ============================================================
+
+function authError(error) {
+
+    switch (error?.code) {
+
+        case "auth/invalid-credential":
+            return "Incorrect admin email or password.";
+
+        case "auth/invalid-email":
+            return "Please enter a valid email address.";
+
+        case "auth/user-not-found":
+            return "Administrator account not found.";
+
+        case "auth/wrong-password":
+            return "Incorrect administrator password.";
+
+        case "auth/too-many-requests":
+            return "Too many attempts. Please try again later.";
+
+        case "auth/network-request-failed":
+            return "Network error. Check your internet connection.";
+
+        default:
+            return error?.message || "Unable to sign in.";
+    }
+}
+
+
+// ============================================================
+// VERIFY ADMIN
+// ============================================================
+
+async function verifyAdmin(user) {
+
+    if (!user) return false;
+
+    const email = (user.email || "").toLowerCase();
+
+    // --------------------------------------------------------
+    // METHOD 1
+    // admins/{uid}
+    // --------------------------------------------------------
+
+    const adminRef = doc(
+        db,
+        "admins",
+        user.uid
+    );
+
+    const adminSnapshot = await getDoc(adminRef);
+
+    if (adminSnapshot.exists()) {
+
+        const data = adminSnapshot.data();
+
+        if (data.active === false) {
+            return false;
+        }
+
+        if (
+            data.email &&
+            data.email.toLowerCase() !== email
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    // --------------------------------------------------------
+    // METHOD 2
+    // authorizedAdmins/{email}
+    // --------------------------------------------------------
+
+    if (!email) return false;
+
+    const authorizedRef = doc(
+        db,
+        "authorizedAdmins",
+        email
+    );
+
+    const authorizedSnapshot =
+        await getDoc(authorizedRef);
+
+    if (authorizedSnapshot.exists()) {
+
+        const data =
+            authorizedSnapshot.data();
+
+        return data.active !== false;
+    }
+
+    return false;
+}
+
+
+// ============================================================
+// LOGIN
 // ============================================================
 
 if (loginForm) {
@@ -288,55 +278,31 @@ if (loginForm) {
 
             event.preventDefault();
 
-
             const email =
-                document
-                    .getElementById(
-                        "adminEmail"
-                    )
-                    .value
-                    .trim()
+                $("adminEmail")?.value
+                    ?.trim()
                     .toLowerCase();
 
-
             const password =
-                document
-                    .getElementById(
-                        "adminPassword"
-                    )
-                    .value;
-
+                $("adminPassword")?.value || "";
 
             if (!email || !password) {
 
                 showLoginMessage(
-                    "Please enter your admin email and password."
+                    "Please enter your email and password."
                 );
 
                 return;
-
             }
-
 
             try {
 
                 hideLoginMessage();
 
-
                 if (loginBtn) {
-
-                    loginBtn.disabled =
-                        true;
-
-                    loginBtn.textContent =
-                        "Signing in...";
-
+                    loginBtn.disabled = true;
+                    loginBtn.textContent = "Signing in...";
                 }
-
-
-                // ----------------------------------------
-                // FIREBASE AUTH
-                // ----------------------------------------
 
                 const credential =
                     await signInWithEmailAndPassword(
@@ -345,58 +311,37 @@ if (loginForm) {
                         password
                     );
 
-
-                currentAdmin =
-                    credential.user;
-
-
-                // ----------------------------------------
-                // ADMIN AUTHORIZATION
-                // ----------------------------------------
-
                 const authorized =
                     await verifyAdmin(
-                        currentAdmin
+                        credential.user
                     );
-
 
                 if (!authorized) {
 
                     await signOut(auth);
 
-                    currentAdmin =
-                        null;
-
+                    currentAdmin = null;
 
                     showLoginMessage(
                         "This account is not authorized to access the Admin Panel."
                     );
 
                     return;
-
                 }
 
-
-                // ----------------------------------------
-                // SUCCESS
-                // ----------------------------------------
+                currentAdmin =
+                    credential.user;
 
                 if (adminName) {
-
                     adminName.textContent =
                         currentAdmin.email ||
                         "Administrator";
-
                 }
-
 
                 showDashboard();
 
-
                 await loadExamSettings();
-
                 await loadDashboardData();
-
 
             } catch (error) {
 
@@ -405,570 +350,20 @@ if (loginForm) {
                     error
                 );
 
-
                 showLoginMessage(
-                    firebaseAuthErrorMessage(
-                        error
-                    )
+                    authError(error)
                 );
-
 
             } finally {
 
                 if (loginBtn) {
-
-                    loginBtn.disabled =
-                        false;
-
+                    loginBtn.disabled = false;
                     loginBtn.textContent =
                         "Sign In to Dashboard";
-
                 }
-
             }
-
         }
     );
-
-}
-
-
-// ============================================================
-// FIREBASE ERROR MESSAGE
-// ============================================================
-
-function firebaseAuthErrorMessage(
-    error
-) {
-
-    switch (error.code) {
-
-        case "auth/invalid-credential":
-            return "Incorrect admin email or password.";
-
-        case "auth/invalid-email":
-            return "Please enter a valid admin email address.";
-
-        case "auth/user-not-found":
-            return "No administrator account was found.";
-
-        case "auth/wrong-password":
-            return "Incorrect administrator password.";
-
-        case "auth/too-many-requests":
-            return "Too many login attempts. Please try again later.";
-
-        case "permission-denied":
-            return "Firebase permission denied. Please check Firestore Security Rules.";
-
-        default:
-
-            if (
-                error.message &&
-                error.message
-                    .toLowerCase()
-                    .includes("permission")
-            ) {
-
-                return "Firebase permission denied. Please check Firestore Security Rules.";
-
-            }
-
-            return (
-                error.message ||
-                "Unable to sign in. Please try again."
-            );
-
-    }
-
-}
-
-
-// ============================================================
-// VERIFY ADMIN
-// ============================================================
-
-async function verifyAdmin(
-    user
-) {
-
-    if (!user) {
-        return false;
-    }
-
-
-    try {
-
-        // ====================================================
-        // METHOD 1
-        // admins/{uid}
-        // ====================================================
-
-        const adminRef =
-            doc(
-                db,
-                "admins",
-                user.uid
-            );
-
-
-        const adminSnapshot =
-            await getDoc(
-                adminRef
-            );
-
-
-        if (
-            adminSnapshot.exists()
-        ) {
-
-            const adminData =
-                adminSnapshot.data();
-
-
-            if (
-                adminData.active === false
-            ) {
-
-                return false;
-
-            }
-
-
-            if (
-                adminData.email &&
-                adminData.email
-                    .toLowerCase() !==
-                user.email
-                    .toLowerCase()
-            ) {
-
-                return false;
-
-            }
-
-
-            return true;
-
-        }
-
-
-        // ====================================================
-        // METHOD 2
-        // authorizedAdmins/{email}
-        // ====================================================
-
-        const emailId =
-            user.email
-                .toLowerCase();
-
-
-        const authorizedRef =
-            doc(
-                db,
-                "authorizedAdmins",
-                emailId
-            );
-
-
-        const authorizedSnapshot =
-            await getDoc(
-                authorizedRef
-            );
-
-
-        if (
-            authorizedSnapshot.exists()
-        ) {
-
-            const data =
-                authorizedSnapshot.data();
-
-
-            if (
-                data.active === false
-            ) {
-
-                return false;
-
-            }
-
-
-            return true;
-
-        }
-
-
-        return false;
-
-
-    } catch (error) {
-
-        console.error(
-            "Admin authorization error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-}
-
-
-// ============================================================
-// NAVIGATION
-// ============================================================
-
-function openSection(
-    sectionName
-) {
-
-    sections.forEach(
-        (section) => {
-
-            section.classList.remove(
-                "active"
-            );
-
-        }
-    );
-
-
-    navItems.forEach(
-        (item) => {
-
-            item.classList.remove(
-                "active"
-            );
-
-        }
-    );
-
-
-    const targetSection =
-        document.getElementById(
-            `${sectionName}Section`
-        );
-
-
-    const targetNav =
-        document.querySelector(
-            `[data-section="${sectionName}"]`
-        );
-
-
-    if (targetSection) {
-
-        targetSection.classList.add(
-            "active"
-        );
-
-    }
-
-
-    if (targetNav) {
-
-        targetNav.classList.add(
-            "active"
-        );
-
-    }
-
-
-    const titles = {
-
-        dashboard:
-            "Dashboard",
-
-        examSettings:
-            "Exam Settings",
-
-        questions:
-            "Question Bank",
-
-        candidates:
-            "Candidates",
-
-        monitoring:
-            "Live Monitoring",
-
-        violations:
-            "Security Violations",
-
-        results:
-            "Candidate Results",
-
-        feedback:
-            "Candidate Feedback",
-
-        analytics:
-            "Performance Analytics",
-
-        admins:
-            "Authorized Administrators",
-
-        activity:
-            "Activity Logs"
-
-    };
-
-
-    if (pageTitle) {
-
-        pageTitle.textContent =
-            titles[sectionName] ||
-            "Dashboard";
-
-    }
-
-
-    if (sidebar) {
-
-        sidebar.classList.remove(
-            "mobile-open"
-        );
-
-    }
-
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
-
-
-    // Load settings whenever Exam Settings opens.
-
-    if (
-        sectionName ===
-        "examSettings"
-    ) {
-
-        loadExamSettings();
-
-    }
-
-}
-
-
-// ============================================================
-// SIDEBAR EVENTS
-// ============================================================
-
-navItems.forEach(
-    (item) => {
-
-        item.addEventListener(
-            "click",
-            () => {
-
-                openSection(
-                    item.dataset.section
-                );
-
-            }
-        );
-
-    }
-);
-
-
-// ============================================================
-// QUICK ACTION EVENTS
-// ============================================================
-
-quickActions.forEach(
-    (item) => {
-
-        item.addEventListener(
-            "click",
-            () => {
-
-                openSection(
-                    item.dataset.section
-                );
-
-            }
-        );
-
-    }
-);
-
-
-// ============================================================
-// MOBILE MENU
-// ============================================================
-
-if (mobileMenuBtn) {
-
-    mobileMenuBtn.addEventListener(
-        "click",
-        () => {
-
-            if (sidebar) {
-
-                sidebar.classList.toggle(
-                    "mobile-open"
-                );
-
-            }
-
-        }
-    );
-
-}
-
-
-// ============================================================
-// CONFIRMATION MODAL
-// ============================================================
-
-const adminModal =
-    document.getElementById(
-        "adminModal"
-    );
-
-const modalCancelBtn =
-    document.getElementById(
-        "modalCancelBtn"
-    );
-
-const modalConfirmBtn =
-    document.getElementById(
-        "modalConfirmBtn"
-    );
-
-const modalTitle =
-    document.getElementById(
-        "modalTitle"
-    );
-
-const modalMessage =
-    document.getElementById(
-        "modalMessage"
-    );
-
-const modalIcon =
-    document.getElementById(
-        "modalIcon"
-    );
-
-
-function showConfirmation(
-    title,
-    message,
-    icon,
-    callback
-) {
-
-    if (!adminModal) {
-        return;
-    }
-
-
-    if (modalTitle) {
-
-        modalTitle.textContent =
-            title;
-
-    }
-
-
-    if (modalMessage) {
-
-        modalMessage.textContent =
-            message;
-
-    }
-
-
-    if (modalIcon) {
-
-        modalIcon.textContent =
-            icon;
-
-    }
-
-
-    confirmationCallback =
-        callback;
-
-
-    adminModal.classList.add(
-        "show"
-    );
-
-}
-
-
-function closeConfirmation() {
-
-    if (adminModal) {
-
-        adminModal.classList.remove(
-            "show"
-        );
-
-    }
-
-    confirmationCallback =
-        null;
-
-}
-
-
-if (modalCancelBtn) {
-
-    modalCancelBtn.addEventListener(
-        "click",
-        closeConfirmation
-    );
-
-}
-
-
-if (modalConfirmBtn) {
-
-    modalConfirmBtn.addEventListener(
-        "click",
-        async () => {
-
-            if (
-                typeof confirmationCallback ===
-                "function"
-            ) {
-
-                await confirmationCallback();
-
-            }
-
-            closeConfirmation();
-
-        }
-    );
-
-}
-
-
-if (adminModal) {
-
-    adminModal.addEventListener(
-        "click",
-        (event) => {
-
-            if (
-                event.target ===
-                adminModal
-            ) {
-
-                closeConfirmation();
-
-            }
-
-        }
-    );
-
 }
 
 
@@ -984,71 +379,324 @@ if (logoutBtn) {
 
             showConfirmation(
                 "Sign Out",
-                "Are you sure you want to sign out of the administrator dashboard?",
+                "Are you sure you want to sign out?",
                 "🚪",
                 async () => {
 
-                    try {
+                    await signOut(auth);
 
-                        await signOut(
-                            auth
-                        );
+                    currentAdmin = null;
+                    currentExamSettings = null;
 
-
-                        currentAdmin =
-                            null;
-
-
-                        if (loginForm) {
-
-                            loginForm.reset();
-
-                        }
-
-
-                        showLogin();
-
-                    } catch (error) {
-
-                        console.error(
-                            "Logout error:",
-                            error
-                        );
-
+                    if (loginForm) {
+                        loginForm.reset();
                     }
 
+                    showLogin();
                 }
             );
-
         }
     );
-
 }
 
 
 // ============================================================
-// EXAM CONTROL BUTTONS
+// NAVIGATION
 // ============================================================
 
-const startExamBtn =
-    document.getElementById(
-        "startExamBtn"
+function openSection(sectionName) {
+
+    sections.forEach(
+        section =>
+            section.classList.remove("active")
     );
 
-const pauseExamBtn =
-    document.getElementById(
-        "pauseExamBtn"
+    navItems.forEach(
+        item =>
+            item.classList.remove("active")
     );
 
-const endExamBtn =
-    document.getElementById(
-        "endExamBtn"
+    const section =
+        $(`${sectionName}Section`);
+
+    const nav =
+        document.querySelector(
+            `[data-section="${sectionName}"]`
+        );
+
+    if (section) {
+        section.classList.add("active");
+    }
+
+    if (nav) {
+        nav.classList.add("active");
+    }
+
+    const titles = {
+
+        dashboard: "Dashboard",
+        examSettings: "Exam Settings",
+        questions: "Question Bank",
+        candidates: "Candidates",
+        monitoring: "Live Monitoring",
+        violations: "Security Violations",
+        results: "Candidate Results",
+        feedback: "Candidate Feedback",
+        analytics: "Performance Analytics",
+        admins: "Authorized Administrators",
+        activity: "Activity Logs"
+    };
+
+    if (pageTitle) {
+        pageTitle.textContent =
+            titles[sectionName] || "Dashboard";
+    }
+
+    if (sidebar) {
+        sidebar.classList.remove("mobile-open");
+    }
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+    if (sectionName === "examSettings") {
+        loadExamSettings();
+    }
+}
+
+
+navItems.forEach(item => {
+
+    item.addEventListener(
+        "click",
+        () => {
+            openSection(
+                item.dataset.section
+            );
+        }
     );
+
+});
+
+
+quickActions.forEach(item => {
+
+    item.addEventListener(
+        "click",
+        () => {
+            openSection(
+                item.dataset.section
+            );
+        }
+    );
+
+});
+
+
+if (mobileMenuBtn) {
+
+    mobileMenuBtn.addEventListener(
+        "click",
+        () => {
+
+            if (sidebar) {
+                sidebar.classList.toggle(
+                    "mobile-open"
+                );
+            }
+        }
+    );
+}
 
 
 // ============================================================
-// START EXAM
+// CONFIRMATION MODAL
 // ============================================================
+
+function showConfirmation(
+    title,
+    message,
+    icon,
+    callback
+) {
+
+    if (!adminModal) return;
+
+    if (modalTitle)
+        modalTitle.textContent = title;
+
+    if (modalMessage)
+        modalMessage.textContent = message;
+
+    if (modalIcon)
+        modalIcon.textContent = icon;
+
+    confirmationCallback = callback;
+
+    adminModal.classList.add("show");
+}
+
+
+function closeConfirmation() {
+
+    if (adminModal) {
+        adminModal.classList.remove("show");
+    }
+
+    confirmationCallback = null;
+}
+
+
+if (modalCancelBtn) {
+
+    modalCancelBtn.addEventListener(
+        "click",
+        closeConfirmation
+    );
+}
+
+
+if (modalConfirmBtn) {
+
+    modalConfirmBtn.addEventListener(
+        "click",
+        async () => {
+
+            const callback =
+                confirmationCallback;
+
+            closeConfirmation();
+
+            if (typeof callback === "function") {
+
+                try {
+                    await callback();
+                } catch (error) {
+                    console.error(
+                        "Confirmation action error:",
+                        error
+                    );
+                }
+            }
+        }
+    );
+}
+
+
+if (adminModal) {
+
+    adminModal.addEventListener(
+        "click",
+        event => {
+
+            if (event.target === adminModal) {
+                closeConfirmation();
+            }
+        }
+    );
+}
+
+
+// ============================================================
+// EXAM STATUS
+// ============================================================
+
+function updateExamStatusUI(status) {
+
+    const map = {
+
+        draft: {
+            label: "DRAFT",
+            text: "System Ready"
+        },
+
+        scheduled: {
+            label: "SCHEDULED",
+            text: "Exam Scheduled"
+        },
+
+        live: {
+            label: "LIVE",
+            text: "Exam Live"
+        },
+
+        paused: {
+            label: "PAUSED",
+            text: "Exam Paused"
+        },
+
+        ended: {
+            label: "ENDED",
+            text: "Exam Ended"
+        }
+    };
+
+    const selected =
+        map[status] || map.draft;
+
+    setText(
+        "largeExamStatus",
+        selected.label
+    );
+
+    setText(
+        "examStatus",
+        selected.text
+    );
+}
+
+
+async function changeExamStatus(status) {
+
+    if (!currentAdmin) {
+        alert("Please login first.");
+        return;
+    }
+
+    try {
+
+        const ref = doc(
+            db,
+            "examSettings",
+            "current"
+        );
+
+        await setDoc(
+            ref,
+            {
+                examStatus: status,
+                updatedAt: serverTimestamp(),
+                updatedBy: currentAdmin.uid
+            },
+            {
+                merge: true
+            }
+        );
+
+        if (!currentExamSettings) {
+            currentExamSettings = {};
+        }
+
+        currentExamSettings.examStatus =
+            status;
+
+        updateExamStatusUI(status);
+
+    } catch (error) {
+
+        console.error(
+            "Exam status error:",
+            error
+        );
+
+        alert(
+            "Unable to update exam status. Check Firestore Security Rules."
+        );
+    }
+}
+
 
 if (startExamBtn) {
 
@@ -1060,24 +708,12 @@ if (startExamBtn) {
                 "Start Examination",
                 "Are you sure you want to start the examination?",
                 "▶️",
-                async () => {
-
-                    await changeExamStatus(
-                        "live"
-                    );
-
-                }
+                () => changeExamStatus("live")
             );
-
         }
     );
-
 }
 
-
-// ============================================================
-// PAUSE EXAM
-// ============================================================
 
 if (pauseExamBtn) {
 
@@ -1089,24 +725,12 @@ if (pauseExamBtn) {
                 "Pause Examination",
                 "Are you sure you want to pause the examination?",
                 "⏸️",
-                async () => {
-
-                    await changeExamStatus(
-                        "paused"
-                    );
-
-                }
+                () => changeExamStatus("paused")
             );
-
         }
     );
-
 }
 
-
-// ============================================================
-// END EXAM
-// ============================================================
 
 if (endExamBtn) {
 
@@ -1116,404 +740,12 @@ if (endExamBtn) {
 
             showConfirmation(
                 "End Examination",
-                "Ending the examination may affect all active candidates. Continue?",
+                "Ending the examination may affect active candidates. Continue?",
                 "⚠️",
-                async () => {
-
-                    await changeExamStatus(
-                        "ended"
-                    );
-
-                }
+                () => changeExamStatus("ended")
             );
-
         }
     );
-
-}
-
-
-// ============================================================
-// CHANGE EXAM STATUS
-// ============================================================
-
-async function changeExamStatus(
-    status
-) {
-
-    try {
-
-        const settingsRef =
-            doc(
-                db,
-                "examSettings",
-                "current"
-            );
-
-
-        await setDoc(
-            settingsRef,
-            {
-
-                examStatus:
-                    status,
-
-                updatedAt:
-                    serverTimestamp()
-
-            },
-            {
-                merge: true
-            }
-        );
-
-
-        updateExamStatusUI(
-            status
-        );
-
-
-        if (
-            currentExamSettings
-        ) {
-
-            currentExamSettings.examStatus =
-                status;
-
-        }
-
-
-    } catch (error) {
-
-        console.error(
-            "Exam status error:",
-            error
-        );
-
-
-        alert(
-            "Unable to update exam status. Please check Firestore permissions."
-        );
-
-    }
-
-}
-
-
-// ============================================================
-// UPDATE EXAM STATUS UI
-// ============================================================
-
-function updateExamStatusUI(
-    status
-) {
-
-    const largeStatus =
-        document.getElementById(
-            "largeExamStatus"
-        );
-
-    const examStatus =
-        document.getElementById(
-            "examStatus"
-        );
-
-    const statusDot =
-        document.getElementById(
-            "statusDot"
-        );
-
-
-    const statusMap = {
-
-        draft: {
-            label: "DRAFT",
-            text: "System Ready",
-            color: "#64748b"
-        },
-
-        scheduled: {
-            label: "SCHEDULED",
-            text: "Exam Scheduled",
-            color: "#3b82f6"
-        },
-
-        live: {
-            label: "LIVE",
-            text: "Exam Live",
-            color: "#22c55e"
-        },
-
-        paused: {
-            label: "PAUSED",
-            text: "Exam Paused",
-            color: "#f59e0b"
-        },
-
-        ended: {
-            label: "ENDED",
-            text: "Exam Ended",
-            color: "#ef4444"
-        }
-
-    };
-
-
-    const selected =
-        statusMap[status] ||
-        statusMap.draft;
-
-
-    if (largeStatus) {
-
-        largeStatus.textContent =
-            selected.label;
-
-    }
-
-
-    if (examStatus) {
-
-        examStatus.textContent =
-            selected.text;
-
-    }
-
-
-    if (statusDot) {
-
-        statusDot.style.background =
-            selected.color;
-
-    }
-
-}
-
-
-// ============================================================
-// REFRESH DASHBOARD
-// ============================================================
-
-const refreshBtn =
-    document.getElementById(
-        "refreshDashboard"
-    );
-
-
-if (refreshBtn) {
-
-    refreshBtn.addEventListener(
-        "click",
-        async () => {
-
-            const originalText =
-                "↻ Refresh";
-
-
-            refreshBtn.disabled =
-                true;
-
-            refreshBtn.textContent =
-                "Updating...";
-
-
-            try {
-
-                await loadExamSettings();
-
-                await loadDashboardData();
-
-
-                refreshBtn.textContent =
-                    "✓ Updated";
-
-
-            } catch (error) {
-
-                console.error(
-                    "Refresh error:",
-                    error
-                );
-
-
-                refreshBtn.textContent =
-                    "⚠ Error";
-
-            }
-
-
-            setTimeout(
-                () => {
-
-                    refreshBtn.disabled =
-                        false;
-
-                    refreshBtn.textContent =
-                        originalText;
-
-                },
-                1200
-            );
-
-        }
-    );
-
-}
-
-
-// ============================================================
-// EXAM SETTINGS FORM
-// ============================================================
-
-const examSettingsForm =
-    document.getElementById(
-        "examSettingsForm"
-    );
-
-const saveExamSettingsBtn =
-    document.getElementById(
-        "saveExamSettingsBtn"
-    );
-
-const resetExamSettingsBtn =
-    document.getElementById(
-        "resetExamSettingsBtn"
-    );
-
-
-// ============================================================
-// READ EXAM SETTINGS FORM
-// ============================================================
-
-function readExamSettingsForm() {
-
-    return {
-
-        examTitle:
-            valueOf(
-                "examTitle"
-            ) ||
-            "Online Examination",
-
-
-        totalQuestions:
-            numberOf(
-                "totalQuestionsSetting",
-                100
-            ),
-
-
-        questionsToDisplay:
-            numberOf(
-                "questionsToDisplay",
-                80
-            ),
-
-
-        durationMinutes:
-            numberOf(
-                "durationMinutes",
-                60
-            ),
-
-
-        marksPerQuestion:
-            numberOf(
-                "marksPerQuestion",
-                4
-            ),
-
-
-        negativeMarks:
-            numberOf(
-                "negativeMarks",
-                1
-            ),
-
-
-        examStartTime:
-            valueOf(
-                "examStartTime"
-            ),
-
-
-        examEndTime:
-            valueOf(
-                "examEndTime"
-            ),
-
-
-        examStatus:
-            valueOf(
-                "examStatusSetting"
-            ) ||
-            "draft",
-
-
-        questionSource:
-            valueOf(
-                "questionSource"
-            ) ||
-            "chapterq.json",
-
-
-        randomQuestions:
-            checkedOf(
-                "randomQuestions"
-            ),
-
-
-        randomOptions:
-            checkedOf(
-                "randomOptions"
-            ),
-
-
-        tabSwitchPenalty:
-            numberOf(
-                "tabSwitchPenalty",
-                1
-            ),
-
-
-        maxTabSwitches:
-            numberOf(
-                "maxTabSwitches",
-                2
-            ),
-
-
-        disableCopy:
-            checkedOf(
-                "disableCopy"
-            ),
-
-
-        disablePaste:
-            checkedOf(
-                "disablePaste"
-            ),
-
-
-        disableScreenshot:
-            checkedOf(
-                "disableScreenshot"
-            ),
-
-
-        disableRefresh:
-            checkedOf(
-                "disableRefresh"
-            ),
-
-
-        disableFunctionKeys:
-            checkedOf(
-                "disableFunctionKeys"
-            )
-
-    };
-
 }
 
 
@@ -1521,207 +753,406 @@ function readExamSettingsForm() {
 // FORM HELPERS
 // ============================================================
 
-function valueOf(id) {
+function valueOf(id, fallback = "") {
 
-    const element =
-        document.getElementById(id);
+    const element = $(id);
 
-    return element
-        ? element.value.trim()
-        : "";
+    if (!element) return fallback;
 
+    return element.value.trim();
 }
 
 
-function numberOf(
-    id,
-    fallback
-) {
+function numberOf(id, fallback) {
 
-    const element =
-        document.getElementById(id);
+    const element = $(id);
 
-    if (!element) {
-        return fallback;
-    }
+    if (!element) return fallback;
 
-
-    const number =
+    const value =
         Number(element.value);
 
-
-    return Number.isFinite(number)
-        ? number
+    return Number.isFinite(value)
+        ? value
         : fallback;
-
 }
 
 
-function checkedOf(id) {
+function checkedOf(id, fallback = false) {
 
-    const element =
-        document.getElementById(id);
+    const element = $(id);
 
     return element
-        ? element.checked
-        : false;
+        ? Boolean(element.checked)
+        : fallback;
+}
 
+
+function setValue(id, value) {
+
+    const element = $(id);
+
+    if (element) {
+        element.value = value;
+    }
+}
+
+
+function setChecked(id, value) {
+
+    const element = $(id);
+
+    if (element) {
+        element.checked = Boolean(value);
+    }
+}
+
+
+function setText(id, value) {
+
+    const element = $(id);
+
+    if (element) {
+        element.textContent = value;
+    }
 }
 
 
 // ============================================================
-// SAVE EXAM SETTINGS
+// EXAM SETTINGS
 // ============================================================
+
+function readExamSettings() {
+
+    return {
+
+        examTitle:
+            valueOf(
+                "examTitle",
+                "Online Examination"
+            ),
+
+        totalQuestions:
+            numberOf(
+                "totalQuestionsSetting",
+                100
+            ),
+
+        questionsToDisplay:
+            numberOf(
+                "questionsToDisplay",
+                80
+            ),
+
+        durationMinutes:
+            numberOf(
+                "durationMinutes",
+                60
+            ),
+
+        marksPerQuestion:
+            numberOf(
+                "marksPerQuestion",
+                4
+            ),
+
+        negativeMarks:
+            numberOf(
+                "negativeMarks",
+                1
+            ),
+
+        examStartTime:
+            valueOf("examStartTime"),
+
+        examEndTime:
+            valueOf("examEndTime"),
+
+        examStatus:
+            valueOf(
+                "examStatusSetting",
+                "draft"
+            ),
+
+        questionSource:
+            valueOf(
+                "questionSource",
+                "chapterq.json"
+            ),
+
+        randomQuestions:
+            checkedOf(
+                "randomQuestions",
+                true
+            ),
+
+        randomOptions:
+            checkedOf(
+                "randomOptions",
+                true
+            ),
+
+        tabSwitchPenalty:
+            numberOf(
+                "tabSwitchPenalty",
+                1
+            ),
+
+        maxTabSwitches:
+            numberOf(
+                "maxTabSwitches",
+                2
+            ),
+
+        disableCopy:
+            checkedOf(
+                "disableCopy",
+                true
+            ),
+
+        disablePaste:
+            checkedOf(
+                "disablePaste",
+                true
+            ),
+
+        disableScreenshot:
+            checkedOf(
+                "disableScreenshot",
+                true
+            ),
+
+        disableRefresh:
+            checkedOf(
+                "disableRefresh",
+                true
+            ),
+
+        disableFunctionKeys:
+            checkedOf(
+                "disableFunctionKeys",
+                true
+            )
+    };
+}
+
+
+function applyExamSettings(settings) {
+
+    setValue(
+        "examTitle",
+        settings.examTitle ||
+        "Online Examination"
+    );
+
+    setValue(
+        "totalQuestionsSetting",
+        settings.totalQuestions ?? 100
+    );
+
+    setValue(
+        "questionsToDisplay",
+        settings.questionsToDisplay ?? 80
+    );
+
+    setValue(
+        "durationMinutes",
+        settings.durationMinutes ?? 60
+    );
+
+    setValue(
+        "marksPerQuestion",
+        settings.marksPerQuestion ?? 4
+    );
+
+    setValue(
+        "negativeMarks",
+        settings.negativeMarks ?? 1
+    );
+
+    setValue(
+        "examStartTime",
+        settings.examStartTime || ""
+    );
+
+    setValue(
+        "examEndTime",
+        settings.examEndTime || ""
+    );
+
+    setValue(
+        "examStatusSetting",
+        settings.examStatus || "draft"
+    );
+
+    setValue(
+        "questionSource",
+        settings.questionSource ||
+        "chapterq.json"
+    );
+
+    setChecked(
+        "randomQuestions",
+        settings.randomQuestions !== false
+    );
+
+    setChecked(
+        "randomOptions",
+        settings.randomOptions !== false
+    );
+
+    setValue(
+        "tabSwitchPenalty",
+        settings.tabSwitchPenalty ?? 1
+    );
+
+    setValue(
+        "maxTabSwitches",
+        settings.maxTabSwitches ?? 2
+    );
+
+    setChecked(
+        "disableCopy",
+        settings.disableCopy !== false
+    );
+
+    setChecked(
+        "disablePaste",
+        settings.disablePaste !== false
+    );
+
+    setChecked(
+        "disableScreenshot",
+        settings.disableScreenshot !== false
+    );
+
+    setChecked(
+        "disableRefresh",
+        settings.disableRefresh !== false
+    );
+
+    setChecked(
+        "disableFunctionKeys",
+        settings.disableFunctionKeys !== false
+    );
+}
+
+
+async function loadExamSettings() {
+
+    try {
+
+        const ref = doc(
+            db,
+            "examSettings",
+            "current"
+        );
+
+        const snapshot =
+            await getDoc(ref);
+
+        if (!snapshot.exists()) {
+
+            currentExamSettings =
+                readExamSettings();
+
+            updateDashboard(
+                currentExamSettings
+            );
+
+            return;
+        }
+
+        currentExamSettings =
+            snapshot.data();
+
+        applyExamSettings(
+            currentExamSettings
+        );
+
+        updateDashboard(
+            currentExamSettings
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Load settings error:",
+            error
+        );
+
+        showSettingsMessage(
+            "Unable to load settings: " +
+            error.message,
+            "error"
+        );
+    }
+}
+
 
 if (examSettingsForm) {
 
     examSettingsForm.addEventListener(
         "submit",
-        async (event) => {
+        async event => {
 
             event.preventDefault();
 
-
             const settings =
-                readExamSettingsForm();
+                readExamSettings();
 
-
-            // ----------------------------------------
-            // VALIDATION
-            // ----------------------------------------
-
-            if (
-                settings.totalQuestions <
-                1
-            ) {
-
+            if (settings.totalQuestions < 1) {
                 showSettingsMessage(
-                    "Total question pool must be at least 1.",
+                    "Total questions must be at least 1.",
                     "error"
                 );
-
                 return;
-
             }
 
-
             if (
-                settings.questionsToDisplay <
-                1
-            ) {
-
-                showSettingsMessage(
-                    "Questions displayed must be at least 1.",
-                    "error"
-                );
-
-                return;
-
-            }
-
-
-            if (
+                settings.questionsToDisplay < 1 ||
                 settings.questionsToDisplay >
                 settings.totalQuestions
             ) {
-
                 showSettingsMessage(
-                    "Questions displayed cannot be greater than the total question pool.",
+                    "Displayed questions must be between 1 and total questions.",
                     "error"
                 );
-
                 return;
-
             }
 
-
-            if (
-                settings.durationMinutes <
-                1
-            ) {
-
+            if (settings.durationMinutes < 1) {
                 showSettingsMessage(
-                    "Test duration must be at least 1 minute.",
+                    "Duration must be at least 1 minute.",
                     "error"
                 );
-
                 return;
-
             }
 
-
-            if (
-                settings.marksPerQuestion <
-                0
-            ) {
-
-                showSettingsMessage(
-                    "Marks per question cannot be negative.",
-                    "error"
-                );
-
-                return;
-
-            }
-
-
-            if (
-                settings.negativeMarks <
-                0
-            ) {
-
-                showSettingsMessage(
-                    "Negative marks cannot be negative.",
-                    "error"
-                );
-
-                return;
-
-            }
-
-
-            if (
-                settings.maxTabSwitches <
-                1
-            ) {
-
+            if (settings.maxTabSwitches < 1) {
                 showSettingsMessage(
                     "Maximum tab switches must be at least 1.",
                     "error"
                 );
-
                 return;
-
             }
-
 
             try {
 
                 if (saveExamSettingsBtn) {
-
-                    saveExamSettingsBtn.disabled =
-                        true;
-
+                    saveExamSettingsBtn.disabled = true;
                     saveExamSettingsBtn.textContent =
                         "Saving...";
-
                 }
 
-
-                const settingsRef =
+                await setDoc(
                     doc(
                         db,
                         "examSettings",
                         "current"
-                    );
-
-
-                await setDoc(
-                    settingsRef,
+                    ),
                     {
-
                         ...settings,
-
                         updatedAt:
                             serverTimestamp(),
 
@@ -1734,33 +1165,21 @@ if (examSettingsForm) {
                             currentAdmin
                                 ? currentAdmin.email
                                 : null
-
                     },
                     {
                         merge: true
                     }
                 );
 
-
                 currentExamSettings =
                     settings;
 
-
-                updateDashboardFromSettings(
-                    settings
-                );
-
-
-                updateExamStatusUI(
-                    settings.examStatus
-                );
-
+                updateDashboard(settings);
 
                 showSettingsMessage(
-                    "✓ Examination settings saved successfully.",
+                    "✓ Settings saved successfully.",
                     "success"
                 );
-
 
             } catch (error) {
 
@@ -1769,377 +1188,24 @@ if (examSettingsForm) {
                     error
                 );
 
-
-                if (
-                    error.code ===
-                    "permission-denied"
-                ) {
-
-                    showSettingsMessage(
-                        "Firebase permission denied. Check Firestore Security Rules.",
-                        "error"
-                    );
-
-                } else {
-
-                    showSettingsMessage(
-                        error.message ||
-                        "Unable to save settings.",
-                        "error"
-                    );
-
-                }
+                showSettingsMessage(
+                    "Unable to save settings: " +
+                    error.message,
+                    "error"
+                );
 
             } finally {
 
                 if (saveExamSettingsBtn) {
-
-                    saveExamSettingsBtn.disabled =
-                        false;
-
+                    saveExamSettingsBtn.disabled = false;
                     saveExamSettingsBtn.textContent =
                         "💾 Save Settings";
-
                 }
-
             }
-
         }
     );
-
 }
 
-
-// ============================================================
-// LOAD EXAM SETTINGS
-// ============================================================
-
-async function loadExamSettings() {
-
-    try {
-
-        const settingsRef =
-            doc(
-                db,
-                "examSettings",
-                "current"
-            );
-
-
-        const snapshot =
-            await getDoc(
-                settingsRef
-            );
-
-
-        if (
-            !snapshot.exists()
-        ) {
-
-            // Use current HTML defaults.
-
-            currentExamSettings =
-                readExamSettingsForm();
-
-
-            updateDashboardFromSettings(
-                currentExamSettings
-            );
-
-
-            updateExamStatusUI(
-                currentExamSettings.examStatus
-            );
-
-
-            return;
-
-        }
-
-
-        const settings =
-            snapshot.data();
-
-
-        currentExamSettings =
-            settings;
-
-
-        // ----------------------------------------
-        // BASIC
-        // ----------------------------------------
-
-        setValue(
-            "examTitle",
-            settings.examTitle ||
-            "Online Examination"
-        );
-
-
-        setValue(
-            "totalQuestionsSetting",
-            settings.totalQuestions ??
-            100
-        );
-
-
-        setValue(
-            "questionsToDisplay",
-            settings.questionsToDisplay ??
-            80
-        );
-
-
-        setValue(
-            "durationMinutes",
-            settings.durationMinutes ??
-            60
-        );
-
-
-        setValue(
-            "marksPerQuestion",
-            settings.marksPerQuestion ??
-            4
-        );
-
-
-        setValue(
-            "negativeMarks",
-            settings.negativeMarks ??
-            1
-        );
-
-
-        // ----------------------------------------
-        // SCHEDULE
-        // ----------------------------------------
-
-        setValue(
-            "examStartTime",
-            settings.examStartTime ||
-            ""
-        );
-
-
-        setValue(
-            "examEndTime",
-            settings.examEndTime ||
-            ""
-        );
-
-
-        setValue(
-            "examStatusSetting",
-            settings.examStatus ||
-            "draft"
-        );
-
-
-        setValue(
-            "questionSource",
-            settings.questionSource ||
-            "chapterq.json"
-        );
-
-
-        // ----------------------------------------
-        // RANDOMIZATION
-        // ----------------------------------------
-
-        setChecked(
-            "randomQuestions",
-            settings.randomQuestions !== false
-        );
-
-
-        setChecked(
-            "randomOptions",
-            settings.randomOptions !== false
-        );
-
-
-        // ----------------------------------------
-        // SECURITY
-        // ----------------------------------------
-
-        setValue(
-            "tabSwitchPenalty",
-            settings.tabSwitchPenalty ??
-            1
-        );
-
-
-        setValue(
-            "maxTabSwitches",
-            settings.maxTabSwitches ??
-            2
-        );
-
-
-        setChecked(
-            "disableCopy",
-            settings.disableCopy !== false
-        );
-
-
-        setChecked(
-            "disablePaste",
-            settings.disablePaste !== false
-        );
-
-
-        setChecked(
-            "disableScreenshot",
-            settings.disableScreenshot !== false
-        );
-
-
-        setChecked(
-            "disableRefresh",
-            settings.disableRefresh !== false
-        );
-
-
-        setChecked(
-            "disableFunctionKeys",
-            settings.disableFunctionKeys !== false
-        );
-
-
-        // ----------------------------------------
-        // DASHBOARD
-        // ----------------------------------------
-
-        updateDashboardFromSettings(
-            settings
-        );
-
-
-        updateExamStatusUI(
-            settings.examStatus ||
-            "draft"
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "Load exam settings error:",
-            error
-        );
-
-
-        if (
-            error.code ===
-            "permission-denied"
-        ) {
-
-            showSettingsMessage(
-                "Firebase permission denied. Check Firestore Security Rules.",
-                "error"
-            );
-
-        }
-
-    }
-
-}
-
-
-// ============================================================
-// SET VALUE
-// ============================================================
-
-function setValue(
-    id,
-    value
-) {
-
-    const element =
-        document.getElementById(id);
-
-    if (element) {
-
-        element.value =
-            value;
-
-    }
-
-}
-
-
-// ============================================================
-// SET CHECKBOX
-// ============================================================
-
-function setChecked(
-    id,
-    value
-) {
-
-    const element =
-        document.getElementById(id);
-
-    if (element) {
-
-        element.checked =
-            Boolean(value);
-
-    }
-
-}
-
-
-// ============================================================
-// SETTINGS MESSAGE
-// ============================================================
-
-function showSettingsMessage(
-    message,
-    type
-) {
-
-    const element =
-        document.getElementById(
-            "examSettingsMessage"
-        );
-
-
-    if (!element) {
-        return;
-    }
-
-
-    element.textContent =
-        message;
-
-
-    element.className =
-        "settings-message " +
-        type;
-
-
-    element.style.display =
-        "block";
-
-
-    setTimeout(
-        () => {
-
-            element.style.display =
-                "none";
-
-        },
-        5000
-    );
-
-}
-
-
-// ============================================================
-// RESET SETTINGS
-// ============================================================
 
 if (resetExamSettingsBtn) {
 
@@ -2149,39 +1215,30 @@ if (resetExamSettingsBtn) {
 
             await loadExamSettings();
 
-
             showSettingsMessage(
-                "Settings restored from Firestore.",
+                "Settings restored.",
                 "success"
             );
-
         }
     );
-
 }
 
 
 // ============================================================
-// UPDATE DASHBOARD FROM SETTINGS
+// DASHBOARD
 // ============================================================
 
-function updateDashboardFromSettings(
-    settings
-) {
+function updateDashboard(settings) {
 
     setText(
         "totalQuestions",
-        settings.totalQuestions ??
-        100
+        settings.totalQuestions ?? 100
     );
-
 
     setText(
         "displayQuestions",
-        settings.questionsToDisplay ??
-        80
+        settings.questionsToDisplay ?? 80
     );
-
 
     setText(
         "dashboardExamTitle",
@@ -2189,88 +1246,104 @@ function updateDashboardFromSettings(
         "Online Examination"
     );
 
-
     setText(
         "dashboardDuration",
         `${settings.durationMinutes ?? 60} Minutes`
     );
 
-
     setText(
         "dashboardQuestionCount",
-        settings.questionsToDisplay ??
-        80
+        settings.questionsToDisplay ?? 80
     );
-
 
     setText(
         "dashboardMarks",
         `+${settings.marksPerQuestion ?? 4}`
     );
 
-
     updateExamStatusUI(
-        settings.examStatus ||
-        "draft"
+        settings.examStatus || "draft"
     );
-
 }
 
-
-// ============================================================
-// TEXT HELPER
-// ============================================================
-
-function setText(
-    id,
-    value
-) {
-
-    const element =
-        document.getElementById(id);
-
-    if (element) {
-
-        element.textContent =
-            value;
-
-    }
-
-}
-
-
-// ============================================================
-// DASHBOARD DATA
-// ============================================================
 
 async function loadDashboardData() {
 
-    // These remain 0 until candidate/result
-    // collections are implemented.
+    setText("totalCandidates", 0);
+    setText("completedCandidates", 0);
+    setText("activeCandidates", 0);
+    setText("totalViolations", 0);
+}
 
-    setText(
-        "totalCandidates",
-        0
+
+if (refreshBtn) {
+
+    refreshBtn.addEventListener(
+        "click",
+        async () => {
+
+            refreshBtn.disabled = true;
+            refreshBtn.textContent =
+                "Updating...";
+
+            try {
+
+                await loadExamSettings();
+                await loadDashboardData();
+
+                refreshBtn.textContent =
+                    "✓ Updated";
+
+            } catch (error) {
+
+                console.error(error);
+
+                refreshBtn.textContent =
+                    "⚠ Error";
+            }
+
+            setTimeout(
+                () => {
+
+                    refreshBtn.disabled = false;
+                    refreshBtn.textContent =
+                        "↻ Refresh";
+
+                },
+                1200
+            );
+        }
     );
+}
 
 
-    setText(
-        "completedCandidates",
-        0
+// ============================================================
+// SETTINGS MESSAGE
+// ============================================================
+
+function showSettingsMessage(
+    message,
+    type = "success"
+) {
+
+    const element =
+        $("examSettingsMessage");
+
+    if (!element) return;
+
+    element.textContent = message;
+
+    element.className =
+        `settings-message ${type}`;
+
+    element.style.display = "block";
+
+    setTimeout(
+        () => {
+            element.style.display = "none";
+        },
+        5000
     );
-
-
-    setText(
-        "activeCandidates",
-        0
-    );
-
-
-    setText(
-        "totalViolations",
-        0
-    );
-
 }
 
 
@@ -2280,66 +1353,47 @@ async function loadDashboardData() {
 
 onAuthStateChanged(
     auth,
-    async (user) => {
+    async user => {
 
         if (!user) {
 
-            currentAdmin =
-                null;
-
+            currentAdmin = null;
             showLogin();
-
             return;
-
         }
-
 
         try {
 
             const authorized =
-                await verifyAdmin(
-                    user
-                );
-
+                await verifyAdmin(user);
 
             if (!authorized) {
 
-                await signOut(
-                    auth
-                );
+                await signOut(auth);
 
-
-                currentAdmin =
-                    null;
-
+                currentAdmin = null;
 
                 showLogin();
 
-                return;
+                showLoginMessage(
+                    "This account is not authorized for the Admin Panel."
+                );
 
+                return;
             }
 
-
-            currentAdmin =
-                user;
-
+            currentAdmin = user;
 
             if (adminName) {
-
                 adminName.textContent =
                     user.email ||
                     "Administrator";
-
             }
-
 
             showDashboard();
 
-
             await loadExamSettings();
-
             await loadDashboardData();
-
 
         } catch (error) {
 
@@ -2348,25 +1402,16 @@ onAuthStateChanged(
                 error
             );
 
+            await signOut(auth);
 
-            await signOut(
-                auth
-            );
-
-
-            currentAdmin =
-                null;
-
+            currentAdmin = null;
 
             showLogin();
-
 
             showLoginMessage(
                 "Unable to verify administrator access. Check Firestore Security Rules."
             );
-
         }
-
     }
 );
 
@@ -2375,26 +1420,8 @@ onAuthStateChanged(
 // INITIAL UI
 // ============================================================
 
-if (dashboard) {
-
-    dashboard.style.display =
-        "none";
-
-}
-
-
-if (loginScreen) {
-
-    loginScreen.style.display =
-        "flex";
-
-}
-
-
-// ============================================================
-// END
-// ============================================================
+showLogin();
 
 console.log(
-    "ExamControl Admin Portal loaded successfully."
+    "ExamControl Admin Portal loaded."
 );
