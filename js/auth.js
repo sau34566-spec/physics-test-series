@@ -1,10 +1,20 @@
 /* =========================================================
-   AUTHENTICATION MODULE
-   Super Admin / Admin Authentication
-   Firebase Authentication + Firestore
+   SUPER ADMIN AUTHENTICATION
+   File: /js/auth.js
+
+   Firebase Authentication + Firestore authorization
+
+   IMPORTANT:
+   Authentication proves WHO the user is.
+   Firestore profile proves WHAT ROLE the user has.
+
+   Final security must ALSO be enforced by Firestore Rules.
    ========================================================= */
 
-import { auth, db } from "./firebase-config.js";
+import {
+    auth,
+    db
+} from "./firebase-config.js";
 
 import {
     onAuthStateChanged,
@@ -17,32 +27,53 @@ import {
 
 import {
     doc,
-    getDoc,
-    serverTimestamp,
-    setDoc
+    getDoc
 } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
 
 /* =========================================================
-   CONFIG
+   CONFIGURATION
    ========================================================= */
 
 const AUTH_CONFIG = {
-    usersCollection: "users",
+
+    /*
+     * Primary administrator collection.
+     */
     adminsCollection: "admins",
 
-    allowedSuperAdminRoles: [
+    /*
+     * Optional fallback collection.
+     */
+    usersCollection: "users",
+
+    /*
+     * Accepted Super Admin role names.
+     */
+    superAdminRoles: [
         "super_admin",
         "superadmin",
         "super-admin"
     ],
 
+    /*
+     * Accepted active states.
+     *
+     * If status is missing, we allow it temporarily for
+     * compatibility with existing records.
+     *
+     * For final production rules, every admin should have
+     * an explicit status: "active".
+     */
     activeStatuses: [
         "active",
         "approved",
         ""
     ],
 
+    /*
+     * Explicitly blocked states.
+     */
     blockedStatuses: [
         "suspended",
         "revoked",
@@ -50,26 +81,34 @@ const AUTH_CONFIG = {
         "blocked",
         "inactive"
     ]
+
 };
 
 
 /* =========================================================
-   STATE
+   AUTH STATE
    ========================================================= */
 
 const AuthState = {
+
     initialized: false,
+
+    checkingSession: false,
+
     loading: false,
 
     user: null,
+
     profile: null,
 
     role: null,
+
     status: null,
 
     authorized: false,
 
     lastError: null
+
 };
 
 
@@ -77,159 +116,176 @@ const AuthState = {
    HELPERS
    ========================================================= */
 
-function normalize(value) {
-    return String(value ?? "")
+function normalize(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
         .trim()
         .toLowerCase();
+
 }
 
-function $(id) {
-    return document.getElementById(id);
+
+function getElement(
+    id
+) {
+
+    return document.getElementById(
+        id
+    );
+
 }
+
+
+/* =========================================================
+   TOAST
+   ========================================================= */
 
 function showToast(
     title,
     message,
     type = "info"
 ) {
-    if (
-        window.showToast &&
-        typeof window.showToast === "function"
-    ) {
-        window.showToast(
-            title,
-            message,
-            type
-        );
-        return;
-    }
+
+    /*
+     * Use dashboard UI toast if available.
+     */
 
     if (
         window.SuperAdminUI &&
-        typeof window.SuperAdminUI.showToast === "function"
+        typeof window.SuperAdminUI.showToast ===
+            "function"
     ) {
-        window.SuperAdminUI.showToast(
-            title,
-            message,
-            type
-        );
-        return;
+
+        try {
+
+            window.SuperAdminUI.showToast(
+                title,
+                message,
+                type
+            );
+
+            return;
+
+        } catch {
+            // fallback below
+        }
     }
+
+
+    /*
+     * Fallback.
+     */
 
     console.log(
         `[${type}] ${title}: ${message}`
     );
+
 }
 
+
+/* =========================================================
+   LOGIN SCREEN
+   ========================================================= */
+
 function showLoginScreen() {
+
     const loginScreen =
-        $("loginScreen");
+        getElement(
+            "loginScreen"
+        );
 
     const appShell =
-        $("appShell");
+        getElement(
+            "appShell"
+        );
+
 
     if (loginScreen) {
+
         loginScreen.style.display =
             "flex";
+
     }
 
+
     if (appShell) {
+
+        appShell.style.display =
+            "none";
+
         appShell.classList.remove(
             "active"
         );
 
-        appShell.style.display =
-            "none";
     }
 
-    if (
-        window.SuperAdminUI &&
-        typeof window.SuperAdminUI.showLogin ===
-            "function"
-    ) {
-        window.SuperAdminUI.showLogin();
-    }
 }
 
+
+/* =========================================================
+   APPLICATION SCREEN
+   ========================================================= */
+
 function showApplicationScreen() {
+
     const loginScreen =
-        $("loginScreen");
+        getElement(
+            "loginScreen"
+        );
 
     const appShell =
-        $("appShell");
+        getElement(
+            "appShell"
+        );
+
 
     if (loginScreen) {
+
         loginScreen.style.display =
             "none";
+
     }
 
+
     if (appShell) {
+
         appShell.style.display =
             "flex";
 
         appShell.classList.add(
             "active"
         );
+
     }
 
-    if (
-        window.SuperAdminUI &&
-        typeof window.SuperAdminUI.showApplication ===
-            "function"
-    ) {
-        window.SuperAdminUI.showApplication();
-    }
 }
 
 
 /* =========================================================
-   PROFILE LOADING
+   PROFILE LOOKUP
    ========================================================= */
 
-async function getUserProfile(
+async function getAdminProfile(
     uid
 ) {
+
     if (!uid) {
         return null;
     }
 
+
     /*
-     * Primary profile:
-     * users/{uid}
+     * -----------------------------------------------------
+     * FIRST: admins/{uid}
+     * -----------------------------------------------------
      */
 
     try {
-        const userRef =
-            doc(
-                db,
-                AUTH_CONFIG.usersCollection,
-                uid
-            );
 
-        const snapshot =
-            await getDoc(userRef);
-
-        if (snapshot.exists()) {
-            return {
-                id: snapshot.id,
-                source: "users",
-                ...snapshot.data()
-            };
-        }
-    } catch (error) {
-        console.warn(
-            "users profile lookup failed:",
-            error
-        );
-    }
-
-
-    /*
-     * Fallback:
-     * admins/{uid}
-     */
-
-    try {
         const adminRef =
             doc(
                 db,
@@ -237,25 +293,97 @@ async function getUserProfile(
                 uid
             );
 
-        const snapshot =
-            await getDoc(adminRef);
 
-        if (snapshot.exists()) {
+        const snapshot =
+            await getDoc(
+                adminRef
+            );
+
+
+        if (
+            snapshot.exists()
+        ) {
+
             return {
-                id: snapshot.id,
-                source: "admins",
+
+                uid,
+
+                source:
+                    "admins",
+
                 ...snapshot.data()
+
             };
+
         }
+
     } catch (error) {
+
+        /*
+         * Do not immediately reject.
+         *
+         * We can still try the compatibility fallback.
+         */
+
         console.warn(
             "admins profile lookup failed:",
             error
         );
+
+    }
+
+
+    /*
+     * -----------------------------------------------------
+     * FALLBACK: users/{uid}
+     * -----------------------------------------------------
+     */
+
+    try {
+
+        const userRef =
+            doc(
+                db,
+                AUTH_CONFIG.usersCollection,
+                uid
+            );
+
+
+        const snapshot =
+            await getDoc(
+                userRef
+            );
+
+
+        if (
+            snapshot.exists()
+        ) {
+
+            return {
+
+                uid,
+
+                source:
+                    "users",
+
+                ...snapshot.data()
+
+            };
+
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "users profile lookup failed:",
+            error
+        );
+
     }
 
 
     return null;
+
 }
 
 
@@ -266,11 +394,15 @@ async function getUserProfile(
 function isSuperAdminRole(
     role
 ) {
+
     return AUTH_CONFIG
-        .allowedSuperAdminRoles
+        .superAdminRoles
         .includes(
-            normalize(role)
+            normalize(
+                role
+            )
         );
+
 }
 
 
@@ -278,84 +410,166 @@ function isSuperAdminRole(
    STATUS CHECK
    ========================================================= */
 
-function isAccountBlocked(
+function isBlockedStatus(
     status
 ) {
-    const normalized =
-        normalize(status);
 
     return AUTH_CONFIG
         .blockedStatuses
         .includes(
-            normalized
+            normalize(
+                status
+            )
         );
+
 }
 
-function isAccountActive(
+
+function isActiveStatus(
     status
 ) {
+
     const normalized =
-        normalize(status);
+        normalize(
+            status
+        );
+
 
     if (
-        isAccountBlocked(
+        isBlockedStatus(
             normalized
         )
     ) {
+
         return false;
+
     }
 
-    return (
-        AUTH_CONFIG
-            .activeStatuses
-            .includes(
-                normalized
-            ) ||
-        normalized === ""
-    );
+
+    return AUTH_CONFIG
+        .activeStatuses
+        .includes(
+            normalized
+        );
+
 }
 
 
 /* =========================================================
-   SUPER ADMIN AUTHORIZATION
+   SUSPENSION CHECK
+   ========================================================= */
+
+function isSuspensionActive(
+    profile
+) {
+
+    if (
+        !profile ||
+        !profile.suspensionUntil
+    ) {
+
+        return false;
+
+    }
+
+
+    let suspensionDate;
+
+
+    try {
+
+        if (
+            typeof profile.suspensionUntil
+                ?.toDate ===
+            "function"
+        ) {
+
+            suspensionDate =
+                profile.suspensionUntil
+                    .toDate();
+
+        } else {
+
+            suspensionDate =
+                new Date(
+                    profile.suspensionUntil
+                );
+
+        }
+
+    } catch {
+
+        return false;
+
+    }
+
+
+    if (
+        Number.isNaN(
+            suspensionDate.getTime()
+        )
+    ) {
+
+        return false;
+
+    }
+
+
+    return (
+        suspensionDate.getTime() >
+        Date.now()
+    );
+
+}
+
+
+/* =========================================================
+   AUTHORIZE SUPER ADMIN
    ========================================================= */
 
 async function authorizeSuperAdmin(
     firebaseUser
 ) {
+
     if (!firebaseUser) {
+
         return {
-            authorized: false,
-            reason: "NO_USER",
-            profile: null
+
+            authorized:
+                false,
+
+            reason:
+                "NO_USER",
+
+            profile:
+                null
+
         };
+
     }
 
 
-    /*
-     * Firebase email verification
-     *
-     * We don't automatically reject every account here
-     * because the existing project may use a controlled
-     * admin creation flow.
-     *
-     * If email verification is required by your final
-     * Firestore rules, that requirement must also be
-     * enforced there.
-     */
-
-
     const profile =
-        await getUserProfile(
+        await getAdminProfile(
             firebaseUser.uid
         );
 
+
     if (!profile) {
+
         return {
-            authorized: false,
-            reason: "PROFILE_NOT_FOUND",
-            profile: null
+
+            authorized:
+                false,
+
+            reason:
+                "PROFILE_NOT_FOUND",
+
+            profile:
+                null
+
         };
+
     }
 
 
@@ -364,6 +578,7 @@ async function authorizeSuperAdmin(
             profile.role
         );
 
+
     const status =
         normalize(
             profile.status ||
@@ -371,79 +586,117 @@ async function authorizeSuperAdmin(
         );
 
 
+    /*
+     * ROLE
+     */
+
     if (
         !isSuperAdminRole(
             role
         )
     ) {
-        return {
-            authorized: false,
-            reason: "ROLE_NOT_ALLOWED",
-            profile
-        };
-    }
 
-
-    if (
-        !isAccountActive(
-            status
-        )
-    ) {
         return {
-            authorized: false,
+
+            authorized:
+                false,
+
             reason:
-                `ACCOUNT_${status.toUpperCase()}`,
+                "ROLE_NOT_ALLOWED",
+
             profile
+
         };
+
     }
 
 
     /*
-     * Optional suspension expiry check.
+     * STATUS
      */
 
     if (
-        profile.suspensionUntil
+        !isActiveStatus(
+            status
+        )
     ) {
-        const suspensionUntil =
-            profile.suspensionUntil?.toDate
-                ? profile.suspensionUntil.toDate()
-                : new Date(
-                    profile.suspensionUntil
-                );
 
-        if (
-            !Number.isNaN(
-                suspensionUntil.getTime()
-            ) &&
-            suspensionUntil.getTime() >
-                Date.now()
-        ) {
-            return {
-                authorized: false,
-                reason:
-                    "TEMPORARILY_SUSPENDED",
-                profile
-            };
-        }
+        return {
+
+            authorized:
+                false,
+
+            reason:
+                `ACCOUNT_${status.toUpperCase()}`,
+
+            profile
+
+        };
+
     }
 
 
-    return {
-        authorized: true,
-        reason: "AUTHORIZED",
-        profile: {
-            ...profile,
-            uid:
-                firebaseUser.uid,
-            email:
-                firebaseUser.email ||
-                profile.email ||
-                "",
-            role,
-            status
-        }
+    /*
+     * TEMPORARY SUSPENSION
+     */
+
+    if (
+        isSuspensionActive(
+            profile
+        )
+    ) {
+
+        return {
+
+            authorized:
+                false,
+
+            reason:
+                "TEMPORARILY_SUSPENDED",
+
+            profile
+
+        };
+
+    }
+
+
+    /*
+     * FINAL NORMALIZED PROFILE
+     */
+
+    const normalizedProfile = {
+
+        ...profile,
+
+        uid:
+            firebaseUser.uid,
+
+        email:
+            firebaseUser.email ||
+            profile.email ||
+            "",
+
+        role,
+
+        status
+
     };
+
+
+    return {
+
+        authorized:
+            true,
+
+        reason:
+            "AUTHORIZED",
+
+        profile:
+            normalizedProfile
+
+    };
+
 }
 
 
@@ -451,33 +704,41 @@ async function authorizeSuperAdmin(
    LOGIN
    ========================================================= */
 
-async function login({
-    email,
-    password
-}) {
-    email =
-        String(
-            email || ""
-        ).trim();
+async function login(
+    credentials
+) {
 
-    password =
+    const email =
         String(
-            password || ""
+            credentials?.email ||
+            ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const password =
+        String(
+            credentials?.password ||
+            ""
         );
 
 
     if (!email) {
+
         showToast(
             "Email required",
-            "Enter your Super Admin email address.",
+            "Enter your Super Admin email.",
             "warning"
         );
 
         return false;
+
     }
 
 
     if (!password) {
+
         showToast(
             "Password required",
             "Enter your password.",
@@ -485,24 +746,36 @@ async function login({
         );
 
         return false;
+
     }
 
 
-    if (AuthState.loading) {
+    if (
+        AuthState.loading
+    ) {
+
         return false;
+
     }
+
+
+    AuthState.loading =
+        true;
+
+    AuthState.lastError =
+        null;
+
+
+    setLoginLoading(
+        true
+    );
 
 
     try {
 
-        AuthState.loading = true;
-        AuthState.lastError = null;
-
-
-        setLoginLoading(
-            true
-        );
-
+        /*
+         * Firebase Authentication
+         */
 
         const credential =
             await signInWithEmailAndPassword(
@@ -516,6 +789,10 @@ async function login({
             credential.user;
 
 
+        /*
+         * Firestore authorization
+         */
+
         const authorization =
             await authorizeSuperAdmin(
                 firebaseUser
@@ -526,15 +803,17 @@ async function login({
             !authorization.authorized
         ) {
 
+            /*
+             * Authentication succeeded but authorization
+             * failed. Immediately terminate session.
+             */
+
             await signOut(
                 auth
             );
 
 
-            AuthState.user = null;
-            AuthState.profile = null;
-            AuthState.authorized =
-                false;
+            resetState();
 
 
             handleAuthorizationFailure(
@@ -543,8 +822,13 @@ async function login({
 
 
             return false;
+
         }
 
+
+        /*
+         * Save authorized state.
+         */
 
         AuthState.user =
             firebaseUser;
@@ -563,50 +847,8 @@ async function login({
 
 
         /*
-         * Update last login metadata.
-         *
-         * This is informational only.
-         * Firestore rules must still control authorization.
+         * Update UI.
          */
-
-        try {
-
-            await setDoc(
-                doc(
-                    db,
-                    AUTH_CONFIG.usersCollection,
-                    firebaseUser.uid
-                ),
-                {
-                    lastLoginAt:
-                        serverTimestamp(),
-
-                    lastLoginEmail:
-                        firebaseUser.email || "",
-
-                    lastLoginRole:
-                        authorization
-                            .profile
-                            .role
-                },
-                {
-                    merge: true
-                }
-            );
-
-        } catch (error) {
-
-            /*
-             * Don't fail a successful login only
-             * because telemetry could not be written.
-             */
-
-            console.warn(
-                "Login metadata update failed:",
-                error
-            );
-        }
-
 
         updateProfileUI(
             authorization.profile
@@ -616,24 +858,31 @@ async function login({
         showApplicationScreen();
 
 
-        showToast(
-            "Login successful",
-            "Welcome to the Super Admin Dashboard.",
-            "success"
+        /*
+         * Notify dashboard.
+         */
+
+        window.dispatchEvent(
+            new CustomEvent(
+                "superadmin:authorized",
+                {
+                    detail: {
+                        user:
+                            firebaseUser,
+
+                        profile:
+                            authorization.profile
+                    }
+                }
+            )
         );
 
 
-        /*
-         * Let superadmin.js refresh all dashboard data.
-         */
-
-        if (
-            window.SuperAdminApp &&
-            typeof window.SuperAdminApp.refresh ===
-                "function"
-        ) {
-            await window.SuperAdminApp.refresh();
-        }
+        showToast(
+            "Login successful",
+            "Super Admin access granted.",
+            "success"
+        );
 
 
         return true;
@@ -642,7 +891,7 @@ async function login({
     } catch (error) {
 
         console.error(
-            "Authentication error:",
+            "Super Admin login error:",
             error
         );
 
@@ -671,7 +920,9 @@ async function login({
         setLoginLoading(
             false
         );
+
     }
+
 }
 
 
@@ -681,28 +932,45 @@ async function login({
 
 async function logout() {
 
-    try {
-
-        AuthState.loading =
-            true;
-
+    if (
+        AuthState.loading
+    ) {
 
         /*
-         * superadmin.js may have its own audit
-         * handling. We don't create a second audit
-         * here to avoid duplicate records.
+         * Don't block logout because of a previous
+         * operation, but don't create duplicate requests.
+         */
+
+    }
+
+
+    try {
+
+        /*
+         * Stop dashboard listeners first.
          */
 
         if (
             window.SuperAdminApp &&
-            typeof window.SuperAdminApp.cleanupListeners ===
+            typeof window.SuperAdminApp
+                .cleanupListeners ===
                 "function"
         ) {
+
             try {
-                window.SuperAdminApp.cleanupListeners();
-            } catch {
-                // ignore cleanup failure
+
+                window.SuperAdminApp
+                    .cleanupListeners();
+
+            } catch (error) {
+
+                console.warn(
+                    "Dashboard cleanup failed:",
+                    error
+                );
+
             }
+
         }
 
 
@@ -711,15 +979,22 @@ async function logout() {
         );
 
 
-        resetAuthState();
+        resetState();
 
 
         showLoginScreen();
 
 
+        window.dispatchEvent(
+            new CustomEvent(
+                "superadmin:logout"
+            )
+        );
+
+
         showToast(
             "Logged out",
-            "Your Super Admin session has ended.",
+            "Super Admin session ended.",
             "success"
         );
 
@@ -739,12 +1014,8 @@ async function logout() {
             "danger"
         );
 
-
-    } finally {
-
-        AuthState.loading =
-            false;
     }
+
 }
 
 
@@ -755,13 +1026,17 @@ async function logout() {
 async function resetPassword(
     email
 ) {
-    email =
+
+    const normalizedEmail =
         String(
             email || ""
-        ).trim();
+        )
+        .trim()
+        .toLowerCase();
 
 
-    if (!email) {
+    if (!normalizedEmail) {
+
         showToast(
             "Email required",
             "Enter your registered email.",
@@ -769,6 +1044,7 @@ async function resetPassword(
         );
 
         return false;
+
     }
 
 
@@ -776,13 +1052,13 @@ async function resetPassword(
 
         await sendPasswordResetEmail(
             auth,
-            email
+            normalizedEmail
         );
 
 
         showToast(
             "Reset email sent",
-            "Check your email for password reset instructions.",
+            "Check your email for the password reset link.",
             "success"
         );
 
@@ -799,7 +1075,7 @@ async function resetPassword(
 
 
         showToast(
-            "Reset failed",
+            "Password reset failed",
             getAuthErrorMessage(
                 error
             ),
@@ -808,7 +1084,9 @@ async function resetPassword(
 
 
         return false;
+
     }
+
 }
 
 
@@ -820,14 +1098,36 @@ async function checkSession(
     firebaseUser
 ) {
 
+    /*
+     * No Firebase user.
+     */
+
     if (!firebaseUser) {
 
-        resetAuthState();
+        resetState();
 
         showLoginScreen();
 
         return false;
+
     }
+
+
+    /*
+     * Avoid duplicate verification.
+     */
+
+    if (
+        AuthState.checkingSession
+    ) {
+
+        return AuthState.authorized;
+
+    }
+
+
+    AuthState.checkingSession =
+        true;
 
 
     try {
@@ -847,7 +1147,7 @@ async function checkSession(
             );
 
 
-            resetAuthState();
+            resetState();
 
 
             handleAuthorizationFailure(
@@ -856,6 +1156,7 @@ async function checkSession(
 
 
             return false;
+
         }
 
 
@@ -884,16 +1185,27 @@ async function checkSession(
 
 
         /*
-         * Refresh dashboard after restored session.
+         * Tell the dashboard that a session has been
+         * restored.
          */
 
-        if (
-            window.SuperAdminApp &&
-            typeof window.SuperAdminApp.refresh ===
-                "function"
-        ) {
-            await window.SuperAdminApp.refresh();
-        }
+        window.dispatchEvent(
+            new CustomEvent(
+                "superadmin:authorized",
+                {
+                    detail: {
+                        user:
+                            firebaseUser,
+
+                        profile:
+                            authorization.profile,
+
+                        restored:
+                            true
+                    }
+                }
+            )
+        );
 
 
         return true;
@@ -907,12 +1219,8 @@ async function checkSession(
         );
 
 
-        await signOut(
-            auth
-        );
+        resetState();
 
-
-        resetAuthState();
 
         showLoginScreen();
 
@@ -925,7 +1233,15 @@ async function checkSession(
 
 
         return false;
+
+
+    } finally {
+
+        AuthState.checkingSession =
+            false;
+
     }
+
 }
 
 
@@ -938,7 +1254,9 @@ function initializeAuthListener() {
     if (
         AuthState.initialized
     ) {
+
         return;
+
     }
 
 
@@ -950,31 +1268,18 @@ function initializeAuthListener() {
         auth,
         async firebaseUser => {
 
-            /*
-             * Prevent duplicate processing while
-             * login() is already handling the same user.
-             */
-
-            if (
-                firebaseUser &&
-                AuthState.authorized &&
-                AuthState.user?.uid ===
-                    firebaseUser.uid
-            ) {
-                return;
-            }
-
-
             await checkSession(
                 firebaseUser
             );
+
         }
     );
+
 }
 
 
 /* =========================================================
-   PERSISTENCE
+   FIREBASE AUTH PERSISTENCE
    ========================================================= */
 
 async function initializePersistence() {
@@ -989,20 +1294,21 @@ async function initializePersistence() {
     } catch (error) {
 
         /*
-         * Persistence failure should not prevent
-         * Firebase Auth from functioning.
+         * Persistence failure should not prevent login.
          */
 
         console.warn(
-            "Auth persistence could not be configured:",
+            "Firebase Auth persistence failed:",
             error
         );
+
     }
+
 }
 
 
 /* =========================================================
-   UI
+   LOGIN BUTTON STATE
    ========================================================= */
 
 function setLoginLoading(
@@ -1010,47 +1316,57 @@ function setLoginLoading(
 ) {
 
     const form =
-        $("superAdminLoginForm");
+        getElement(
+            "superAdminLoginForm"
+        );
+
 
     if (!form) {
         return;
     }
 
 
-    const submitButton =
+    const button =
         form.querySelector(
             'button[type="submit"]'
         );
 
 
-    if (!submitButton) {
+    if (!button) {
         return;
     }
 
 
     if (
-        !submitButton.dataset.originalText
+        !button.dataset.originalHtml
     ) {
-        submitButton.dataset.originalText =
-            submitButton.innerHTML;
+
+        button.dataset.originalHtml =
+            button.innerHTML;
+
     }
 
 
-    submitButton.disabled =
+    button.disabled =
         loading;
 
 
-    submitButton.innerHTML =
+    button.innerHTML =
         loading
+
             ? `
                 <i class="fa-solid fa-spinner fa-spin"></i>
                 Signing in...
               `
-            : submitButton
-                .dataset
-                .originalText;
+
+            : button.dataset.originalHtml;
+
 }
 
+
+/* =========================================================
+   PROFILE UI
+   ========================================================= */
 
 function updateProfileUI(
     profile
@@ -1073,40 +1389,33 @@ function updateProfileUI(
         "";
 
 
-    /*
-     * Existing UI helper.
-     */
-
-    if (
-        window.SuperAdminUI &&
-        typeof window.SuperAdminUI.setAdminProfile ===
-            "function"
-    ) {
-
-        window.SuperAdminUI.setAdminProfile({
-            name,
-            email
-        });
-    }
-
-
-    /*
-     * Common profile elements.
-     */
-
     const possibleNameIds = [
+
         "adminName",
+
         "profileName",
+
         "userName",
-        "currentAdminName"
+
+        "currentAdminName",
+
+        "sidebarAdminName"
+
     ];
 
 
     const possibleEmailIds = [
+
         "adminEmailDisplay",
+
         "profileEmail",
+
         "userEmail",
-        "currentAdminEmail"
+
+        "currentAdminEmail",
+
+        "sidebarAdminEmail"
+
     ];
 
 
@@ -1114,12 +1423,15 @@ function updateProfileUI(
         id => {
 
             const element =
-                $(id);
+                getElement(id);
 
             if (element) {
+
                 element.textContent =
                     name;
+
             }
+
         }
     );
 
@@ -1128,19 +1440,88 @@ function updateProfileUI(
         id => {
 
             const element =
-                $(id);
+                getElement(id);
 
             if (element) {
+
                 element.textContent =
                     email;
+
             }
+
         }
     );
+
+
+    /*
+     * Avatar initials.
+     */
+
+    const avatar =
+        getElement(
+            "sidebarAvatar"
+        );
+
+
+    if (
+        avatar
+    ) {
+
+        avatar.textContent =
+            getInitials(
+                name
+            );
+
+    }
+
 }
 
 
 /* =========================================================
-   AUTH FAILURE
+   INITIALS
+   ========================================================= */
+
+function getInitials(
+    name
+) {
+
+    const parts =
+        String(
+            name || ""
+        )
+        .trim()
+        .split(
+            /\s+/
+        )
+        .filter(Boolean);
+
+
+    if (!parts.length) {
+
+        return "SA";
+
+    }
+
+
+    return parts
+        .slice(
+            0,
+            2
+        )
+        .map(
+            part =>
+                part.charAt(
+                    0
+                )
+        )
+        .join("")
+        .toUpperCase();
+
+}
+
+
+/* =========================================================
+   AUTHORIZATION FAILURE
    ========================================================= */
 
 function handleAuthorizationFailure(
@@ -1151,90 +1532,111 @@ function handleAuthorizationFailure(
         "Access denied";
 
     let message =
-        "This account is not authorized to access the Super Admin panel.";
+        "This account is not authorized to access the Super Admin dashboard.";
 
 
-    switch (reason) {
+    switch (
+        reason
+    ) {
 
         case "NO_USER":
+
             title =
                 "Login required";
 
             message =
                 "Please sign in to continue.";
+
             break;
 
 
         case "PROFILE_NOT_FOUND":
+
             title =
-                "Profile not found";
+                "Admin profile not found";
 
             message =
-                "Your Firebase account does not have a matching administrator profile.";
+                "The Firebase account does not have an administrator profile.";
+
             break;
 
 
         case "ROLE_NOT_ALLOWED":
+
             title =
                 "Insufficient permissions";
 
             message =
-                "This account is not assigned the Super Admin role.";
+                "This account does not have the Super Admin role.";
+
             break;
 
 
         case "ACCOUNT_SUSPENDED":
+
             title =
                 "Account suspended";
 
             message =
-                "This Super Admin account has been suspended.";
+                "This Super Admin account is suspended.";
+
             break;
 
 
         case "ACCOUNT_REVOKED":
+
             title =
                 "Access revoked";
 
             message =
-                "Super Admin access has been revoked for this account.";
+                "Super Admin access has been revoked.";
+
             break;
 
 
         case "ACCOUNT_DISABLED":
+
             title =
                 "Account disabled";
 
             message =
-                "This account has been disabled.";
+                "This administrator account is disabled.";
+
             break;
 
 
         case "ACCOUNT_BLOCKED":
+
             title =
                 "Account blocked";
 
             message =
-                "This account has been blocked.";
+                "This administrator account is blocked.";
+
             break;
 
 
         case "ACCOUNT_INACTIVE":
+
             title =
                 "Account inactive";
 
             message =
-                "This Super Admin account is currently inactive.";
+                "This administrator account is inactive.";
+
             break;
 
 
         case "TEMPORARILY_SUSPENDED":
+
             title =
                 "Temporarily suspended";
 
             message =
-                "This account is temporarily suspended.";
+                "Your Super Admin access is temporarily suspended.";
+
             break;
+
     }
 
 
@@ -1246,11 +1648,12 @@ function handleAuthorizationFailure(
         message,
         "danger"
     );
+
 }
 
 
 /* =========================================================
-   ERROR MESSAGES
+   FIREBASE ERROR MESSAGES
    ========================================================= */
 
 function getAuthErrorMessage(
@@ -1258,7 +1661,8 @@ function getAuthErrorMessage(
 ) {
 
     const code =
-        error?.code || "";
+        error?.code ||
+        "";
 
 
     const messages = {
@@ -1270,7 +1674,7 @@ function getAuthErrorMessage(
             "Invalid email or password.",
 
         "auth/user-not-found":
-            "No Firebase account was found for this email.",
+            "No Firebase account exists for this email.",
 
         "auth/wrong-password":
             "Invalid email or password.",
@@ -1285,16 +1689,17 @@ function getAuthErrorMessage(
             "Too many login attempts. Please try again later.",
 
         "auth/network-request-failed":
-            "Network error. Check your internet connection.",
+            "Network connection failed. Check your internet.",
 
-        "auth/email-already-in-use":
-            "This email is already registered.",
+        "auth/api-key-not-valid":
+            "Firebase API key is invalid. Check firebase-config.js.",
 
-        "auth/weak-password":
-            "The password does not meet Firebase requirements.",
+        "auth/operation-not-allowed":
+            "Email/password authentication is not enabled in Firebase.",
 
-        "auth/requires-recent-login":
-            "Please sign in again before performing this action."
+        "auth/internal-error":
+            "Firebase returned an internal authentication error."
+
     };
 
 
@@ -1303,6 +1708,7 @@ function getAuthErrorMessage(
         error?.message ||
         "Authentication failed."
     );
+
 }
 
 
@@ -1310,7 +1716,7 @@ function getAuthErrorMessage(
    RESET STATE
    ========================================================= */
 
-function resetAuthState() {
+function resetState() {
 
     AuthState.user =
         null;
@@ -1329,6 +1735,7 @@ function resetAuthState() {
 
     AuthState.lastError =
         null;
+
 }
 
 
@@ -1348,20 +1755,27 @@ window.SuperAdminAuth = {
 
     authorizeSuperAdmin,
 
-    getUserProfile,
+    getAdminProfile,
 
     isSuperAdminRole,
 
-    isAccountActive,
+    isActiveStatus,
 
-    getState: () => ({
-        ...AuthState
-    })
+    isBlockedStatus,
+
+    getState() {
+
+        return {
+            ...AuthState
+        };
+
+    }
+
 };
 
 
 /* =========================================================
-   INITIALIZE
+   INITIALIZATION
    ========================================================= */
 
 (async function initializeAuthentication() {
@@ -1379,13 +1793,17 @@ window.SuperAdminAuth = {
             error
         );
 
+
         showLoginScreen();
 
+
         showToast(
-            "Authentication error",
-            "Unable to initialize Firebase Authentication.",
+            "Authentication initialization failed",
+            error.message ||
+                "Unable to initialize Firebase Authentication.",
             "danger"
         );
+
     }
 
 })();
