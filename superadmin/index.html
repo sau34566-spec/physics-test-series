@@ -1,1 +1,5412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
 
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#0f172a">
+
+    <meta name="description"
+          content="Secure Examination Platform - Super Admin Dashboard">
+
+    <title>ExamPro | Super Admin Dashboard</title>
+
+    <!-- ================================
+         ICONS
+    ================================= -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- ================================
+         SUPREME ADMIN STYLES
+    ================================= -->
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-soft: #eff6ff;
+
+            --success: #16a34a;
+            --success-soft: #f0fdf4;
+
+            --warning: #d97706;
+            --warning-soft: #fffbeb;
+
+            --danger: #dc2626;
+            --danger-soft: #fef2f2;
+
+            --info: #0891b2;
+            --info-soft: #ecfeff;
+
+            --purple: #7c3aed;
+            --purple-soft: #f5f3ff;
+
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface-2: #f1f5f9;
+
+            --text: #0f172a;
+            --text-secondary: #475569;
+            --muted: #64748b;
+
+            --border: #e2e8f0;
+            --border-dark: #cbd5e1;
+
+            --sidebar-width: 270px;
+            --topbar-height: 72px;
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+
+            --shadow-sm: 0 1px 2px rgba(15, 23, 42, .04);
+            --shadow-md: 0 8px 24px rgba(15, 23, 42, .07);
+            --shadow-lg: 0 18px 50px rgba(15, 23, 42, .10);
+
+            --transition: .2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+                         "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* =========================================
+           LOGIN SCREEN
+        ========================================= */
+
+        .login-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(37,99,235,.18), transparent 32%),
+                radial-gradient(circle at 80% 80%, rgba(124,58,237,.14), transparent 32%),
+                #f8fafc;
+        }
+
+        .login-card {
+            width: min(460px, 100%);
+            background: rgba(255,255,255,.96);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
+            padding: 34px;
+        }
+
+        .login-brand {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .login-logo {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 14px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 25px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            box-shadow: 0 12px 25px rgba(37,99,235,.25);
+        }
+
+        .login-brand h1 {
+            font-size: 25px;
+            font-weight: 800;
+        }
+
+        .login-brand p {
+            margin-top: 7px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .login-security-note {
+            margin-top: 18px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: var(--primary-soft);
+            color: #1e40af;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        /* =========================================
+           APP SHELL
+        ========================================= */
+
+        .app-shell {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .app-shell.active {
+            display: flex;
+        }
+
+        /* =========================================
+           SIDEBAR
+        ========================================= */
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: #0f172a;
+            color: #cbd5e1;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255,255,255,.06);
+        }
+
+        .sidebar-brand {
+            height: var(--topbar-height);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255,255,255,.07);
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            flex: 0 0 38px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+        }
+
+        .brand-text strong {
+            display: block;
+            color: white;
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .brand-text span {
+            display: block;
+            margin-top: 2px;
+            font-size: 10px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        .sidebar-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px 11px 20px;
+        }
+
+        .nav-section-title {
+            padding: 14px 11px 7px;
+            color: #64748b;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+        }
+
+        .nav-item {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 12px;
+            margin-bottom: 3px;
+            border: 0;
+            border-radius: 9px;
+            background: transparent;
+            color: #cbd5e1;
+            text-align: left;
+            transition: var(--transition);
+        }
+
+        .nav-item i {
+            width: 19px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .nav-item span {
+            flex: 1;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .nav-item:hover {
+            color: white;
+            background: rgba(255,255,255,.07);
+        }
+
+        .nav-item.active {
+            color: white;
+            background: linear-gradient(90deg, rgba(37,99,235,.85), rgba(37,99,235,.60));
+            box-shadow: 0 6px 16px rgba(37,99,235,.20);
+        }
+
+        .nav-badge {
+            min-width: 19px;
+            height: 19px;
+            padding: 0 5px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #dc2626;
+            color: white;
+            font-size: 9px;
+            font-weight: 800;
+        }
+
+        .sidebar-footer {
+            padding: 12px;
+            border-top: 1px solid rgba(255,255,255,.07);
+        }
+
+        .admin-mini-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255,255,255,.05);
+        }
+
+        .avatar {
+            width: 35px;
+            height: 35px;
+            flex: 0 0 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #1d4ed8;
+            color: white;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .admin-mini-profile strong {
+            display: block;
+            color: white;
+            font-size: 11px;
+        }
+
+        .admin-mini-profile span {
+            display: block;
+            margin-top: 2px;
+            color: #94a3b8;
+            font-size: 9px;
+        }
+
+        /* =========================================
+           MAIN
+        ========================================= */
+
+        .main-area {
+            width: calc(100% - var(--sidebar-width));
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: var(--topbar-height);
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 26px;
+            background: rgba(255,255,255,.92);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .mobile-menu {
+            display: none;
+            border: 0;
+            background: transparent;
+            font-size: 20px;
+            color: var(--text);
+        }
+
+        .page-title h2 {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .page-title p {
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .icon-btn {
+            width: 37px;
+            height: 37px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            background: white;
+            color: var(--text-secondary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .icon-btn:hover {
+            color: var(--primary);
+            border-color: #bfdbfe;
+            background: var(--primary-soft);
+        }
+
+        .content {
+            padding: 25px;
+        }
+
+        /* =========================================
+           VIEWS
+        ========================================= */
+
+        .view {
+            display: none;
+            animation: fadeIn .18s ease;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* =========================================
+           COMMON
+        ========================================= */
+
+        .page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .page-header h1 {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .page-header p {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btn {
+            min-height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 0 13px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            background: white;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 700;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            border-color: var(--border-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            color: white;
+            border-color: var(--primary);
+            background: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .btn-danger {
+            color: white;
+            border-color: var(--danger);
+            background: var(--danger);
+        }
+
+        .btn-success {
+            color: white;
+            border-color: var(--success);
+            background: var(--success);
+        }
+
+        .btn-warning {
+            color: white;
+            border-color: var(--warning);
+            background: var(--warning);
+        }
+
+        .btn-soft {
+            color: var(--primary);
+            border-color: #bfdbfe;
+            background: var(--primary-soft);
+        }
+
+        .btn-sm {
+            min-height: 31px;
+            padding: 0 10px;
+            font-size: 10px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 17px 19px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-header h3 {
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .card-header p {
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .card-body {
+            padding: 19px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        /* =========================================
+           STAT CARDS
+        ========================================= */
+
+        .stat-card {
+            padding: 17px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: "";
+            position: absolute;
+            right: -22px;
+            top: -22px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(37,99,235,.06);
+        }
+
+        .stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .stat-label {
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            margin-top: 4px;
+            font-size: 25px;
+            font-weight: 800;
+            letter-spacing: -.04em;
+        }
+
+        .stat-change {
+            margin-top: 5px;
+            font-size: 9px;
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        /* =========================================
+           TABLE
+        ========================================= */
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 700px;
+            border-collapse: collapse;
+        }
+
+        th {
+            padding: 11px 13px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+            color: var(--muted);
+            text-align: left;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 13px;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 10px;
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .table-primary {
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .table-secondary {
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 9px;
+        }
+
+        /* =========================================
+           BADGES
+        ========================================= */
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 8px;
+            border-radius: 20px;
+            font-size: 9px;
+            font-weight: 800;
+        }
+
+        .badge-success {
+            color: #166534;
+            background: #dcfce7;
+        }
+
+        .badge-warning {
+            color: #92400e;
+            background: #fef3c7;
+        }
+
+        .badge-danger {
+            color: #991b1b;
+            background: #fee2e2;
+        }
+
+        .badge-info {
+            color: #155e75;
+            background: #cffafe;
+        }
+
+        .badge-purple {
+            color: #5b21b6;
+            background: #ede9fe;
+        }
+
+        .badge-neutral {
+            color: #475569;
+            background: #f1f5f9;
+        }
+
+        /* =========================================
+           FORMS
+        ========================================= */
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .form-control,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            min-height: 39px;
+            padding: 8px 11px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            outline: none;
+            background: white;
+            color: var(--text);
+            font-size: 11px;
+            transition: var(--transition);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-control:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+        }
+
+        .form-help {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        .switch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 13px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .switch-row:last-child {
+            border-bottom: 0;
+        }
+
+        .switch-info strong {
+            display: block;
+            font-size: 11px;
+        }
+
+        .switch-info span {
+            display: block;
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 9px;
+        }
+
+        .switch {
+            position: relative;
+            width: 42px;
+            height: 23px;
+            flex: 0 0 42px;
+        }
+
+        .switch input {
+            display: none;
+        }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+            cursor: pointer;
+            border-radius: 30px;
+            background: #cbd5e1;
+            transition: .2s;
+        }
+
+        .slider::before {
+            content: "";
+            position: absolute;
+            width: 17px;
+            height: 17px;
+            left: 3px;
+            top: 3px;
+            border-radius: 50%;
+            background: white;
+            transition: .2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,.18);
+        }
+
+        .switch input:checked + .slider {
+            background: var(--primary);
+        }
+
+        .switch input:checked + .slider::before {
+            transform: translateX(19px);
+        }
+
+        /* =========================================
+           DASHBOARD
+        ========================================= */
+
+        .welcome-banner {
+            padding: 22px;
+            margin-bottom: 17px;
+            border-radius: var(--radius-lg);
+            background:
+                linear-gradient(120deg, #0f172a, #172554 60%, #312e81);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-banner::after {
+            content: "";
+            position: absolute;
+            right: -60px;
+            top: -80px;
+            width: 230px;
+            height: 230px;
+            border: 45px solid rgba(255,255,255,.05);
+            border-radius: 50%;
+        }
+
+        .welcome-banner h2 {
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .welcome-banner p {
+            max-width: 650px;
+            margin-top: 7px;
+            color: #cbd5e1;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .quick-action {
+            padding: 8px 11px;
+            border: 1px solid rgba(255,255,255,.15);
+            border-radius: 8px;
+            background: rgba(255,255,255,.07);
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .quick-action:hover {
+            background: rgba(255,255,255,.13);
+        }
+
+        /* =========================================
+           EMPTY STATE
+        ========================================= */
+
+        .empty-state {
+            text-align: center;
+            padding: 45px 20px;
+            color: var(--muted);
+        }
+
+        .empty-state i {
+            font-size: 30px;
+            margin-bottom: 11px;
+            color: #94a3b8;
+        }
+
+        .empty-state h4 {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .empty-state p {
+            margin-top: 5px;
+            font-size: 10px;
+        }
+
+        /* =========================================
+           FILTER BAR
+        ========================================= */
+
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            padding: 13px;
+            margin-bottom: 13px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1 1 220px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        .search-box input {
+            width: 100%;
+            height: 36px;
+            padding: 0 11px 0 31px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            font-size: 10px;
+        }
+
+        /* =========================================
+           ACTION CARDS
+        ========================================= */
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 13px;
+        }
+
+        .action-card {
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: white;
+            transition: var(--transition);
+        }
+
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .action-card-icon {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .action-card h4 {
+            margin-top: 12px;
+            font-size: 12px;
+        }
+
+        .action-card p {
+            min-height: 32px;
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        /* =========================================
+           LIVE MONITOR
+        ========================================= */
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--success);
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .live-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 0 4px rgba(22,163,74,.10);
+        }
+
+        /* =========================================
+           DANGER ZONE
+        ========================================= */
+
+        .danger-zone {
+            border: 1px solid #fecaca;
+            background: #fffafa;
+        }
+
+        .danger-zone .card-header {
+            background: #fef2f2;
+            border-bottom-color: #fecaca;
+        }
+
+        /* =========================================
+           TOAST
+        ========================================= */
+
+        .toast-container {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 12000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            min-width: 270px;
+            max-width: 380px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: white;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: toastIn .2s ease;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .toast i {
+            margin-top: 2px;
+        }
+
+        .toast strong {
+            display: block;
+            font-size: 10px;
+        }
+
+        .toast span {
+            display: block;
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 9px;
+            line-height: 1.4;
+        }
+
+        /* =========================================
+           MODAL
+        ========================================= */
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 11000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15,23,42,.55);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            width: min(680px, 100%);
+            max-height: 90vh;
+            overflow-y: auto;
+            background: white;
+            border-radius: 17px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 17px 19px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-header h3 {
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .modal-close {
+            width: 31px;
+            height: 31px;
+            border: 0;
+            border-radius: 7px;
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .modal-body {
+            padding: 19px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 14px 19px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* =========================================
+           RESPONSIVE
+        ========================================= */
+
+        @media (max-width: 1200px) {
+            .grid-4 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .action-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform .25s ease;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-area {
+                width: 100%;
+                margin-left: 0;
+            }
+
+            .mobile-menu {
+                display: inline-flex;
+            }
+
+            .grid-3,
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .content {
+                padding: 18px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .topbar {
+                padding: 0 14px;
+            }
+
+            .page-title p {
+                display: none;
+            }
+
+            .content {
+                padding: 13px;
+            }
+
+            .page-header {
+                flex-direction: column;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                flex: 1;
+            }
+
+            .grid-4 {
+                grid-template-columns: 1fr;
+            }
+
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .login-card {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- =====================================================
+     LOGIN SCREEN
+====================================================== -->
+
+<section id="loginScreen" class="login-screen">
+
+    <div class="login-card">
+
+        <div class="login-brand">
+
+            <div class="login-logo">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+
+            <h1>Super Admin</h1>
+
+            <p>
+                Secure Examination Platform Control Center
+            </p>
+
+        </div>
+
+        <form id="superAdminLoginForm">
+
+            <div class="form-group">
+
+                <label class="form-label" for="adminEmail">
+                    Administrator Email
+                </label>
+
+                <input
+                    id="adminEmail"
+                    class="form-control"
+                    type="email"
+                    autocomplete="username"
+                    placeholder="admin@example.com"
+                    required
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label class="form-label" for="adminPassword">
+                    Password
+                </label>
+
+                <input
+                    id="adminPassword"
+                    class="form-control"
+                    type="password"
+                    autocomplete="current-password"
+                    placeholder="Enter your password"
+                    required
+                >
+
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+                style="width:100%; margin-top:4px;"
+            >
+                <i class="fa-solid fa-right-to-bracket"></i>
+                Secure Login
+            </button>
+
+        </form>
+
+        <div class="login-security-note">
+
+            <i class="fa-solid fa-lock"></i>
+
+            Super Admin access is intended only for authorized
+            platform-level administrators. Backend authorization
+            must be enforced separately through Firebase security rules.
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     APPLICATION
+====================================================== -->
+
+<div id="appShell" class="app-shell">
+
+    <!-- =================================================
+         SIDEBAR
+    ================================================== -->
+
+    <aside id="sidebar" class="sidebar">
+
+        <div class="sidebar-brand">
+
+            <div class="brand-icon">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+
+            <div class="brand-text">
+                <strong>ExamPro</strong>
+                <span>Super Admin</span>
+            </div>
+
+        </div>
+
+
+        <div class="sidebar-scroll">
+
+            <!-- PLATFORM -->
+
+            <div class="nav-section-title">
+                Platform
+            </div>
+
+            <button
+                class="nav-item active"
+                data-view="dashboard"
+                data-title="Overview"
+            >
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Overview</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="institutes"
+                data-title="Institute Management"
+            >
+                <i class="fa-solid fa-building-columns"></i>
+                <span>Institutes</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="admins"
+                data-title="Admin Management"
+            >
+                <i class="fa-solid fa-user-shield"></i>
+                <span>Admins</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="permissions"
+                data-title="Roles & Permissions"
+            >
+                <i class="fa-solid fa-key"></i>
+                <span>Roles & Permissions</span>
+            </button>
+
+
+            <!-- EXAM -->
+
+            <div class="nav-section-title">
+                Examination
+            </div>
+
+            <button
+                class="nav-item"
+                data-view="exams"
+                data-title="Exam Management"
+            >
+                <i class="fa-solid fa-file-circle-check"></i>
+                <span>Exams</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="batches"
+                data-title="Batch Management"
+            >
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Batches</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="questions"
+                data-title="Question Bank"
+            >
+                <i class="fa-solid fa-database"></i>
+                <span>Question Bank</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="candidates"
+                data-title="Candidate Management"
+            >
+                <i class="fa-solid fa-users"></i>
+                <span>Candidates</span>
+            </button>
+
+
+            <!-- CONFIGURATION -->
+
+            <div class="nav-section-title">
+                Configuration
+            </div>
+
+            <button
+                class="nav-item"
+                data-view="portal"
+                data-title="Student Portal Builder"
+            >
+                <i class="fa-solid fa-window-maximize"></i>
+                <span>Portal Builder</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="branding"
+                data-title="Branding"
+            >
+                <i class="fa-solid fa-palette"></i>
+                <span>Branding</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="security"
+                data-title="Security Configuration"
+            >
+                <i class="fa-solid fa-shield"></i>
+                <span>Security</span>
+            </button>
+
+
+            <!-- MONITORING -->
+
+            <div class="nav-section-title">
+                Monitoring
+            </div>
+
+            <button
+                class="nav-item"
+                data-view="results"
+                data-title="Results & Analytics"
+            >
+                <i class="fa-solid fa-square-poll-vertical"></i>
+                <span>Results & Analytics</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="live"
+                data-title="Live Monitoring"
+            >
+                <i class="fa-solid fa-tower-broadcast"></i>
+                <span>Live Monitoring</span>
+                <span class="nav-badge" id="liveCountBadge">0</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="audit"
+                data-title="Audit Logs"
+            >
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>Audit Logs</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="notifications"
+                data-title="Notifications"
+            >
+                <i class="fa-solid fa-bell"></i>
+                <span>Notifications</span>
+            </button>
+
+
+            <!-- SYSTEM -->
+
+            <div class="nav-section-title">
+                System
+            </div>
+
+            <button
+                class="nav-item"
+                data-view="emergency"
+                data-title="Emergency Controls"
+            >
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Emergency Controls</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="global"
+                data-title="Global Settings"
+            >
+                <i class="fa-solid fa-sliders"></i>
+                <span>Global Settings</span>
+            </button>
+
+        </div>
+
+
+        <div class="sidebar-footer">
+
+            <div class="admin-mini-profile">
+
+                <div
+                    class="avatar"
+                    id="sidebarAvatar"
+                >
+                    SA
+                </div>
+
+                <div>
+                    <strong id="sidebarAdminName">
+                        Super Administrator
+                    </strong>
+
+                    <span id="sidebarAdminEmail">
+                        Authorized account
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =================================================
+         MAIN AREA
+    ================================================== -->
+
+    <main class="main-area">
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <button
+                    id="mobileMenuBtn"
+                    class="mobile-menu"
+                    type="button"
+                >
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+
+                <div class="page-title">
+
+                    <h2 id="currentPageTitle">
+                        Overview
+                    </h2>
+
+                    <p>
+                        Platform-level examination management
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="topbar-actions">
+
+                <button
+                    class="icon-btn"
+                    id="refreshBtn"
+                    title="Refresh data"
+                    type="button"
+                >
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+
+
+                <button
+                    class="icon-btn"
+                    id="notificationBtn"
+                    title="Notifications"
+                    type="button"
+                >
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+
+
+                <button
+                    class="icon-btn"
+                    id="logoutBtn"
+                    title="Logout"
+                    type="button"
+                >
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+
+            </div>
+
+        </header>
+
+
+        <div class="content">
+
+
+            <!-- =================================================
+                 DASHBOARD
+            ================================================== -->
+
+            <section
+                id="view-dashboard"
+                class="view active"
+            >
+
+                <div class="welcome-banner">
+
+                    <h2>
+                        Platform Overview
+                    </h2>
+
+                    <p>
+                        Manage institutes, administrators, examinations,
+                        candidates, batches, question banks, security,
+                        results and global platform configuration from
+                        one centralized control center.
+                    </p>
+
+                    <div class="quick-actions">
+
+                        <button
+                            class="quick-action"
+                            data-action-view="institutes"
+                        >
+                            <i class="fa-solid fa-building"></i>
+                            Add Institute
+                        </button>
+
+                        <button
+                            class="quick-action"
+                            data-action-view="admins"
+                        >
+                            <i class="fa-solid fa-user-plus"></i>
+                            Add Admin
+                        </button>
+
+                        <button
+                            class="quick-action"
+                            data-action-view="exams"
+                        >
+                            <i class="fa-solid fa-plus"></i>
+                            Create Exam
+                        </button>
+
+                        <button
+                            class="quick-action"
+                            data-action-view="batches"
+                        >
+                            <i class="fa-solid fa-layer-group"></i>
+                            Create Batch
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="grid grid-4">
+
+                    <div class="card stat-card">
+
+                        <div class="stat-top">
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-building-columns"></i>
+                            </div>
+                        </div>
+
+                        <div class="stat-label">
+                            Total Institutes
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="statInstitutes"
+                        >
+                            0
+                        </div>
+
+                        <div class="stat-change">
+                            Platform-wide
+                        </div>
+
+                    </div>
+
+
+                    <div class="card stat-card">
+
+                        <div class="stat-top">
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-file-circle-check"></i>
+                            </div>
+                        </div>
+
+                        <div class="stat-label">
+                            Total Exams
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="statExams"
+                        >
+                            0
+                        </div>
+
+                        <div class="stat-change">
+                            All institutes
+                        </div>
+
+                    </div>
+
+
+                    <div class="card stat-card">
+
+                        <div class="stat-top">
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                        </div>
+
+                        <div class="stat-label">
+                            Candidates
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="statCandidates"
+                        >
+                            0
+                        </div>
+
+                        <div class="stat-change">
+                            Registered candidates
+                        </div>
+
+                    </div>
+
+
+                    <div class="card stat-card">
+
+                        <div class="stat-top">
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-tower-broadcast"></i>
+                            </div>
+                        </div>
+
+                        <div class="stat-label">
+                            Live Candidates
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="statLive"
+                        >
+                            0
+                        </div>
+
+                        <div class="stat-change">
+                            Real-time presence
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div style="height:16px;"></div>
+
+
+                <div class="grid grid-2">
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>Platform Health</h3>
+                                <p>High-level system status</p>
+                            </div>
+
+                            <span class="badge badge-success">
+                                <i class="fa-solid fa-circle"></i>
+                                Operational
+                            </span>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Candidate Portal</strong>
+                                    <span>Candidate access availability</span>
+                                </div>
+                                <span class="badge badge-success">Enabled</span>
+                            </div>
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Authentication</strong>
+                                    <span>Firebase authentication service</span>
+                                </div>
+                                <span class="badge badge-success">Connected</span>
+                            </div>
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Database</strong>
+                                    <span>Firestore data service</span>
+                                </div>
+                                <span class="badge badge-success">Connected</span>
+                            </div>
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Maintenance Mode</strong>
+                                    <span>Global candidate access control</span>
+                                </div>
+                                <span
+                                    id="maintenanceStatus"
+                                    class="badge badge-neutral"
+                                >
+                                    Disabled
+                                </span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>Recent Activity</h3>
+                                <p>Latest platform events</p>
+                            </div>
+
+                            <button
+                                class="btn btn-sm"
+                                data-action-view="audit"
+                            >
+                                View All
+                            </button>
+
+                        </div>
+
+                        <div
+                            class="card-body"
+                            id="dashboardRecentActivity"
+                        >
+
+                            <div class="empty-state">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                <h4>No activity loaded</h4>
+                                <p>
+                                    Activity will appear here after Firebase integration.
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div style="height:16px;"></div>
+
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <div>
+                            <h3>Quick Management</h3>
+                            <p>Common platform-level operations</p>
+                        </div>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="action-grid">
+
+                            <button
+                                class="action-card"
+                                data-action-view="institutes"
+                            >
+                                <div class="action-card-icon">
+                                    <i class="fa-solid fa-building"></i>
+                                </div>
+
+                                <h4>Institute Management</h4>
+
+                                <p>
+                                    Create and manage isolated institute environments.
+                                </p>
+                            </button>
+
+
+                            <button
+                                class="action-card"
+                                data-action-view="admins"
+                            >
+                                <div class="action-card-icon">
+                                    <i class="fa-solid fa-user-shield"></i>
+                                </div>
+
+                                <h4>Admin Management</h4>
+
+                                <p>
+                                    Manage administrators and their assigned scopes.
+                                </p>
+                            </button>
+
+
+                            <button
+                                class="action-card"
+                                data-action-view="exams"
+                            >
+                                <div class="action-card-icon">
+                                    <i class="fa-solid fa-file-circle-check"></i>
+                                </div>
+
+                                <h4>Exam Management</h4>
+
+                                <p>
+                                    Create, configure, preview and publish examinations.
+                                </p>
+                            </button>
+
+
+                            <button
+                                class="action-card"
+                                data-action-view="questions"
+                            >
+                                <div class="action-card-icon">
+                                    <i class="fa-solid fa-database"></i>
+                                </div>
+
+                                <h4>Question Bank</h4>
+
+                                <p>
+                                    Manage reusable questions and question metadata.
+                                </p>
+                            </button>
+
+
+                            <button
+                                class="action-card"
+                                data-action-view="portal"
+                            >
+                                <div class="action-card-icon">
+                                    <i class="fa-solid fa-window-maximize"></i>
+                                </div>
+
+                                <h4>Portal Builder</h4>
+
+                                <p>
+                                    Configure candidate portal content and fields.
+                                </p>
+                            </button>
+
+
+                            <button
+                                class="action-card"
+                                data-action-view="security"
+                            >
+                                <div class="action-card-icon">
+                                    <i class="fa-solid fa-shield-halved"></i>
+                                </div>
+
+                                <h4>Security</h4>
+
+                                <p>
+                                    Configure exam security and anti-cheating controls.
+                                </p>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 INSTITUTES
+            ================================================== -->
+
+            <section
+                id="view-institutes"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Institute Management</h1>
+                        <p>
+                            Manage isolated institute environments and their platform configuration.
+                        </p>
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            class="btn btn-primary"
+                            id="createInstituteBtn"
+                        >
+                            <i class="fa-solid fa-plus"></i>
+                            Add Institute
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="filter-bar">
+
+                    <div class="search-box">
+
+                        <i class="fa-solid fa-search"></i>
+
+                        <input
+                            id="instituteSearch"
+                            type="search"
+                            placeholder="Search institute..."
+                        >
+
+                    </div>
+
+                    <select
+                        id="instituteStatusFilter"
+                        class="form-select"
+                        style="width:150px;"
+                    >
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Institute</th>
+                                    <th>Code</th>
+                                    <th>Status</th>
+                                    <th>Admins</th>
+                                    <th>Exams</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="institutesTableBody">
+
+                                <tr>
+                                    <td colspan="7">
+                                        <div class="empty-state">
+                                            <i class="fa-solid fa-building-columns"></i>
+                                            <h4>No institute data loaded</h4>
+                                            <p>
+                                                Connect this view to the institute module in superadmin.js.
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 ADMINS
+            ================================================== -->
+
+            <section
+                id="view-admins"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Admin Management</h1>
+                        <p>
+                            Manage platform administrators, assignments and access status.
+                        </p>
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            class="btn btn-primary"
+                            id="createAdminBtn"
+                        >
+                            <i class="fa-solid fa-user-plus"></i>
+                            Add Admin
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="filter-bar">
+
+                    <div class="search-box">
+
+                        <i class="fa-solid fa-search"></i>
+
+                        <input
+                            id="adminSearch"
+                            type="search"
+                            placeholder="Search admin by name or email..."
+                        >
+
+                    </div>
+
+                    <select
+                        id="adminRoleFilter"
+                        class="form-select"
+                        style="width:150px;"
+                    >
+                        <option value="">All Roles</option>
+                        <option value="admin">Admin</option>
+                        <option value="manager">Manager</option>
+                        <option value="viewer">Viewer</option>
+                    </select>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Administrator</th>
+                                    <th>Role</th>
+                                    <th>Institute</th>
+                                    <th>Scope</th>
+                                    <th>Status</th>
+                                    <th>Last Active</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="adminsTableBody">
+
+                                <tr>
+                                    <td colspan="7">
+                                        <div class="empty-state">
+                                            <i class="fa-solid fa-user-shield"></i>
+                                            <h4>No administrator data loaded</h4>
+                                            <p>
+                                                Admin records will be rendered by superadmin.js.
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 PERMISSIONS
+            ================================================== -->
+
+            <section
+                id="view-permissions"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Roles & Permissions</h1>
+                        <p>
+                            Configure granular administrative permissions and access scopes.
+                        </p>
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            class="btn btn-primary"
+                            id="savePermissionsBtn"
+                        >
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save Permissions
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="grid grid-2">
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>System Roles</h3>
+                                <p>Platform-level role definitions</p>
+                            </div>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>SUPER_ADMIN</strong>
+                                    <span>Full platform-level control</span>
+                                </div>
+                                <span class="badge badge-purple">Full Access</span>
+                            </div>
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>ADMIN</strong>
+                                    <span>Assigned institute/exam scope</span>
+                                </div>
+                                <span class="badge badge-info">Scoped</span>
+                            </div>
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>CANDIDATE</strong>
+                                    <span>Own exam and result scope</span>
+                                </div>
+                                <span class="badge badge-neutral">Restricted</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>Permission Matrix</h3>
+                                <p>UI representation of granular permissions</p>
+                            </div>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Institute Management</strong>
+                                    <span>institute.create / edit / delete</span>
+                                </div>
+                                <label class="switch">
+                                    <input
+                                        type="checkbox"
+                                        id="permInstitute"
+                                        checked
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Exam Management</strong>
+                                    <span>exam.create / edit / publish</span>
+                                </div>
+                                <label class="switch">
+                                    <input
+                                        type="checkbox"
+                                        id="permExam"
+                                        checked
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Question Management</strong>
+                                    <span>question.create / edit / delete</span>
+                                </div>
+                                <label class="switch">
+                                    <input
+                                        type="checkbox"
+                                        id="permQuestion"
+                                        checked
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Results & Export</strong>
+                                    <span>result.view / export</span>
+                                </div>
+                                <label class="switch">
+                                    <input
+                                        type="checkbox"
+                                        id="permResults"
+                                        checked
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Security Analytics</strong>
+                                    <span>security.view / audit.view</span>
+                                </div>
+                                <label class="switch">
+                                    <input
+                                        type="checkbox"
+                                        id="permSecurity"
+                                        checked
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 EXAMS
+            ================================================== -->
+
+            <section
+                id="view-exams"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Exam Management</h1>
+                        <p>
+                            Create, configure, preview, publish and manage examinations.
+                        </p>
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            class="btn"
+                            id="previewExamBtn"
+                        >
+                            <i class="fa-solid fa-eye"></i>
+                            Preview
+                        </button>
+
+                        <button
+                            class="btn btn-primary"
+                            id="createExamBtn"
+                        >
+                            <i class="fa-solid fa-plus"></i>
+                            Create Exam
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="filter-bar">
+
+                    <div class="search-box">
+
+                        <i class="fa-solid fa-search"></i>
+
+                        <input
+                            id="examSearch"
+                            type="search"
+                            placeholder="Search exams..."
+                        >
+
+                    </div>
+
+                    <select
+                        id="examStatusFilter"
+                        class="form-select"
+                        style="width:150px;"
+                    >
+                        <option value="">All Status</option>
+                        <option value="draft">Draft</option>
+                        <option value="preview">Preview</option>
+                        <option value="published">Published</option>
+                        <option value="archived">Archived</option>
+                    </select>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Exam</th>
+                                    <th>Institute</th>
+                                    <th>Batch</th>
+                                    <th>Status</th>
+                                    <th>Duration</th>
+                                    <th>Questions</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="examsTableBody">
+
+                                <tr>
+                                    <td colspan="7">
+                                        <div class="empty-state">
+                                            <i class="fa-solid fa-file-circle-check"></i>
+                                            <h4>No exam data loaded</h4>
+                                            <p>
+                                                Exam records will be connected through exam.js.
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 BATCHES
+            ================================================== -->
+
+            <section
+                id="view-batches"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Batch Management</h1>
+                        <p>
+                            Organize candidates and examinations into controlled batches.
+                        </p>
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            class="btn btn-primary"
+                            id="createBatchBtn"
+                        >
+                            <i class="fa-solid fa-plus"></i>
+                            Create Batch
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="filter-bar">
+
+                    <div class="search-box">
+
+                        <i class="fa-solid fa-search"></i>
+
+                        <input
+                            id="batchSearch"
+                            type="search"
+                            placeholder="Search batch..."
+                        >
+
+                    </div>
+
+                    <select
+                        id="batchStatusFilter"
+                        class="form-select"
+                        style="width:150px;"
+                    >
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="completed">Completed</option>
+                    </select>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Batch</th>
+                                    <th>Code</th>
+                                    <th>Institute</th>
+                                    <th>Class</th>
+                                    <th>Candidates</th>
+                                    <th>Exams</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="batchesTableBody">
+
+                                <tr>
+                                    <td colspan="8">
+                                        <div class="empty-state">
+                                            <i class="fa-solid fa-layer-group"></i>
+                                            <h4>No batch data loaded</h4>
+                                            <p>
+                                                Batch records will be loaded through batch.js.
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 QUESTIONS
+            ================================================== -->
+
+            <section
+                id="view-questions"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Question Bank</h1>
+                        <p>
+                            Manage reusable questions, metadata, subjects and difficulty levels.
+                        </p>
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            class="btn"
+                            id="importQuestionsBtn"
+                        >
+                            <i class="fa-solid fa-file-import"></i>
+                            Import
+                        </button>
+
+                        <button
+                            class="btn btn-primary"
+                            id="createQuestionBtn"
+                        >
+                            <i class="fa-solid fa-plus"></i>
+                            Add Question
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="filter-bar">
+
+                    <div class="search-box">
+
+                        <i class="fa-solid fa-search"></i>
+
+                        <input
+                            id="questionSearch"
+                            type="search"
+                            placeholder="Search question, subject, chapter or tag..."
+                        >
+
+                    </div>
+
+                    <select
+                        id="questionSubjectFilter"
+                        class="form-select"
+                        style="width:140px;"
+                    >
+                        <option value="">Subject</option>
+                    </select>
+
+                    <select
+                        id="questionDifficultyFilter"
+                        class="form-select"
+                        style="width:140px;"
+                    >
+                        <option value="">Difficulty</option>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Question</th>
+                                    <th>Subject</th>
+                                    <th>Chapter</th>
+                                    <th>Difficulty</th>
+                                    <th>Marks</th>
+                                    <th>Tags</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="questionsTableBody">
+
+                                <tr>
+                                    <td colspan="7">
+                                        <div class="empty-state">
+                                            <i class="fa-solid fa-database"></i>
+                                            <h4>No question data loaded</h4>
+                                            <p>
+                                                Question records will be connected through question-bank.js.
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 CANDIDATES
+            ================================================== -->
+
+            <section
+                id="view-candidates"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Candidate Management</h1>
+                        <p>
+                            Manage candidate records within institute and batch scope.
+                        </p>
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            class="btn"
+                            id="exportCandidatesBtn"
+                        >
+                            <i class="fa-solid fa-file-export"></i>
+                            Export
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="filter-bar">
+
+                    <div class="search-box">
+
+                        <i class="fa-solid fa-search"></i>
+
+                        <input
+                            id="candidateSearch"
+                            type="search"
+                            placeholder="Search candidate..."
+                        >
+
+                    </div>
+
+                    <select
+                        id="candidateInstituteFilter"
+                        class="form-select"
+                        style="width:160px;"
+                    >
+                        <option value="">All Institutes</option>
+                    </select>
+
+                    <select
+                        id="candidateBatchFilter"
+                        class="form-select"
+                        style="width:150px;"
+                    >
+                        <option value="">All Batches</option>
+                    </select>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Email</th>
+                                    <th>Institute</th>
+                                    <th>Batch</th>
+                                    <th>Exam</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="candidatesTableBody">
+
+                                <tr>
+                                    <td colspan="7">
+                                        <div class="empty-state">
+                                            <i class="fa-solid fa-users"></i>
+                                            <h4>No candidate data loaded</h4>
+                                            <p>
+                                                Candidate records will be loaded by superadmin.js.
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 PORTAL BUILDER
+            ================================================== -->
+
+            <section
+                id="view-portal"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Student Portal Builder</h1>
+                        <p>
+                            Configure candidate-facing portal content without changing application code.
+                        </p>
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            class="btn"
+                            id="previewPortalBtn"
+                        >
+                            <i class="fa-solid fa-eye"></i>
+                            Preview
+                        </button>
+
+                        <button
+                            class="btn btn-primary"
+                            id="savePortalBtn"
+                        >
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save Configuration
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="grid grid-2">
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>Portal Content</h3>
+                                <p>Candidate-facing text and visibility</p>
+                            </div>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Portal Title
+                                </label>
+
+                                <input
+                                    id="portalTitle"
+                                    class="form-control"
+                                    type="text"
+                                    placeholder="Online Examination Portal"
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Subtitle
+                                </label>
+
+                                <input
+                                    id="portalSubtitle"
+                                    class="form-control"
+                                    type="text"
+                                    placeholder="Secure online examination platform"
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Notice
+                                </label>
+
+                                <textarea
+                                    id="portalNotice"
+                                    class="form-textarea"
+                                    placeholder="Important notice for candidates..."
+                                ></textarea>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Login Button Text
+                                </label>
+
+                                <input
+                                    id="portalLoginButton"
+                                    class="form-control"
+                                    type="text"
+                                    value="Continue"
+                                >
+
+                            </div>
+
+
+                            <div class="switch-row">
+
+                                <div class="switch-info">
+                                    <strong>Show Notice</strong>
+                                    <span>
+                                        Display notice on candidate login portal
+                                    </span>
+                                </div>
+
+                                <label class="switch">
+                                    <input
+                                        id="portalShowNotice"
+                                        type="checkbox"
+                                        checked
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+
+                            </div>
+
+
+                            <div class="switch-row">
+
+                                <div class="switch-info">
+                                    <strong>Show Instructions</strong>
+                                    <span>
+                                        Display exam instructions before starting
+                                    </span>
+                                </div>
+
+                                <label class="switch">
+                                    <input
+                                        id="portalShowInstructions"
+                                        type="checkbox"
+                                        checked
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>Candidate Form Fields</h3>
+                                <p>Required/optional field configuration</p>
+                            </div>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Candidate Name</strong>
+                                    <span>Required candidate identity field</span>
+                                </div>
+                                <span class="badge badge-success">Required</span>
+                            </div>
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Email</strong>
+                                    <span>Candidate email identification</span>
+                                </div>
+                                <span class="badge badge-success">Required</span>
+                            </div>
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Candidate ID</strong>
+                                    <span>Optional platform identifier</span>
+                                </div>
+                                <label class="switch">
+                                    <input
+                                        id="portalCandidateId"
+                                        type="checkbox"
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Batch Selection</strong>
+                                    <span>Allow candidate batch selection where applicable</span>
+                                </div>
+                                <label class="switch">
+                                    <input
+                                        id="portalBatchSelection"
+                                        type="checkbox"
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 BRANDING
+            ================================================== -->
+
+            <section
+                id="view-branding"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Branding</h1>
+                        <p>
+                            Configure institute and candidate portal visual identity.
+                        </p>
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            class="btn btn-primary"
+                            id="saveBrandingBtn"
+                        >
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save Branding
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="grid grid-2">
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>Identity</h3>
+                                <p>Logo and text configuration</p>
+                            </div>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Institute / Platform Name
+                                </label>
+
+                                <input
+                                    id="brandName"
+                                    class="form-control"
+                                    type="text"
+                                    placeholder="Institute Name"
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Short Name
+                                </label>
+
+                                <input
+                                    id="brandShortName"
+                                    class="form-control"
+                                    type="text"
+                                    placeholder="ABC"
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Logo URL
+                                </label>
+
+                                <input
+                                    id="brandLogoUrl"
+                                    class="form-control"
+                                    type="url"
+                                    placeholder="https://..."
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Favicon URL
+                                </label>
+
+                                <input
+                                    id="brandFaviconUrl"
+                                    class="form-control"
+                                    type="url"
+                                    placeholder="https://..."
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>Theme</h3>
+                                <p>Portal appearance settings</p>
+                            </div>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Primary Color
+                                </label>
+
+                                <input
+                                    id="brandPrimaryColor"
+                                    class="form-control"
+                                    type="text"
+                                    value="#2563eb"
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Secondary Color
+                                </label>
+
+                                <input
+                                    id="brandSecondaryColor"
+                                    class="form-control"
+                                    type="text"
+                                    value="#7c3aed"
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Theme Mode
+                                </label>
+
+                                <select
+                                    id="brandThemeMode"
+                                    class="form-select"
+                                >
+                                    <option value="light">Light</option>
+                                    <option value="dark">Dark</option>
+                                    <option value="system">System</option>
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 SECURITY
+            ================================================== -->
+
+            <section
+                id="view-security"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Security Configuration</h1>
+                        <p>
+                            Configure exam-level security and monitoring controls.
+                        </p>
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            class="btn btn-primary"
+                            id="saveSecurityBtn"
+                        >
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save Security
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="grid grid-2">
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>Candidate Monitoring</h3>
+                                <p>Security event configuration</p>
+                            </div>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Tab Switch Detection</strong>
+                                    <span>Record browser visibility changes</span>
+                                </div>
+                                <label class="switch">
+                                    <input
+                                        id="securityTabSwitch"
+                                        type="checkbox"
+                                        checked
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Copy/Paste Detection</strong>
+                                    <span>Record copy and paste violations</span>
+                                </div>
+                                <label class="switch">
+                                    <input
+                                        id="securityCopyPaste"
+                                        type="checkbox"
+                                        checked
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Refresh Detection</strong>
+                                    <span>Record unexpected page refresh events</span>
+                                </div>
+                                <label class="switch">
+                                    <input
+                                        id="securityRefresh"
+                                        type="checkbox"
+                                        checked
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Fullscreen Monitoring</strong>
+                                    <span>Track fullscreen state changes</span>
+                                </div>
+                                <label class="switch">
+                                    <input
+                                        id="securityFullscreen"
+                                        type="checkbox"
+                                        checked
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+
+                            <div class="switch-row">
+                                <div class="switch-info">
+                                    <strong>Keyboard Event Monitoring</strong>
+                                    <span>Record configured restricted-key events</span>
+                                </div>
+                                <label class="switch">
+                                    <input
+                                        id="securityKeyboard"
+                                        type="checkbox"
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>Penalty Configuration</h3>
+                                <p>Exam violation response configuration</p>
+                            </div>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Tab Switch Penalty
+                                </label>
+
+                                <input
+                                    id="securityTabPenalty"
+                                    class="form-control"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value="0"
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Copy/Paste Penalty
+                                </label>
+
+                                <input
+                                    id="securityCopyPenalty"
+                                    class="form-control"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value="0"
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Maximum Allowed Violations
+                                </label>
+
+                                <input
+                                    id="securityMaxViolations"
+                                    class="form-control"
+                                    type="number"
+                                    min="0"
+                                    value="3"
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Security Action
+                                </label>
+
+                                <select
+                                    id="securityAction"
+                                    class="form-select"
+                                >
+                                    <option value="warning">
+                                        Warning
+                                    </option>
+                                    <option value="penalty">
+                                        Warning + Penalty
+                                    </option>
+                                    <option value="flag">
+                                        Flag for Review
+                                    </option>
+                                </select>
+
+                            </div>
+
+                            <div class="form-help">
+                                Security configuration should be captured in the
+                                exam attempt snapshot so that running examinations
+                                are not unexpectedly changed by later configuration updates.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 RESULTS
+            ================================================== -->
+
+            <section
+                id="view-results"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Results & Analytics</h1>
+                        <p>
+                            Platform-wide result summaries and examination analytics.
+                        </p>
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            class="btn"
+                            id="exportResultsBtn"
+                        >
+                            <i class="fa-solid fa-file-export"></i>
+                            Export
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="grid grid-4">
+
+                    <div class="card stat-card">
+
+                        <div class="stat-top">
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-file-circle-check"></i>
+                            </div>
+                        </div>
+
+                        <div class="stat-label">
+                            Completed Attempts
+                        </div>
+
+                        <div
+                            id="resultCompletedCount"
+                            class="stat-value"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+
+                    <div class="card stat-card">
+
+                        <div class="stat-top">
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+                        </div>
+
+                        <div class="stat-label">
+                            Average Score
+                        </div>
+
+                        <div
+                            id="resultAverageScore"
+                            class="stat-value"
+                        >
+                            0%
+                        </div>
+
+                    </div>
+
+
+                    <div class="card stat-card">
+
+                        <div class="stat-top">
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-trophy"></i>
+                            </div>
+                        </div>
+
+                        <div class="stat-label">
+                            Highest Score
+                        </div>
+
+                        <div
+                            id="resultHighestScore"
+                            class="stat-value"
+                        >
+                            0%
+                        </div>
+
+                    </div>
+
+
+                    <div class="card stat-card">
+
+                        <div class="stat-top">
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-flag"></i>
+                            </div>
+                        </div>
+
+                        <div class="stat-label">
+                            Flagged Attempts
+                        </div>
+
+                        <div
+                            id="resultFlaggedCount"
+                            class="stat-value"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div style="height:16px;"></div>
+
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <div>
+                            <h3>Recent Results</h3>
+                            <p>Cross-institute result records</p>
+                        </div>
+
+                    </div>
+
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Exam</th>
+                                    <th>Institute</th>
+                                    <th>Batch</th>
+                                    <th>Score</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="resultsTableBody">
+
+                                <tr>
+                                    <td colspan="7">
+                                        <div class="empty-state">
+                                            <i class="fa-solid fa-square-poll-vertical"></i>
+                                            <h4>No result data loaded</h4>
+                                            <p>
+                                                Results will be populated through results.js.
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 LIVE MONITORING
+            ================================================== -->
+
+            <section
+                id="view-live"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Live Monitoring</h1>
+                        <p>
+                            Monitor currently active examination sessions and candidate presence.
+                        </p>
+                    </div>
+
+                    <div class="header-actions">
+
+                        <span class="live-indicator">
+                            <span class="live-dot"></span>
+                            Live
+                        </span>
+
+                        <button
+                            class="btn"
+                            id="refreshLiveBtn"
+                        >
+                            <i class="fa-solid fa-rotate"></i>
+                            Refresh
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="grid grid-4">
+
+                    <div class="card stat-card">
+                        <div class="stat-top">
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-user-check"></i>
+                            </div>
+                        </div>
+                        <div class="stat-label">Active Candidates</div>
+                        <div id="liveActiveCount" class="stat-value">0</div>
+                    </div>
+
+                    <div class="card stat-card">
+                        <div class="stat-top">
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-file-circle-check"></i>
+                            </div>
+                        </div>
+                        <div class="stat-label">Running Exams</div>
+                        <div id="liveExamCount" class="stat-value">0</div>
+                    </div>
+
+                    <div class="card stat-card">
+                        <div class="stat-top">
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                        </div>
+                        <div class="stat-label">Security Alerts</div>
+                        <div id="liveSecurityCount" class="stat-value">0</div>
+                    </div>
+
+                    <div class="card stat-card">
+                        <div class="stat-top">
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-building"></i>
+                            </div>
+                        </div>
+                        <div class="stat-label">Active Institutes</div>
+                        <div id="liveInstituteCount" class="stat-value">0</div>
+                    </div>
+
+                </div>
+
+
+                <div style="height:16px;"></div>
+
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <div>
+                            <h3>Active Sessions</h3>
+                            <p>
+                                Candidate presence and current examination progress
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Institute</th>
+                                    <th>Exam</th>
+                                    <th>Batch</th>
+                                    <th>Progress</th>
+                                    <th>Security</th>
+                                    <th>Last Active</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="liveSessionsTableBody">
+
+                                <tr>
+                                    <td colspan="8">
+                                        <div class="empty-state">
+                                            <i class="fa-solid fa-tower-broadcast"></i>
+                                            <h4>No active sessions</h4>
+                                            <p>
+                                                Live presence data will be rendered by presence.js.
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 AUDIT LOGS
+            ================================================== -->
+
+            <section
+                id="view-audit"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Audit Logs</h1>
+                        <p>
+                            Track administrative actions and important configuration changes.
+                        </p>
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            class="btn"
+                            id="exportAuditBtn"
+                        >
+                            <i class="fa-solid fa-file-export"></i>
+                            Export
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="filter-bar">
+
+                    <div class="search-box">
+
+                        <i class="fa-solid fa-search"></i>
+
+                        <input
+                            id="auditSearch"
+                            type="search"
+                            placeholder="Search audit activity..."
+                        >
+
+                    </div>
+
+                    <select
+                        id="auditActionFilter"
+                        class="form-select"
+                        style="width:170px;"
+                    >
+                        <option value="">All Actions</option>
+                        <option value="create">Create</option>
+                        <option value="update">Update</option>
+                        <option value="delete">Delete</option>
+                        <option value="publish">Publish</option>
+                        <option value="login">Login</option>
+                        <option value="security">Security</option>
+                    </select>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Actor</th>
+                                    <th>Role</th>
+                                    <th>Action</th>
+                                    <th>Entity</th>
+                                    <th>Entity ID</th>
+                                    <th>Reason</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="auditTableBody">
+
+                                <tr>
+                                    <td colspan="7">
+                                        <div class="empty-state">
+                                            <i class="fa-solid fa-clock-rotate-left"></i>
+                                            <h4>No audit records loaded</h4>
+                                            <p>
+                                                Audit events will be populated through audit.js.
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 NOTIFICATIONS
+            ================================================== -->
+
+            <section
+                id="view-notifications"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Notifications</h1>
+                        <p>
+                            Manage platform-level notices and communication.
+                        </p>
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            class="btn btn-primary"
+                            id="createNotificationBtn"
+                        >
+                            <i class="fa-solid fa-plus"></i>
+                            Create Notification
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="grid grid-2">
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>Create Notification</h3>
+                                <p>Platform/institute communication</p>
+                            </div>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Title
+                                </label>
+
+                                <input
+                                    id="notificationTitle"
+                                    class="form-control"
+                                    type="text"
+                                    placeholder="Notification title"
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Message
+                                </label>
+
+                                <textarea
+                                    id="notificationMessage"
+                                    class="form-textarea"
+                                    placeholder="Notification message..."
+                                ></textarea>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Priority
+                                </label>
+
+                                <select
+                                    id="notificationPriority"
+                                    class="form-select"
+                                >
+                                    <option value="normal">Normal</option>
+                                    <option value="important">Important</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+
+                            </div>
+
+
+                            <button
+                                class="btn btn-primary"
+                                id="sendNotificationBtn"
+                                style="width:100%;"
+                            >
+                                <i class="fa-solid fa-paper-plane"></i>
+                                Publish Notification
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>Recent Notifications</h3>
+                                <p>Previously published notices</p>
+                            </div>
+
+                        </div>
+
+                        <div
+                            class="card-body"
+                            id="notificationsList"
+                        >
+
+                            <div class="empty-state">
+                                <i class="fa-solid fa-bell"></i>
+                                <h4>No notifications loaded</h4>
+                                <p>
+                                    Notification history will appear here.
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 EMERGENCY CONTROLS
+            ================================================== -->
+
+            <section
+                id="view-emergency"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Emergency Controls</h1>
+                        <p>
+                            High-impact platform controls. Use only when operationally required.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="card danger-zone">
+
+                    <div class="card-header">
+
+                        <div>
+                            <h3>
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                Critical Controls
+                            </h3>
+
+                            <p>
+                                These operations may affect candidate access or running examinations.
+                            </p>
+                        </div>
+
+                        <span class="badge badge-danger">
+                            Restricted
+                        </span>
+
+                    </div>
+
+
+                    <div class="card-body">
+
+                        <div class="grid grid-2">
+
+                            <div class="action-card">
+
+                                <div class="action-card-icon">
+                                    <i class="fa-solid fa-screwdriver-wrench"></i>
+                                </div>
+
+                                <h4>Maintenance Mode</h4>
+
+                                <p>
+                                    Temporarily disable candidate portal access platform-wide.
+                                </p>
+
+                                <button
+                                    id="toggleMaintenanceBtn"
+                                    class="btn btn-warning btn-sm"
+                                >
+                                    Enable Maintenance
+                                </button>
+
+                            </div>
+
+
+                            <div class="action-card">
+
+                                <div class="action-card-icon">
+                                    <i class="fa-solid fa-pause"></i>
+                                </div>
+
+                                <h4>Pause Exam</h4>
+
+                                <p>
+                                    Pause a selected running examination.
+                                </p>
+
+                                <button
+                                    id="pauseExamBtn"
+                                    class="btn btn-warning btn-sm"
+                                >
+                                    Pause Selected Exam
+                                </button>
+
+                            </div>
+
+
+                            <div class="action-card">
+
+                                <div class="action-card-icon">
+                                    <i class="fa-solid fa-play"></i>
+                                </div>
+
+                                <h4>Resume Exam</h4>
+
+                                <p>
+                                    Resume a previously paused examination.
+                                </p>
+
+                                <button
+                                    id="resumeExamBtn"
+                                    class="btn btn-success btn-sm"
+                                >
+                                    Resume Selected Exam
+                                </button>
+
+                            </div>
+
+
+                            <div class="action-card">
+
+                                <div class="action-card-icon">
+                                    <i class="fa-solid fa-stop"></i>
+                                </div>
+
+                                <h4>Force Submit</h4>
+
+                                <p>
+                                    Force-submit selected candidate sessions when necessary.
+                                </p>
+
+                                <button
+                                    id="forceSubmitBtn"
+                                    class="btn btn-danger btn-sm"
+                                >
+                                    Force Submit
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 GLOBAL SETTINGS
+            ================================================== -->
+
+            <section
+                id="view-global"
+                class="view"
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Global Settings</h1>
+                        <p>
+                            Platform-wide defaults and operational configuration.
+                        </p>
+                    </div>
+
+                    <div class="header-actions">
+
+                        <button
+                            class="btn btn-primary"
+                            id="saveGlobalSettingsBtn"
+                        >
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save Settings
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="grid grid-2">
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>Platform Defaults</h3>
+                                <p>Default configuration values</p>
+                            </div>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Default Exam Duration
+                                </label>
+
+                                <input
+                                    id="globalExamDuration"
+                                    class="form-control"
+                                    type="number"
+                                    min="1"
+                                    value="60"
+                                >
+
+                                <div class="form-help">
+                                    Duration in minutes.
+                                </div>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Default Marks Per Question
+                                </label>
+
+                                <input
+                                    id="globalMarksPerQuestion"
+                                    class="form-control"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value="1"
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Default Negative Marks
+                                </label>
+
+                                <input
+                                    id="globalNegativeMarks"
+                                    class="form-control"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value="0"
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Default Question Display Limit
+                                </label>
+
+                                <input
+                                    id="globalQuestionLimit"
+                                    class="form-control"
+                                    type="number"
+                                    min="1"
+                                    value="100"
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>Platform Controls</h3>
+                                <p>Global operational switches</p>
+                            </div>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="switch-row">
+
+                                <div class="switch-info">
+                                    <strong>Candidate Portal</strong>
+                                    <span>Allow candidate portal access</span>
+                                </div>
+
+                                <label class="switch">
+                                    <input
+                                        id="globalCandidatePortal"
+                                        type="checkbox"
+                                        checked
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+
+                            </div>
+
+
+                            <div class="switch-row">
+
+                                <div class="switch-info">
+                                    <strong>New Registrations</strong>
+                                    <span>Allow new candidate registration</span>
+                                </div>
+
+                                <label class="switch">
+                                    <input
+                                        id="globalRegistrations"
+                                        type="checkbox"
+                                        checked
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+
+                            </div>
+
+
+                            <div class="switch-row">
+
+                                <div class="switch-info">
+                                    <strong>Security Monitoring</strong>
+                                    <span>Enable security event collection</span>
+                                </div>
+
+                                <label class="switch">
+                                    <input
+                                        id="globalSecurity"
+                                        type="checkbox"
+                                        checked
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+
+                            </div>
+
+
+                            <div class="switch-row">
+
+                                <div class="switch-info">
+                                    <strong>Live Presence</strong>
+                                    <span>Enable candidate heartbeat/presence tracking</span>
+                                </div>
+
+                                <label class="switch">
+                                    <input
+                                        id="globalPresence"
+                                        type="checkbox"
+                                        checked
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- =====================================================
+     GENERIC MODAL
+====================================================== -->
+
+<div
+    id="genericModal"
+    class="modal-overlay"
+    aria-hidden="true"
+>
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <h3 id="modalTitle">
+                Create
+            </h3>
+
+            <button
+                class="modal-close"
+                id="modalCloseBtn"
+                type="button"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+        <div
+            id="modalBody"
+            class="modal-body"
+        ></div>
+
+        <div class="modal-footer">
+
+            <button
+                class="btn"
+                id="modalCancelBtn"
+                type="button"
+            >
+                Cancel
+            </button>
+
+            <button
+                class="btn btn-primary"
+                id="modalSaveBtn"
+                type="button"
+            >
+                Save
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     TOAST CONTAINER
+====================================================== -->
+
+<div
+    id="toastContainer"
+    class="toast-container"
+></div>
+
+
+<!-- =====================================================
+     APPLICATION SCRIPT
+====================================================== -->
+
+<script type="module">
+
+    /*
+     * ----------------------------------------------------
+     * SUPER ADMIN UI CONTROLLER
+     * ----------------------------------------------------
+     *
+     * Backend data operations intentionally remain in:
+     *
+     *   ../js/superadmin.js
+     *
+     * This HTML provides stable IDs and UI contracts for
+     * that module.
+     * ----------------------------------------------------
+     */
+
+    const loginScreen = document.getElementById("loginScreen");
+    const appShell = document.getElementById("appShell");
+
+    const navItems = document.querySelectorAll(".nav-item");
+    const views = document.querySelectorAll(".view");
+
+    const currentPageTitle =
+        document.getElementById("currentPageTitle");
+
+
+    /* -----------------------------------------------
+       NAVIGATION
+    ------------------------------------------------ */
+
+    function showView(viewName, title) {
+
+        views.forEach(view => {
+            view.classList.remove("active");
+        });
+
+        navItems.forEach(item => {
+            item.classList.remove("active");
+        });
+
+        const target =
+            document.getElementById(`view-${viewName}`);
+
+        const nav =
+            document.querySelector(
+                `.nav-item[data-view="${viewName}"]`
+            );
+
+        if (target) {
+            target.classList.add("active");
+        }
+
+        if (nav) {
+            nav.classList.add("active");
+        }
+
+        if (currentPageTitle) {
+            currentPageTitle.textContent =
+                title || nav?.dataset.title || "Dashboard";
+        }
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+
+
+    navItems.forEach(item => {
+
+        item.addEventListener("click", () => {
+
+            showView(
+                item.dataset.view,
+                item.dataset.title
+            );
+
+            document
+                .getElementById("sidebar")
+                ?.classList.remove("mobile-open");
+
+        });
+
+    });
+
+
+    document.querySelectorAll("[data-action-view]")
+        .forEach(button => {
+
+            button.addEventListener("click", () => {
+
+                const view =
+                    button.dataset.actionView;
+
+                const nav =
+                    document.querySelector(
+                        `.nav-item[data-view="${view}"]`
+                    );
+
+                showView(
+                    view,
+                    nav?.dataset.title
+                );
+
+            });
+
+        });
+
+
+    /* -----------------------------------------------
+       MOBILE SIDEBAR
+    ------------------------------------------------ */
+
+    document
+        .getElementById("mobileMenuBtn")
+        ?.addEventListener("click", () => {
+
+            document
+                .getElementById("sidebar")
+                ?.classList.toggle("mobile-open");
+
+        });
+
+
+    /* -----------------------------------------------
+       TOAST
+    ------------------------------------------------ */
+
+    window.showToast = function (
+        title,
+        message,
+        type = "info"
+    ) {
+
+        const container =
+            document.getElementById("toastContainer");
+
+        if (!container) return;
+
+        const iconMap = {
+            success: "fa-circle-check",
+            danger: "fa-circle-xmark",
+            warning: "fa-triangle-exclamation",
+            info: "fa-circle-info"
+        };
+
+        const toast =
+            document.createElement("div");
+
+        toast.className = "toast";
+
+        toast.innerHTML = `
+            <i class="fa-solid ${iconMap[type] || iconMap.info}"></i>
+
+            <div>
+                <strong>${escapeHtml(title)}</strong>
+                <span>${escapeHtml(message)}</span>
+            </div>
+        `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 4500);
+    };
+
+
+    function escapeHtml(value) {
+
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+
+    /* -----------------------------------------------
+       MODAL
+    ------------------------------------------------ */
+
+    const genericModal =
+        document.getElementById("genericModal");
+
+    const modalTitle =
+        document.getElementById("modalTitle");
+
+    const modalBody =
+        document.getElementById("modalBody");
+
+
+    window.openSuperAdminModal = function (
+        title,
+        bodyHtml
+    ) {
+
+        modalTitle.textContent = title;
+
+        modalBody.innerHTML = bodyHtml;
+
+        genericModal.classList.add("active");
+
+        genericModal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+    };
+
+
+    function closeModal() {
+
+        genericModal.classList.remove("active");
+
+        genericModal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        modalBody.innerHTML = "";
+    }
+
+
+    document
+        .getElementById("modalCloseBtn")
+        ?.addEventListener(
+            "click",
+            closeModal
+        );
+
+
+    document
+        .getElementById("modalCancelBtn")
+        ?.addEventListener(
+            "click",
+            closeModal
+        );
+
+
+    genericModal?.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target === genericModal
+            ) {
+                closeModal();
+            }
+
+        }
+    );
+
+
+    /* -----------------------------------------------
+       LOGIN UI
+    ------------------------------------------------ */
+
+    document
+        .getElementById("superAdminLoginForm")
+        ?.addEventListener(
+            "submit",
+            event => {
+
+                /*
+                 * Authentication itself belongs to
+                 * auth.js / superadmin.js.
+                 *
+                 * We intentionally don't authenticate
+                 * using client-side hardcoded credentials.
+                 */
+
+                event.preventDefault();
+
+                if (
+                    window.SuperAdminAuth &&
+                    typeof window.SuperAdminAuth.login === "function"
+                ) {
+
+                    window.SuperAdminAuth.login({
+                        email:
+                            document
+                                .getElementById("adminEmail")
+                                .value
+                                .trim(),
+
+                        password:
+                            document
+                                .getElementById("adminPassword")
+                                .value
+                    });
+
+                    return;
+                }
+
+                showToast(
+                    "Authentication module not connected",
+                    "Connect superadmin.js/auth.js to enable secure login.",
+                    "warning"
+                );
+
+            }
+        );
+
+
+    /* -----------------------------------------------
+       LOGOUT
+    ------------------------------------------------ */
+
+    document
+        .getElementById("logoutBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                if (
+                    window.SuperAdminAuth &&
+                    typeof window.SuperAdminAuth.logout === "function"
+                ) {
+
+                    window.SuperAdminAuth.logout();
+
+                    return;
+                }
+
+                appShell.classList.remove("active");
+                loginScreen.style.display = "flex";
+
+            }
+        );
+
+
+    /* -----------------------------------------------
+       REFRESH
+    ------------------------------------------------ */
+
+    document
+        .getElementById("refreshBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                if (
+                    window.SuperAdminApp &&
+                    typeof window.SuperAdminApp.refresh === "function"
+                ) {
+
+                    window.SuperAdminApp.refresh();
+
+                    return;
+                }
+
+                showToast(
+                    "Refresh",
+                    "Backend data module is not connected yet.",
+                    "info"
+                );
+
+            }
+        );
+
+
+    /* -----------------------------------------------
+       NOTIFICATION BUTTON
+    ------------------------------------------------ */
+
+    document
+        .getElementById("notificationBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                showView(
+                    "notifications",
+                    "Notifications"
+                );
+
+            }
+        );
+
+
+    /* -----------------------------------------------
+       GENERIC BUTTON HOOKS
+    ------------------------------------------------ */
+
+    const actionMap = {
+
+        createInstituteBtn: [
+            "Create Institute",
+            `
+                <div class="form-group">
+                    <label class="form-label">
+                        Institute Name
+                    </label>
+                    <input
+                        id="modalInstituteName"
+                        class="form-control"
+                        placeholder="Institute name"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Institute Code
+                    </label>
+                    <input
+                        id="modalInstituteCode"
+                        class="form-control"
+                        placeholder="Unique institute code"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Status
+                    </label>
+                    <select
+                        id="modalInstituteStatus"
+                        class="form-select"
+                    >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+            `
+        ],
+
+        createAdminBtn: [
+            "Create Administrator",
+            `
+                <div class="form-group">
+                    <label class="form-label">
+                        Name
+                    </label>
+                    <input
+                        id="modalAdminName"
+                        class="form-control"
+                        placeholder="Administrator name"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Email
+                    </label>
+                    <input
+                        id="modalAdminEmail"
+                        class="form-control"
+                        type="email"
+                        placeholder="admin@example.com"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Role
+                    </label>
+                    <select
+                        id="modalAdminRole"
+                        class="form-select"
+                    >
+                        <option value="admin">Admin</option>
+                        <option value="manager">Manager</option>
+                        <option value="viewer">Viewer</option>
+                    </select>
+                </div>
+            `
+        ],
+
+        createExamBtn: [
+            "Create Examination",
+            `
+                <div class="form-group">
+                    <label class="form-label">
+                        Exam Name
+                    </label>
+                    <input
+                        id="modalExamName"
+                        class="form-control"
+                        placeholder="Examination name"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Duration (minutes)
+                    </label>
+                    <input
+                        id="modalExamDuration"
+                        class="form-control"
+                        type="number"
+                        min="1"
+                        value="60"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Status
+                    </label>
+                    <select
+                        id="modalExamStatus"
+                        class="form-select"
+                    >
+                        <option value="draft">Draft</option>
+                        <option value="preview">Preview</option>
+                        <option value="published">Published</option>
+                    </select>
+                </div>
+            `
+        ],
+
+        createBatchBtn: [
+            "Create Batch",
+            `
+                <div class="form-group">
+                    <label class="form-label">
+                        Batch Name
+                    </label>
+                    <input
+                        id="modalBatchName"
+                        class="form-control"
+                        placeholder="Batch name"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Batch Code
+                    </label>
+                    <input
+                        id="modalBatchCode"
+                        class="form-control"
+                        placeholder="Unique batch code"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Class
+                    </label>
+                    <input
+                        id="modalBatchClass"
+                        class="form-control"
+                        placeholder="Class / Course"
+                    >
+                </div>
+            `
+        ],
+
+        createQuestionBtn: [
+            "Add Question",
+            `
+                <div class="form-group">
+                    <label class="form-label">
+                        Question
+                    </label>
+                    <textarea
+                        id="modalQuestion"
+                        class="form-textarea"
+                        placeholder="Enter question..."
+                    ></textarea>
+                </div>
+
+                <div class="grid grid-2">
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Subject
+                        </label>
+                        <input
+                            id="modalQuestionSubject"
+                            class="form-control"
+                            placeholder="Subject"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Difficulty
+                        </label>
+                        <select
+                            id="modalQuestionDifficulty"
+                            class="form-select"
+                        >
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="grid grid-2">
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Marks
+                        </label>
+                        <input
+                            id="modalQuestionMarks"
+                            class="form-control"
+                            type="number"
+                            step="0.01"
+                            value="1"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Negative Marks
+                        </label>
+                        <input
+                            id="modalQuestionNegative"
+                            class="form-control"
+                            type="number"
+                            step="0.01"
+                            value="0"
+                        >
+                    </div>
+
+                </div>
+            `
+        ]
+
+    };
+
+
+    Object.entries(actionMap)
+        .forEach(([buttonId, config]) => {
+
+            document
+                .getElementById(buttonId)
+                ?.addEventListener(
+                    "click",
+                    () => {
+
+                        openSuperAdminModal(
+                            config[0],
+                            config[1]
+                        );
+
+                    }
+                );
+
+        });
+
+
+    /* -----------------------------------------------
+       MODAL SAVE
+    ------------------------------------------------ */
+
+    document
+        .getElementById("modalSaveBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                if (
+                    window.SuperAdminApp &&
+                    typeof window.SuperAdminApp.saveModal === "function"
+                ) {
+
+                    window.SuperAdminApp.saveModal();
+
+                    return;
+                }
+
+                showToast(
+                    "Not connected",
+                    "Connect the corresponding backend module before saving.",
+                    "warning"
+                );
+
+            }
+        );
+
+
+    /* -----------------------------------------------
+       EMERGENCY CONFIRMATION
+    ------------------------------------------------ */
+
+    const dangerousButtons = [
+        "toggleMaintenanceBtn",
+        "pauseExamBtn",
+        "resumeExamBtn",
+        "forceSubmitBtn"
+    ];
+
+
+    dangerousButtons.forEach(id => {
+
+        document
+            .getElementById(id)
+            ?.addEventListener(
+                "click",
+                () => {
+
+                    const labels = {
+                        toggleMaintenanceBtn:
+                            "change maintenance mode",
+
+                        pauseExamBtn:
+                            "pause the selected exam",
+
+                        resumeExamBtn:
+                            "resume the selected exam",
+
+                        forceSubmitBtn:
+                            "force-submit selected candidates"
+                    };
+
+                    const action =
+                        labels[id] || "perform this action";
+
+                    const confirmed =
+                        window.confirm(
+                            `Are you sure you want to ${action}?`
+                        );
+
+                    if (!confirmed) {
+                        return;
+                    }
+
+                    if (
+                        window.SuperAdminApp &&
+                        typeof window.SuperAdminApp.handleEmergencyAction === "function"
+                    ) {
+
+                        window.SuperAdminApp
+                            .handleEmergencyAction(id);
+
+                        return;
+                    }
+
+                    showToast(
+                        "Backend not connected",
+                        "Emergency control requires the secure backend module.",
+                        "warning"
+                    );
+
+                }
+            );
+
+    });
+
+
+    /* -----------------------------------------------
+       INITIAL UI STATE
+    ------------------------------------------------ */
+
+    window.SuperAdminUI = {
+
+        showView,
+
+        showToast,
+
+        openModal: window.openSuperAdminModal,
+
+        closeModal,
+
+        showApplication() {
+
+            loginScreen.style.display = "none";
+            appShell.classList.add("active");
+
+        },
+
+        showLogin() {
+
+            appShell.classList.remove("active");
+            loginScreen.style.display = "flex";
+
+        },
+
+        setAdminProfile({
+            name = "Super Administrator",
+            email = "Authorized account"
+        } = {}) {
+
+            document
+                .getElementById("sidebarAdminName")
+                .textContent = name;
+
+            document
+                .getElementById("sidebarAdminEmail")
+                .textContent = email;
+
+            const initials =
+                name
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map(word => word[0])
+                    .join("")
+                    .toUpperCase();
+
+            document
+                .getElementById("sidebarAvatar")
+                .textContent = initials || "SA";
+
+        }
+
+    };
+
+</script>
+
+
+<!-- =====================================================
+     SUPER ADMIN MODULE
+====================================================== -->
+
+<script
+    type="module"
+    src="../js/superadmin.js"
+></script>
+
+</body>
+</html>
