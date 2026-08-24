@@ -1,126 +1,416 @@
 /* =========================================================
-   SUPER ADMIN DASHBOARD CORE
+   PHYSICS TEST SERIES
+   SUPER ADMIN APPLICATION
+   ---------------------------------------------------------
    File: /js/superadmin.js
 
-   Responsibilities:
-   - Dashboard initialization
-   - View/navigation handling
-   - Authentication integration
-   - Firestore dashboard configuration
-   - Modal data handling
-   - Admin profile
-   - Refresh orchestration
-   - Emergency action routing
+   Architecture:
+   - Firebase Authentication
+   - Firestore
+   - Multi Institute
+   - Multi Exam
+   - Multi Batch
+   - Admin Management
+   - Permission Management
+   - Portal Configuration
+   - Draft / Publish
+   - Audit Logs
+   - Security Events
+   - Live Presence
+   - Emergency Controls
+   - Global Settings
+   - Real-time Dashboard
 
-   Authentication is handled ONLY by auth.js
+   Firebase project:
+   physics-test-2b91a
+
+   IMPORTANT:
+   This file does NOT store passwords in Firestore.
+   Authentication must remain Firebase Authentication based.
    ========================================================= */
 
-import { db } from "./firebase-config.js";
+import {
+    db
+} from "./firebase-config.js";
 
 import {
+    collection,
+    collectionGroup,
     doc,
     getDoc,
-    setDoc,
-    serverTimestamp,
-    collection,
     getDocs,
+    addDoc,
+    setDoc,
+    updateDoc,
+    deleteDoc,
     query,
-    limit
+    where,
+    orderBy,
+    limit,
+    onSnapshot,
+    serverTimestamp,
+    Timestamp,
+    writeBatch
 } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
 
 /* =========================================================
-   GLOBAL STATE
+   CONFIGURATION
+   ========================================================= */
+
+const COLLECTIONS = {
+
+    users: "users",
+
+    admins: "admins",
+
+    institutes: "institutes",
+
+    exams: "exams",
+
+    batches: "batches",
+
+    candidates: "candidates",
+
+    questions: "questions",
+
+    questionBanks: "questionBanks",
+
+    attempts: "attempts",
+
+    results: "results",
+
+    feedback: "feedback",
+
+    securityEvents: "securityEvents",
+
+    auditLogs: "auditLogs",
+
+    portalConfigs: "portalConfigs",
+
+    globalSettings: "globalSettings",
+
+    notifications: "notifications",
+
+    presence: "presence"
+
+};
+
+
+/* =========================================================
+   EXAM STATUS
+   ========================================================= */
+
+const EXAM_STATUS = {
+
+    DRAFT: "DRAFT",
+
+    SCHEDULED: "SCHEDULED",
+
+    LIVE: "LIVE",
+
+    PAUSED: "PAUSED",
+
+    COMPLETED: "COMPLETED",
+
+    ARCHIVED: "ARCHIVED"
+
+};
+
+
+/* =========================================================
+   ADMIN STATUS
+   ========================================================= */
+
+const ADMIN_STATUS = {
+
+    ACTIVE: "ACTIVE",
+
+    SUSPENDED: "SUSPENDED",
+
+    EXPIRED: "EXPIRED",
+
+    REVOKED: "REVOKED"
+
+};
+
+
+/* =========================================================
+   PERMISSIONS
+   ========================================================= */
+
+const PERMISSIONS = [
+
+    "dashboard.view",
+
+    "institute.view",
+    "institute.manage",
+
+    "admin.view",
+    "admin.manage",
+
+    "exam.view",
+    "exam.create",
+    "exam.edit",
+    "exam.delete",
+    "exam.publish",
+    "exam.control",
+
+    "batch.view",
+    "batch.manage",
+
+    "question.view",
+    "question.create",
+    "question.edit",
+    "question.delete",
+
+    "candidate.view",
+    "candidate.manage",
+
+    "result.view",
+    "result.export",
+
+    "security.view",
+
+    "feedback.view",
+
+    "portal.view",
+    "portal.edit",
+
+    "branding.manage",
+
+    "instruction.manage",
+
+    "notification.manage",
+
+    "emergency.manage",
+
+    "settings.manage",
+
+    "audit.view"
+
+];
+
+
+/* =========================================================
+   APP STATE
    ========================================================= */
 
 const state = {
 
     initialized: false,
 
-    loading: false,
+    authorized: false,
 
-    currentView: "overview",
+    user: null,
 
-    currentViewTitle: "Overview",
+    profile: null,
 
-    currentModal: null,
+    activeInstituteId: null,
 
-    examConfig: null,
+    activeExamId: null,
 
-    stats: {
-        institutes: 0,
-        admins: 0,
+    activeBatchId: null,
+
+    institutes: [],
+
+    admins: [],
+
+    exams: [],
+
+    batches: [],
+
+    candidates: [],
+
+    questions: [],
+
+    results: [],
+
+    feedback: [],
+
+    securityEvents: [],
+
+    auditLogs: [],
+
+    notifications: [],
+
+    presence: [],
+
+    dashboardStats: {
+
+        totalInstitutes: 0,
+
+        totalAdmins: 0,
+
         activeAdmins: 0,
+
         suspendedAdmins: 0,
-        exams: 0,
+
+        totalExams: 0,
+
         liveExams: 0,
+
         scheduledExams: 0,
+
         completedExams: 0,
-        candidates: 0,
+
+        totalCandidates: 0,
+
         activeCandidates: 0,
-        submissions: 0,
+
+        totalSubmissions: 0,
+
         averageScore: 0,
+
         securityFlags: 0,
+
         averageRating: 0
+
     },
 
     listeners: [],
 
-    collections: {
-        institutes: "institutes",
-        users: "users",
-        admins: "admins",
-        exams: "exams",
-        candidates: "candidates",
-        results: "results",
-        securityEvents: "securityEvents",
-        notifications: "notifications",
-        activityLogs: "activityLogs"
-    }
+    loading: false
 
 };
 
 
 /* =========================================================
-   SHORTCUTS
+   GENERIC HELPERS
    ========================================================= */
 
-const $ = id =>
-    document.getElementById(id);
+function getElement(id) {
+
+    return document.getElementById(id);
+
+}
 
 
 function normalize(value) {
 
-    return String(value ?? "")
-        .trim()
+    return String(
+        value ?? ""
+    )
+        .trim();
+
+}
+
+
+function normalizeLower(value) {
+
+    return normalize(value)
         .toLowerCase();
 
 }
 
 
-function escapeHtml(value) {
+function nowMillis() {
 
-    return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    return Date.now();
 
 }
 
 
-function numberValue(
-    value,
-    fallback = 0
-) {
+function isObject(value) {
 
-    const n =
-        Number(value);
+    return (
+        value !== null &&
+        typeof value === "object" &&
+        !Array.isArray(value)
+    );
 
-    return Number.isFinite(n)
-        ? n
-        : fallback;
+}
+
+
+function cleanObject(object) {
+
+    if (!isObject(object)) {
+
+        return object;
+
+    }
+
+    const output = {};
+
+    Object.entries(object)
+        .forEach(
+            ([key, value]) => {
+
+                if (
+                    value !== undefined
+                ) {
+
+                    output[key] =
+                        value;
+
+                }
+
+            }
+        );
+
+    return output;
+
+}
+
+
+/* =========================================================
+   AUTHORIZATION
+   ========================================================= */
+
+function requireSuperAdmin() {
+
+    const auth =
+        window.SuperAdminAuth;
+
+    if (!auth) {
+
+        throw new Error(
+            "SuperAdminAuth is not initialized."
+        );
+
+    }
+
+
+    const authState =
+        auth.getState();
+
+
+    if (
+        !authState ||
+        !authState.authorized ||
+        !authState.user ||
+        !authState.profile
+    ) {
+
+        throw new Error(
+            "Super Admin authorization required."
+        );
+
+    }
+
+
+    const role =
+        normalizeLower(
+            authState.profile.role
+        );
+
+
+    if (
+        ![
+            "super_admin",
+            "superadmin",
+            "super-admin"
+        ].includes(role)
+    ) {
+
+        throw new Error(
+            "Super Admin permission required."
+        );
+
+    }
+
+
+    return authState;
 
 }
 
@@ -129,225 +419,416 @@ function numberValue(
    TOAST
    ========================================================= */
 
-function showToast(
+function toast(
     title,
     message,
     type = "info"
 ) {
 
-    /*
-     * Prefer UI implementation if available.
-     */
-
     if (
         window.SuperAdminUI &&
-        window.SuperAdminUI !== api &&
         typeof window.SuperAdminUI.showToast ===
-            "function"
+        "function"
     ) {
 
+        window.SuperAdminUI.showToast(
+            title,
+            message,
+            type
+        );
+
+        return;
+
+    }
+
+
+    console.log(
+        `[${type}] ${title}: ${message}`
+    );
+
+}
+
+
+/* =========================================================
+   AUDIT LOG
+   ========================================================= */
+
+async function createAuditLog({
+
+    action,
+
+    entityType,
+
+    entityId = null,
+
+    instituteId = null,
+
+    oldValue = null,
+
+    newValue = null,
+
+    reason = null
+
+}) {
+
+    const auth =
+        requireSuperAdmin();
+
+
+    const payload = {
+
+        actorId:
+            auth.user.uid,
+
+        actorRole:
+            "SUPER_ADMIN",
+
+        actorEmail:
+            auth.user.email || "",
+
+        action,
+
+        entityType,
+
+        entityId,
+
+        instituteId,
+
+        oldValue,
+
+        newValue,
+
+        reason,
+
+        timestamp:
+            serverTimestamp()
+
+    };
+
+
+    try {
+
+        await addDoc(
+            collection(
+                db,
+                COLLECTIONS.auditLogs
+            ),
+            cleanObject(payload)
+        );
+
+    } catch (error) {
+
         /*
-         * Avoid accidental recursion.
+         * Audit failures are intentionally logged.
+         *
+         * For production, critical actions should preferably
+         * use a trusted backend/Cloud Function so an audit
+         * record cannot be bypassed.
          */
 
-        try {
+        console.error(
+            "Audit log failed:",
+            error
+        );
 
-            const uiToast =
-                window.SuperAdminUI.showToast;
+    }
 
-            if (
-                uiToast !== showToast
-            ) {
-                uiToast(
-                    title,
-                    message,
-                    type
-                );
+}
 
-                return;
-            }
 
-        } catch {
-            // fallback below
-        }
+/* =========================================================
+   GENERIC COLLECTION HELPERS
+   ========================================================= */
+
+async function getCollection(
+    collectionName,
+    constraints = []
+) {
+
+    requireSuperAdmin();
+
+
+    const reference =
+        collection(
+            db,
+            collectionName
+        );
+
+
+    const q =
+        constraints.length
+            ? query(
+                reference,
+                ...constraints
+            )
+            : reference;
+
+
+    const snapshot =
+        await getDocs(q);
+
+
+    return snapshot.docs.map(
+        item => ({
+
+            id:
+                item.id,
+
+            ...item.data()
+
+        })
+    );
+
+}
+
+
+async function getDocument(
+    collectionName,
+    id
+) {
+
+    requireSuperAdmin();
+
+
+    const reference =
+        doc(
+            db,
+            collectionName,
+            id
+        );
+
+
+    const snapshot =
+        await getDoc(
+            reference
+        );
+
+
+    if (
+        !snapshot.exists()
+    ) {
+
+        return null;
 
     }
 
 
-    /*
-     * Native lightweight toast.
-     */
+    return {
 
-    let container =
-        document.getElementById(
-            "superAdminToastContainer"
+        id:
+            snapshot.id,
+
+        ...snapshot.data()
+
+    };
+
+}
+
+
+/* =========================================================
+   INSTITUTE MANAGEMENT
+   ========================================================= */
+
+async function loadInstitutes() {
+
+    const data =
+        await getCollection(
+            COLLECTIONS.institutes
         );
 
 
-    if (!container) {
+    state.institutes =
+        data;
 
-        container =
-            document.createElement(
-                "div"
-            );
 
-        container.id =
-            "superAdminToastContainer";
+    if (
+        !state.activeInstituteId &&
+        data.length
+    ) {
 
-        container.style.position =
-            "fixed";
+        state.activeInstituteId =
+            data[0].id;
 
-        container.style.right =
-            "20px";
-
-        container.style.bottom =
-            "20px";
-
-        container.style.zIndex =
-            "99999";
-
-        container.style.display =
-            "flex";
-
-        container.style.flexDirection =
-            "column";
-
-        container.style.gap =
-            "10px";
-
-        document.body.appendChild(
-            container
-        );
     }
 
 
-    const toast =
-        document.createElement(
-            "div"
+    renderInstituteSelector();
+
+    return data;
+
+}
+
+
+async function createInstitute(data) {
+
+    requireSuperAdmin();
+
+
+    const institute = {
+
+        instituteId:
+            normalize(
+                data.instituteId
+            ) ||
+            `INST-${Date.now()}`,
+
+        name:
+            normalize(
+                data.name
+            ),
+
+        address:
+            normalize(
+                data.address
+            ),
+
+        email:
+            normalizeLower(
+                data.email
+            ),
+
+        phone:
+            normalize(
+                data.phone
+            ),
+
+        logoUrl:
+            data.logoUrl || "",
+
+        status:
+            data.status ||
+            "ACTIVE",
+
+        branding:
+            data.branding ||
+            {},
+
+        createdBy:
+            state.user?.uid ||
+            null,
+
+        createdAt:
+            serverTimestamp(),
+
+        updatedAt:
+            serverTimestamp()
+
+    };
+
+
+    const reference =
+        await addDoc(
+            collection(
+                db,
+                COLLECTIONS.institutes
+            ),
+            institute
         );
 
-    toast.style.padding =
-        "14px 18px";
 
-    toast.style.borderRadius =
-        "12px";
+    await createAuditLog({
 
-    toast.style.background =
-        "#111827";
+        action:
+            "INSTITUTE_CREATED",
 
-    toast.style.color =
-        "#fff";
+        entityType:
+            "institute",
 
-    toast.style.boxShadow =
-        "0 10px 30px rgba(0,0,0,.25)";
+        entityId:
+            reference.id,
 
-    toast.style.minWidth =
-        "260px";
+        instituteId:
+            reference.id,
 
-    toast.innerHTML = `
-        <strong>${escapeHtml(title)}</strong>
-        <div style="margin-top:4px;font-size:13px;opacity:.85">
-            ${escapeHtml(message)}
-        </div>
-    `;
+        newValue:
+            institute
 
-    container.appendChild(
-        toast
+    });
+
+
+    await loadInstitutes();
+
+
+    toast(
+        "Institute created",
+        "Institute has been created successfully.",
+        "success"
     );
 
 
-    setTimeout(() => {
-
-        toast.remove();
-
-    }, 3500);
+    return reference.id;
 
 }
 
 
-/* =========================================================
-   STATUS
-   ========================================================= */
-
-function setStatus(
-    message,
-    type = "info"
+async function updateInstitute(
+    instituteId,
+    changes
 ) {
 
-    const possibleIds = [
-        "systemStatus",
-        "statusText",
-        "connectionStatus",
-        "lastSync"
-    ];
+    requireSuperAdmin();
 
 
-    for (
-        const id of possibleIds
-    ) {
-
-        const element =
-            $(id);
-
-        if (element) {
-
-            element.textContent =
-                message;
-
-            element.dataset.status =
-                type;
-
-            return;
-        }
-    }
-
-}
-
-
-/* =========================================================
-   AUTHORIZATION GUARD
-   ========================================================= */
-
-function getAuthState() {
-
-    if (
-        !window.SuperAdminAuth ||
-        typeof window.SuperAdminAuth.getState !==
-            "function"
-    ) {
-
-        return {
-            authorized: false,
-            user: null,
-            profile: null
-        };
-    }
-
-
-    return window.SuperAdminAuth
-        .getState();
-
-}
-
-
-function requireAuthorization() {
-
-    const authState =
-        getAuthState();
-
-
-    if (
-        !authState.authorized
-    ) {
-
-        showToast(
-            "Access denied",
-            "Super Admin authorization is required.",
-            "danger"
+    const existing =
+        await getDocument(
+            COLLECTIONS.institutes,
+            instituteId
         );
 
-        return false;
+
+    if (!existing) {
+
+        throw new Error(
+            "Institute not found."
+        );
+
     }
+
+
+    const updateData =
+        cleanObject({
+
+            ...changes,
+
+            updatedAt:
+                serverTimestamp()
+
+        });
+
+
+    await updateDoc(
+        doc(
+            db,
+            COLLECTIONS.institutes,
+            instituteId
+        ),
+        updateData
+    );
+
+
+    await createAuditLog({
+
+        action:
+            "INSTITUTE_UPDATED",
+
+        entityType:
+            "institute",
+
+        entityId:
+            instituteId,
+
+        instituteId,
+
+        oldValue:
+            existing,
+
+        newValue:
+            changes
+
+    });
+
+
+    await loadInstitutes();
 
 
     return true;
@@ -355,474 +836,30 @@ function requireAuthorization() {
 }
 
 
-/* =========================================================
-   NAVIGATION
-   ========================================================= */
-
-function showView(
-    view,
-    title
+async function setInstituteStatus(
+    instituteId,
+    status
 ) {
 
-    if (
-        !requireAuthorization()
-    ) {
-        return;
-    }
-
-
-    state.currentView =
-        view;
-
-    state.currentViewTitle =
-        title || view;
-
-
-    /*
-     * Support different naming conventions
-     * used by the HTML.
-     */
-
-    const allSections =
-        document.querySelectorAll(
-            "[data-view]"
-        );
-
-
-    allSections.forEach(
-        section => {
-
-            section.classList.toggle(
-                "active",
-                section.dataset.view ===
-                    view
-            );
-
+    return updateInstitute(
+        instituteId,
+        {
+            status
         }
     );
 
-
-    /*
-     * Common section IDs.
-     */
-
-    document
-        .querySelectorAll(
-            ".view-section, .dashboard-view, .page-section"
-        )
-        .forEach(
-            section => {
-
-                const sectionView =
-                    section.dataset.view ||
-                    section.dataset.section ||
-                    section.id;
-
-                if (
-                    sectionView
-                ) {
-
-                    section.classList.toggle(
-                        "active",
-                        normalize(
-                            sectionView
-                        ) ===
-                            normalize(
-                                view
-                            )
-                    );
-                }
-
-            }
-        );
-
-
-    /*
-     * Navigation button active state.
-     */
-
-    document
-        .querySelectorAll(
-            "[data-view-target], [data-view]"
-        )
-        .forEach(
-            button => {
-
-                const target =
-                    button.dataset.viewTarget ||
-                    button.dataset.view;
-
-                if (
-                    target
-                ) {
-
-                    button.classList.toggle(
-                        "active",
-                        normalize(
-                            target
-                        ) ===
-                            normalize(
-                                view
-                            )
-                    );
-                }
-
-            }
-        );
-
-
-    /*
-     * Update page title.
-     */
-
-    const pageTitle =
-        document.getElementById(
-            "pageTitle"
-        );
-
-
-    if (pageTitle) {
-
-        pageTitle.textContent =
-            state.currentViewTitle;
-    }
-
-
-    /*
-     * Load view-specific data.
-     */
-
-    loadViewData(
-        view
-    );
-
 }
 
 
-/* =========================================================
-   VIEW DATA ROUTER
-   ========================================================= */
-
-async function loadViewData(
-    view
+async function archiveInstitute(
+    instituteId
 ) {
 
-    if (
-        !requireAuthorization()
-    ) {
-        return;
-    }
-
-
-    try {
-
-        switch (
-            normalize(view)
-        ) {
-
-            case "overview":
-                await loadOverview();
-                break;
-
-            case "dashboard":
-                await loadOverview();
-                break;
-
-            case "exam":
-            case "exams":
-            case "exam-management":
-                await loadExamConfig();
-                break;
-
-            case "notifications":
-                await loadNotifications();
-                break;
-
-            case "admins":
-            case "admin-management":
-                await loadAdmins();
-                break;
-
-            case "institutes":
-            case "institute-management":
-                await loadInstitutes();
-                break;
-
-            case "candidates":
-            case "candidate-management":
-                await loadCandidates();
-                break;
-
-            case "results":
-            case "results-analytics":
-                await loadResults();
-                break;
-
-            case "security":
-            case "security-analytics":
-                await loadSecurity();
-                break;
-
-            default:
-                break;
-        }
-
-    } catch (error) {
-
-        console.error(
-            "View loading error:",
-            error
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   OVERVIEW
-   ========================================================= */
-
-async function loadOverview() {
-
-    setStatus(
-        "Loading dashboard...",
-        "busy"
-    );
-
-
-    try {
-
-        /*
-         * Lightweight collection counts.
-         *
-         * This is intentionally modular so later we can
-         * replace it with aggregate queries or dedicated
-         * analytics documents.
-         */
-
-        const stats =
-            state.stats;
-
-
-        await updateCollectionCount(
-            "institutes",
-            value =>
-                stats.institutes = value
-        );
-
-
-        await updateCollectionCount(
-            "admins",
-            value =>
-                stats.admins = value
-        );
-
-
-        await updateCollectionCount(
-            "exams",
-            value =>
-                stats.exams = value
-        );
-
-
-        await updateCollectionCount(
-            "candidates",
-            value =>
-                stats.candidates = value
-        );
-
-
-        await updateCollectionCount(
-            "results",
-            value =>
-                stats.submissions = value
-        );
-
-
-        updateStatsUI();
-
-
-        setStatus(
-            "Dashboard synchronized",
-            "ok"
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "Overview error:",
-            error
-        );
-
-
-        setStatus(
-            "Dashboard synchronization failed",
-            "error"
-        );
-
-    }
-
-}
-
-
-async function updateCollectionCount(
-    collectionName,
-    setter
-) {
-
-    try {
-
-        const collectionRef =
-            collection(
-                db,
-                collectionName
-            );
-
-
-        /*
-         * Limit protects the dashboard from accidentally
-         * downloading an enormous collection.
-         */
-
-        const snapshot =
-            await getDocs(
-                query(
-                    collectionRef,
-                    limit(1000)
-                )
-            );
-
-
-        setter(
-            snapshot.size
-        );
-
-
-    } catch (error) {
-
-        console.warn(
-            `Unable to count ${collectionName}:`,
-            error
-        );
-
-        setter(0);
-
-    }
-
-}
-
-
-/* =========================================================
-   STATS UI
-   ========================================================= */
-
-function updateStatsUI() {
-
-    const mapping = {
-
-        "totalInstitutes":
-            state.stats.institutes,
-
-        "totalAdmins":
-            state.stats.admins,
-
-        "activeAdmins":
-            state.stats.activeAdmins,
-
-        "suspendedAdmins":
-            state.stats.suspendedAdmins,
-
-        "totalExams":
-            state.stats.exams,
-
-        "liveExams":
-            state.stats.liveExams,
-
-        "scheduledExams":
-            state.stats.scheduledExams,
-
-        "completedExams":
-            state.stats.completedExams,
-
-        "totalCandidates":
-            state.stats.candidates,
-
-        "activeCandidates":
-            state.stats.activeCandidates,
-
-        "totalSubmissions":
-            state.stats.submissions,
-
-        "averageScore":
-            state.stats.averageScore,
-
-        "securityFlags":
-            state.stats.securityFlags,
-
-        "averageRating":
-            state.stats.averageRating
-    };
-
-
-    Object.entries(
-        mapping
-    ).forEach(
-        ([id, value]) => {
-
-            const element =
-                $(id);
-
-            if (element) {
-
-                element.textContent =
-                    value;
-            }
-
-        }
-    );
-
-
-    /*
-     * Also support common dashboard naming.
-     */
-
-    const aliases = {
-
-        "stat-institutes":
-            state.stats.institutes,
-
-        "stat-admins":
-            state.stats.admins,
-
-        "stat-exams":
-            state.stats.exams,
-
-        "stat-candidates":
-            state.stats.candidates,
-
-        "stat-submissions":
-            state.stats.submissions,
-
-        "stat-security":
-            state.stats.securityFlags
-    };
-
-
-    Object.entries(
-        aliases
-    ).forEach(
-        ([id, value]) => {
-
-            const element =
-                $(id);
-
-            if (element) {
-                element.textContent =
-                    value;
-            }
-
+    return updateInstitute(
+        instituteId,
+        {
+            status:
+                "ARCHIVED"
         }
     );
 
@@ -830,1829 +867,1562 @@ function updateStatsUI() {
 
 
 /* =========================================================
-   EXAM CONFIGURATION
-   ========================================================= */
-
-async function loadExamConfig() {
-
-    const configRef =
-        doc(
-            db,
-            "exam_config",
-            "current_test"
-        );
-
-
-    try {
-
-        const snapshot =
-            await getDoc(
-                configRef
-            );
-
-
-        if (
-            !snapshot.exists()
-        ) {
-
-            state.examConfig =
-                null;
-
-            updateExamStatusUI(
-                null
-            );
-
-            return null;
-        }
-
-
-        state.examConfig =
-            snapshot.data();
-
-
-        populateExamConfigUI(
-            state.examConfig
-        );
-
-
-        updateExamStatusUI(
-            state.examConfig
-        );
-
-
-        return state.examConfig;
-
-
-    } catch (error) {
-
-        console.error(
-            "Exam config load error:",
-            error
-        );
-
-
-        showToast(
-            "Configuration error",
-            error.code ||
-                error.message,
-            "danger"
-        );
-
-
-        return null;
-    }
-
-}
-
-
-function populateExamConfigUI(
-    data
-) {
-
-    const fieldMap = {
-
-        "config-total-pool":
-            data.totalPool,
-
-        "config-student-limit":
-            data.studentLimit ??
-            data.questionLimit,
-
-        "config-duration":
-            data.durationMinutes,
-
-        "config-test-duration":
-            data.durationMinutes,
-
-        "config-window-start":
-            dateTimeLocalValue(
-                data.windowStart
-            ),
-
-        "config-window-end":
-            dateTimeLocalValue(
-                data.windowEnd
-            )
-    };
-
-
-    Object.entries(
-        fieldMap
-    ).forEach(
-        ([id, value]) => {
-
-            const element =
-                $(id);
-
-            if (
-                element &&
-                value !== undefined &&
-                value !== null
-            ) {
-
-                element.value =
-                    value;
-            }
-
-        }
-    );
-
-
-    /*
-     * Upload mode.
-     */
-
-    if (
-        data.uploadMode
-    ) {
-
-        const uploadMode =
-            document.querySelector(
-                `[data-upload-mode="${data.uploadMode}"]`
-            );
-
-        uploadMode?.click();
-    }
-
-}
-
-
-function dateTimeLocalValue(
-    value
-) {
-
-    if (!value) {
-        return "";
-    }
-
-
-    let date;
-
-
-    if (
-        typeof value?.toDate ===
-            "function"
-    ) {
-
-        date =
-            value.toDate();
-
-    } else {
-
-        date =
-            new Date(
-                value
-            );
-    }
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-        return "";
-    }
-
-
-    const pad =
-        n =>
-            String(n)
-                .padStart(
-                    2,
-                    "0"
-                );
-
-
-    return (
-        `${date.getFullYear()}-` +
-        `${pad(date.getMonth() + 1)}-` +
-        `${pad(date.getDate())}T` +
-        `${pad(date.getHours())}:` +
-        `${pad(date.getMinutes())}`
-    );
-
-}
-
-
-function updateExamStatusUI(
-    config
-) {
-
-    const box =
-        $("exam-status-box");
-
-
-    if (!box) {
-        return;
-    }
-
-
-    if (!config) {
-
-        box.innerHTML = `
-            <div class="notice">
-                No active exam configuration found.
-            </div>
-        `;
-
-        return;
-    }
-
-
-    const start =
-        config.windowStart
-            ? new Date(
-                config.windowStart
-            )
-            : null;
-
-
-    const end =
-        config.windowEnd
-            ? new Date(
-                config.windowEnd
-            )
-            : null;
-
-
-    const now =
-        Date.now();
-
-
-    let status =
-        "NOT SCHEDULED";
-
-
-    if (
-        start &&
-        end &&
-        now >= start.getTime() &&
-        now <= end.getTime()
-    ) {
-
-        status =
-            "LIVE";
-
-    } else if (
-        start &&
-        now < start.getTime()
-    ) {
-
-        status =
-            "SCHEDULED";
-
-    } else if (
-        end &&
-        now > end.getTime()
-    ) {
-
-        status =
-            "ENDED";
-    }
-
-
-    box.innerHTML = `
-        <div>
-            <strong>Exam Status:</strong>
-            ${escapeHtml(status)}
-        </div>
-
-        <div style="margin-top:6px">
-            <strong>Questions:</strong>
-            ${escapeHtml(
-                config.studentLimit ??
-                config.questionLimit ??
-                "—"
-            )}
-        </div>
-
-        <div style="margin-top:6px">
-            <strong>Duration:</strong>
-            ${escapeHtml(
-                config.durationMinutes ??
-                "—"
-            )} minutes
-        </div>
-    `;
-
-}
-
-
-/* =========================================================
-   SAVE EXAM SETTINGS
-   ========================================================= */
-
-async function saveExamSettings() {
-
-    if (
-        !requireAuthorization()
-    ) {
-        return false;
-    }
-
-
-    const totalPool =
-        numberValue(
-            $("config-total-pool")?.value
-        );
-
-
-    const studentLimit =
-        numberValue(
-            $("config-student-limit")?.value ||
-            $("config-question-limit")?.value
-        );
-
-
-    const durationMinutes =
-        numberValue(
-            $("config-duration")?.value ||
-            $("config-test-duration")?.value
-        );
-
-
-    const windowStart =
-        $("config-window-start")?.value;
-
-
-    const windowEnd =
-        $("config-window-end")?.value;
-
-
-    if (
-        totalPool < 1 ||
-        studentLimit < 1 ||
-        durationMinutes < 1
-    ) {
-
-        showToast(
-            "Invalid configuration",
-            "Please enter valid question and duration values.",
-            "warning"
-        );
-
-        return false;
-    }
-
-
-    if (
-        studentLimit >
-        totalPool
-    ) {
-
-        showToast(
-            "Invalid configuration",
-            "Student question limit cannot exceed total question pool.",
-            "warning"
-        );
-
-        return false;
-    }
-
-
-    const start =
-        new Date(
-            windowStart
-        );
-
-
-    const end =
-        new Date(
-            windowEnd
-        );
-
-
-    if (
-        Number.isNaN(
-            start.getTime()
-        ) ||
-        Number.isNaN(
-            end.getTime()
-        ) ||
-        end <= start
-    ) {
-
-        showToast(
-            "Invalid exam window",
-            "Exam end time must be later than start time.",
-            "warning"
-        );
-
-        return false;
-    }
-
-
-    const uploadMode =
-        getUploadMode();
-
-
-    try {
-
-        const configRef =
-            doc(
-                db,
-                "exam_config",
-                "current_test"
-            );
-
-
-        await setDoc(
-            configRef,
-            {
-
-                totalPool,
-
-                studentLimit,
-
-                questionLimit:
-                    studentLimit,
-
-                durationMinutes,
-
-                windowStart:
-                    start.getTime(),
-
-                windowEnd:
-                    end.getTime(),
-
-                uploadMode,
-
-                updatedAt:
-                    serverTimestamp(),
-
-                updatedBy:
-                    getAuthState()
-                        .user?.uid ||
-                    null
-
-            },
-            {
-                merge: true
-            }
-        );
-
-
-        await loadExamConfig();
-
-
-        await writeActivityLog(
-            "exam_config_updated",
-            "exam_config",
-            "current_test",
-            {
-                totalPool,
-                studentLimit,
-                durationMinutes
-            }
-        );
-
-
-        showToast(
-            "Saved",
-            "Exam configuration saved successfully.",
-            "success"
-        );
-
-
-        return true;
-
-
-    } catch (error) {
-
-        console.error(
-            "Exam settings save error:",
-            error
-        );
-
-
-        showToast(
-            "Save failed",
-            error.code ||
-                error.message,
-            "danger"
-        );
-
-
-        return false;
-    }
-
-}
-
-
-function getUploadMode() {
-
-    const selected =
-        document.querySelector(
-            "[data-upload-mode].active"
-        );
-
-
-    if (
-        selected
-    ) {
-
-        return (
-            selected.dataset.uploadMode ||
-            "form"
-        );
-    }
-
-
-    const checked =
-        document.querySelector(
-            'input[name="uploadMode"]:checked'
-        );
-
-
-    return (
-        checked?.value ||
-        "form"
-    );
-
-}
-
-
-/* =========================================================
-   ADMINS
+   ADMIN MANAGEMENT
    ========================================================= */
 
 async function loadAdmins() {
 
-    const body =
-        $("adminsTableBody");
-
-
-    if (!body) {
-        return;
-    }
-
-
-    body.innerHTML = `
-        <tr>
-            <td colspan="7">
-                Loading administrators...
-            </td>
-        </tr>
-    `;
-
-
-    try {
-
-        const snapshot =
-            await getDocs(
-                query(
-                    collection(
-                        db,
-                        "admins"
-                    ),
-                    limit(500)
-                )
-            );
-
-
-        const rows =
-            snapshot.docs.map(
-                item => ({
-                    id:
-                        item.id,
-                    ...item.data()
-                })
-            );
-
-
-        const active =
-            rows.filter(
-                admin =>
-                    normalize(
-                        admin.status
-                    ) ===
-                    "active"
-            ).length;
-
-
-        const suspended =
-            rows.filter(
-                admin =>
-                    [
-                        "suspended",
-                        "blocked",
-                        "revoked"
-                    ].includes(
-                        normalize(
-                            admin.status
-                        )
-                    )
-            ).length;
-
-
-        state.stats.admins =
-            rows.length;
-
-        state.stats.activeAdmins =
-            active;
-
-        state.stats.suspendedAdmins =
-            suspended;
-
-
-        updateStatsUI();
-
-
-        if (
-            !rows.length
-        ) {
-
-            body.innerHTML = `
-                <tr>
-                    <td colspan="7">
-                        <div class="empty-state">
-                            No administrator records found.
-                        </div>
-                    </td>
-                </tr>
-            `;
-
-            return;
-        }
-
-
-        body.innerHTML =
-            rows.map(
-                admin => {
-
-                    const status =
-                        admin.status ||
-                        "active";
-
-
-                    return `
-                        <tr>
-
-                            <td>
-                                ${escapeHtml(
-                                    admin.name ||
-                                    admin.displayName ||
-                                    "—"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    admin.email ||
-                                    "—"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    admin.role ||
-                                    "admin"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    admin.instituteName ||
-                                    admin.instituteId ||
-                                    "—"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    admin.scope ||
-                                    "Assigned"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    status
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    formatDate(
-                                        admin.lastActive ||
-                                        admin.lastLoginAt
-                                    )
-                                )}
-                            </td>
-
-                        </tr>
-                    `;
-
-                }
-            ).join("");
-
-
-    } catch (error) {
-
-        console.error(
-            "Admin load error:",
-            error
+    const data =
+        await getCollection(
+            COLLECTIONS.admins
         );
 
 
-        body.innerHTML = `
-            <tr>
-                <td colspan="7">
-                    Unable to load administrator data.
-                </td>
-            </tr>
-        `;
+    state.admins =
+        data;
 
-    }
+
+    renderAdminList();
+
+
+    return data;
 
 }
 
 
-/* =========================================================
-   INSTITUTES
-   ========================================================= */
-
-async function loadInstitutes() {
-
-    const body =
-        $("institutesTableBody");
-
-
-    if (!body) {
-        return;
-    }
-
-
-    body.innerHTML = `
-        <tr>
-            <td colspan="8">
-                Loading institutes...
-            </td>
-        </tr>
-    `;
-
-
-    try {
-
-        const snapshot =
-            await getDocs(
-                query(
-                    collection(
-                        db,
-                        "institutes"
-                    ),
-                    limit(500)
-                )
-            );
-
-
-        if (
-            !snapshot.size
-        ) {
-
-            body.innerHTML = `
-                <tr>
-                    <td colspan="8">
-                        No institutes found.
-                    </td>
-                </tr>
-            `;
-
-            return;
-        }
-
-
-        body.innerHTML =
-            snapshot.docs
-                .map(
-                    item => {
-
-                        const institute =
-                            item.data();
-
-
-                        return `
-                            <tr>
-
-                                <td>
-                                    ${escapeHtml(
-                                        institute.instituteId ||
-                                        item.id
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        institute.name ||
-                                        institute.instituteName ||
-                                        "—"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        institute.status ||
-                                        "active"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        institute.address ||
-                                        "—"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        institute.contact ||
-                                        institute.phone ||
-                                        "—"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        institute.assignedAdmins ??
-                                        "—"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        institute.exams ??
-                                        "—"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        formatDate(
-                                            institute.updatedAt
-                                        )
-                                    )}
-                                </td>
-
-                            </tr>
-                        `;
-
-                    }
-                )
-                .join("");
-
-
-    } catch (error) {
-
-        console.error(
-            "Institute load error:",
-            error
-        );
-
-
-        body.innerHTML = `
-            <tr>
-                <td colspan="8">
-                    Unable to load institutes.
-                </td>
-            </tr>
-        `;
-
-    }
-
-}
-
-
-/* =========================================================
-   CANDIDATES
-   ========================================================= */
-
-async function loadCandidates() {
-
-    const body =
-        $("candidatesTableBody");
-
-
-    if (!body) {
-        return;
-    }
-
-
-    body.innerHTML = `
-        <tr>
-            <td colspan="8">
-                Loading candidates...
-            </td>
-        </tr>
-    `;
-
-
-    try {
-
-        const snapshot =
-            await getDocs(
-                query(
-                    collection(
-                        db,
-                        "candidates"
-                    ),
-                    limit(500)
-                )
-            );
-
-
-        if (
-            !snapshot.size
-        ) {
-
-            body.innerHTML = `
-                <tr>
-                    <td colspan="8">
-                        No candidate records found.
-                    </td>
-                </tr>
-            `;
-
-            return;
-        }
-
-
-        body.innerHTML =
-            snapshot.docs
-                .map(
-                    item => {
-
-                        const candidate =
-                            item.data();
-
-
-                        return `
-                            <tr>
-
-                                <td>
-                                    ${escapeHtml(
-                                        candidate.candidateId ||
-                                        item.id
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        candidate.name ||
-                                        candidate.candidateName ||
-                                        "—"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        candidate.email ||
-                                        "—"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        candidate.instituteId ||
-                                        "—"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        candidate.examId ||
-                                        "—"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        candidate.batch ||
-                                        candidate.batchCategory ||
-                                        "—"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        candidate.status ||
-                                        "active"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        formatDate(
-                                            candidate.lastActive
-                                        )
-                                    )}
-                                </td>
-
-                            </tr>
-                        `;
-
-                    }
-                )
-                .join("");
-
-
-    } catch (error) {
-
-        console.error(
-            "Candidate load error:",
-            error
-        );
-
-
-        body.innerHTML = `
-            <tr>
-                <td colspan="8">
-                    Unable to load candidates.
-                </td>
-            </tr>
-        `;
-
-    }
-
-}
-
-
-/* =========================================================
-   RESULTS
-   ========================================================= */
-
-async function loadResults() {
-
-    const body =
-        $("resultsTableBody") ||
-        $("leaderboardBody");
-
-
-    if (!body) {
-        return;
-    }
-
-
-    body.innerHTML = `
-        <tr>
-            <td colspan="8">
-                Loading results...
-            </td>
-        </tr>
-    `;
-
-
-    try {
-
-        const snapshot =
-            await getDocs(
-                query(
-                    collection(
-                        db,
-                        "results"
-                    ),
-                    limit(500)
-                )
-            );
-
-
-        state.stats.submissions =
-            snapshot.size;
-
-
-        updateStatsUI();
-
-
-        if (
-            !snapshot.size
-        ) {
-
-            body.innerHTML = `
-                <tr>
-                    <td colspan="8">
-                        No results found.
-                    </td>
-                </tr>
-            `;
-
-            return;
-        }
-
-
-        body.innerHTML =
-            snapshot.docs
-                .map(
-                    item => {
-
-                        const result =
-                            item.data();
-
-
-                        return `
-                            <tr>
-
-                                <td>
-                                    ${escapeHtml(
-                                        result.name ||
-                                        result.candidateName ||
-                                        "—"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        result.email ||
-                                        "—"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        result.examName ||
-                                        result.examId ||
-                                        "—"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        result.score ??
-                                        "0"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        result.correct ??
-                                        result.correctCount ??
-                                        0
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        result.wrong ??
-                                        result.wrongCount ??
-                                        0
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        result.status ||
-                                        result.submissionStatus ||
-                                        "submitted"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        formatDate(
-                                            result.submittedAt ||
-                                            result.timestamp
-                                        )
-                                    )}
-                                </td>
-
-                            </tr>
-                        `;
-
-                    }
-                )
-                .join("");
-
-
-    } catch (error) {
-
-        console.error(
-            "Result load error:",
-            error
-        );
-
-
-        body.innerHTML = `
-            <tr>
-                <td colspan="8">
-                    Unable to load results.
-                </td>
-            </tr>
-        `;
-
-    }
-
-}
-
-
-/* =========================================================
-   SECURITY
-   ========================================================= */
-
-async function loadSecurity() {
-
-    const body =
-        $("securityTableBody") ||
-        $("security-body");
-
-
-    if (!body) {
-        return;
-    }
-
-
-    body.innerHTML = `
-        <tr>
-            <td colspan="8">
-                Loading security events...
-            </td>
-        </tr>
-    `;
-
-
-    try {
-
-        const snapshot =
-            await getDocs(
-                query(
-                    collection(
-                        db,
-                        "securityEvents"
-                    ),
-                    limit(500)
-                )
-            );
-
-
-        const events =
-            snapshot.docs.map(
-                item => ({
-                    id:
-                        item.id,
-                    ...item.data()
-                })
-            );
-
-
-        state.stats.securityFlags =
-            events.length;
-
-
-        updateStatsUI();
-
-
-        if (
-            !events.length
-        ) {
-
-            body.innerHTML = `
-                <tr>
-                    <td colspan="8">
-                        No security events found.
-                    </td>
-                </tr>
-            `;
-
-            return;
-        }
-
-
-        body.innerHTML =
-            events.map(
-                event => {
-
-                    return `
-                        <tr>
-
-                            <td>
-                                ${escapeHtml(
-                                    event.candidateName ||
-                                    event.candidateId ||
-                                    "—"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    event.eventType ||
-                                    event.type ||
-                                    "—"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    event.examId ||
-                                    "—"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    event.tabSwitches ??
-                                    0
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    event.copyAttempts ??
-                                    0
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    event.penalty ??
-                                    event.penaltyMarks ??
-                                    0
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    event.status ||
-                                    "REVIEW"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    formatDate(
-                                        event.timestamp
-                                    )
-                                )}
-                            </td>
-
-                        </tr>
-                    `;
-
-                }
-            ).join("");
-
-
-    } catch (error) {
-
-        console.error(
-            "Security load error:",
-            error
-        );
-
-
-        body.innerHTML = `
-            <tr>
-                <td colspan="8">
-                    Unable to load security events.
-                </td>
-            </tr>
-        `;
-
-    }
-
-}
-
-
-/* =========================================================
-   NOTIFICATIONS
-   ========================================================= */
-
-async function loadNotifications() {
-
-    const body =
-        $("notificationsTableBody") ||
-        $("notificationList");
-
-
-    if (!body) {
-        return;
-    }
-
-
-    try {
-
-        const snapshot =
-            await getDocs(
-                query(
-                    collection(
-                        db,
-                        "notifications"
-                    ),
-                    limit(100)
-                )
-            );
-
-
-        if (
-            !snapshot.size
-        ) {
-
-            body.innerHTML = `
-                <div class="empty-state">
-                    No notifications.
-                </div>
-            `;
-
-            return;
-        }
-
-
-        body.innerHTML =
-            snapshot.docs
-                .map(
-                    item => {
-
-                        const notification =
-                            item.data();
-
-
-                        return `
-                            <div class="notification-item">
-
-                                <strong>
-                                    ${escapeHtml(
-                                        notification.title ||
-                                        "Notification"
-                                    )}
-                                </strong>
-
-                                <div>
-                                    ${escapeHtml(
-                                        notification.message ||
-                                        ""
-                                    )}
-                                </div>
-
-                                <small>
-                                    ${escapeHtml(
-                                        formatDate(
-                                            notification.createdAt
-                                        )
-                                    )}
-                                </small>
-
-                            </div>
-                        `;
-
-                    }
-                )
-                .join("");
-
-
-    } catch (error) {
-
-        console.error(
-            "Notification load error:",
-            error
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   MODAL
-   ========================================================= */
-
-function openModal(
-    title,
-    bodyHtml,
-    options = {}
+/*
+ * IMPORTANT:
+ *
+ * Admin Authentication account creation should be done
+ * through a trusted backend / Cloud Function.
+ *
+ * This function creates/updates the Firestore profile only.
+ * It intentionally does NOT store a password.
+ */
+
+async function saveAdminProfile(
+    adminId,
+    data
 ) {
 
-    const modal =
-        $("genericModal");
+    requireSuperAdmin();
 
 
-    const modalTitle =
-        $("modalTitle");
+    const profile = cleanObject({
 
-
-    const modalBody =
-        $("modalBody");
-
-
-    if (
-        !modal ||
-        !modalTitle ||
-        !modalBody
-    ) {
-
-        showToast(
-            title,
-            "Modal container is missing from the page.",
-            "warning"
-        );
-
-        return;
-    }
-
-
-    state.currentModal =
-        options;
-
-
-    modalTitle.textContent =
-        title;
-
-
-    modalBody.innerHTML =
-        bodyHtml;
-
-
-    modal.classList.add(
-        "active"
-    );
-
-
-    modal.setAttribute(
-        "aria-hidden",
-        "false"
-    );
-
-}
-
-
-function closeModal() {
-
-    const modal =
-        $("genericModal");
-
-
-    const body =
-        $("modalBody");
-
-
-    modal?.classList.remove(
-        "active"
-    );
-
-
-    modal?.setAttribute(
-        "aria-hidden",
-        "true"
-    );
-
-
-    if (body) {
-        body.innerHTML =
-            "";
-    }
-
-
-    state.currentModal =
-        null;
-
-}
-
-
-/* =========================================================
-   MODAL SAVE ROUTER
-   ========================================================= */
-
-async function saveModal() {
-
-    if (
-        !requireAuthorization()
-    ) {
-        return;
-    }
-
-
-    const modal =
-        state.currentModal;
-
-
-    if (!modal) {
-
-        showToast(
-            "Nothing to save",
-            "No active modal operation.",
-            "warning"
-        );
-
-        return;
-    }
-
-
-    /*
-     * Future module-specific handlers can be
-     * plugged in here without modifying the UI.
-     */
-
-    try {
-
-        switch (
+        name:
             normalize(
-                modal.type
+                data.name
+            ),
+
+        email:
+            normalizeLower(
+                data.email
+            ),
+
+        role:
+            data.role ||
+            "ADMIN",
+
+        status:
+            data.status ||
+            ADMIN_STATUS.ACTIVE,
+
+        instituteIds:
+            Array.isArray(
+                data.instituteIds
             )
-        ) {
+                ? data.instituteIds
+                : [],
 
-            case "institute":
-                await saveInstituteFromModal();
-                break;
+        examIds:
+            Array.isArray(
+                data.examIds
+            )
+                ? data.examIds
+                : [],
 
-            case "admin":
-                await saveAdminFromModal();
-                break;
+        batchIds:
+            Array.isArray(
+                data.batchIds
+            )
+                ? data.batchIds
+                : [],
 
-            case "exam":
-                await saveExamFromModal();
-                break;
+        permissions:
+            Array.isArray(
+                data.permissions
+            )
+                ? data.permissions
+                : [],
 
-            case "question":
-                await saveQuestionFromModal();
-                break;
+        permissionMode:
+            data.permissionMode ||
+            "MANUAL",
 
-            default:
+        suspensionUntil:
+            data.suspensionUntil ||
+            null,
 
-                showToast(
-                    "Module pending",
-                    "This operation will be connected to its dedicated module.",
-                    "info"
-                );
+        updatedAt:
+            serverTimestamp()
 
-                break;
+    });
+
+
+    const reference =
+        doc(
+            db,
+            COLLECTIONS.admins,
+            adminId
+        );
+
+
+    const existing =
+        await getDoc(
+            reference
+        );
+
+
+    await setDoc(
+        reference,
+        {
+
+            ...profile,
+
+            ...(existing.exists()
+                ? {}
+                : {
+                    createdAt:
+                        serverTimestamp()
+                })
+
+        },
+        {
+            merge:
+                true
         }
-
-
-    } catch (error) {
-
-        console.error(
-            "Modal save error:",
-            error
-        );
-
-
-        showToast(
-            "Save failed",
-            error.code ||
-                error.message,
-            "danger"
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   MODAL PLACEHOLDERS
-   ========================================================= */
-
-async function saveInstituteFromModal() {
-
-    /*
-     * Institute Management module will own
-     * final validation and scoped writes.
-     */
-
-    showToast(
-        "Institute module",
-        "Institute save logic is ready to be connected to the dedicated module.",
-        "info"
     );
 
-}
+
+    await createAuditLog({
+
+        action:
+            existing.exists()
+                ? "ADMIN_UPDATED"
+                : "ADMIN_PROFILE_CREATED",
+
+        entityType:
+            "admin",
+
+        entityId:
+            adminId,
+
+        newValue:
+            profile
+
+    });
 
 
-async function saveAdminFromModal() {
-
-    showToast(
-        "Admin module",
-        "Admin creation/editing will be handled by the permission module.",
-        "info"
-    );
-
-}
+    await loadAdmins();
 
 
-async function saveExamFromModal() {
-
-    showToast(
-        "Exam module",
-        "Exam creation/editing will be handled by the Exam Management module.",
-        "info"
-    );
-
-}
-
-
-async function saveQuestionFromModal() {
-
-    showToast(
-        "Question Bank",
-        "Question creation/editing will be handled by the Question Bank module.",
-        "info"
-    );
+    return adminId;
 
 }
 
 
-/* =========================================================
-   EMERGENCY ACTIONS
-   ========================================================= */
-
-async function handleEmergencyAction(
-    action
+async function activateAdmin(
+    adminId
 ) {
 
+    return updateAdminStatus(
+        adminId,
+        ADMIN_STATUS.ACTIVE
+    );
+
+}
+
+
+async function suspendAdmin(
+    adminId,
+    suspensionUntil = null,
+    reason = ""
+) {
+
+    requireSuperAdmin();
+
+
+    const changes = {
+
+        status:
+            ADMIN_STATUS.SUSPENDED,
+
+        suspensionUntil,
+
+        suspensionReason:
+            reason || "",
+
+        updatedAt:
+            serverTimestamp()
+
+    };
+
+
+    await updateDoc(
+        doc(
+            db,
+            COLLECTIONS.admins,
+            adminId
+        ),
+        changes
+    );
+
+
+    await createAuditLog({
+
+        action:
+            "ADMIN_SUSPENDED",
+
+        entityType:
+            "admin",
+
+        entityId:
+            adminId,
+
+        oldValue:
+            {
+                status:
+                    "ACTIVE"
+            },
+
+        newValue:
+            changes,
+
+        reason
+
+    });
+
+
+    await loadAdmins();
+
+}
+
+
+async function revokeAdmin(
+    adminId,
+    reason = ""
+) {
+
+    requireSuperAdmin();
+
+
+    const changes = {
+
+        status:
+            ADMIN_STATUS.REVOKED,
+
+        suspensionUntil:
+            null,
+
+        updatedAt:
+            serverTimestamp()
+
+    };
+
+
+    await updateDoc(
+        doc(
+            db,
+            COLLECTIONS.admins,
+            adminId
+        ),
+        changes
+    );
+
+
+    await createAuditLog({
+
+        action:
+            "ADMIN_REVOKED",
+
+        entityType:
+            "admin",
+
+        entityId:
+            adminId,
+
+        newValue:
+            changes,
+
+        reason
+
+    });
+
+
+    await loadAdmins();
+
+}
+
+
+async function updateAdminStatus(
+    adminId,
+    status
+) {
+
+    requireSuperAdmin();
+
+
+    await updateDoc(
+        doc(
+            db,
+            COLLECTIONS.admins,
+            adminId
+        ),
+        {
+
+            status,
+
+            updatedAt:
+                serverTimestamp()
+
+        }
+    );
+
+
+    await createAuditLog({
+
+        action:
+            "ADMIN_STATUS_CHANGED",
+
+        entityType:
+            "admin",
+
+        entityId:
+            adminId,
+
+        newValue:
+            {
+                status
+            }
+
+    });
+
+
+    await loadAdmins();
+
+}
+
+
+/* =========================================================
+   PERMISSION MANAGEMENT
+   ========================================================= */
+
+async function updateAdminPermissions(
+    adminId,
+    permissions,
+    mode = "MANUAL"
+) {
+
+    requireSuperAdmin();
+
+
+    const safePermissions =
+        Array.from(
+            new Set(
+                (permissions || [])
+                    .filter(
+                        permission =>
+                            PERMISSIONS.includes(
+                                permission
+                            )
+                    )
+            )
+        );
+
+
+    await updateDoc(
+        doc(
+            db,
+            COLLECTIONS.admins,
+            adminId
+        ),
+        {
+
+            permissions:
+                safePermissions,
+
+            permissionMode:
+                mode,
+
+            updatedAt:
+                serverTimestamp()
+
+        }
+    );
+
+
+    await createAuditLog({
+
+        action:
+            "ADMIN_PERMISSIONS_UPDATED",
+
+        entityType:
+            "admin",
+
+        entityId:
+            adminId,
+
+        newValue:
+            {
+                permissions:
+                    safePermissions,
+
+                mode
+            }
+
+    });
+
+
+    await loadAdmins();
+
+}
+
+
+/* =========================================================
+   PERMISSION TEMPLATE
+   ========================================================= */
+
+async function getPermissionTemplate() {
+
+    requireSuperAdmin();
+
+
+    const reference =
+        doc(
+            db,
+            COLLECTIONS.globalSettings,
+            "permissionTemplate"
+        );
+
+
+    const snapshot =
+        await getDoc(
+            reference
+        );
+
+
     if (
-        !requireAuthorization()
+        !snapshot.exists()
     ) {
-        return false;
+
+        return {
+
+            permissions:
+                PERMISSIONS,
+
+            updatedAt:
+                null
+
+        };
+
     }
 
 
-    /*
-     * High-risk operations must NEVER silently execute.
-     * UI already confirms the action.
-     *
-     * Final server-side / Firestore authorization must
-     * also be enforced by Security Rules / trusted backend.
-     */
+    return snapshot.data();
 
-    try {
-
-        switch (
-            action
-        ) {
-
-            case "toggleMaintenanceBtn":
-
-                await setGlobalSetting(
-                    "maintenanceMode",
-                    true
-                );
-
-                break;
+}
 
 
-            case "pauseExamBtn":
+async function savePermissionTemplate(
+    permissions
+) {
 
-                await setExamControl(
-                    "paused"
-                );
-
-                break;
+    requireSuperAdmin();
 
 
-            case "resumeExamBtn":
-
-                await setExamControl(
-                    "live"
-                );
-
-                break;
-
-
-            case "forceSubmitBtn":
-
-                /*
-                 * Do not perform a broad client-side
-                 * force submission without a secure backend.
-                 */
-
-                showToast(
-                    "Secure action required",
-                    "Force submission must be processed by the trusted backend.",
-                    "warning"
-                );
-
-                return false;
+    const safePermissions =
+        Array.from(
+            new Set(
+                (permissions || [])
+                    .filter(
+                        item =>
+                            PERMISSIONS.includes(
+                                item
+                            )
+                    )
+            )
+        );
 
 
-            default:
+    await setDoc(
 
-                showToast(
-                    "Unknown action",
-                    "The requested emergency action is not recognized.",
-                    "warning"
-                );
+        doc(
+            db,
+            COLLECTIONS.globalSettings,
+            "permissionTemplate"
+        ),
 
-                return false;
+        {
+
+            permissions:
+                safePermissions,
+
+            updatedAt:
+                serverTimestamp(),
+
+            updatedBy:
+                state.user.uid
+
+        },
+
+        {
+            merge:
+                true
         }
 
-
-        return true;
-
-
-    } catch (error) {
-
-        console.error(
-            "Emergency action error:",
-            error
-        );
+    );
 
 
-        showToast(
-            "Emergency action failed",
-            error.code ||
-                error.message,
-            "danger"
-        );
+    await createAuditLog({
+
+        action:
+            "PERMISSION_TEMPLATE_UPDATED",
+
+        entityType:
+            "globalSettings",
+
+        entityId:
+            "permissionTemplate",
+
+        newValue:
+            {
+                permissions:
+                    safePermissions
+            }
+
+    });
+
+}
 
 
-        return false;
+/* =========================================================
+   EXAM MANAGEMENT
+   ========================================================= */
+
+async function loadExams(
+    instituteId = null
+) {
+
+    requireSuperAdmin();
+
+
+    const activeInstitute =
+        instituteId ||
+        state.activeInstituteId;
+
+
+    let data;
+
+
+    if (activeInstitute) {
+
+        data =
+            await getCollection(
+                COLLECTIONS.exams,
+                [
+                    where(
+                        "instituteId",
+                        "==",
+                        activeInstitute
+                    )
+                ]
+            );
+
+    } else {
+
+        data =
+            await getCollection(
+                COLLECTIONS.exams
+            );
+
     }
+
+
+    state.exams =
+        data;
+
+
+    renderExamList();
+
+
+    return data;
+
+}
+
+
+async function createExam(data) {
+
+    requireSuperAdmin();
+
+
+    const instituteId =
+        data.instituteId ||
+        state.activeInstituteId;
+
+
+    if (!instituteId) {
+
+        throw new Error(
+            "Institute is required."
+        );
+
+    }
+
+
+    const exam = {
+
+        examId:
+            normalize(
+                data.examId
+            ) ||
+            `EXAM-${Date.now()}`,
+
+        name:
+            normalize(
+                data.name
+            ),
+
+        description:
+            normalize(
+                data.description
+            ),
+
+        instituteId,
+
+        duration:
+            Number(
+                data.duration || 60
+            ),
+
+        startTime:
+            data.startTime ||
+            null,
+
+        endTime:
+            data.endTime ||
+            null,
+
+        questionPool:
+            data.questionPool ||
+            {},
+
+        questionCount:
+            Number(
+                data.questionCount || 0
+            ),
+
+        marksPerQuestion:
+            Number(
+                data.marksPerQuestion || 1
+            ),
+
+        negativeMarking:
+            Number(
+                data.negativeMarking || 0
+            ),
+
+        security:
+            data.security ||
+            {},
+
+        attemptRules:
+            data.attemptRules ||
+            {},
+
+        resultConfig:
+            data.resultConfig ||
+            {},
+
+        feedbackConfig:
+            data.feedbackConfig ||
+            {},
+
+        status:
+            EXAM_STATUS.DRAFT,
+
+        createdBy:
+            state.user.uid,
+
+        createdAt:
+            serverTimestamp(),
+
+        updatedAt:
+            serverTimestamp()
+
+    };
+
+
+    const reference =
+        await addDoc(
+            collection(
+                db,
+                COLLECTIONS.exams
+            ),
+            exam
+        );
+
+
+    await createAuditLog({
+
+        action:
+            "EXAM_CREATED",
+
+        entityType:
+            "exam",
+
+        entityId:
+            reference.id,
+
+        instituteId,
+
+        newValue:
+            exam
+
+    });
+
+
+    await loadExams(
+        instituteId
+    );
+
+
+    return reference.id;
+
+}
+
+
+async function updateExam(
+    examId,
+    changes
+) {
+
+    requireSuperAdmin();
+
+
+    const existing =
+        await getDocument(
+            COLLECTIONS.exams,
+            examId
+        );
+
+
+    if (!existing) {
+
+        throw new Error(
+            "Exam not found."
+        );
+
+    }
+
+
+    const safeChanges =
+        cleanObject({
+
+            ...changes,
+
+            updatedAt:
+                serverTimestamp()
+
+        });
+
+
+    await updateDoc(
+        doc(
+            db,
+            COLLECTIONS.exams,
+            examId
+        ),
+        safeChanges
+    );
+
+
+    await createAuditLog({
+
+        action:
+            "EXAM_UPDATED",
+
+        entityType:
+            "exam",
+
+        entityId:
+            examId,
+
+        instituteId:
+            existing.instituteId,
+
+        oldValue:
+            existing,
+
+        newValue:
+            changes
+
+    });
+
+
+    await loadExams(
+        existing.instituteId
+    );
+
+}
+
+
+async function publishExam(
+    examId
+) {
+
+    requireSuperAdmin();
+
+
+    const existing =
+        await getDocument(
+            COLLECTIONS.exams,
+            examId
+        );
+
+
+    if (!existing) {
+
+        throw new Error(
+            "Exam not found."
+        );
+
+    }
+
+
+    if (
+        !existing.name ||
+        !existing.duration
+    ) {
+
+        throw new Error(
+            "Exam is incomplete and cannot be published."
+        );
+
+    }
+
+
+    await updateDoc(
+        doc(
+            db,
+            COLLECTIONS.exams,
+            examId
+        ),
+        {
+
+            status:
+                EXAM_STATUS.SCHEDULED,
+
+            publishedAt:
+                serverTimestamp(),
+
+            publishedBy:
+                state.user.uid,
+
+            updatedAt:
+                serverTimestamp()
+
+        }
+    );
+
+
+    await createAuditLog({
+
+        action:
+            "EXAM_PUBLISHED",
+
+        entityType:
+            "exam",
+
+        entityId:
+            examId,
+
+        instituteId:
+            existing.instituteId
+
+    });
+
+
+    await loadExams(
+        existing.instituteId
+    );
+
+}
+
+
+async function setExamStatus(
+    examId,
+    status
+) {
+
+    requireSuperAdmin();
+
+
+    const existing =
+        await getDocument(
+            COLLECTIONS.exams,
+            examId
+        );
+
+
+    if (!existing) {
+
+        throw new Error(
+            "Exam not found."
+        );
+
+    }
+
+
+    await updateDoc(
+        doc(
+            db,
+            COLLECTIONS.exams,
+            examId
+        ),
+        {
+
+            status,
+
+            updatedAt:
+                serverTimestamp()
+
+        }
+    );
+
+
+    await createAuditLog({
+
+        action:
+            "EXAM_STATUS_CHANGED",
+
+        entityType:
+            "exam",
+
+        entityId:
+            examId,
+
+        instituteId:
+            existing.instituteId,
+
+        oldValue:
+            {
+                status:
+                    existing.status
+            },
+
+        newValue:
+            {
+                status
+            }
+
+    });
+
+
+    await loadExams(
+        existing.instituteId
+    );
+
+}
+
+
+/* =========================================================
+   BATCH MANAGEMENT
+   ========================================================= */
+
+async function loadBatches(
+    instituteId = null
+) {
+
+    requireSuperAdmin();
+
+
+    const selectedInstitute =
+        instituteId ||
+        state.activeInstituteId;
+
+
+    let data;
+
+
+    if (selectedInstitute) {
+
+        data =
+            await getCollection(
+                COLLECTIONS.batches,
+                [
+                    where(
+                        "instituteId",
+                        "==",
+                        selectedInstitute
+                    )
+                ]
+            );
+
+    } else {
+
+        data =
+            await getCollection(
+                COLLECTIONS.batches
+            );
+
+    }
+
+
+    state.batches =
+        data;
+
+
+    renderBatchList();
+
+
+    return data;
+
+}
+
+
+async function createBatch(data) {
+
+    requireSuperAdmin();
+
+
+    const instituteId =
+        data.instituteId ||
+        state.activeInstituteId;
+
+
+    if (!instituteId) {
+
+        throw new Error(
+            "Institute is required."
+        );
+
+    }
+
+
+    const batch = {
+
+        batchId:
+            normalize(
+                data.batchId
+            ) ||
+            `BATCH-${Date.now()}`,
+
+        name:
+            normalize(
+                data.name
+            ),
+
+        category:
+            normalize(
+                data.category
+            ),
+
+        className:
+            normalize(
+                data.className
+            ),
+
+        batchTime:
+            normalize(
+                data.batchTime
+            ),
+
+        instituteId,
+
+        examIds:
+            Array.isArray(
+                data.examIds
+            )
+                ? data.examIds
+                : [],
+
+        status:
+            data.status ||
+            "ACTIVE",
+
+        createdAt:
+            serverTimestamp(),
+
+        updatedAt:
+            serverTimestamp(),
+
+        createdBy:
+            state.user.uid
+
+    };
+
+
+    const reference =
+        await addDoc(
+            collection(
+                db,
+                COLLECTIONS.batches
+            ),
+            batch
+        );
+
+
+    await createAuditLog({
+
+        action:
+            "BATCH_CREATED",
+
+        entityType:
+            "batch",
+
+        entityId:
+            reference.id,
+
+        instituteId,
+
+        newValue:
+            batch
+
+    });
+
+
+    await loadBatches(
+        instituteId
+    );
+
+
+    return reference.id;
+
+}
+
+
+/* =========================================================
+   QUESTION BANK
+   ========================================================= */
+
+async function loadQuestions(
+    instituteId = null
+) {
+
+    requireSuperAdmin();
+
+
+    const selectedInstitute =
+        instituteId ||
+        state.activeInstituteId;
+
+
+    if (!selectedInstitute) {
+
+        state.questions =
+            [];
+
+        return [];
+
+    }
+
+
+    const data =
+        await getCollection(
+            COLLECTIONS.questions,
+            [
+                where(
+                    "instituteId",
+                    "==",
+                    selectedInstitute
+                )
+            ]
+        );
+
+
+    state.questions =
+        data;
+
+
+    renderQuestionList();
+
+
+    return data;
+
+}
+
+
+async function createQuestion(data) {
+
+    requireSuperAdmin();
+
+
+    const instituteId =
+        data.instituteId ||
+        state.activeInstituteId;
+
+
+    if (!instituteId) {
+
+        throw new Error(
+            "Institute is required."
+        );
+
+    }
+
+
+    const question = {
+
+        instituteId,
+
+        questionBankId:
+            data.questionBankId ||
+            null,
+
+        subject:
+            normalize(
+                data.subject
+            ),
+
+        chapter:
+            normalize(
+                data.chapter
+            ),
+
+        topic:
+            normalize(
+                data.topic
+            ),
+
+        difficulty:
+            normalize(
+                data.difficulty
+            ),
+
+        question:
+            data.question ||
+            "",
+
+        options:
+            Array.isArray(
+                data.options
+            )
+                ? data.options
+                : [],
+
+        correctAnswer:
+            data.correctAnswer ??
+            null,
+
+        explanation:
+            data.explanation ||
+            "",
+
+        marks:
+            Number(
+                data.marks || 1
+            ),
+
+        negativeMarking:
+            Number(
+                data.negativeMarking || 0
+            ),
+
+        status:
+            data.status ||
+            "DRAFT",
+
+        createdBy:
+            state.user.uid,
+
+        createdAt:
+            serverTimestamp(),
+
+        updatedAt:
+            serverTimestamp()
+
+    };
+
+
+    const reference =
+        await addDoc(
+            collection(
+                db,
+                COLLECTIONS.questions
+            ),
+            question
+        );
+
+
+    await createAuditLog({
+
+        action:
+            "QUESTION_CREATED",
+
+        entityType:
+            "question",
+
+        entityId:
+            reference.id,
+
+        instituteId,
+
+        newValue:
+            question
+
+    });
+
+
+    return reference.id;
+
+}
+
+
+/* =========================================================
+   PORTAL CONFIGURATION
+   ========================================================= */
+
+async function getPortalConfig(
+    scopeId
+) {
+
+    requireSuperAdmin();
+
+
+    const reference =
+        doc(
+            db,
+            COLLECTIONS.portalConfigs,
+            scopeId
+        );
+
+
+    const snapshot =
+        await getDoc(
+            reference
+        );
+
+
+    if (
+        !snapshot.exists()
+    ) {
+
+        return {
+
+            scopeId,
+
+            status:
+                "DRAFT",
+
+            version:
+                0,
+
+            content: {
+
+                pageTitle:
+                    "",
+
+                subtitle:
+                    "",
+
+                welcomeMessage:
+                    "",
+
+                notice:
+                    "",
+
+                instructions:
+                    "",
+
+                supportText:
+                    "",
+
+                footer:
+                    "",
+
+                terms:
+                    "",
+
+                warning:
+                    "",
+
+                buttonText:
+                    "Login",
+
+                fields:
+                    []
+
+            }
+
+        };
+
+    }
+
+
+    return {
+
+        id:
+            snapshot.id,
+
+        ...snapshot.data()
+
+    };
+
+}
+
+
+async function savePortalDraft(
+    scopeId,
+    config
+) {
+
+    requireSuperAdmin();
+
+
+    const existing =
+        await getPortalConfig(
+            scopeId
+        );
+
+
+    const nextVersion =
+        Number(
+            existing.version || 0
+        ) + 1;
+
+
+    const draft = {
+
+        scopeId,
+
+        status:
+            "DRAFT",
+
+        version:
+            nextVersion,
+
+        content:
+            config,
+
+        createdBy:
+            state.user.uid,
+
+        createdAt:
+            serverTimestamp(),
+
+        updatedAt:
+            serverTimestamp()
+
+    };
+
+
+    await setDoc(
+
+        doc(
+            db,
+            COLLECTIONS.portalConfigs,
+            scopeId
+        ),
+
+        draft,
+
+        {
+            merge:
+                true
+        }
+
+    );
+
+
+    await createAuditLog({
+
+        action:
+            "PORTAL_CONFIG_DRAFT_SAVED",
+
+        entityType:
+            "portalConfig",
+
+        entityId:
+            scopeId,
+
+        newValue:
+            draft
+
+    });
+
+
+    return nextVersion;
+
+}
+
+
+async function publishPortalConfig(
+    scopeId
+) {
+
+    requireSuperAdmin();
+
+
+    const config =
+        await getPortalConfig(
+            scopeId
+        );
+
+
+    if (!config) {
+
+        throw new Error(
+            "Portal configuration not found."
+        );
+
+    }
+
+
+    await setDoc(
+
+        doc(
+            db,
+            COLLECTIONS.portalConfigs,
+            scopeId
+        ),
+
+        {
+
+            status:
+                "PUBLISHED",
+
+            publishedBy:
+                state.user.uid,
+
+            publishedAt:
+                serverTimestamp(),
+
+            updatedAt:
+                serverTimestamp()
+
+        },
+
+        {
+            merge:
+                true
+        }
+
+    );
+
+
+    await createAuditLog({
+
+        action:
+            "PORTAL_CONFIG_PUBLISHED",
+
+        entityType:
+            "portalConfig",
+
+        entityId:
+            scopeId
+
+    });
 
 }
 
@@ -2661,310 +2431,1036 @@ async function handleEmergencyAction(
    GLOBAL SETTINGS
    ========================================================= */
 
-async function setGlobalSetting(
-    key,
-    value
-) {
+async function getGlobalSettings() {
 
-    await setDoc(
-        doc(
-            db,
-            "global_settings",
-            "system"
-        ),
-        {
-            [key]:
-                value,
-
-            updatedAt:
-                serverTimestamp(),
-
-            updatedBy:
-                getAuthState()
-                    .user?.uid ||
-                null
-        },
-        {
-            merge: true
-        }
-    );
+    requireSuperAdmin();
 
 
-    await writeActivityLog(
-        `global_setting_${key}`,
-        "global_settings",
-        "system",
-        {
-            value
-        }
-    );
-
-
-    showToast(
-        "Updated",
-        `${key} has been updated.`,
-        "success"
+    return getDocument(
+        COLLECTIONS.globalSettings,
+        "default"
     );
 
 }
 
 
-async function setExamControl(
-    status
+async function saveGlobalSettings(
+    settings
 ) {
 
+    requireSuperAdmin();
+
+
+    const existing =
+        await getGlobalSettings();
+
+
     await setDoc(
+
         doc(
             db,
-            "exam_control",
-            "current"
+            COLLECTIONS.globalSettings,
+            "default"
         ),
+
         {
 
-            status,
+            ...settings,
+
+            updatedBy:
+                state.user.uid,
 
             updatedAt:
                 serverTimestamp(),
 
-            updatedBy:
-                getAuthState()
-                    .user?.uid ||
-                null
+            version:
+                Number(
+                    existing?.version || 0
+                ) + 1
 
         },
+
         {
-            merge: true
+            merge:
+                true
         }
+
     );
 
 
-    await writeActivityLog(
-        `exam_${status}`,
-        "exam_control",
-        "current",
-        {
-            status
-        }
-    );
+    await createAuditLog({
 
+        action:
+            "GLOBAL_SETTINGS_UPDATED",
 
-    showToast(
-        "Exam control updated",
-        `Exam status changed to ${status}.`,
-        "success"
-    );
+        entityType:
+            "globalSettings",
+
+        entityId:
+            "default",
+
+        oldValue:
+            existing,
+
+        newValue:
+            settings
+
+    });
 
 }
 
 
 /* =========================================================
-   ACTIVITY LOG
+   SECURITY SETTINGS
    ========================================================= */
 
-async function writeActivityLog(
-    action,
-    entity,
-    entityId,
-    details = {}
+async function saveSecuritySettings(
+    scopeId,
+    securitySettings
 ) {
 
-    /*
-     * This is intentionally isolated.
-     *
-     * Firestore Rules should restrict who can create
-     * or modify activity logs.
-     */
-
-    try {
-
-        const authState =
-            getAuthState();
+    requireSuperAdmin();
 
 
-        if (
-            !authState.authorized ||
-            !authState.user
-        ) {
-            return;
+    const reference =
+        doc(
+            db,
+            COLLECTIONS.globalSettings,
+            `security_${scopeId}`
+        );
+
+
+    await setDoc(
+
+        reference,
+
+        {
+
+            scopeId,
+
+            ...securitySettings,
+
+            updatedBy:
+                state.user.uid,
+
+            updatedAt:
+                serverTimestamp()
+
+        },
+
+        {
+            merge:
+                true
         }
 
-
-        const logId =
-            `${Date.now()}_${authState.user.uid}`;
+    );
 
 
-        await setDoc(
-            doc(
-                db,
-                "activityLogs",
-                logId
-            ),
-            {
+    await createAuditLog({
 
-                adminId:
-                    authState.user.uid,
+        action:
+            "SECURITY_SETTINGS_UPDATED",
 
-                adminEmail:
-                    authState.user.email ||
-                    "",
+        entityType:
+            "securitySettings",
 
-                adminRole:
-                    authState.role ||
-                    authState.profile?.role ||
-                    "super_admin",
+        entityId:
+            scopeId,
 
-                instituteId:
-                    details.instituteId ||
-                    null,
+        instituteId:
+            scopeId,
 
-                action,
+        newValue:
+            securitySettings
 
-                entity,
+    });
 
-                entityId,
+}
 
-                details,
 
-                timestamp:
-                    serverTimestamp()
+/* =========================================================
+   RESULTS
+   ========================================================= */
+
+async function loadResults(
+    filters = {}
+) {
+
+    requireSuperAdmin();
+
+
+    const constraints = [];
+
+
+    if (
+        filters.instituteId
+    ) {
+
+        constraints.push(
+            where(
+                "instituteId",
+                "==",
+                filters.instituteId
+            )
+        );
+
+    }
+
+
+    if (
+        filters.examId
+    ) {
+
+        constraints.push(
+            where(
+                "examId",
+                "==",
+                filters.examId
+            )
+        );
+
+    }
+
+
+    if (
+        filters.batchId
+    ) {
+
+        constraints.push(
+            where(
+                "batchId",
+                "==",
+                filters.batchId
+            )
+        );
+
+    }
+
+
+    const data =
+        await getCollection(
+            COLLECTIONS.results,
+            constraints
+        );
+
+
+    state.results =
+        data;
+
+
+    renderResults();
+
+
+    return data;
+
+}
+
+
+/* =========================================================
+   FEEDBACK
+   ========================================================= */
+
+async function loadFeedback(
+    filters = {}
+) {
+
+    requireSuperAdmin();
+
+
+    const constraints = [];
+
+
+    if (
+        filters.instituteId
+    ) {
+
+        constraints.push(
+            where(
+                "instituteId",
+                "==",
+                filters.instituteId
+            )
+        );
+
+    }
+
+
+    if (
+        filters.examId
+    ) {
+
+        constraints.push(
+            where(
+                "examId",
+                "==",
+                filters.examId
+            )
+        );
+
+    }
+
+
+    const data =
+        await getCollection(
+            COLLECTIONS.feedback,
+            constraints
+        );
+
+
+    state.feedback =
+        data;
+
+
+    return data;
+
+}
+
+
+/* =========================================================
+   SECURITY EVENTS
+   ========================================================= */
+
+async function loadSecurityEvents(
+    filters = {}
+) {
+
+    requireSuperAdmin();
+
+
+    const constraints = [];
+
+
+    if (
+        filters.instituteId
+    ) {
+
+        constraints.push(
+            where(
+                "instituteId",
+                "==",
+                filters.instituteId
+            )
+        );
+
+    }
+
+
+    if (
+        filters.examId
+    ) {
+
+        constraints.push(
+            where(
+                "examId",
+                "==",
+                filters.examId
+            )
+        );
+
+    }
+
+
+    const data =
+        await getCollection(
+            COLLECTIONS.securityEvents,
+            constraints
+        );
+
+
+    state.securityEvents =
+        data;
+
+
+    return data;
+
+}
+
+
+/* =========================================================
+   AUDIT LOGS
+   ========================================================= */
+
+async function loadAuditLogs(
+    filters = {}
+) {
+
+    requireSuperAdmin();
+
+
+    const constraints = [
+
+        orderBy(
+            "timestamp",
+            "desc"
+        ),
+
+        limit(
+            Number(
+                filters.limit || 100
+            )
+        )
+
+    ];
+
+
+    const data =
+        await getCollection(
+            COLLECTIONS.auditLogs,
+            constraints
+        );
+
+
+    state.auditLogs =
+        data;
+
+
+    renderAuditLogs();
+
+
+    return data;
+
+}
+
+
+/* =========================================================
+   PRESENCE / LIVE MONITORING
+   ========================================================= */
+
+async function loadPresence() {
+
+    requireSuperAdmin();
+
+
+    const data =
+        await getCollection(
+            COLLECTIONS.presence
+        );
+
+
+    const activeThreshold =
+        nowMillis() -
+        (
+            2 * 60 * 1000
+        );
+
+
+    state.presence =
+        data.filter(
+            item => {
+
+                const lastActive =
+                    convertTimestamp(
+                        item.lastActive
+                    );
+
+
+                return (
+                    lastActive &&
+                    lastActive >=
+                    activeThreshold
+                );
 
             }
         );
 
-    } catch (error) {
 
-        /*
-         * Logging failure must not break normal UI,
-         * but should be visible in console.
-         */
+    renderPresence();
 
-        console.warn(
-            "Activity log failed:",
-            error
-        );
 
-    }
+    return state.presence;
 
 }
 
 
 /* =========================================================
-   REFRESH
+   DASHBOARD STATISTICS
    ========================================================= */
 
-async function refresh() {
+async function calculateDashboardStats() {
 
-    if (
-        !requireAuthorization()
-    ) {
-        return false;
-    }
+    requireSuperAdmin();
 
 
-    if (
-        state.loading
-    ) {
-        return false;
-    }
+    const [
+        institutes,
+        admins,
+        exams,
+        candidates,
+        results,
+        securityEvents,
+        feedback
+    ] = await Promise.all([
+
+        getCollection(
+            COLLECTIONS.institutes
+        ),
+
+        getCollection(
+            COLLECTIONS.admins
+        ),
+
+        getCollection(
+            COLLECTIONS.exams
+        ),
+
+        getCollection(
+            COLLECTIONS.candidates
+        ),
+
+        getCollection(
+            COLLECTIONS.results
+        ),
+
+        getCollection(
+            COLLECTIONS.securityEvents
+        ),
+
+        getCollection(
+            COLLECTIONS.feedback
+        )
+
+    ]);
 
 
-    state.loading =
-        true;
-
-
-    try {
-
-        setStatus(
-            "Synchronizing dashboard...",
-            "busy"
+    const activeAdmins =
+        admins.filter(
+            admin =>
+                normalizeLower(
+                    admin.status
+                ) ===
+                "active"
         );
 
 
-        await loadOverview();
-
-
-        /*
-         * Refresh currently visible section.
-         */
-
-        await loadViewData(
-            state.currentView
+    const suspendedAdmins =
+        admins.filter(
+            admin =>
+                normalizeLower(
+                    admin.status
+                ) ===
+                "suspended"
         );
 
 
-        const sync =
-            $("last-sync");
+    const liveExams =
+        exams.filter(
+            exam =>
+                exam.status ===
+                EXAM_STATUS.LIVE
+        );
 
 
-        if (sync) {
+    const scheduledExams =
+        exams.filter(
+            exam =>
+                exam.status ===
+                EXAM_STATUS.SCHEDULED
+        );
 
-            sync.textContent =
-                "Last sync: " +
-                new Date()
-                    .toLocaleTimeString(
-                        "en-IN"
+
+    const completedExams =
+        exams.filter(
+            exam =>
+                exam.status ===
+                EXAM_STATUS.COMPLETED
+        );
+
+
+    const activeCandidates =
+        state.presence.filter(
+            item =>
+                normalizeLower(
+                    item.role
+                ) ===
+                "candidate"
+        );
+
+
+    const scores =
+        results
+            .map(
+                result =>
+                    Number(
+                        result.score ??
+                        result.obtainedMarks ??
+                        0
+                    )
+            )
+            .filter(
+                Number.isFinite
+            );
+
+
+    const ratings =
+        feedback
+            .map(
+                item =>
+                    Number(
+                        item.rating
+                    )
+            )
+            .filter(
+                rating =>
+                    rating >= 1 &&
+                    rating <= 5
+            );
+
+
+    const averageScore =
+        scores.length
+            ? (
+                scores.reduce(
+                    (
+                        total,
+                        value
+                    ) =>
+                        total + value,
+                    0
+                ) /
+                scores.length
+            )
+            : 0;
+
+
+    const averageRating =
+        ratings.length
+            ? (
+                ratings.reduce(
+                    (
+                        total,
+                        value
+                    ) =>
+                        total + value,
+                    0
+                ) /
+                ratings.length
+            )
+            : 0;
+
+
+    state.institutes =
+        institutes;
+
+    state.admins =
+        admins;
+
+    state.exams =
+        exams;
+
+    state.candidates =
+        candidates;
+
+    state.results =
+        results;
+
+    state.securityEvents =
+        securityEvents;
+
+    state.feedback =
+        feedback;
+
+
+    state.dashboardStats = {
+
+        totalInstitutes:
+            institutes.length,
+
+        totalAdmins:
+            admins.length,
+
+        activeAdmins:
+            activeAdmins.length,
+
+        suspendedAdmins:
+            suspendedAdmins.length,
+
+        totalExams:
+            exams.length,
+
+        liveExams:
+            liveExams.length,
+
+        scheduledExams:
+            scheduledExams.length,
+
+        completedExams:
+            completedExams.length,
+
+        totalCandidates:
+            candidates.length,
+
+        activeCandidates:
+            activeCandidates.length,
+
+        totalSubmissions:
+            results.length,
+
+        averageScore:
+            Number(
+                averageScore.toFixed(2)
+            ),
+
+        securityFlags:
+            securityEvents.length,
+
+        averageRating:
+            Number(
+                averageRating.toFixed(2)
+            )
+
+    };
+
+
+    renderDashboardStats();
+
+
+    return state.dashboardStats;
+
+}
+
+
+/* =========================================================
+   REAL-TIME LISTENERS
+   ========================================================= */
+
+function startRealtimeListeners() {
+
+    requireSuperAdmin();
+
+
+    cleanupListeners();
+
+
+    /*
+     * Institutes
+     */
+
+    const instituteListener =
+        onSnapshot(
+
+            collection(
+                db,
+                COLLECTIONS.institutes
+            ),
+
+            snapshot => {
+
+                state.institutes =
+                    snapshot.docs.map(
+                        item => ({
+                            id:
+                                item.id,
+
+                            ...item.data()
+                        })
                     );
-        }
 
 
-        return true;
+                renderInstituteSelector();
 
+                renderInstituteList();
 
-    } catch (error) {
+            },
 
-        console.error(
-            "Dashboard refresh failed:",
-            error
+            error => {
+
+                console.error(
+                    "Institute listener:",
+                    error
+                );
+
+            }
+
         );
 
 
-        setStatus(
-            "Refresh failed",
-            "error"
+    state.listeners.push(
+        instituteListener
+    );
+
+
+    /*
+     * Admins
+     */
+
+    const adminListener =
+        onSnapshot(
+
+            collection(
+                db,
+                COLLECTIONS.admins
+            ),
+
+            snapshot => {
+
+                state.admins =
+                    snapshot.docs.map(
+                        item => ({
+                            id:
+                                item.id,
+
+                            ...item.data()
+                        })
+                    );
+
+
+                renderAdminList();
+
+            },
+
+            error => {
+
+                console.error(
+                    "Admin listener:",
+                    error
+                );
+
+            }
+
         );
 
 
-        return false;
+    state.listeners.push(
+        adminListener
+    );
 
 
-    } finally {
+    /*
+     * Exams
+     */
 
-        state.loading =
-            false;
-    }
+    const examListener =
+        onSnapshot(
+
+            collection(
+                db,
+                COLLECTIONS.exams
+            ),
+
+            snapshot => {
+
+                state.exams =
+                    snapshot.docs.map(
+                        item => ({
+                            id:
+                                item.id,
+
+                            ...item.data()
+                        })
+                    );
+
+
+                renderExamList();
+
+                calculateDashboardStats();
+
+            },
+
+            error => {
+
+                console.error(
+                    "Exam listener:",
+                    error
+                );
+
+            }
+
+        );
+
+
+    state.listeners.push(
+        examListener
+    );
+
+
+    /*
+     * Presence
+     */
+
+    const presenceListener =
+        onSnapshot(
+
+            collection(
+                db,
+                COLLECTIONS.presence
+            ),
+
+            snapshot => {
+
+                const cutoff =
+                    nowMillis() -
+                    (
+                        2 * 60 * 1000
+                    );
+
+
+                state.presence =
+                    snapshot.docs
+                        .map(
+                            item => ({
+                                id:
+                                    item.id,
+
+                                ...item.data()
+                            })
+                        )
+                        .filter(
+                            item => {
+
+                                const time =
+                                    convertTimestamp(
+                                        item.lastActive
+                                    );
+
+
+                                return (
+                                    time &&
+                                    time >= cutoff
+                                );
+
+                            }
+                        );
+
+
+                renderPresence();
+
+                calculateDashboardStats();
+
+            },
+
+            error => {
+
+                /*
+                 * Presence collection may not exist yet.
+                 * Do not crash dashboard.
+                 */
+
+                console.warn(
+                    "Presence listener:",
+                    error
+                );
+
+            }
+
+        );
+
+
+    state.listeners.push(
+        presenceListener
+    );
+
+
+    /*
+     * Security Events
+     */
+
+    const securityListener =
+        onSnapshot(
+
+            collection(
+                db,
+                COLLECTIONS.securityEvents
+            ),
+
+            snapshot => {
+
+                state.securityEvents =
+                    snapshot.docs.map(
+                        item => ({
+                            id:
+                                item.id,
+
+                            ...item.data()
+                        })
+                    );
+
+
+                calculateDashboardStats();
+
+            },
+
+            error => {
+
+                console.warn(
+                    "Security event listener:",
+                    error
+                );
+
+            }
+
+        );
+
+
+    state.listeners.push(
+        securityListener
+    );
+
+
+    /*
+     * Results
+     */
+
+    const resultListener =
+        onSnapshot(
+
+            collection(
+                db,
+                COLLECTIONS.results
+            ),
+
+            snapshot => {
+
+                state.results =
+                    snapshot.docs.map(
+                        item => ({
+                            id:
+                                item.id,
+
+                            ...item.data()
+                        })
+                    );
+
+
+                calculateDashboardStats();
+
+            },
+
+            error => {
+
+                console.warn(
+                    "Results listener:",
+                    error
+                );
+
+            }
+
+        );
+
+
+    state.listeners.push(
+        resultListener
+    );
 
 }
 
-
-/* =========================================================
-   CLEANUP
-   ========================================================= */
 
 function cleanupListeners() {
 
-    state.listeners
-        .forEach(
-            unsubscribe => {
+    state.listeners.forEach(
+        unsubscribe => {
 
-                try {
+            try {
 
-                    if (
-                        typeof unsubscribe ===
-                            "function"
-                    ) {
-                        unsubscribe();
-                    }
+                unsubscribe();
 
-                } catch (error) {
+            } catch {
 
-                    console.warn(
-                        "Listener cleanup error:",
-                        error
-                    );
-                }
+                // ignore cleanup error
 
             }
-        );
+
+        }
+    );
 
 
     state.listeners =
@@ -2974,306 +3470,1550 @@ function cleanupListeners() {
 
 
 /* =========================================================
-   PROFILE
+   EMERGENCY CONTROLS
    ========================================================= */
 
-function updateProfile() {
-
-    const authState =
-        getAuthState();
-
-
-    if (
-        !authState.profile
-    ) {
-        return;
-    }
-
-
-    const profile =
-        authState.profile;
-
-
-    const name =
-        profile.name ||
-        profile.displayName ||
-        "Super Administrator";
-
-
-    const email =
-        profile.email ||
-        authState.user?.email ||
-        "";
-
-
-    const nameElement =
-        $("sidebarAdminName");
-
-
-    const emailElement =
-        $("sidebarAdminEmail");
-
-
-    const avatar =
-        $("sidebarAvatar");
-
-
-    if (nameElement) {
-
-        nameElement.textContent =
-            name;
-    }
-
-
-    if (emailElement) {
-
-        emailElement.textContent =
-            email;
-    }
-
-
-    if (avatar) {
-
-        avatar.textContent =
-            name
-                .split(/\s+/)
-                .filter(Boolean)
-                .slice(0, 2)
-                .map(
-                    part =>
-                        part[0]
-                )
-                .join("")
-                .toUpperCase() ||
-            "SA";
-    }
-
-}
-
-
-/* =========================================================
-   DATE FORMAT
-   ========================================================= */
-
-function formatDate(
-    value
+async function setMaintenanceMode(
+    enabled,
+    reason = ""
 ) {
 
-    if (!value) {
-        return "—";
-    }
+    requireSuperAdmin();
 
 
-    let date;
-
-
-    if (
-        typeof value?.toDate ===
-            "function"
-    ) {
-
-        date =
-            value.toDate();
-
-    } else {
-
-        date =
-            new Date(
-                value
-            );
-    }
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-        return "—";
-    }
-
-
-    return date.toLocaleString(
-        "en-IN",
-        {
-            dateStyle:
-                "medium",
-            timeStyle:
-                "short"
-        }
-    );
-
-}
-
-
-/* =========================================================
-   BUTTON EVENTS
-   ========================================================= */
-
-function bindNavigation() {
-
-    document
-        .querySelectorAll(
-            "[data-view-target]"
-        )
-        .forEach(
-            button => {
-
-                button.addEventListener(
-                    "click",
-                    event => {
-
-                        event.preventDefault();
-
-
-                        showView(
-                            button.dataset.viewTarget,
-                            button.dataset.title ||
-                                button.textContent.trim()
-                        );
-
-                    }
-                );
-
-            }
+    const reference =
+        doc(
+            db,
+            COLLECTIONS.globalSettings,
+            "emergency"
         );
 
 
+    await setDoc(
+
+        reference,
+
+        {
+
+            maintenanceMode:
+                Boolean(enabled),
+
+            maintenanceReason:
+                reason,
+
+            updatedBy:
+                state.user.uid,
+
+            updatedAt:
+                serverTimestamp()
+
+        },
+
+        {
+            merge:
+                true
+        }
+
+    );
+
+
+    await createAuditLog({
+
+        action:
+            enabled
+                ? "MAINTENANCE_ENABLED"
+                : "MAINTENANCE_DISABLED",
+
+        entityType:
+            "emergency",
+
+        entityId:
+            "global",
+
+        reason
+
+    });
+
+}
+
+
+async function disableCandidateLogin(
+    disabled,
+    reason = ""
+) {
+
+    requireSuperAdmin();
+
+
+    await setDoc(
+
+        doc(
+            db,
+            COLLECTIONS.globalSettings,
+            "emergency"
+        ),
+
+        {
+
+            candidateLoginDisabled:
+                Boolean(disabled),
+
+            candidateLoginDisabledReason:
+                reason,
+
+            updatedBy:
+                state.user.uid,
+
+            updatedAt:
+                serverTimestamp()
+
+        },
+
+        {
+            merge:
+                true
+        }
+
+    );
+
+
+    await createAuditLog({
+
+        action:
+            disabled
+                ? "CANDIDATE_LOGIN_DISABLED"
+                : "CANDIDATE_LOGIN_ENABLED",
+
+        entityType:
+            "emergency",
+
+        entityId:
+            "candidateLogin",
+
+        reason
+
+    });
+
+}
+
+
+async function pauseExam(
+    examId,
+    reason = ""
+) {
+
+    requireSuperAdmin();
+
+
+    await setExamStatus(
+        examId,
+        EXAM_STATUS.PAUSED
+    );
+
+
+    await createAuditLog({
+
+        action:
+            "EMERGENCY_EXAM_PAUSED",
+
+        entityType:
+            "exam",
+
+        entityId:
+            examId,
+
+        reason
+
+    });
+
+}
+
+
+async function resumeExam(
+    examId,
+    reason = ""
+) {
+
+    requireSuperAdmin();
+
+
+    await setExamStatus(
+        examId,
+        EXAM_STATUS.LIVE
+    );
+
+
+    await createAuditLog({
+
+        action:
+            "EMERGENCY_EXAM_RESUMED",
+
+        entityType:
+            "exam",
+
+        entityId:
+            examId,
+
+        reason
+
+    });
+
+}
+
+
+/*
+ * Force submit is intentionally implemented as a state change
+ * request rather than directly rewriting every candidate
+ * attempt from the browser.
+ *
+ * A trusted Cloud Function should process this command.
+ */
+
+async function requestForceSubmit(
+    examId,
+    candidateId = null,
+    reason = ""
+) {
+
+    requireSuperAdmin();
+
+
+    const command = {
+
+        type:
+            candidateId
+                ? "FORCE_SUBMIT_CANDIDATE"
+                : "FORCE_SUBMIT_EXAM",
+
+        examId,
+
+        candidateId,
+
+        reason,
+
+        requestedBy:
+            state.user.uid,
+
+        status:
+            "PENDING",
+
+        createdAt:
+            serverTimestamp()
+
+    };
+
+
+    const reference =
+        await addDoc(
+
+            collection(
+                db,
+                COLLECTIONS.notifications
+            ),
+
+            command
+
+        );
+
+
+    await createAuditLog({
+
+        action:
+            command.type,
+
+        entityType:
+            "exam",
+
+        entityId:
+            examId,
+
+        reason
+
+    });
+
+
+    return reference.id;
+
+}
+
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+async function globalSearch(
+    searchTerm
+) {
+
+    requireSuperAdmin();
+
+
+    const term =
+        normalizeLower(
+            searchTerm
+        );
+
+
+    if (!term) {
+
+        return {
+
+            institutes: [],
+            admins: [],
+            exams: [],
+            batches: [],
+            candidates: [],
+            results: []
+
+        };
+
+    }
+
+
+    const [
+
+        institutes,
+        admins,
+        exams,
+        batches,
+        candidates,
+        results
+
+    ] = await Promise.all([
+
+        getCollection(
+            COLLECTIONS.institutes
+        ),
+
+        getCollection(
+            COLLECTIONS.admins
+        ),
+
+        getCollection(
+            COLLECTIONS.exams
+        ),
+
+        getCollection(
+            COLLECTIONS.batches
+        ),
+
+        getCollection(
+            COLLECTIONS.candidates
+        ),
+
+        getCollection(
+            COLLECTIONS.results
+        )
+
+    ]);
+
+
+    const match =
+        item => {
+
+            const searchable =
+                [
+
+                    item.id,
+
+                    item.name,
+
+                    item.email,
+
+                    item.examId,
+
+                    item.instituteId,
+
+                    item.batchId,
+
+                    item.candidateId,
+
+                    item.status
+
+                ]
+                    .filter(Boolean)
+                    .join(" ")
+                    .toLowerCase();
+
+
+            return searchable.includes(
+                term
+            );
+
+        };
+
+
+    return {
+
+        institutes:
+            institutes.filter(match),
+
+        admins:
+            admins.filter(match),
+
+        exams:
+            exams.filter(match),
+
+        batches:
+            batches.filter(match),
+
+        candidates:
+            candidates.filter(match),
+
+        results:
+            results.filter(match)
+
+    };
+
+}
+
+
+/* =========================================================
+   RENDER DASHBOARD
+   ========================================================= */
+
+function renderDashboardStats() {
+
+    const stats =
+        state.dashboardStats;
+
+
+    const mapping = {
+
+        totalInstitutes:
+            stats.totalInstitutes,
+
+        totalAdmins:
+            stats.totalAdmins,
+
+        activeAdmins:
+            stats.activeAdmins,
+
+        suspendedAdmins:
+            stats.suspendedAdmins,
+
+        totalExams:
+            stats.totalExams,
+
+        liveExams:
+            stats.liveExams,
+
+        scheduledExams:
+            stats.scheduledExams,
+
+        completedExams:
+            stats.completedExams,
+
+        totalCandidates:
+            stats.totalCandidates,
+
+        activeCandidates:
+            stats.activeCandidates,
+
+        totalSubmissions:
+            stats.totalSubmissions,
+
+        averageScore:
+            stats.averageScore,
+
+        securityFlags:
+            stats.securityFlags,
+
+        averageRating:
+            stats.averageRating
+
+    };
+
+
+    Object.entries(
+        mapping
+    ).forEach(
+        ([id, value]) => {
+
+            const element =
+                getElement(id);
+
+
+            if (element) {
+
+                element.textContent =
+                    value;
+
+            }
+
+        }
+    );
+
+
     /*
-     * Alternative:
-     * buttons can simply use data-view.
+     * Support generic data-stat attributes.
      */
 
     document
         .querySelectorAll(
-            "[data-dashboard-view]"
+            "[data-stat]"
         )
         .forEach(
-            button => {
+            element => {
 
-                button.addEventListener(
-                    "click",
-                    event => {
+                const key =
+                    element.dataset.stat;
 
-                        event.preventDefault();
-
-
-                        showView(
-                            button.dataset.dashboardView,
-                            button.dataset.title ||
-                                button.textContent.trim()
-                        );
-
-                    }
-                );
-
-            }
-        );
-
-}
-
-
-function bindCoreButtons() {
-
-    $("refreshBtn")
-        ?.addEventListener(
-            "click",
-            () => refresh()
-        );
-
-
-    $("notificationBtn")
-        ?.addEventListener(
-            "click",
-            () =>
-                showView(
-                    "notifications",
-                    "Notifications"
-                )
-        );
-
-
-    $("modalCloseBtn")
-        ?.addEventListener(
-            "click",
-            closeModal
-        );
-
-
-    $("modalCancelBtn")
-        ?.addEventListener(
-            "click",
-            closeModal
-        );
-
-
-    $("modalSaveBtn")
-        ?.addEventListener(
-            "click",
-            saveModal
-        );
-
-
-    $("genericModal")
-        ?.addEventListener(
-            "click",
-            event => {
 
                 if (
-                    event.target ===
-                    $("genericModal")
+                    Object.prototype
+                        .hasOwnProperty
+                        .call(
+                            stats,
+                            key
+                        )
                 ) {
 
-                    closeModal();
+                    element.textContent =
+                        stats[key];
+
                 }
 
             }
         );
 
+}
 
-    $("save-config-btn")
-        ?.addEventListener(
-            "click",
-            saveExamSettings
+
+/* =========================================================
+   RENDER SELECTOR
+   ========================================================= */
+
+function renderInstituteSelector() {
+
+    const selector =
+        getElement(
+            "instituteSelector"
+        );
+
+
+    if (!selector) {
+
+        return;
+
+    }
+
+
+    const current =
+        state.activeInstituteId;
+
+
+    selector.innerHTML =
+        `<option value="">All Institutes</option>`;
+
+
+    state.institutes
+        .forEach(
+            institute => {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                option.value =
+                    institute.id;
+
+
+                option.textContent =
+                    institute.name ||
+                    institute.instituteId ||
+                    institute.id;
+
+
+                option.selected =
+                    institute.id ===
+                    current;
+
+
+                selector.appendChild(
+                    option
+                );
+
+            }
         );
 
 }
 
 
 /* =========================================================
-   AUTH EVENT BRIDGE
+   RENDER INSTITUTE LIST
+   ========================================================= */
+
+function renderInstituteList() {
+
+    const container =
+        getElement(
+            "instituteList"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    state.institutes
+        .forEach(
+            institute => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                row.className =
+                    "data-row";
+
+
+                row.dataset.id =
+                    institute.id;
+
+
+                row.innerHTML = `
+
+                    <div>
+                        <strong>
+                            ${escapeHtml(
+                                institute.name ||
+                                "Unnamed Institute"
+                            )}
+                        </strong>
+
+                        <small>
+                            ${escapeHtml(
+                                institute.instituteId ||
+                                institute.id
+                            )}
+                        </small>
+                    </div>
+
+                    <span>
+                        ${escapeHtml(
+                            institute.status ||
+                            "ACTIVE"
+                        )}
+                    </span>
+
+                    <button
+                        type="button"
+                        data-action="edit-institute"
+                        data-id="${escapeAttr(
+                            institute.id
+                        )}">
+                        Edit
+                    </button>
+
+                `;
+
+
+                container.appendChild(
+                    row
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   RENDER ADMINS
+   ========================================================= */
+
+function renderAdminList() {
+
+    const container =
+        getElement(
+            "adminList"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    state.admins
+        .forEach(
+            admin => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                row.className =
+                    "data-row";
+
+
+                row.innerHTML = `
+
+                    <div>
+                        <strong>
+                            ${escapeHtml(
+                                admin.name ||
+                                "Unnamed Admin"
+                            )}
+                        </strong>
+
+                        <small>
+                            ${escapeHtml(
+                                admin.email ||
+                                ""
+                            )}
+                        </small>
+                    </div>
+
+                    <span>
+                        ${escapeHtml(
+                            admin.status ||
+                            ADMIN_STATUS.ACTIVE
+                        )}
+                    </span>
+
+                    <div>
+
+                        <button
+                            type="button"
+                            data-action="activate-admin"
+                            data-id="${escapeAttr(
+                                admin.id
+                            )}">
+                            Activate
+                        </button>
+
+                        <button
+                            type="button"
+                            data-action="suspend-admin"
+                            data-id="${escapeAttr(
+                                admin.id
+                            )}">
+                            Suspend
+                        </button>
+
+                        <button
+                            type="button"
+                            data-action="revoke-admin"
+                            data-id="${escapeAttr(
+                                admin.id
+                            )}">
+                            Revoke
+                        </button>
+
+                    </div>
+
+                `;
+
+
+                container.appendChild(
+                    row
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   RENDER EXAMS
+   ========================================================= */
+
+function renderExamList() {
+
+    const container =
+        getElement(
+            "examList"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    state.exams
+        .forEach(
+            exam => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                row.className =
+                    "data-row";
+
+
+                row.innerHTML = `
+
+                    <div>
+
+                        <strong>
+                            ${escapeHtml(
+                                exam.name ||
+                                "Unnamed Exam"
+                            )}
+                        </strong>
+
+                        <small>
+                            ${escapeHtml(
+                                exam.examId ||
+                                exam.id
+                            )}
+                        </small>
+
+                    </div>
+
+                    <span>
+                        ${escapeHtml(
+                            exam.status ||
+                            EXAM_STATUS.DRAFT
+                        )}
+                    </span>
+
+                    <div>
+
+                        <button
+                            type="button"
+                            data-action="publish-exam"
+                            data-id="${escapeAttr(
+                                exam.id
+                            )}">
+                            Publish
+                        </button>
+
+                        <button
+                            type="button"
+                            data-action="pause-exam"
+                            data-id="${escapeAttr(
+                                exam.id
+                            )}">
+                            Pause
+                        </button>
+
+                    </div>
+
+                `;
+
+
+                container.appendChild(
+                    row
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   RENDER BATCHES
+   ========================================================= */
+
+function renderBatchList() {
+
+    const container =
+        getElement(
+            "batchList"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    state.batches
+        .forEach(
+            batch => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                row.className =
+                    "data-row";
+
+
+                row.innerHTML = `
+
+                    <div>
+
+                        <strong>
+                            ${escapeHtml(
+                                batch.name ||
+                                "Unnamed Batch"
+                            )}
+                        </strong>
+
+                        <small>
+                            ${escapeHtml(
+                                batch.category ||
+                                ""
+                            )}
+                        </small>
+
+                    </div>
+
+                    <span>
+                        ${escapeHtml(
+                            batch.status ||
+                            "ACTIVE"
+                        )}
+                    </span>
+
+                `;
+
+
+                container.appendChild(
+                    row
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   RENDER QUESTIONS
+   ========================================================= */
+
+function renderQuestionList() {
+
+    const container =
+        getElement(
+            "questionList"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    state.questions
+        .slice(
+            0,
+            100
+        )
+        .forEach(
+            question => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                row.className =
+                    "data-row";
+
+
+                row.innerHTML = `
+
+                    <div>
+
+                        <strong>
+                            ${escapeHtml(
+                                question.subject ||
+                                "Question"
+                            )}
+                        </strong>
+
+                        <p>
+                            ${escapeHtml(
+                                question.question ||
+                                ""
+                            ).slice(
+                                0,
+                                180
+                            )}
+                        </p>
+
+                    </div>
+
+                    <span>
+                        ${escapeHtml(
+                            question.difficulty ||
+                            ""
+                        )}
+                    </span>
+
+                `;
+
+
+                container.appendChild(
+                    row
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   RENDER RESULTS
+   ========================================================= */
+
+function renderResults() {
+
+    const container =
+        getElement(
+            "resultList"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    state.results
+        .slice(
+            0,
+            100
+        )
+        .forEach(
+            result => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                row.className =
+                    "data-row";
+
+
+                row.innerHTML = `
+
+                    <div>
+
+                        <strong>
+                            ${escapeHtml(
+                                result.candidateName ||
+                                result.candidateId ||
+                                "Candidate"
+                            )}
+                        </strong>
+
+                        <small>
+                            ${escapeHtml(
+                                result.examId ||
+                                ""
+                            )}
+                        </small>
+
+                    </div>
+
+                    <strong>
+                        ${escapeHtml(
+                            String(
+                                result.score ??
+                                result.obtainedMarks ??
+                                0
+                            )
+                        )}
+                    </strong>
+
+                `;
+
+
+                container.appendChild(
+                    row
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   RENDER AUDIT LOGS
+   ========================================================= */
+
+function renderAuditLogs() {
+
+    const container =
+        getElement(
+            "auditLogList"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    state.auditLogs
+        .forEach(
+            log => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                row.className =
+                    "data-row";
+
+
+                row.innerHTML = `
+
+                    <div>
+
+                        <strong>
+                            ${escapeHtml(
+                                log.action ||
+                                "ACTION"
+                            )}
+                        </strong>
+
+                        <small>
+                            ${escapeHtml(
+                                log.actorEmail ||
+                                log.actorId ||
+                                ""
+                            )}
+                        </small>
+
+                    </div>
+
+                    <span>
+                        ${formatTimestamp(
+                            log.timestamp
+                        )}
+                    </span>
+
+                `;
+
+
+                container.appendChild(
+                    row
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   RENDER LIVE PRESENCE
+   ========================================================= */
+
+function renderPresence() {
+
+    const container =
+        getElement(
+            "presenceList"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    state.presence
+        .forEach(
+            item => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                row.className =
+                    "data-row";
+
+
+                row.innerHTML = `
+
+                    <div>
+
+                        <strong>
+                            ${escapeHtml(
+                                item.name ||
+                                item.email ||
+                                item.userId ||
+                                "User"
+                            )}
+                        </strong>
+
+                        <small>
+                            ${escapeHtml(
+                                item.role ||
+                                ""
+                            )}
+                        </small>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            ${escapeHtml(
+                                item.currentExam ||
+                                ""
+                            )}
+                        </span>
+
+                        <small>
+                            ${escapeHtml(
+                                item.currentInstitute ||
+                                ""
+                            )}
+                        </small>
+
+                    </div>
+
+                    <span>
+                        Active
+                    </span>
+
+                `;
+
+
+                container.appendChild(
+                    row
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   EVENT HANDLING
+   ========================================================= */
+
+function bindEvents() {
+
+    /*
+     * Institute selector
+     */
+
+    const instituteSelector =
+        getElement(
+            "instituteSelector"
+        );
+
+
+    if (instituteSelector) {
+
+        instituteSelector.addEventListener(
+            "change",
+            async event => {
+
+                state.activeInstituteId =
+                    event.target.value ||
+                    null;
+
+
+                await Promise.all([
+
+                    loadExams(
+                        state.activeInstituteId
+                    ),
+
+                    loadBatches(
+                        state.activeInstituteId
+                    ),
+
+                    loadQuestions(
+                        state.activeInstituteId
+                    )
+
+                ]);
+
+
+                window.dispatchEvent(
+                    new CustomEvent(
+                        "superadmin:instituteChanged",
+                        {
+                            detail: {
+                                instituteId:
+                                    state.activeInstituteId
+                            }
+                        }
+                    )
+                );
+
+            }
+        );
+
+    }
+
+
+    /*
+     * Generic data-action buttons
+     */
+
+    document.addEventListener(
+        "click",
+        async event => {
+
+            const button =
+                event.target.closest(
+                    "[data-action]"
+                );
+
+
+            if (!button) {
+
+                return;
+
+            }
+
+
+            const action =
+                button.dataset.action;
+
+            const id =
+                button.dataset.id;
+
+
+            try {
+
+                switch (
+                    action
+                ) {
+
+                    case "activate-admin":
+
+                        await activateAdmin(
+                            id
+                        );
+
+                        break;
+
+
+                    case "suspend-admin":
+
+                        await suspendAdmin(
+                            id,
+                            null,
+                            "Suspended by Super Admin"
+                        );
+
+                        break;
+
+
+                    case "revoke-admin":
+
+                        if (
+                            !confirm(
+                                "Are you sure you want to permanently revoke this Admin?"
+                            )
+                        ) {
+
+                            return;
+
+                        }
+
+                        await revokeAdmin(
+                            id,
+                            "Revoked by Super Admin"
+                        );
+
+                        break;
+
+
+                    case "publish-exam":
+
+                        await publishExam(
+                            id
+                        );
+
+                        break;
+
+
+                    case "pause-exam":
+
+                        await pauseExam(
+                            id,
+                            "Paused by Super Admin"
+                        );
+
+                        break;
+
+
+                    case "edit-institute":
+
+                        state.activeInstituteId =
+                            id;
+
+                        window.dispatchEvent(
+                            new CustomEvent(
+                                "superadmin:editInstitute",
+                                {
+                                    detail: {
+                                        id
+                                    }
+                                }
+                            )
+                        );
+
+                        break;
+
+                }
+
+
+            } catch (error) {
+
+                console.error(
+                    error
+                );
+
+
+                toast(
+                    "Operation failed",
+                    error.message ||
+                    "Unable to complete operation.",
+                    "danger"
+                );
+
+            }
+
+        }
+    );
+
+
+    /*
+     * Logout
+     */
+
+    const logoutButton =
+        getElement(
+            "logoutButton"
+        );
+
+
+    if (logoutButton) {
+
+        logoutButton.addEventListener(
+            "click",
+            async () => {
+
+                await window
+                    .SuperAdminAuth
+                    ?.logout();
+
+            }
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   AUTHORIZED EVENT
    ========================================================= */
 
 function bindAuthEvents() {
-
-    /*
-     * IMPORTANT:
-     *
-     * No Firebase onAuthStateChanged() here.
-     *
-     * auth.js is the single owner of authentication.
-     */
-
-
-    /*
-     * Listen for custom event if auth.js / future versions
-     * emit it.
-     */
 
     window.addEventListener(
         "superadmin:authorized",
         async event => {
 
-            console.log(
-                "Super Admin authorized",
-                event.detail || {}
-            );
+            try {
+
+                const detail =
+                    event.detail || {};
 
 
-            updateProfile();
+                state.authorized =
+                    true;
+
+                state.user =
+                    detail.user ||
+                    null;
+
+                state.profile =
+                    detail.profile ||
+                    null;
 
 
-            await refresh();
+                await initializeDashboard();
+
+            } catch (error) {
+
+                console.error(
+                    "Dashboard initialization failed:",
+                    error
+                );
+
+
+                toast(
+                    "Dashboard error",
+                    error.message ||
+                    "Unable to initialize dashboard.",
+                    "danger"
+                );
+
+            }
 
         }
     );
@@ -3285,6 +5025,16 @@ function bindAuthEvents() {
 
             cleanupListeners();
 
+
+            state.authorized =
+                false;
+
+            state.user =
+                null;
+
+            state.profile =
+                null;
+
         }
     );
 
@@ -3292,49 +5042,260 @@ function bindAuthEvents() {
 
 
 /* =========================================================
-   INITIALIZATION
+   INITIALIZE DASHBOARD
    ========================================================= */
 
-async function initialize() {
+async function initializeDashboard() {
 
     if (
         state.initialized
     ) {
+
         return;
+
     }
 
 
-    state.initialized =
+    requireSuperAdmin();
+
+
+    state.loading =
         true;
 
 
-    bindNavigation();
+    try {
 
-    bindCoreButtons();
+        const auth =
+            window.SuperAdminAuth
+                .getState();
 
-    bindAuthEvents();
+
+        state.user =
+            auth.user;
+
+        state.profile =
+            auth.profile;
 
 
-    /*
-     * Do not force login here.
-     *
-     * auth.js decides whether the Firebase session
-     * is authorized.
-     */
+        await loadInstitutes();
 
-    const authState =
-        getAuthState();
+
+        if (
+            state.activeInstituteId
+        ) {
+
+            await Promise.all([
+
+                loadExams(
+                    state.activeInstituteId
+                ),
+
+                loadBatches(
+                    state.activeInstituteId
+                ),
+
+                loadQuestions(
+                    state.activeInstituteId
+                )
+
+            ]);
+
+        }
+
+
+        await loadPresence();
+
+
+        await calculateDashboardStats();
+
+
+        await loadAuditLogs({
+            limit:
+                100
+        });
+
+
+        startRealtimeListeners();
+
+
+        bindEvents();
+
+
+        state.initialized =
+            true;
+
+
+        window.dispatchEvent(
+            new CustomEvent(
+                "superadmin:ready",
+                {
+                    detail: {
+                        state
+                    }
+                }
+            )
+        );
+
+
+    } finally {
+
+        state.loading =
+            false;
+
+    }
+
+}
+
+
+/* =========================================================
+   TIMESTAMP HELPERS
+   ========================================================= */
+
+function convertTimestamp(
+    value
+) {
+
+    if (!value) {
+
+        return null;
+
+    }
 
 
     if (
-        authState.authorized
+        typeof value.toMillis ===
+        "function"
     ) {
 
-        updateProfile();
-
-        await refresh();
+        return value.toMillis();
 
     }
+
+
+    if (
+        typeof value.toDate ===
+        "function"
+    ) {
+
+        return value.toDate()
+            .getTime();
+
+    }
+
+
+    if (
+        value instanceof Date
+    ) {
+
+        return value.getTime();
+
+    }
+
+
+    if (
+        typeof value ===
+        "number"
+    ) {
+
+        return value;
+
+    }
+
+
+    const parsed =
+        new Date(
+            value
+        )
+        .getTime();
+
+
+    return Number.isNaN(
+        parsed
+    )
+        ? null
+        : parsed;
+
+}
+
+
+function formatTimestamp(
+    value
+) {
+
+    const millis =
+        convertTimestamp(
+            value
+        );
+
+
+    if (!millis) {
+
+        return "—";
+
+    }
+
+
+    return new Intl.DateTimeFormat(
+        undefined,
+        {
+            dateStyle:
+                "medium",
+
+            timeStyle:
+                "short"
+        }
+    )
+        .format(
+            new Date(
+                millis
+            )
+        );
+
+}
+
+
+/* =========================================================
+   HTML ESCAPING
+   ========================================================= */
+
+function escapeHtml(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+function escapeAttr(
+    value
+) {
+
+    return escapeHtml(
+        value
+    );
 
 }
 
@@ -3343,84 +5304,188 @@ async function initialize() {
    PUBLIC API
    ========================================================= */
 
-const api = {
+window.SuperAdminApp = {
 
-    initialize,
+    state,
 
-    refresh,
+    collections:
+        COLLECTIONS,
 
-    showView,
+    permissions:
+        PERMISSIONS,
 
-    openModal,
+    examStatus:
+        EXAM_STATUS,
 
-    closeModal,
+    adminStatus:
+        ADMIN_STATUS,
 
-    saveModal,
+    requireSuperAdmin,
 
-    saveExamSettings,
-
-    handleEmergencyAction,
-
-    loadExamConfig,
-
-    loadOverview,
-
-    loadAdmins,
+    /* Institutes */
 
     loadInstitutes,
 
-    loadCandidates,
+    createInstitute,
+
+    updateInstitute,
+
+    setInstituteStatus,
+
+    archiveInstitute,
+
+    /* Admins */
+
+    loadAdmins,
+
+    saveAdminProfile,
+
+    activateAdmin,
+
+    suspendAdmin,
+
+    revokeAdmin,
+
+    updateAdminStatus,
+
+    updateAdminPermissions,
+
+    getPermissionTemplate,
+
+    savePermissionTemplate,
+
+    /* Exams */
+
+    loadExams,
+
+    createExam,
+
+    updateExam,
+
+    publishExam,
+
+    setExamStatus,
+
+    /* Batches */
+
+    loadBatches,
+
+    createBatch,
+
+    /* Questions */
+
+    loadQuestions,
+
+    createQuestion,
+
+    /* Portal */
+
+    getPortalConfig,
+
+    savePortalDraft,
+
+    publishPortalConfig,
+
+    /* Settings */
+
+    getGlobalSettings,
+
+    saveGlobalSettings,
+
+    saveSecuritySettings,
+
+    /* Analytics */
 
     loadResults,
 
-    loadSecurity,
+    loadFeedback,
 
-    loadNotifications,
+    loadSecurityEvents,
 
-    updateProfile,
+    loadAuditLogs,
 
-    cleanupListeners,
+    loadPresence,
 
-    getState() {
+    calculateDashboardStats,
 
-        return {
-            ...state
-        };
+    /* Search */
 
-    },
+    globalSearch,
 
-    getAuthState
+    /* Emergency */
+
+    setMaintenanceMode,
+
+    disableCandidateLogin,
+
+    pauseExam,
+
+    resumeExam,
+
+    requestForceSubmit,
+
+    /* Realtime */
+
+    startRealtimeListeners,
+
+    cleanupListeners
 
 };
 
 
 /* =========================================================
-   GLOBAL EXPOSURE
+   STARTUP
    ========================================================= */
 
-window.SuperAdminApp =
-    api;
+bindAuthEvents();
 
 
-/* =========================================================
-   INITIALIZE AFTER DOM
-   ========================================================= */
+/*
+ * If auth.js has already finished authorization before this
+ * script loads, initialize immediately.
+ */
 
-if (
-    document.readyState ===
-    "loading"
-) {
+(async function bootstrap() {
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        initialize,
-        {
-            once: true
+    try {
+
+        if (
+            window.SuperAdminAuth
+        ) {
+
+            const authState =
+                window.SuperAdminAuth
+                    .getState();
+
+
+            if (
+                authState &&
+                authState.authorized
+            ) {
+
+                state.authorized =
+                    true;
+
+                state.user =
+                    authState.user;
+
+                state.profile =
+                    authState.profile;
+
+
+                await initializeDashboard();
+
+            }
+
         }
-    );
 
-} else {
+    } catch (error) {
 
-    initialize();
+        console.error(
+            "Super Admin bootstrap error:",
+            error
+        );
 
-}
+    }
+
+})();
