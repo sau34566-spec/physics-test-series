@@ -1,36 +1,94 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+/* =========================================================
+   FIREBASE CONFIGURATION
+   File: /js/firebase-config.js
+
+   IMPORTANT:
+   Replace the placeholder values below with the Firebase
+   configuration from:
+
+   Firebase Console
+   → Project Settings
+   → Your apps
+   → Web app
+   → Firebase SDK snippet
+   ========================================================= */
 
 import {
-  getAuth
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+    initializeApp
+} from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
 
 import {
-  getFirestore
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+    getAuth
+} from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+
+import {
+    getFirestore
+} from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
 
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+/* =========================================================
+   FIREBASE CONFIG
+   ========================================================= */
+
 const firebaseConfig = {
-  apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
-  authDomain: "physics-test-series-405c7.firebaseapp.com",
-  projectId: "physics-test-series-405c7",
-  storageBucket: "physics-test-series-405c7.firebasestorage.app",
-  messagingSenderId: "758620061190",
-  appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87",
-  measurementId: "G-Z5QVQMZ082"
+
+    apiKey:
+        "YOUR_FIREBASE_API_KEY",
+
+    authDomain:
+        "YOUR_PROJECT_ID.firebaseapp.com",
+
+    projectId:
+        "YOUR_PROJECT_ID",
+
+    storageBucket:
+        "YOUR_PROJECT_ID.firebasestorage.app",
+
+    messagingSenderId:
+        "YOUR_MESSAGING_SENDER_ID",
+
+    appId:
+        "YOUR_FIREBASE_APP_ID"
+
 };
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-// Firebase Authentication
-const auth = getAuth(app);
-
-// Cloud Firestore
-const db = getFirestore(app);
 
 
-// Export Firebase services
+/* =========================================================
+   INITIALIZE FIREBASE
+   ========================================================= */
+
+const app =
+    initializeApp(
+        firebaseConfig
+    );
+
+
+/* =========================================================
+   FIREBASE AUTH
+   ========================================================= */
+
+const auth =
+    getAuth(
+        app
+    );
+
+
+/* =========================================================
+   FIRESTORE
+   ========================================================= */
+
+const db =
+    getFirestore(
+        app
+    );
+
+
+/* =========================================================
+   EXPORT
+   ========================================================= */
+
 export {
-  app,
-  auth,
-  db
+    app,
+    auth,
+    db
 };
