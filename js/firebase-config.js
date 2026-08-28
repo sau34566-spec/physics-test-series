@@ -1,61 +1,54 @@
-/* =========================================================
-   FIREBASE CONFIGURATION
-   File: /js/firebase-config.js
-
-   IMPORTANT:
-   Replace the placeholder values below with the Firebase
-   configuration from:
-
-   Firebase Console
-   → Project Settings
-   → Your apps
-   → Web app
-   → Firebase SDK snippet
-   ========================================================= */
+// ============================================================
+// FIREBASE CONFIGURATION
+// Physics Test Series
+// Firebase Project: physics-test-2b91a
+// ============================================================
 
 import {
     initializeApp
-} from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
 import {
     getAuth
-} from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 import {
     getFirestore
-} from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
-/* =========================================================
-   FIREBASE CONFIG
-   ========================================================= */
+// ============================================================
+// FIREBASE CONFIG
+// ============================================================
 
 const firebaseConfig = {
 
     apiKey:
-        "YOUR_FIREBASE_API_KEY",
+        "AIzaSyAKbcsJILXKkng3eWv5mt0UwCrFvCoXVH8",
 
     authDomain:
-        "YOUR_PROJECT_ID.firebaseapp.com",
+        "physics-test-2b91a.firebaseapp.com",
 
     projectId:
-        "YOUR_PROJECT_ID",
+        "physics-test-2b91a",
 
     storageBucket:
-        "YOUR_PROJECT_ID.firebasestorage.app",
+        "physics-test-2b91a.firebasestorage.app",
 
     messagingSenderId:
-        "YOUR_MESSAGING_SENDER_ID",
+        "934239266562",
 
     appId:
-        "YOUR_FIREBASE_APP_ID"
+        "1:934239266562:web:96cd91f0ce771b208b041b",
 
+    measurementId:
+        "G-M14TXE09JR"
 };
 
 
-/* =========================================================
-   INITIALIZE FIREBASE
-   ========================================================= */
+// ============================================================
+// INITIALIZE FIREBASE
+// ============================================================
 
 const app =
     initializeApp(
@@ -63,9 +56,9 @@ const app =
     );
 
 
-/* =========================================================
-   FIREBASE AUTH
-   ========================================================= */
+// ============================================================
+// FIREBASE AUTHENTICATION
+// ============================================================
 
 const auth =
     getAuth(
@@ -73,9 +66,9 @@ const auth =
     );
 
 
-/* =========================================================
-   FIRESTORE
-   ========================================================= */
+// ============================================================
+// FIRESTORE DATABASE
+// ============================================================
 
 const db =
     getFirestore(
@@ -83,9 +76,9 @@ const db =
     );
 
 
-/* =========================================================
-   EXPORT
-   ========================================================= */
+// ============================================================
+// EXPORT
+// ============================================================
 
 export {
     app,
