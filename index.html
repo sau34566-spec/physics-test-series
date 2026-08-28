@@ -12,21 +12,26 @@
 
     <title>Online Examination Portal</title>
 
+    <!-- CSS Path -->
     <link
         rel="stylesheet"
         href="css/student.css"
     >
 
+    <!-- =====================================================
+         STEP 3 — INSTITUTE GATEWAY STYLE
+    ====================================================== -->
+
     <style>
 
         /* =====================================================
-           INSTITUTE CODE GATEWAY
-           STEP 3
-        ===================================================== */
+           INSTITUTE GATEWAY
+        ====================================================== */
 
         #instituteGatewayScreen {
-            min-height: 100vh;
             display: none;
+            min-height: 100vh;
+            width: 100%;
         }
 
         #instituteGatewayScreen.active {
@@ -36,35 +41,41 @@
         .institute-gateway-page {
             width: 100%;
             min-height: 100vh;
+
             display: flex;
             align-items: center;
             justify-content: center;
+
             padding: 24px;
             box-sizing: border-box;
-            background:
-                radial-gradient(
-                    circle at top left,
-                    rgba(59,130,246,.28),
-                    transparent 38%
-                ),
-                radial-gradient(
-                    circle at bottom right,
-                    rgba(99,102,241,.24),
-                    transparent 40%
-                ),
-                #07111f;
+
             position: relative;
             overflow: hidden;
+
+            background:
+                radial-gradient(
+                    circle at 10% 10%,
+                    rgba(59, 130, 246, 0.30),
+                    transparent 35%
+                ),
+                radial-gradient(
+                    circle at 90% 90%,
+                    rgba(99, 102, 241, 0.25),
+                    transparent 38%
+                ),
+                #07111f;
         }
 
         .gateway-background {
             position: absolute;
             inset: 0;
+
             pointer-events: none;
+
             background:
                 linear-gradient(
                     135deg,
-                    rgba(255,255,255,.03),
+                    rgba(255,255,255,0.04),
                     transparent 40%
                 );
         }
@@ -72,13 +83,23 @@
         .gateway-card {
             position: relative;
             z-index: 2;
+
             width: min(520px, 100%);
+
             padding: 42px;
+
+            box-sizing: border-box;
+
             border-radius: 26px;
-            background: rgba(255,255,255,.97);
+
+            background:
+                rgba(255, 255, 255, 0.97);
+
+            border:
+                1px solid rgba(255,255,255,0.50);
+
             box-shadow:
-                0 30px 80px rgba(0,0,0,.35);
-            border: 1px solid rgba(255,255,255,.45);
+                0 30px 80px rgba(0,0,0,0.35);
         }
 
         .gateway-brand {
@@ -89,104 +110,154 @@
         .gateway-icon {
             width: 72px;
             height: 72px;
-            margin: 0 auto 18px;
+
+            margin:
+                0 auto 18px;
+
             display: flex;
             align-items: center;
             justify-content: center;
+
             border-radius: 20px;
-            background: linear-gradient(
-                135deg,
-                #2563eb,
-                #4f46e5
-            );
-            color: white;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #2563eb,
+                    #4f46e5
+                );
+
+            color: #ffffff;
+
             font-size: 34px;
+
             box-shadow:
-                0 15px 35px rgba(37,99,235,.28);
+                0 15px 35px rgba(37,99,235,0.28);
         }
 
         .gateway-brand h1 {
             margin: 0;
+
             color: #111827;
+
             font-size: 28px;
             font-weight: 800;
         }
 
         .gateway-brand p {
-            margin: 9px 0 0;
+            margin:
+                9px 0 0;
+
             color: #64748b;
+
             font-size: 14px;
+
+            line-height: 1.5;
         }
 
         .gateway-label {
             display: block;
+
             margin-bottom: 9px;
+
             color: #1e293b;
-            font-weight: 700;
+
             font-size: 14px;
+            font-weight: 700;
         }
 
         .gateway-input {
             width: 100%;
+
             box-sizing: border-box;
-            padding: 15px 16px;
-            border: 1px solid #cbd5e1;
+
+            padding:
+                15px 16px;
+
+            border:
+                1px solid #cbd5e1;
+
             border-radius: 13px;
+
             outline: none;
+
+            background: #ffffff;
+
+            color: #111827;
+
             font-size: 16px;
+
             letter-spacing: 1px;
-            transition: .2s ease;
-            background: #fff;
+
+            transition:
+                border-color .2s ease,
+                box-shadow .2s ease;
         }
 
         .gateway-input:focus {
             border-color: #2563eb;
+
             box-shadow:
-                0 0 0 4px rgba(37,99,235,.10);
+                0 0 0 4px
+                rgba(37,99,235,0.10);
         }
 
         .gateway-continue {
             width: 100%;
+
             margin-top: 18px;
-            border: 0;
-            border-radius: 13px;
+
             padding: 15px;
-            background: linear-gradient(
-                135deg,
-                #2563eb,
-                #4f46e5
-            );
-            color: white;
+
+            border: 0;
+
+            border-radius: 13px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #2563eb,
+                    #4f46e5
+                );
+
+            color: #ffffff;
+
             font-size: 16px;
             font-weight: 800;
+
             cursor: pointer;
-            transition: .2s ease;
+
+            transition:
+                transform .2s ease,
+                box-shadow .2s ease,
+                opacity .2s ease;
         }
 
         .gateway-continue:hover:not(:disabled) {
-            transform: translateY(-1px);
+            transform:
+                translateY(-1px);
+
             box-shadow:
-                0 12px 25px rgba(37,99,235,.25);
+                0 12px 25px
+                rgba(37,99,235,0.25);
         }
 
         .gateway-continue:disabled {
-            opacity: .65;
+            opacity: 0.65;
             cursor: not-allowed;
-        }
-
-        .gateway-help {
-            margin-top: 20px;
-            text-align: center;
-            color: #64748b;
-            font-size: 13px;
         }
 
         .gateway-message {
             min-height: 20px;
+
             margin-top: 14px;
+
             text-align: center;
+
             font-size: 13px;
             font-weight: 600;
+
+            line-height: 1.5;
         }
 
         .gateway-error-message {
@@ -195,13 +266,25 @@
 
         .gateway-error {
             display: none;
+
             margin-top: 14px;
-            padding: 12px 14px;
+
+            padding:
+                12px 14px;
+
             border-radius: 12px;
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #b91c1c;
+
+            background:
+                #fef2f2;
+
+            border:
+                1px solid #fecaca;
+
+            color:
+                #b91c1c;
+
             font-size: 13px;
+
             line-height: 1.5;
         }
 
@@ -211,11 +294,18 @@
 
         .institute-preview {
             display: none;
+
             margin-top: 18px;
+
             padding: 14px;
+
             border-radius: 14px;
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
+
+            background:
+                #eff6ff;
+
+            border:
+                1px solid #bfdbfe;
         }
 
         .institute-preview.show {
@@ -224,21 +314,48 @@
 
         .institute-preview strong {
             display: block;
-            color: #1e3a8a;
+
             margin-bottom: 4px;
+
+            color:
+                #1e3a8a;
         }
 
         .institute-preview span {
-            color: #475569;
+            color:
+                #475569;
+
             font-size: 13px;
+
+            line-height: 1.5;
+        }
+
+        .gateway-help {
+            margin-top: 20px;
+
+            text-align: center;
+
+            color:
+                #64748b;
+
+            font-size: 13px;
+
+            line-height: 1.5;
         }
 
         .gateway-security {
             margin-top: 24px;
+
             padding-top: 18px;
-            border-top: 1px solid #e2e8f0;
+
+            border-top:
+                1px solid #e2e8f0;
+
             text-align: center;
-            color: #64748b;
+
+            color:
+                #64748b;
+
             font-size: 12px;
         }
 
@@ -249,12 +366,19 @@
             }
 
             .gateway-card {
-                padding: 28px 22px;
+                padding:
+                    28px 22px;
+
                 border-radius: 20px;
             }
 
             .gateway-brand h1 {
                 font-size: 24px;
+            }
+
+            .gateway-icon {
+                width: 64px;
+                height: 64px;
             }
 
         }
@@ -263,10 +387,13 @@
 
 </head>
 
+
 <body>
 
+
     <!-- =====================================================
-         STEP 3 — INSTITUTE CODE GATEWAY
+         STEP 3
+         INSTITUTE CODE GATEWAY
     ====================================================== -->
 
     <section
@@ -276,13 +403,20 @@
 
         <main class="institute-gateway-page">
 
-            <div class="gateway-background"></div>
+            <div
+                class="gateway-background"
+                aria-hidden="true"
+            ></div>
+
 
             <section class="gateway-card">
 
                 <div class="gateway-brand">
 
-                    <div class="gateway-icon">
+                    <div
+                        class="gateway-icon"
+                        aria-hidden="true"
+                    >
                         🎓
                     </div>
 
@@ -296,7 +430,11 @@
 
                 </div>
 
-                <form id="instituteGatewayForm">
+
+                <form
+                    id="instituteGatewayForm"
+                    autocomplete="off"
+                >
 
                     <label
                         class="gateway-label"
@@ -304,6 +442,7 @@
                     >
                         Institute Code
                     </label>
+
 
                     <input
                         type="text"
@@ -313,7 +452,9 @@
                         autocomplete="off"
                         maxlength="30"
                         spellcheck="false"
+                        aria-label="Institute Code"
                     >
+
 
                     <button
                         type="submit"
@@ -325,17 +466,20 @@
 
                 </form>
 
+
                 <div
                     id="gatewayMessage"
                     class="gateway-message"
                     aria-live="polite"
                 ></div>
 
+
                 <div
                     id="gatewayError"
                     class="gateway-error"
                     aria-live="assertive"
                 ></div>
+
 
                 <div
                     id="institutePreview"
@@ -356,12 +500,19 @@
 
                 </div>
 
+
                 <div class="gateway-help">
-                    Need help? Contact your institute administrator.
+
+                    Need help?
+                    Contact your institute administrator.
+
                 </div>
 
+
                 <div class="gateway-security">
+
                     🔒 Secure Examination Environment
+
                 </div>
 
             </section>
@@ -371,8 +522,9 @@
     </section>
 
 
+
     <!-- =====================================================
-         EXISTING CANDIDATE LOGIN
+         EXISTING LOGIN SCREEN
     ====================================================== -->
 
     <section
@@ -402,6 +554,7 @@
 
                 </div>
 
+
                 <div class="login-form">
 
                     <div class="input-group">
@@ -419,6 +572,7 @@
 
                     </div>
 
+
                     <div class="input-group">
 
                         <label for="candidateEmail">
@@ -434,6 +588,7 @@
 
                     </div>
 
+
                     <button
                         type="button"
                         class="login-btn"
@@ -443,6 +598,7 @@
                     </button>
 
                 </div>
+
 
                 <div class="login-footer">
 
@@ -457,6 +613,7 @@
         </main>
 
     </section>
+
 
 
     <!-- =====================================================
@@ -498,6 +655,8 @@
 
                 </div>
 
+
+                <!-- Exam Summary -->
 
                 <div class="exam-summary">
 
@@ -587,11 +746,14 @@
                 </div>
 
 
+                <!-- Rules -->
+
                 <div class="rules-section">
 
                     <h2>
                         Important Instructions
                     </h2>
+
 
                     <div class="rule">
 
@@ -605,6 +767,7 @@
 
                     </div>
 
+
                     <div class="rule">
 
                         <span class="rule-number">
@@ -616,6 +779,7 @@
                         </p>
 
                     </div>
+
 
                     <div class="rule">
 
@@ -629,6 +793,7 @@
 
                     </div>
 
+
                     <div class="rule">
 
                         <span class="rule-number">
@@ -641,6 +806,7 @@
 
                     </div>
 
+
                     <div class="rule">
 
                         <span class="rule-number">
@@ -652,6 +818,7 @@
                         </p>
 
                     </div>
+
 
                     <div class="rule">
 
@@ -667,6 +834,8 @@
 
                 </div>
 
+
+                <!-- Agreement -->
 
                 <div class="agreement">
 
@@ -686,6 +855,8 @@
                 </div>
 
 
+                <!-- Action -->
+
                 <div class="instruction-actions">
 
                     <button
@@ -695,6 +866,7 @@
                     >
                         ← Back
                     </button>
+
 
                     <button
                         type="button"
@@ -712,6 +884,7 @@
         </main>
 
     </section>
+
 
 
     <!-- =====================================================
@@ -739,6 +912,7 @@
 
                 </div>
 
+
                 <div class="timer-box">
 
                     <span>
@@ -761,11 +935,15 @@
                     <div class="question-top">
 
                         <span class="question-number">
+
                             Question
+
                             <strong id="questionNumber">
                                 1
                             </strong>
+
                         </span>
+
 
                         <span class="question-progress">
                             1 / 80
@@ -813,6 +991,7 @@
                             ← Previous
                         </button>
 
+
                         <button
                             class="save-next-btn"
                             id="saveNextBtn"
@@ -829,6 +1008,7 @@
         </main>
 
     </section>
+
 
 
     <!-- =====================================================
@@ -848,9 +1028,11 @@
                     ✓
                 </div>
 
+
                 <h1>
                     Test Submitted Successfully
                 </h1>
+
 
                 <p id="resultSubmissionMessage">
                     Your examination has been submitted.
@@ -859,46 +1041,75 @@
             </div>
 
 
+            <!-- Candidate Information -->
+
             <div class="result-card">
 
                 <div class="result-card-title">
                     Candidate Information
                 </div>
 
+
                 <div class="result-info-grid">
 
                     <div>
-                        <span>Name</span>
+
+                        <span>
+                            Name
+                        </span>
+
                         <strong id="resultCandidateName">
                             —
                         </strong>
+
                     </div>
 
+
                     <div>
-                        <span>Email</span>
+
+                        <span>
+                            Email
+                        </span>
+
                         <strong id="resultCandidateEmail">
                             —
                         </strong>
+
                     </div>
 
+
                     <div>
-                        <span>Exam</span>
+
+                        <span>
+                            Exam
+                        </span>
+
                         <strong id="resultExamTitle">
                             —
                         </strong>
+
                     </div>
 
+
                     <div>
-                        <span>Submission</span>
+
+                        <span>
+                            Submission
+                        </span>
+
                         <strong id="resultSubmissionType">
                             —
                         </strong>
+
                     </div>
 
                 </div>
 
             </div>
 
+
+
+            <!-- Score Summary -->
 
             <div class="result-card">
 
@@ -906,47 +1117,80 @@
                     Performance Summary
                 </div>
 
+
                 <div class="result-stats">
 
                     <div class="result-stat">
-                        <span>Total Questions</span>
+
+                        <span>
+                            Total Questions
+                        </span>
+
                         <strong id="resultTotalQuestions">
                             0
                         </strong>
+
                     </div>
 
+
                     <div class="result-stat">
-                        <span>Attempted</span>
+
+                        <span>
+                            Attempted
+                        </span>
+
                         <strong id="resultAttempted">
                             0
                         </strong>
+
                     </div>
 
+
                     <div class="result-stat">
-                        <span>Correct</span>
+
+                        <span>
+                            Correct
+                        </span>
+
                         <strong id="resultCorrect">
                             0
                         </strong>
+
                     </div>
 
+
                     <div class="result-stat">
-                        <span>Wrong</span>
+
+                        <span>
+                            Wrong
+                        </span>
+
                         <strong id="resultWrong">
                             0
                         </strong>
+
                     </div>
 
+
                     <div class="result-stat">
-                        <span>Unattempted</span>
+
+                        <span>
+                            Unattempted
+                        </span>
+
                         <strong id="resultUnattempted">
                             0
                         </strong>
+
                     </div>
 
                 </div>
 
             </div>
 
+
+
+            <!-- Marks -->
 
             <div class="result-card">
 
@@ -954,41 +1198,71 @@
                     Marks
                 </div>
 
+
                 <div class="marks-summary">
 
                     <div>
-                        <span>Raw Marks</span>
+
+                        <span>
+                            Raw Marks
+                        </span>
+
                         <strong id="resultRawMarks">
                             0
                         </strong>
+
                     </div>
 
+
                     <div>
-                        <span>Negative Marks</span>
+
+                        <span>
+                            Negative Marks
+                        </span>
+
                         <strong id="resultNegativeMarks">
                             0
                         </strong>
+
                     </div>
 
+
                     <div>
-                        <span>Security Penalty</span>
+
+                        <span>
+                            Security Penalty
+                        </span>
+
                         <strong id="resultSecurityPenalty">
                             0
                         </strong>
+
                     </div>
 
+
                     <div class="final-score">
-                        <span>Final Marks</span>
+
+                        <span>
+                            Final Marks
+                        </span>
+
                         <strong id="resultFinalMarks">
                             0
                         </strong>
+
                     </div>
 
+
                     <div class="percentage-score">
-                        <span>Percentage</span>
+
+                        <span>
+                            Percentage
+                        </span>
+
                         <strong id="resultPercentage">
                             0%
                         </strong>
+
                     </div>
 
                 </div>
@@ -996,11 +1270,15 @@
             </div>
 
 
+
+            <!-- Question Review -->
+
             <div class="result-card">
 
                 <div class="result-card-title">
                     Question Review
                 </div>
+
 
                 <div
                     id="questionReviewList"
@@ -1009,6 +1287,9 @@
 
             </div>
 
+
+
+            <!-- Continue to Feedback -->
 
             <div class="result-actions">
 
@@ -1025,6 +1306,7 @@
         </div>
 
     </section>
+
 
 
     <!-- =====================================================
@@ -1044,9 +1326,11 @@
                     ★
                 </div>
 
+
                 <h1>
                     Share Your Feedback
                 </h1>
+
 
                 <p>
                     Help us improve your examination experience.
@@ -1076,6 +1360,7 @@
                         ★
                     </button>
 
+
                     <button
                         type="button"
                         data-rating="2"
@@ -1083,6 +1368,7 @@
                     >
                         ★
                     </button>
+
 
                     <button
                         type="button"
@@ -1092,6 +1378,7 @@
                         ★
                     </button>
 
+
                     <button
                         type="button"
                         data-rating="4"
@@ -1099,6 +1386,7 @@
                     >
                         ★
                     </button>
+
 
                     <button
                         type="button"
@@ -1123,6 +1411,7 @@
                     Feedback
                 </label>
 
+
                 <textarea
                     id="feedbackText"
                     rows="5"
@@ -1134,6 +1423,7 @@
                 <label for="doubtText">
                     Doubt / Query
                 </label>
+
 
                 <textarea
                     id="doubtText"
@@ -1153,6 +1443,7 @@
                         Skip
                     </button>
 
+
                     <button
                         type="button"
                         id="submitFeedbackBtn"
@@ -1170,8 +1461,9 @@
     </section>
 
 
+
     <!-- =====================================================
-         START TEST MODAL
+         CONFIRMATION MODAL
     ====================================================== -->
 
     <div
@@ -1185,13 +1477,16 @@
                 🚀
             </div>
 
+
             <h2>
                 Are you ready for the test?
             </h2>
 
+
             <p>
                 Once the test begins, your timer will start immediately. Please make sure you are ready before continuing.
             </p>
+
 
             <div class="modal-actions">
 
@@ -1201,6 +1496,7 @@
                 >
                     Cancel
                 </button>
+
 
                 <button
                     class="modal-confirm"
@@ -1216,8 +1512,12 @@
     </div>
 
 
+
     <!-- =====================================================
-         STEP 3 — GATEWAY MODULE
+         STEP 3 — INSTITUTE GATEWAY
+         
+         IMPORTANT:
+         This must load BEFORE student.js.
     ====================================================== -->
 
     <script
@@ -1227,13 +1527,16 @@
 
 
     <!-- =====================================================
-         EXISTING STUDENT MODULE
+         EXISTING STUDENT EXAM MODULE
+         
+         DO NOT REMOVE
     ====================================================== -->
 
     <script
         type="module"
         src="js/student.js"
     ></script>
+
 
 </body>
 
