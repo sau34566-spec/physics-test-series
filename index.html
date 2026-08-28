@@ -2,520 +2,1238 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>Online Examination Portal</title>
-    
-    <!-- CSS Path -->
-    <link rel="stylesheet" href="css/student.css">
+
+    <link
+        rel="stylesheet"
+        href="css/student.css"
+    >
+
+    <style>
+
+        /* =====================================================
+           INSTITUTE CODE GATEWAY
+           STEP 3
+        ===================================================== */
+
+        #instituteGatewayScreen {
+            min-height: 100vh;
+            display: none;
+        }
+
+        #instituteGatewayScreen.active {
+            display: flex;
+        }
+
+        .institute-gateway-page {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            box-sizing: border-box;
+            background:
+                radial-gradient(
+                    circle at top left,
+                    rgba(59,130,246,.28),
+                    transparent 38%
+                ),
+                radial-gradient(
+                    circle at bottom right,
+                    rgba(99,102,241,.24),
+                    transparent 40%
+                ),
+                #07111f;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gateway-background {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(255,255,255,.03),
+                    transparent 40%
+                );
+        }
+
+        .gateway-card {
+            position: relative;
+            z-index: 2;
+            width: min(520px, 100%);
+            padding: 42px;
+            border-radius: 26px;
+            background: rgba(255,255,255,.97);
+            box-shadow:
+                0 30px 80px rgba(0,0,0,.35);
+            border: 1px solid rgba(255,255,255,.45);
+        }
+
+        .gateway-brand {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .gateway-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            background: linear-gradient(
+                135deg,
+                #2563eb,
+                #4f46e5
+            );
+            color: white;
+            font-size: 34px;
+            box-shadow:
+                0 15px 35px rgba(37,99,235,.28);
+        }
+
+        .gateway-brand h1 {
+            margin: 0;
+            color: #111827;
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .gateway-brand p {
+            margin: 9px 0 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .gateway-label {
+            display: block;
+            margin-bottom: 9px;
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .gateway-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 15px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 13px;
+            outline: none;
+            font-size: 16px;
+            letter-spacing: 1px;
+            transition: .2s ease;
+            background: #fff;
+        }
+
+        .gateway-input:focus {
+            border-color: #2563eb;
+            box-shadow:
+                0 0 0 4px rgba(37,99,235,.10);
+        }
+
+        .gateway-continue {
+            width: 100%;
+            margin-top: 18px;
+            border: 0;
+            border-radius: 13px;
+            padding: 15px;
+            background: linear-gradient(
+                135deg,
+                #2563eb,
+                #4f46e5
+            );
+            color: white;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: .2s ease;
+        }
+
+        .gateway-continue:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow:
+                0 12px 25px rgba(37,99,235,.25);
+        }
+
+        .gateway-continue:disabled {
+            opacity: .65;
+            cursor: not-allowed;
+        }
+
+        .gateway-help {
+            margin-top: 20px;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .gateway-message {
+            min-height: 20px;
+            margin-top: 14px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .gateway-error-message {
+            color: #dc2626;
+        }
+
+        .gateway-error {
+            display: none;
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .gateway-error.show {
+            display: block;
+        }
+
+        .institute-preview {
+            display: none;
+            margin-top: 18px;
+            padding: 14px;
+            border-radius: 14px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        .institute-preview.show {
+            display: block;
+        }
+
+        .institute-preview strong {
+            display: block;
+            color: #1e3a8a;
+            margin-bottom: 4px;
+        }
+
+        .institute-preview span {
+            color: #475569;
+            font-size: 13px;
+        }
+
+        .gateway-security {
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+
+            .institute-gateway-page {
+                padding: 16px;
+            }
+
+            .gateway-card {
+                padding: 28px 22px;
+                border-radius: 20px;
+            }
+
+            .gateway-brand h1 {
+                font-size: 24px;
+            }
+
+        }
+
+    </style>
+
 </head>
 
 <body>
 
-    <!-- ======================================
-         LOGIN SCREEN
-    ======================================= -->
-    <section class="screen active" id="loginScreen">
+    <!-- =====================================================
+         STEP 3 — INSTITUTE CODE GATEWAY
+    ====================================================== -->
+
+    <section
+        class="screen active"
+        id="instituteGatewayScreen"
+    >
+
+        <main class="institute-gateway-page">
+
+            <div class="gateway-background"></div>
+
+            <section class="gateway-card">
+
+                <div class="gateway-brand">
+
+                    <div class="gateway-icon">
+                        🎓
+                    </div>
+
+                    <h1>
+                        Online Examination
+                    </h1>
+
+                    <p>
+                        Enter your Institute Code to continue
+                    </p>
+
+                </div>
+
+                <form id="instituteGatewayForm">
+
+                    <label
+                        class="gateway-label"
+                        for="instituteCode"
+                    >
+                        Institute Code
+                    </label>
+
+                    <input
+                        type="text"
+                        id="instituteCode"
+                        class="gateway-input"
+                        placeholder="Enter Institute Code"
+                        autocomplete="off"
+                        maxlength="30"
+                        spellcheck="false"
+                    >
+
+                    <button
+                        type="submit"
+                        class="gateway-continue"
+                        id="instituteGatewayContinueBtn"
+                    >
+                        Continue
+                    </button>
+
+                </form>
+
+                <div
+                    id="gatewayMessage"
+                    class="gateway-message"
+                    aria-live="polite"
+                ></div>
+
+                <div
+                    id="gatewayError"
+                    class="gateway-error"
+                    aria-live="assertive"
+                ></div>
+
+                <div
+                    id="institutePreview"
+                    class="institute-preview"
+                >
+
+                    <strong
+                        id="institutePreviewName"
+                    >
+                        Institute
+                    </strong>
+
+                    <span
+                        id="institutePreviewMessage"
+                    >
+                        Institute verified successfully.
+                    </span>
+
+                </div>
+
+                <div class="gateway-help">
+                    Need help? Contact your institute administrator.
+                </div>
+
+                <div class="gateway-security">
+                    🔒 Secure Examination Environment
+                </div>
+
+            </section>
+
+        </main>
+
+    </section>
+
+
+    <!-- =====================================================
+         EXISTING CANDIDATE LOGIN
+    ====================================================== -->
+
+    <section
+        class="screen"
+        id="loginScreen"
+    >
+
         <main class="login-page">
+
             <div class="background-overlay"></div>
+
             <section class="login-card">
+
                 <div class="brand">
-                    <div class="brand-icon">🎓</div>
-                    <h1>Online Examination</h1>
-                    <p>Secure Student Examination Portal</p>
+
+                    <div class="brand-icon">
+                        🎓
+                    </div>
+
+                    <h1>
+                        Online Examination
+                    </h1>
+
+                    <p>
+                        Secure Student Examination Portal
+                    </p>
+
                 </div>
 
                 <div class="login-form">
+
                     <div class="input-group">
-                        <label for="candidateName">Candidate Name</label>
-                        <input type="text" id="candidateName" placeholder="Enter your full name" autocomplete="name">
+
+                        <label for="candidateName">
+                            Candidate Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="candidateName"
+                            placeholder="Enter your full name"
+                            autocomplete="name"
+                        >
+
                     </div>
 
                     <div class="input-group">
-                        <label for="candidateEmail">Gmail Address</label>
-                        <input type="email" id="candidateEmail" placeholder="example@gmail.com" autocomplete="email">
+
+                        <label for="candidateEmail">
+                            Gmail Address
+                        </label>
+
+                        <input
+                            type="email"
+                            id="candidateEmail"
+                            placeholder="example@gmail.com"
+                            autocomplete="email"
+                        >
+
                     </div>
 
-                    <button type="button" class="login-btn" id="loginBtn">
+                    <button
+                        type="button"
+                        class="login-btn"
+                        id="loginBtn"
+                    >
                         Continue to Examination
                     </button>
+
                 </div>
 
                 <div class="login-footer">
-                    <span>🔒 Secure Examination Environment</span>
+
+                    <span>
+                        🔒 Secure Examination Environment
+                    </span>
+
                 </div>
+
             </section>
+
         </main>
+
     </section>
 
 
-    <!-- ======================================
+    <!-- =====================================================
          INSTRUCTIONS SCREEN
-    ======================================= -->
-    <section class="screen" id="instructionScreen">
+    ====================================================== -->
+
+    <section
+        class="screen"
+        id="instructionScreen"
+    >
+
         <main class="instruction-page">
+
             <div class="instruction-overlay"></div>
 
             <section class="instruction-card">
+
                 <div class="instruction-header">
-                    <div class="exam-icon">📚</div>
+
+                    <div class="exam-icon">
+                        📚
+                    </div>
+
                     <div>
-                        <span class="small-label">EXAMINATION</span>
-                        <h1>Test Instructions</h1>
-                        <p>Please read all instructions carefully before starting your examination.</p>
+
+                        <span class="small-label">
+                            EXAMINATION
+                        </span>
+
+                        <h1>
+                            Test Instructions
+                        </h1>
+
+                        <p>
+                            Please read all instructions carefully before starting your examination.
+                        </p>
+
                     </div>
+
                 </div>
 
-                <!-- Exam Summary -->
+
                 <div class="exam-summary">
-                    <div class="summary-item">
-                        <span class="summary-icon">📝</span>
-                        <div>
-                            <small>Questions</small>
-                            <strong id="instructionQuestions">80</strong>
-                        </div>
-                    </div>
 
                     <div class="summary-item">
-                        <span class="summary-icon">⏱️</span>
+
+                        <span class="summary-icon">
+                            📝
+                        </span>
+
                         <div>
-                            <small>Duration</small>
-                            <strong id="instructionDuration">60 Minutes</strong>
+
+                            <small>
+                                Questions
+                            </small>
+
+                            <strong id="instructionQuestions">
+                                80
+                            </strong>
+
                         </div>
+
                     </div>
 
-                    <div class="summary-item">
-                        <span class="summary-icon">🎯</span>
-                        <div>
-                            <small>Marks / Question</small>
-                            <strong id="instructionMarks">+4</strong>
-                        </div>
-                    </div>
 
                     <div class="summary-item">
-                        <span class="summary-icon">⚠️</span>
+
+                        <span class="summary-icon">
+                            ⏱️
+                        </span>
+
                         <div>
-                            <small>Negative Marking</small>
-                            <strong id="instructionNegative">-1</strong>
+
+                            <small>
+                                Duration
+                            </small>
+
+                            <strong id="instructionDuration">
+                                60 Minutes
+                            </strong>
+
                         </div>
+
                     </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-icon">
+                            🎯
+                        </span>
+
+                        <div>
+
+                            <small>
+                                Marks / Question
+                            </small>
+
+                            <strong id="instructionMarks">
+                                +4
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-icon">
+                            ⚠️
+                        </span>
+
+                        <div>
+
+                            <small>
+                                Negative Marking
+                            </small>
+
+                            <strong id="instructionNegative">
+                                -1
+                            </strong>
+
+                        </div>
+
+                    </div>
+
                 </div>
 
-                <!-- Rules -->
+
                 <div class="rules-section">
-                    <h2>Important Instructions</h2>
+
+                    <h2>
+                        Important Instructions
+                    </h2>
 
                     <div class="rule">
-                        <span class="rule-number">01</span>
-                        <p>Make sure you have a stable internet connection before starting the test.</p>
+
+                        <span class="rule-number">
+                            01
+                        </span>
+
+                        <p>
+                            Make sure you have a stable internet connection before starting the test.
+                        </p>
+
                     </div>
 
                     <div class="rule">
-                        <span class="rule-number">02</span>
-                        <p>Once the test starts, the examination timer will begin immediately.</p>
+
+                        <span class="rule-number">
+                            02
+                        </span>
+
+                        <p>
+                            Once the test starts, the examination timer will begin immediately.
+                        </p>
+
                     </div>
 
                     <div class="rule">
-                        <span class="rule-number">03</span>
-                        <p>Do not leave the examination tab. Tab switching may result in a penalty.</p>
+
+                        <span class="rule-number">
+                            03
+                        </span>
+
+                        <p>
+                            Do not leave the examination tab. Tab switching may result in a penalty.
+                        </p>
+
                     </div>
 
                     <div class="rule">
-                        <span class="rule-number">04</span>
-                        <p>Copy, paste and other prohibited examination actions may be restricted.</p>
+
+                        <span class="rule-number">
+                            04
+                        </span>
+
+                        <p>
+                            Copy, paste and other prohibited examination actions may be restricted.
+                        </p>
+
                     </div>
 
                     <div class="rule">
-                        <span class="rule-number">05</span>
-                        <p>The examination may be automatically submitted when the timer expires.</p>
+
+                        <span class="rule-number">
+                            05
+                        </span>
+
+                        <p>
+                            The examination may be automatically submitted when the timer expires.
+                        </p>
+
                     </div>
 
                     <div class="rule">
-                        <span class="rule-number">06</span>
-                        <p>Review your answers carefully before submitting the examination.</p>
+
+                        <span class="rule-number">
+                            06
+                        </span>
+
+                        <p>
+                            Review your answers carefully before submitting the examination.
+                        </p>
+
                     </div>
+
                 </div>
 
-                <!-- Agreement -->
+
                 <div class="agreement">
+
                     <label>
-                        <input type="checkbox" id="instructionAgreement">
-                        <span>I have read and understood all examination instructions.</span>
+
+                        <input
+                            type="checkbox"
+                            id="instructionAgreement"
+                        >
+
+                        <span>
+                            I have read and understood all examination instructions.
+                        </span>
+
                     </label>
+
                 </div>
 
-                <!-- Action -->
+
                 <div class="instruction-actions">
-                    <button type="button" class="secondary-btn" id="backToLoginBtn">← Back</button>
-                    <button type="button" class="start-test-btn" id="startTestBtn">
-                        Start Test <span>→</span>
+
+                    <button
+                        type="button"
+                        class="secondary-btn"
+                        id="backToLoginBtn"
+                    >
+                        ← Back
                     </button>
+
+                    <button
+                        type="button"
+                        class="start-test-btn"
+                        id="startTestBtn"
+                    >
+                        Start Test
+                        <span>→</span>
+                    </button>
+
                 </div>
+
             </section>
+
         </main>
+
     </section>
 
 
-    <!-- ======================================
+    <!-- =====================================================
          EXAM SCREEN
-    ======================================= -->
-    <section class="screen" id="examScreen">
+    ====================================================== -->
+
+    <section
+        class="screen"
+        id="examScreen"
+    >
+
         <main class="exam-page">
+
             <header class="exam-header">
+
                 <div class="exam-title">
-                    <span>ONLINE EXAMINATION</span>
-                    <h1>Examination Test</h1>
+
+                    <span>
+                        ONLINE EXAMINATION
+                    </span>
+
+                    <h1>
+                        Examination Test
+                    </h1>
+
                 </div>
 
                 <div class="timer-box">
-                    <span>TIME REMAINING</span>
-                    <strong id="examTimer">60:00</strong>
+
+                    <span>
+                        TIME REMAINING
+                    </span>
+
+                    <strong id="examTimer">
+                        60:00
+                    </strong>
+
                 </div>
+
             </header>
 
+
             <div class="exam-content">
+
                 <div class="question-card">
+
                     <div class="question-top">
-                        <span class="question-number">Question <strong id="questionNumber">1</strong></span>
-                        <span class="question-progress">1 / 80</span>
+
+                        <span class="question-number">
+                            Question
+                            <strong id="questionNumber">
+                                1
+                            </strong>
+                        </span>
+
+                        <span class="question-progress">
+                            1 / 80
+                        </span>
+
                     </div>
+
 
                     <div class="question-text">
                         Your question will appear here.
                     </div>
 
+
                     <div class="options">
-                        <button class="option"><span>A</span> Option A</button>
-                        <button class="option"><span>B</span> Option B</button>
-                        <button class="option"><span>C</span> Option C</button>
-                        <button class="option"><span>D</span> Option D</button>
+
+                        <button class="option">
+                            <span>A</span>
+                            Option A
+                        </button>
+
+                        <button class="option">
+                            <span>B</span>
+                            Option B
+                        </button>
+
+                        <button class="option">
+                            <span>C</span>
+                            Option C
+                        </button>
+
+                        <button class="option">
+                            <span>D</span>
+                            Option D
+                        </button>
+
                     </div>
+
 
                     <div class="question-actions">
-                        <button class="secondary-btn" id="previousBtn">← Previous</button>
-                        <button class="save-next-btn" id="saveNextBtn">Save & Next →</button>
+
+                        <button
+                            class="secondary-btn"
+                            id="previousBtn"
+                        >
+                            ← Previous
+                        </button>
+
+                        <button
+                            class="save-next-btn"
+                            id="saveNextBtn"
+                        >
+                            Save & Next →
+                        </button>
+
                     </div>
+
                 </div>
+
             </div>
+
         </main>
+
     </section>
-<!-- =========================================================
-     RESULT SCREEN
-     ========================================================= -->
 
-<section id="resultScreen" class="screen">
 
-    <div class="result-container">
+    <!-- =====================================================
+         RESULT SCREEN
+    ====================================================== -->
 
-        <div class="result-header">
-            <div class="result-icon">✓</div>
+    <section
+        id="resultScreen"
+        class="screen"
+    >
 
-            <h1>Test Submitted Successfully</h1>
+        <div class="result-container">
 
-            <p id="resultSubmissionMessage">
-                Your examination has been submitted.
-            </p>
+            <div class="result-header">
+
+                <div class="result-icon">
+                    ✓
+                </div>
+
+                <h1>
+                    Test Submitted Successfully
+                </h1>
+
+                <p id="resultSubmissionMessage">
+                    Your examination has been submitted.
+                </p>
+
+            </div>
+
+
+            <div class="result-card">
+
+                <div class="result-card-title">
+                    Candidate Information
+                </div>
+
+                <div class="result-info-grid">
+
+                    <div>
+                        <span>Name</span>
+                        <strong id="resultCandidateName">
+                            —
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Email</span>
+                        <strong id="resultCandidateEmail">
+                            —
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Exam</span>
+                        <strong id="resultExamTitle">
+                            —
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Submission</span>
+                        <strong id="resultSubmissionType">
+                            —
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="result-card">
+
+                <div class="result-card-title">
+                    Performance Summary
+                </div>
+
+                <div class="result-stats">
+
+                    <div class="result-stat">
+                        <span>Total Questions</span>
+                        <strong id="resultTotalQuestions">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="result-stat">
+                        <span>Attempted</span>
+                        <strong id="resultAttempted">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="result-stat">
+                        <span>Correct</span>
+                        <strong id="resultCorrect">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="result-stat">
+                        <span>Wrong</span>
+                        <strong id="resultWrong">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="result-stat">
+                        <span>Unattempted</span>
+                        <strong id="resultUnattempted">
+                            0
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="result-card">
+
+                <div class="result-card-title">
+                    Marks
+                </div>
+
+                <div class="marks-summary">
+
+                    <div>
+                        <span>Raw Marks</span>
+                        <strong id="resultRawMarks">
+                            0
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Negative Marks</span>
+                        <strong id="resultNegativeMarks">
+                            0
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Security Penalty</span>
+                        <strong id="resultSecurityPenalty">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="final-score">
+                        <span>Final Marks</span>
+                        <strong id="resultFinalMarks">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="percentage-score">
+                        <span>Percentage</span>
+                        <strong id="resultPercentage">
+                            0%
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="result-card">
+
+                <div class="result-card-title">
+                    Question Review
+                </div>
+
+                <div
+                    id="questionReviewList"
+                    class="question-review-list"
+                ></div>
+
+            </div>
+
+
+            <div class="result-actions">
+
+                <button
+                    type="button"
+                    id="openFeedbackBtn"
+                    class="primary-btn"
+                >
+                    Give Feedback
+                </button>
+
+            </div>
+
         </div>
 
+    </section>
 
-        <!-- Candidate Information -->
 
-        <div class="result-card">
+    <!-- =====================================================
+         FEEDBACK SCREEN
+    ====================================================== -->
 
-            <div class="result-card-title">
-                Candidate Information
+    <section
+        id="feedbackScreen"
+        class="screen"
+    >
+
+        <div class="feedback-container">
+
+            <div class="feedback-header">
+
+                <div class="feedback-icon">
+                    ★
+                </div>
+
+                <h1>
+                    Share Your Feedback
+                </h1>
+
+                <p>
+                    Help us improve your examination experience.
+                </p>
+
             </div>
 
-            <div class="result-info-grid">
 
-                <div>
-                    <span>Name</span>
-                    <strong id="resultCandidateName">—</strong>
+            <div class="feedback-card">
+
+                <div class="feedback-card-title">
+                    Rate Your Experience
                 </div>
 
-                <div>
-                    <span>Email</span>
-                    <strong id="resultCandidateEmail">—</strong>
+
+                <div
+                    id="feedbackStars"
+                    class="feedback-stars"
+                    aria-label="Rating"
+                >
+
+                    <button
+                        type="button"
+                        data-rating="1"
+                        aria-label="1 star"
+                    >
+                        ★
+                    </button>
+
+                    <button
+                        type="button"
+                        data-rating="2"
+                        aria-label="2 stars"
+                    >
+                        ★
+                    </button>
+
+                    <button
+                        type="button"
+                        data-rating="3"
+                        aria-label="3 stars"
+                    >
+                        ★
+                    </button>
+
+                    <button
+                        type="button"
+                        data-rating="4"
+                        aria-label="4 stars"
+                    >
+                        ★
+                    </button>
+
+                    <button
+                        type="button"
+                        data-rating="5"
+                        aria-label="5 stars"
+                    >
+                        ★
+                    </button>
+
                 </div>
 
-                <div>
-                    <span>Exam</span>
-                    <strong id="resultExamTitle">—</strong>
-                </div>
 
-                <div>
-                    <span>Submission</span>
-                    <strong id="resultSubmissionType">—</strong>
+                <p
+                    id="selectedRatingText"
+                    class="selected-rating-text"
+                >
+                    Select a rating from 1 to 5.
+                </p>
+
+
+                <label for="feedbackText">
+                    Feedback
+                </label>
+
+                <textarea
+                    id="feedbackText"
+                    rows="5"
+                    maxlength="2000"
+                    placeholder="Tell us about your examination experience..."
+                ></textarea>
+
+
+                <label for="doubtText">
+                    Doubt / Query
+                </label>
+
+                <textarea
+                    id="doubtText"
+                    rows="4"
+                    maxlength="1500"
+                    placeholder="Any doubt or query you want to share?"
+                ></textarea>
+
+
+                <div class="feedback-actions">
+
+                    <button
+                        type="button"
+                        id="skipFeedbackBtn"
+                        class="secondary-btn"
+                    >
+                        Skip
+                    </button>
+
+                    <button
+                        type="button"
+                        id="submitFeedbackBtn"
+                        class="primary-btn"
+                    >
+                        Submit Feedback
+                    </button>
+
                 </div>
 
             </div>
 
         </div>
 
+    </section>
 
-        <!-- Score Summary -->
 
-        <div class="result-card">
+    <!-- =====================================================
+         START TEST MODAL
+    ====================================================== -->
 
-            <div class="result-card-title">
-                Performance Summary
+    <div
+        class="modal"
+        id="startTestModal"
+    >
+
+        <div class="modal-card">
+
+            <div class="modal-icon">
+                🚀
             </div>
 
-            <div class="result-stats">
-
-                <div class="result-stat">
-                    <span>Total Questions</span>
-                    <strong id="resultTotalQuestions">0</strong>
-                </div>
-
-                <div class="result-stat">
-                    <span>Attempted</span>
-                    <strong id="resultAttempted">0</strong>
-                </div>
-
-                <div class="result-stat">
-                    <span>Correct</span>
-                    <strong id="resultCorrect">0</strong>
-                </div>
-
-                <div class="result-stat">
-                    <span>Wrong</span>
-                    <strong id="resultWrong">0</strong>
-                </div>
-
-                <div class="result-stat">
-                    <span>Unattempted</span>
-                    <strong id="resultUnattempted">0</strong>
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- Marks -->
-
-        <div class="result-card">
-
-            <div class="result-card-title">
-                Marks
-            </div>
-
-            <div class="marks-summary">
-
-                <div>
-                    <span>Raw Marks</span>
-                    <strong id="resultRawMarks">0</strong>
-                </div>
-
-                <div>
-                    <span>Negative Marks</span>
-                    <strong id="resultNegativeMarks">0</strong>
-                </div>
-
-                <div>
-                    <span>Security Penalty</span>
-                    <strong id="resultSecurityPenalty">0</strong>
-                </div>
-
-                <div class="final-score">
-                    <span>Final Marks</span>
-                    <strong id="resultFinalMarks">0</strong>
-                </div>
-
-                <div class="percentage-score">
-                    <span>Percentage</span>
-                    <strong id="resultPercentage">0%</strong>
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- Question Review -->
-
-        <div class="result-card">
-
-            <div class="result-card-title">
-                Question Review
-            </div>
-
-            <div id="questionReviewList"
-                 class="question-review-list">
-            </div>
-
-        </div>
-
-
-        <!-- Continue to Feedback -->
-
-        <div class="result-actions">
-
-            <button
-                type="button"
-                id="openFeedbackBtn"
-                class="primary-btn">
-
-                Give Feedback
-
-            </button>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =========================================================
-     FEEDBACK SCREEN
-     ========================================================= -->
-
-<section id="feedbackScreen" class="screen">
-
-    <div class="feedback-container">
-
-        <div class="feedback-header">
-
-            <div class="feedback-icon">
-                ★
-            </div>
-
-            <h1>Share Your Feedback</h1>
+            <h2>
+                Are you ready for the test?
+            </h2>
 
             <p>
-                Help us improve your examination experience.
+                Once the test begins, your timer will start immediately. Please make sure you are ready before continuing.
             </p>
-
-        </div>
-
-
-        <div class="feedback-card">
-
-            <div class="feedback-card-title">
-                Rate Your Experience
-            </div>
-
-
-            <div
-                id="feedbackStars"
-                class="feedback-stars"
-                aria-label="Rating"
-            >
-
-                <button
-                    type="button"
-                    data-rating="1"
-                    aria-label="1 star">
-                    ★
-                </button>
-
-                <button
-                    type="button"
-                    data-rating="2"
-                    aria-label="2 stars">
-                    ★
-                </button>
-
-                <button
-                    type="button"
-                    data-rating="3"
-                    aria-label="3 stars">
-                    ★
-                </button>
-
-                <button
-                    type="button"
-                    data-rating="4"
-                    aria-label="4 stars">
-                    ★
-                </button>
-
-                <button
-                    type="button"
-                    data-rating="5"
-                    aria-label="5 stars">
-                    ★
-                </button>
-
-            </div>
-
-
-            <p
-                id="selectedRatingText"
-                class="selected-rating-text"
-            >
-                Select a rating from 1 to 5.
-            </p>
-
-
-            <label for="feedbackText">
-                Feedback
-            </label>
-
-            <textarea
-                id="feedbackText"
-                rows="5"
-                maxlength="2000"
-                placeholder="Tell us about your examination experience..."
-            ></textarea>
-
-
-            <label for="doubtText">
-                Doubt / Query
-            </label>
-
-            <textarea
-                id="doubtText"
-                rows="4"
-                maxlength="1500"
-                placeholder="Any doubt or query you want to share?"
-            ></textarea>
-
-
-            <div class="feedback-actions">
-
-                <button
-                    type="button"
-                    id="skipFeedbackBtn"
-                    class="secondary-btn">
-                    Skip
-                </button>
-
-                <button
-                    type="button"
-                    id="submitFeedbackBtn"
-                    class="primary-btn">
-                    Submit Feedback
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-    <!-- ======================================
-         CONFIRMATION MODAL
-    ======================================= -->
-    <div class="modal" id="startTestModal">
-        <div class="modal-card">
-            <div class="modal-icon">🚀</div>
-            <h2>Are you ready for the test?</h2>
-            <p>Once the test begins, your timer will start immediately. Please make sure you are ready before continuing.</p>
 
             <div class="modal-actions">
-                <button class="modal-cancel" id="cancelStartBtn">Cancel</button>
-                <button class="modal-confirm" id="confirmStartBtn">OK, Start Test</button>
+
+                <button
+                    class="modal-cancel"
+                    id="cancelStartBtn"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    class="modal-confirm"
+                    id="confirmStartBtn"
+                >
+                    OK, Start Test
+                </button>
+
             </div>
+
         </div>
+
     </div>
 
-    <!-- JavaScript Path (Loaded as module for Firebase integration) -->
-    <script type="module" src="js/student.js"></script>
+
+    <!-- =====================================================
+         STEP 3 — GATEWAY MODULE
+    ====================================================== -->
+
+    <script
+        type="module"
+        src="js/institute-gateway.js"
+    ></script>
+
+
+    <!-- =====================================================
+         EXISTING STUDENT MODULE
+    ====================================================== -->
+
+    <script
+        type="module"
+        src="js/student.js"
+    ></script>
 
 </body>
 
