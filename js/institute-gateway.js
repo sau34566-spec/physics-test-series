@@ -1,3 +1,8 @@
+// ============================================================
+// INSTITUTE CODE GATEWAY
+// STEP 4 - STABLE FIRESTORE VERSION
+// ============================================================
+
 import {
     collection,
     query,
@@ -62,7 +67,7 @@ let activeInstitute = null;
 
 
 // ============================================================
-// NORMALIZE CODE
+// NORMALIZE INSTITUTE CODE
 // ============================================================
 
 function normalizeInstituteCode(value) {
@@ -95,7 +100,7 @@ function showGateway() {
 
 
 // ============================================================
-// SHOW LOGIN
+// SHOW CANDIDATE LOGIN
 // ============================================================
 
 function showCandidateLogin() {
@@ -112,7 +117,7 @@ function showCandidateLogin() {
 
 
 // ============================================================
-// CLEAR MESSAGE
+// CLEAR GATEWAY MESSAGES
 // ============================================================
 
 function clearGatewayMessage() {
@@ -131,18 +136,14 @@ function clearGatewayMessage() {
 
         gatewayError.textContent = "";
 
-        gatewayError.classList.remove(
-            "show"
-        );
+        gatewayError.classList.remove("show");
 
     }
 
 
     if (institutePreview) {
 
-        institutePreview.classList.remove(
-            "show"
-        );
+        institutePreview.classList.remove("show");
 
     }
 
@@ -150,7 +151,7 @@ function clearGatewayMessage() {
 
 
 // ============================================================
-// ERROR
+// SHOW ERROR
 // ============================================================
 
 function showGatewayError(message) {
@@ -171,9 +172,7 @@ function showGatewayError(message) {
         gatewayError.textContent =
             message;
 
-        gatewayError.classList.add(
-            "show"
-        );
+        gatewayError.classList.add("show");
 
     }
 
@@ -181,12 +180,10 @@ function showGatewayError(message) {
 
 
 // ============================================================
-// SUCCESS PREVIEW
+// SHOW SUCCESS
 // ============================================================
 
-function showInstituteSuccess(
-    institute
-) {
+function showInstituteSuccess(institute) {
 
     if (!institutePreview) {
         return;
@@ -210,9 +207,7 @@ function showInstituteSuccess(
     }
 
 
-    institutePreview.classList.add(
-        "show"
-    );
+    institutePreview.classList.add("show");
 
 }
 
@@ -221,9 +216,7 @@ function showInstituteSuccess(
 // FIND ACTIVE INSTITUTE
 // ============================================================
 
-async function findInstitute(
-    instituteCode
-) {
+async function findInstitute(instituteCode) {
 
     const institutesRef =
         collection(
@@ -235,13 +228,16 @@ async function findInstitute(
     /*
      * IMPORTANT:
      *
-     * We query ONLY ACTIVE institutes.
-     *
-     * This matches the Firestore Security Rule:
+     * Firestore Rules allow public reads only when:
      *
      * resource.data.status == "ACTIVE"
      *
-     * Therefore Firestore can safely authorize this query.
+     * Therefore the query MUST also request:
+     *
+     * status == "ACTIVE"
+     *
+     * Otherwise Firestore cannot authorize the query
+     * as a whole.
      */
 
     const instituteQuery =
@@ -270,9 +266,9 @@ async function findInstitute(
         );
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // NO MATCH
-    // --------------------------------------------------------
+    // ========================================================
 
     if (snapshot.empty) {
 
@@ -288,9 +284,9 @@ async function findInstitute(
     }
 
 
-    // --------------------------------------------------------
-    // FIRST MATCH
-    // --------------------------------------------------------
+    // ========================================================
+    // GET FIRST MATCH
+    // ========================================================
 
     const instituteDoc =
         snapshot.docs[0];
@@ -324,6 +320,33 @@ async function findInstitute(
     };
 
 
+    // ========================================================
+    // FINAL SAFETY CHECK
+    // ========================================================
+
+    if (
+        institute.status !==
+        "ACTIVE"
+    ) {
+
+        return {
+
+            valid: false,
+
+            reason:
+                "INACTIVE",
+
+            institute
+
+        };
+
+    }
+
+
+    // ========================================================
+    // VALID
+    // ========================================================
+
     return {
 
         valid: true,
@@ -339,12 +362,10 @@ async function findInstitute(
 
 
 // ============================================================
-// SAVE INSTITUTE SESSION
+// SAVE ACTIVE INSTITUTE
 // ============================================================
 
-function saveInstituteSession(
-    institute
-) {
+function saveInstituteSession(institute) {
 
     activeInstitute =
         institute;
@@ -395,15 +416,17 @@ function saveInstituteSession(
 
 
 // ============================================================
-// HANDLE SUBMIT
+// HANDLE GATEWAY SUBMIT
 // ============================================================
 
-async function handleGatewaySubmit(
-    event
-) {
+async function handleGatewaySubmit(event) {
 
     event.preventDefault();
 
+
+    // --------------------------------------------------------
+    // PREVENT DOUBLE CLICK
+    // --------------------------------------------------------
 
     if (gatewayBusy) {
         return;
@@ -413,6 +436,10 @@ async function handleGatewaySubmit(
     clearGatewayMessage();
 
 
+    // --------------------------------------------------------
+    // GET CODE
+    // --------------------------------------------------------
+
     const code =
         normalizeInstituteCode(
             instituteCodeInput?.value
@@ -420,7 +447,7 @@ async function handleGatewaySubmit(
 
 
     // --------------------------------------------------------
-    // EMPTY
+    // EMPTY CODE
     // --------------------------------------------------------
 
     if (!code) {
@@ -453,7 +480,12 @@ async function handleGatewaySubmit(
     }
 
 
-    gatewayBusy = true;
+    // --------------------------------------------------------
+    // LOADING
+    // --------------------------------------------------------
+
+    gatewayBusy =
+        true;
 
 
     if (gatewayContinueBtn) {
@@ -469,6 +501,10 @@ async function handleGatewaySubmit(
 
     try {
 
+        // ----------------------------------------------------
+        // FIRESTORE CHECK
+        // ----------------------------------------------------
+
         const result =
             await findInstitute(
                 code
@@ -476,11 +512,13 @@ async function handleGatewaySubmit(
 
 
         // ----------------------------------------------------
-        // INVALID
+        // INVALID CODE
         // ----------------------------------------------------
 
         if (
-            !result.valid
+            !result.valid &&
+            result.reason ===
+            "INVALID_CODE"
         ) {
 
             showGatewayError(
@@ -495,27 +533,57 @@ async function handleGatewaySubmit(
 
 
         // ----------------------------------------------------
+        // INACTIVE
+        // ----------------------------------------------------
+
+        if (
+            !result.valid &&
+            result.reason ===
+            "INACTIVE"
+        ) {
+
+            showGatewayError(
+                "This institute is currently inactive."
+            );
+
+            return;
+
+        }
+
+
+        // ----------------------------------------------------
         // SUCCESS
         // ----------------------------------------------------
 
-        saveInstituteSession(
+        if (
+            result.valid &&
             result.institute
-        );
+        ) {
+
+            saveInstituteSession(
+                result.institute
+            );
 
 
-        showInstituteSuccess(
-            result.institute
-        );
+            showInstituteSuccess(
+                result.institute
+            );
 
 
-        setTimeout(
-            () => {
+            // ------------------------------------------------
+            // Move to Candidate Login
+            // ------------------------------------------------
 
-                showCandidateLogin();
+            setTimeout(
+                () => {
 
-            },
-            600
-        );
+                    showCandidateLogin();
+
+                },
+                700
+            );
+
+        }
 
 
     } catch (error) {
@@ -526,13 +594,19 @@ async function handleGatewaySubmit(
         );
 
 
+        /*
+         * Keep the real error in browser console.
+         * Student gets a simple message.
+         */
+
         showGatewayError(
             "Unable to verify the Institute Code. Please check your internet connection and try again."
         );
 
     } finally {
 
-        gatewayBusy = false;
+        gatewayBusy =
+            false;
 
 
         if (gatewayContinueBtn) {
@@ -565,6 +639,7 @@ if (instituteCodeInput) {
                     instituteCodeInput.value
                 );
 
+
             clearGatewayMessage();
 
         }
@@ -582,7 +657,12 @@ if (instituteCodeInput) {
 
                 event.preventDefault();
 
-                gatewayForm?.requestSubmit();
+
+                if (gatewayForm) {
+
+                    gatewayForm.requestSubmit();
+
+                }
 
             }
 
@@ -607,7 +687,18 @@ if (gatewayForm) {
 
 
 // ============================================================
-// INITIALIZE
+// INITIALIZE GATEWAY
+// ============================================================
+//
+// IMPORTANT:
+//
+// No MutationObserver is used.
+//
+// The previous version continuously observed class changes
+// and then changed those same classes again. That caused
+// an infinite loop and "Page Unresponsive".
+//
+// This version does NOT use MutationObserver.
 // ============================================================
 
 function initializeGateway() {
@@ -627,6 +718,10 @@ function initializeGateway() {
         false;
 
 
+    // --------------------------------------------------------
+    // Show Gateway
+    // --------------------------------------------------------
+
     setTimeout(
         () => {
 
@@ -642,6 +737,10 @@ function initializeGateway() {
         50
     );
 
+
+    // --------------------------------------------------------
+    // Focus input
+    // --------------------------------------------------------
 
     setTimeout(
         () => {
@@ -692,7 +791,7 @@ if (
 
 
 // ============================================================
-// DEBUG
+// DEBUG HELPER
 // ============================================================
 
 window.getActiveInstitute =
