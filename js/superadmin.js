@@ -4202,7 +4202,7 @@ function renderAdminList() {
 
     const container =
         getElement(
-            "adminList"
+            "adminsTableBody"
         );
 
 
@@ -4222,17 +4222,13 @@ function renderAdminList() {
 
                 const row =
                     document.createElement(
-                        "div"
+                        "tr"
                     );
-
-
-                row.className =
-                    "data-row";
 
 
                 row.innerHTML = `
 
-                    <div>
+                    <td>
                         <strong>
                             ${escapeHtml(
                                 admin.name ||
@@ -4246,16 +4242,53 @@ function renderAdminList() {
                                 ""
                             )}
                         </small>
-                    </div>
+                    </td>
 
-                    <span>
+                    <td>
+                        ${escapeHtml(
+                            admin.role ||
+                            "ADMIN"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            (admin.instituteIds || [])
+                                .map(id => {
+                                    const institute =
+                                        state.institutes.find(
+                                            item => item.id === id
+                                        );
+                                    return institute?.instituteName ||
+                                        institute?.name || id;
+                                })
+                                .join(", ") || "—"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            `${(admin.permissions || []).length} permissions`
+                        )}
+                    </td>
+
+                    <td>
                         ${escapeHtml(
                             admin.status ||
                             ADMIN_STATUS.ACTIVE
                         )}
-                    </span>
+                    </td>
 
-                    <div>
+                    <td>
+                        ${escapeHtml(
+                            formatTimestamp(
+                                admin.lastActiveAt ||
+                                admin.updatedAt
+                            )
+                        )}
+                    </td>
+
+                    <td>
 
                         <button
                             type="button"
@@ -4284,7 +4317,7 @@ function renderAdminList() {
                             Revoke
                         </button>
 
-                    </div>
+                    </td>
 
                 `;
 

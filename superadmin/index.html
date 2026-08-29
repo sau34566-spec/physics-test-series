@@ -5023,6 +5023,21 @@
             `
                 <div class="form-group">
                     <label class="form-label">
+                        Firebase Authentication UID
+                    </label>
+                    <input
+                        id="modalAdminUid"
+                        class="form-control"
+                        autocomplete="off"
+                        placeholder="Paste UID from Firebase Authentication"
+                    >
+                    <small class="form-help">
+                        Create the Email/Password user in Firebase Authentication first.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
                         Name
                     </label>
                     <input
@@ -5046,15 +5061,29 @@
 
                 <div class="form-group">
                     <label class="form-label">
-                        Role
+                        Institute
                     </label>
                     <select
-                        id="modalAdminRole"
+                        id="modalAdminInstitute"
                         class="form-select"
                     >
-                        <option value="admin">Admin</option>
-                        <option value="manager">Manager</option>
-                        <option value="viewer">Viewer</option>
+                        <option value="">Select institute</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Permission Template
+                    </label>
+                    <select
+                        id="modalAdminPermissionTemplate"
+                        class="form-select"
+                    >
+                        <option value="EXAM_MANAGER">Full Exam Manager</option>
+                        <option value="QUESTION_MANAGER">Question Manager</option>
+                        <option value="RESULT_MANAGER">Result Manager</option>
+                        <option value="SECURITY_MANAGER">Security Manager</option>
+                        <option value="VIEW_ONLY">View Only</option>
                     </select>
                 </div>
             `
@@ -5236,6 +5265,49 @@
                             config[1]
                         );
 
+
+                        if (
+                            buttonId ===
+                            "createAdminBtn"
+                        ) {
+
+                            const instituteSelect =
+                                document.getElementById(
+                                    "modalAdminInstitute"
+                                );
+
+
+                            const institutes =
+                                window.SuperAdminApp
+                                    ?.state
+                                    ?.institutes || [];
+
+
+                            institutes.forEach(
+                                institute => {
+
+                                    const option =
+                                        document.createElement(
+                                            "option"
+                                        );
+
+                                    option.value =
+                                        institute.id;
+
+                                    option.textContent =
+                                        institute.instituteName ||
+                                        institute.name ||
+                                        institute.instituteCode ||
+                                        institute.id;
+
+                                    instituteSelect
+                                        ?.appendChild(option);
+
+                                }
+                            );
+
+                        }
+
                     }
                 );
 
@@ -5350,6 +5422,165 @@
                             "Unable to create institute",
                             error?.message ||
                                 "Please try again.",
+                            "danger"
+                        );
+
+
+                    } finally {
+
+                        if (saveButton) {
+                            saveButton.disabled = false;
+                            saveButton.textContent = "Save";
+                        }
+
+                    }
+
+
+                    return;
+
+                }
+
+
+                if (
+                    genericModal?.dataset.action ===
+                    "createAdminBtn"
+                ) {
+
+                    const adminUid =
+                        document.getElementById(
+                            "modalAdminUid"
+                        )?.value?.trim() || "";
+
+                    const adminName =
+                        document.getElementById(
+                            "modalAdminName"
+                        )?.value?.trim() || "";
+
+                    const adminEmail =
+                        document.getElementById(
+                            "modalAdminEmail"
+                        )?.value?.trim().toLowerCase() || "";
+
+                    const instituteId =
+                        document.getElementById(
+                            "modalAdminInstitute"
+                        )?.value || "";
+
+                    const template =
+                        document.getElementById(
+                            "modalAdminPermissionTemplate"
+                        )?.value || "VIEW_ONLY";
+
+
+                    const permissionTemplates = {
+                        EXAM_MANAGER: [
+                            "dashboard.view",
+                            "exam.view",
+                            "exam.create",
+                            "exam.edit",
+                            "exam.control",
+                            "batch.manage",
+                            "candidate.view",
+                            "result.view"
+                        ],
+                        QUESTION_MANAGER: [
+                            "dashboard.view",
+                            "question.view",
+                            "question.create",
+                            "question.edit",
+                            "question.delete"
+                        ],
+                        RESULT_MANAGER: [
+                            "dashboard.view",
+                            "candidate.view",
+                            "result.view",
+                            "result.export",
+                            "feedback.view"
+                        ],
+                        SECURITY_MANAGER: [
+                            "dashboard.view",
+                            "candidate.view",
+                            "security.view",
+                            "security.manage"
+                        ],
+                        VIEW_ONLY: [
+                            "dashboard.view",
+                            "exam.view",
+                            "candidate.view",
+                            "result.view"
+                        ]
+                    };
+
+
+                    if (
+                        !adminUid ||
+                        !adminName ||
+                        !adminEmail ||
+                        !instituteId
+                    ) {
+
+                        showToast(
+                            "Required fields",
+                            "Enter UID, name, email and institute.",
+                            "warning"
+                        );
+
+                        return;
+
+                    }
+
+
+                    try {
+
+                        if (saveButton) {
+                            saveButton.disabled = true;
+                            saveButton.textContent = "Saving...";
+                        }
+
+
+                        await window.SuperAdminApp
+                            .saveAdminProfile(
+                                adminUid,
+                                {
+                                    name: adminName,
+                                    email: adminEmail,
+                                    role: "ADMIN",
+                                    status: "ACTIVE",
+                                    instituteIds: [
+                                        instituteId
+                                    ],
+                                    examIds: [],
+                                    batchIds: [],
+                                    permissions:
+                                        permissionTemplates[
+                                            template
+                                        ] || [],
+                                    permissionMode:
+                                        template
+                                }
+                            );
+
+
+                        closeModal();
+
+                        showToast(
+                            "Administrator created",
+                            "The Firebase user is now authorized for the selected institute.",
+                            "success"
+                        );
+
+
+                    } catch (error) {
+
+                        console.error(
+                            "Admin profile creation failed:",
+                            error
+                        );
+
+                        showToast(
+                            "Unable to create administrator",
+                            error?.message ||
+                                "Please verify the UID and try again.",
                             "danger"
                         );
 

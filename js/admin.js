@@ -198,7 +198,30 @@ async function verifyAdmin(user) {
 
         const data = adminSnapshot.data();
 
-        if (data.active === false) {
+        const status = String(
+            data.status ||
+            (data.active === false ? "INACTIVE" : "ACTIVE")
+        ).toUpperCase();
+
+        const role = String(
+            data.role || ""
+        ).toUpperCase();
+
+        if (
+            data.active === false ||
+            status !== "ACTIVE"
+        ) {
+            return false;
+        }
+
+        if (role !== "ADMIN") {
+            return false;
+        }
+
+        if (
+            !Array.isArray(data.instituteIds) ||
+            data.instituteIds.length === 0
+        ) {
             return false;
         }
 
