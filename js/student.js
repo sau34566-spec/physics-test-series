@@ -3663,7 +3663,13 @@ window.addEventListener(
     try {
         await ensureCandidateSession();
         listenExamSettings();
-        showScreen(loginScreen);
+
+        // The Institute Gateway owns the initial navigation. Do not force the
+        // Candidate Login screen here, otherwise it bypasses the first-page
+        // Institute Code check. The gateway opens login only after validation.
+        if (window.__instituteGatewayPassed === true) {
+            showScreen(loginScreen);
+        }
 
         console.log(
             "Student Examination Portal initialized successfully."
@@ -3674,7 +3680,6 @@ window.addEventListener(
             error
         );
 
-        showScreen(loginScreen);
         showMessage(
             "Unable to start a secure candidate session. Please reload the page."
         );
