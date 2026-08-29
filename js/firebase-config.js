@@ -81,6 +81,7 @@ const db =
 // ============================================================
 
 export {
+    firebaseConfig,
     app,
     auth,
     db

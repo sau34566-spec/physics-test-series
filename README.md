@@ -25,6 +25,7 @@ The Super Admin must have:
    compatibility path `users/{uid}`).
 3. `role: "super_admin"` and `status: "active"` in that document.
 
-Firestore authorization rules and the final multi-institute data model are
-implemented in Step 2. Do not deploy the current application as production
-until those rules have been completed and tested.
+Firestore authorization rules are stored in `firebase/firestore.rules`, and the
+data model is documented in `docs/firestore-data-model.md`. Candidate access
+uses a separate named Firebase app with Anonymous Authentication so it cannot
+replace an Admin session on the same browser origin.

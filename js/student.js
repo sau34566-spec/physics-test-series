@@ -4,7 +4,11 @@
 // Existing index.html design preserved
 // ============================================================
 
-import { db } from "./firebase-config.js";
+import {
+    candidateAuth,
+    candidateDb as db,
+    ensureCandidateSession
+} from "./candidate-firebase.js";
 
 import {
     collection,
@@ -93,6 +97,25 @@ let selectedRating = 0;
 
 let securityHandlersEnabled = false;
 let lastViolationTime = 0;
+
+
+function getCandidateUid() {
+    return candidateAuth.currentUser?.uid || "";
+}
+
+
+function getCandidateDocumentId() {
+    return getCandidateUid();
+}
+
+
+function getActiveInstituteId() {
+    return String(
+        window.getActiveInstitute?.()?.instituteId ||
+        window.activeInstitute?.instituteId ||
+        ""
+    );
+}
 
 
 // ============================================================
@@ -466,6 +489,8 @@ function isExamLive() {
 
 async function hasPreviousAttempt(email) {
 
+    await ensureCandidateSession();
+
     const normalizedEmail =
         normalizeEmail(email);
 
@@ -483,7 +508,7 @@ async function hasPreviousAttempt(email) {
             doc(
                 db,
                 "candidates",
-                normalizedEmail
+                getCandidateDocumentId()
             );
 
         const candidateSnapshot =
@@ -527,6 +552,11 @@ async function hasPreviousAttempt(email) {
         const attemptQuery =
             query(
                 attemptsRef,
+                where(
+                    "ownerUid",
+                    "==",
+                    getCandidateUid()
+                ),
                 where(
                     "candidateEmail",
                     "==",
@@ -764,11 +794,13 @@ if (loginBtn) {
 
 async function createCandidateRecord() {
 
+    await ensureCandidateSession();
+
     const candidateRef =
         doc(
             db,
             "candidates",
-            candidate.email
+            getCandidateDocumentId()
         );
 
     const existing =
@@ -805,6 +837,12 @@ async function createCandidateRecord() {
     await setDoc(
         candidateRef,
         {
+            ownerUid:
+                getCandidateUid(),
+
+            instituteId:
+                getActiveInstituteId(),
+
             name:
                 candidate.name,
 
@@ -1091,11 +1129,13 @@ function normalizeQuestion(question) {
 
 async function claimCandidateAttempt() {
 
+    await ensureCandidateSession();
+
     const candidateRef =
         doc(
             db,
             "candidates",
-            candidate.email
+            getCandidateDocumentId()
         );
 
 
@@ -1140,6 +1180,12 @@ async function claimCandidateAttempt() {
             transaction.set(
                 candidateRef,
                 {
+                    ownerUid:
+                        getCandidateUid(),
+
+                    instituteId:
+                        getActiveInstituteId(),
+
 
                     name:
                         candidate.name,
@@ -1342,6 +1388,12 @@ async function startExam() {
                 attemptId
             ),
             {
+
+                ownerUid:
+                    getCandidateUid(),
+
+                instituteId:
+                    getActiveInstituteId(),
 
                 candidateName:
                     candidate.name,
@@ -2244,6 +2296,12 @@ async function registerViolation(type) {
             ),
             {
 
+                ownerUid:
+                    getCandidateUid(),
+
+                instituteId:
+                    getActiveInstituteId(),
+
                 candidateName:
                     candidate.name,
 
@@ -2683,6 +2741,12 @@ async function submitExam(
 
 
         const resultData = {
+
+            ownerUid:
+                getCandidateUid(),
+
+            instituteId:
+                getActiveInstituteId(),
 
             attemptId,
 
@@ -3400,6 +3464,12 @@ async function submitFeedback() {
             ),
             {
 
+                ownerUid:
+                    getCandidateUid(),
+
+                instituteId:
+                    getActiveInstituteId(),
+
                 candidateName:
                     candidate.name,
 
@@ -3501,9 +3571,15 @@ async function updateCandidateStatus(
         doc(
             db,
             "candidates",
-            candidate.email
+            getCandidateDocumentId()
         ),
         {
+
+            ownerUid:
+                getCandidateUid(),
+
+            instituteId:
+                getActiveInstituteId(),
 
             name:
                 candidate.name,
@@ -3583,14 +3659,24 @@ window.addEventListener(
 // INITIALIZE
 // ============================================================
 
-listenExamSettings();
+(async function initializeStudentPortal() {
+    try {
+        await ensureCandidateSession();
+        listenExamSettings();
+        showScreen(loginScreen);
 
+        console.log(
+            "Student Examination Portal initialized successfully."
+        );
+    } catch (error) {
+        console.error(
+            "Candidate authentication initialization failed:",
+            error
+        );
 
-showScreen(
-    loginScreen
-);
-
-
-console.log(
-    "Student Examination Portal initialized successfully."
-);
+        showScreen(loginScreen);
+        showMessage(
+            "Unable to start a secure candidate session. Please reload the page."
+        );
+    }
+})();
