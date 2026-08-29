@@ -1,7 +1,7 @@
 // ============================================================
 // FIREBASE CONFIGURATION
 // Physics Test Series
-// Firebase Project: physics-test-2b91a
+// Firebase Project: superadmin-2c2f1
 // ============================================================
 
 import {
@@ -24,25 +24,25 @@ import {
 const firebaseConfig = {
 
     apiKey:
-        "AIzaSyAKbcsJILXKkng3eWv5mt0UwCrFvCoXVH8",
+        "AIzaSyDiT409aEWfaxgqleQRmUKx5D1dXizI9jY",
 
     authDomain:
-        "physics-test-2b91a.firebaseapp.com",
+        "superadmin-2c2f1.firebaseapp.com",
 
     projectId:
-        "physics-test-2b91a",
+        "superadmin-2c2f1",
 
     storageBucket:
-        "physics-test-2b91a.firebasestorage.app",
+        "superadmin-2c2f1.firebasestorage.app",
 
     messagingSenderId:
-        "934239266562",
+        "202833459334",
 
     appId:
-        "1:934239266562:web:96cd91f0ce771b208b041b",
+        "1:202833459334:web:54a9a98be11b0a1074f907",
 
     measurementId:
-        "G-M14TXE09JR"
+        "G-XFK07Q78EL"
 };
 
 

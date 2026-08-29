@@ -22,7 +22,7 @@
    - Real-time Dashboard
 
    Firebase project:
-   physics-test-2b91a
+   superadmin-2c2f1
 
    IMPORTANT:
    This file does NOT store passwords in Firestore.
@@ -51,7 +51,7 @@ import {
     serverTimestamp,
     Timestamp,
     writeBatch
-} from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
 /* =========================================================

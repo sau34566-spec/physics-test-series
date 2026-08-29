@@ -4,47 +4,22 @@
 // ============================================================
 
 import {
-    initializeApp
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
-import {
-    getAuth,
     signInWithEmailAndPassword,
     signOut,
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 import {
-    getFirestore,
     doc,
     getDoc,
     setDoc,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-
-// ============================================================
-// FIREBASE CONFIG
-// ============================================================
-
-const firebaseConfig = {
-    apiKey: "AIzaSyA8XeHrqnYP1FEpwpqUZEdKsVAJGDw2r7o",
-    authDomain: "physics-test-series-405c7.firebaseapp.com",
-    projectId: "physics-test-series-405c7",
-    storageBucket: "physics-test-series-405c7.firebasestorage.app",
-    messagingSenderId: "758620061190",
-    appId: "1:758620061190:web:dbbc7759c95b5e7d8b8d87",
-    measurementId: "G-Z5QVQMZ082"
-};
-
-
-// ============================================================
-// INITIALIZE FIREBASE
-// ============================================================
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+import {
+    auth,
+    db
+} from "./firebase-config.js";
 
 
 // ============================================================
