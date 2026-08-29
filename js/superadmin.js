@@ -664,18 +664,81 @@ async function createInstitute(data) {
     requireSuperAdmin();
 
 
+    const instituteName =
+        normalize(
+            data.instituteName ||
+            data.name
+        );
+
+
+    const instituteCode =
+        normalize(
+            data.instituteCode ||
+            data.instituteId
+        )
+            .toUpperCase()
+            .replace(/\s+/g, "");
+
+
+    if (!instituteName) {
+
+        throw new Error(
+            "Institute name is required."
+        );
+
+    }
+
+
+    if (!instituteCode) {
+
+        throw new Error(
+            "Institute code is required."
+        );
+
+    }
+
+
+    const duplicateCodeQuery =
+        query(
+            collection(
+                db,
+                COLLECTIONS.institutes
+            ),
+            where(
+                "instituteCode",
+                "==",
+                instituteCode
+            ),
+            limit(1)
+        );
+
+
+    const duplicateCodeSnapshot =
+        await getDocs(
+            duplicateCodeQuery
+        );
+
+
+    if (!duplicateCodeSnapshot.empty) {
+
+        throw new Error(
+            "This Institute Code is already in use."
+        );
+
+    }
+
+
     const institute = {
 
         instituteId:
-            normalize(
-                data.instituteId
-            ) ||
-            `INST-${Date.now()}`,
+            instituteCode,
+
+        instituteCode,
+
+        instituteName,
 
         name:
-            normalize(
-                data.name
-            ),
+            instituteName,
 
         address:
             normalize(
@@ -696,8 +759,10 @@ async function createInstitute(data) {
             data.logoUrl || "",
 
         status:
-            data.status ||
-            "ACTIVE",
+            String(
+                data.status ||
+                "ACTIVE"
+            ).toUpperCase(),
 
         branding:
             data.branding ||

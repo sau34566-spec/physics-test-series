@@ -5228,6 +5228,9 @@
                     "click",
                     () => {
 
+                        genericModal.dataset.action =
+                            buttonId;
+
                         openSuperAdminModal(
                             config[0],
                             config[1]
@@ -5247,7 +5250,123 @@
         .getElementById("modalSaveBtn")
         ?.addEventListener(
             "click",
-            () => {
+            async () => {
+
+                const saveButton =
+                    document.getElementById(
+                        "modalSaveBtn"
+                    );
+
+
+                if (
+                    genericModal?.dataset.action ===
+                    "createInstituteBtn"
+                ) {
+
+                    if (
+                        !window.SuperAdminApp ||
+                        typeof window.SuperAdminApp.createInstitute !==
+                            "function"
+                    ) {
+
+                        showToast(
+                            "Not connected",
+                            "Institute backend is not available.",
+                            "warning"
+                        );
+
+                        return;
+
+                    }
+
+
+                    const instituteName =
+                        document
+                            .getElementById(
+                                "modalInstituteName"
+                            )
+                            ?.value
+                            ?.trim() || "";
+
+
+                    const instituteCode =
+                        document
+                            .getElementById(
+                                "modalInstituteCode"
+                            )
+                            ?.value
+                            ?.trim() || "";
+
+
+                    const status =
+                        document
+                            .getElementById(
+                                "modalInstituteStatus"
+                            )
+                            ?.value || "active";
+
+
+                    if (!instituteName || !instituteCode) {
+
+                        showToast(
+                            "Required fields",
+                            "Enter both Institute Name and Institute Code.",
+                            "warning"
+                        );
+
+                        return;
+
+                    }
+
+
+                    try {
+
+                        if (saveButton) {
+                            saveButton.disabled = true;
+                            saveButton.textContent = "Saving...";
+                        }
+
+
+                        await window.SuperAdminApp
+                            .createInstitute({
+                                instituteName,
+                                instituteCode,
+                                status
+                            });
+
+
+                        closeModal();
+
+
+                    } catch (error) {
+
+                        console.error(
+                            "Institute creation failed:",
+                            error
+                        );
+
+
+                        showToast(
+                            "Unable to create institute",
+                            error?.message ||
+                                "Please try again.",
+                            "danger"
+                        );
+
+
+                    } finally {
+
+                        if (saveButton) {
+                            saveButton.disabled = false;
+                            saveButton.textContent = "Save";
+                        }
+
+                    }
+
+
+                    return;
+
+                }
 
                 if (
                     window.SuperAdminApp &&
