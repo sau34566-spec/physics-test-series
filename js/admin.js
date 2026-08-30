@@ -13,6 +13,11 @@ import {
     doc,
     getDoc,
     setDoc,
+    collection,
+    addDoc,
+    getDocs,
+    query,
+    where,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
@@ -69,8 +74,34 @@ const resetExamSettingsBtn = $("resetExamSettingsBtn");
 // ============================================================
 
 let currentAdmin = null;
+let currentAdminProfile = null;
+let currentInstitute = null;
 let currentExamSettings = null;
 let confirmationCallback = null;
+
+
+function primaryInstituteId() {
+    return currentAdminProfile?.instituteIds?.[0] || "";
+}
+
+
+function currentExamId() {
+    const instituteId = primaryInstituteId();
+    return instituteId ? `${instituteId}_default` : "";
+}
+
+
+function hasPermission(permission) {
+    return Array.isArray(currentAdminProfile?.permissions) &&
+        currentAdminProfile.permissions.includes(permission);
+}
+
+
+function requirePermission(permission, message) {
+    if (hasPermission(permission)) return true;
+    alert(message || "You do not have permission for this action.");
+    return false;
+}
 
 
 // ============================================================
@@ -232,6 +263,11 @@ async function verifyAdmin(user) {
             return false;
         }
 
+        currentAdminProfile = {
+            id: adminSnapshot.id,
+            ...data
+        };
+
         return true;
     }
 
@@ -330,14 +366,9 @@ if (loginForm) {
                 currentAdmin =
                     credential.user;
 
-                if (adminName) {
-                    adminName.textContent =
-                        currentAdmin.email ||
-                        "Administrator";
-                }
-
                 showDashboard();
 
+                await loadAdminContext();
                 await loadExamSettings();
                 await loadDashboardData();
 
@@ -384,6 +415,8 @@ if (logoutBtn) {
                     await signOut(auth);
 
                     currentAdmin = null;
+                    currentAdminProfile = null;
+                    currentInstitute = null;
                     currentExamSettings = null;
 
                     if (loginForm) {
@@ -434,6 +467,7 @@ function openSection(sectionName) {
 
         dashboard: "Dashboard",
         examSettings: "Exam Settings",
+        batches: "Batches",
         questions: "Question Bank",
         candidates: "Candidates",
         monitoring: "Live Monitoring",
@@ -653,18 +687,33 @@ async function changeExamStatus(status) {
         return;
     }
 
+    if (!requirePermission(
+        "exam.control",
+        "You do not have permission to control exams."
+    )) return;
+
+    const instituteId = primaryInstituteId();
+    const examId = currentExamId();
+
+    if (!instituteId || !examId) {
+        alert("No institute is assigned to this administrator.");
+        return;
+    }
+
     try {
 
         const ref = doc(
             db,
-            "examSettings",
-            "current"
+            "exams",
+            examId
         );
 
         await setDoc(
             ref,
             {
-                examStatus: status,
+                instituteId,
+                examStatus: status.toUpperCase(),
+                status: status.toUpperCase(),
                 updatedAt: serverTimestamp(),
                 updatedBy: currentAdmin.uid
             },
@@ -1040,10 +1089,16 @@ async function loadExamSettings() {
 
     try {
 
+        const examId = currentExamId();
+
+        if (!examId) {
+            throw new Error("No institute is assigned to this administrator.");
+        }
+
         const ref = doc(
             db,
-            "examSettings",
-            "current"
+            "exams",
+            examId
         );
 
         const snapshot =
@@ -1063,6 +1118,12 @@ async function loadExamSettings() {
 
         currentExamSettings =
             snapshot.data();
+
+        currentExamSettings.examStatus = String(
+            currentExamSettings.examStatus ||
+            currentExamSettings.status ||
+            "DRAFT"
+        ).toLowerCase();
 
         applyExamSettings(
             currentExamSettings
@@ -1098,6 +1159,11 @@ if (examSettingsForm) {
 
             const settings =
                 readExamSettings();
+
+            if (!requirePermission(
+                "exam.edit",
+                "You do not have permission to edit exam settings."
+            )) return;
 
             if (settings.totalQuestions < 1) {
                 showSettingsMessage(
@@ -1146,11 +1212,20 @@ if (examSettingsForm) {
                 await setDoc(
                     doc(
                         db,
-                        "examSettings",
-                        "current"
+                        "exams",
+                        currentExamId()
                     ),
                     {
                         ...settings,
+                        instituteId:
+                            primaryInstituteId(),
+
+                        status:
+                            settings.examStatus.toUpperCase(),
+
+                        examStatus:
+                            settings.examStatus.toUpperCase(),
+
                         updatedAt:
                             serverTimestamp(),
 
@@ -1267,10 +1342,257 @@ function updateDashboard(settings) {
 
 async function loadDashboardData() {
 
-    setText("totalCandidates", 0);
-    setText("completedCandidates", 0);
-    setText("activeCandidates", 0);
-    setText("totalViolations", 0);
+    const instituteId = primaryInstituteId();
+
+    if (!instituteId) return;
+
+    if (hasPermission("candidate.view")) {
+        const candidateSnapshot = await getDocs(
+            query(
+                collection(db, "candidates"),
+                where("instituteId", "==", instituteId)
+            )
+        );
+
+        let completed = 0;
+        let active = 0;
+
+        candidateSnapshot.forEach(item => {
+            const status = String(item.data().status || "").toUpperCase();
+            if (["COMPLETED", "SUBMITTED"].includes(status)) completed++;
+            if (["ACTIVE", "IN_PROGRESS"].includes(status)) active++;
+        });
+
+        setText("totalCandidates", candidateSnapshot.size);
+        setText("completedCandidates", completed);
+        setText("activeCandidates", active);
+        renderCandidates(candidateSnapshot);
+    }
+
+    if (hasPermission("security.view")) {
+        const violationSnapshot = await getDocs(
+            query(
+                collection(db, "violations"),
+                where("instituteId", "==", instituteId)
+            )
+        );
+        setText("totalViolations", violationSnapshot.size);
+    } else {
+        setText("totalViolations", "—");
+    }
+}
+
+
+function renderCandidates(snapshot) {
+    const body = $("candidatesTableBody");
+    if (!body) return;
+
+    if (snapshot.empty) {
+        body.innerHTML = '<tr><td colspan="5">No candidates found for this institute.</td></tr>';
+        return;
+    }
+
+    body.innerHTML = "";
+    snapshot.forEach(item => {
+        const data = item.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${escapeHtml(data.name || data.candidateName || "—")}</td>
+            <td>${escapeHtml(data.rollNumber || data.registrationNumber || "—")}</td>
+            <td>${escapeHtml(data.batchName || data.batchId || "—")}</td>
+            <td>${escapeHtml(data.examName || data.examId || "—")}</td>
+            <td>${escapeHtml(data.status || "REGISTERED")}</td>
+        `;
+        body.appendChild(row);
+    });
+}
+
+
+async function loadAdminContext() {
+    const instituteId = primaryInstituteId();
+
+    if (!instituteId) {
+        throw new Error("No institute is assigned to this administrator.");
+    }
+
+    const instituteSnapshot = await getDoc(
+        doc(db, "institutes", instituteId)
+    );
+
+    if (!instituteSnapshot.exists()) {
+        throw new Error("Assigned institute was not found.");
+    }
+
+    currentInstitute = {
+        id: instituteSnapshot.id,
+        ...instituteSnapshot.data()
+    };
+
+    const instituteStatus = String(
+        currentInstitute.status || "ACTIVE"
+    ).toUpperCase();
+
+    if (instituteStatus !== "ACTIVE") {
+        throw new Error("This institute is not active.");
+    }
+
+    setText(
+        "adminName",
+        currentAdminProfile?.name || currentAdmin?.email || "Administrator"
+    );
+    setText(
+        "adminInstituteName",
+        currentInstitute.instituteName ||
+        currentInstitute.name ||
+        currentInstitute.instituteCode ||
+        "Assigned Institute"
+    );
+
+    applyPermissionVisibility();
+    await loadBatches();
+}
+
+
+function applyPermissionVisibility() {
+    const permissionMap = {
+        examSettings: "exam.view",
+        questions: "question.view",
+        candidates: "candidate.view",
+        monitoring: "candidate.view",
+        violations: "security.view",
+        results: "result.view",
+        feedback: "feedback.view",
+        analytics: "result.view",
+        batches: "batch.manage"
+    };
+
+    document.querySelectorAll("[data-section]").forEach(element => {
+        const required = permissionMap[element.dataset.section];
+        if (required) element.hidden = !hasPermission(required);
+    });
+
+    document.querySelectorAll('[data-section="admins"], [data-section="activity"]')
+        .forEach(element => { element.hidden = true; });
+
+    [startExamBtn, pauseExamBtn, endExamBtn].forEach(button => {
+        if (button) button.hidden = !hasPermission("exam.control");
+    });
+
+    if (saveExamSettingsBtn) {
+        saveExamSettingsBtn.hidden = !hasPermission("exam.edit");
+    }
+}
+
+
+async function loadBatches() {
+    const body = $("batchesTableBody");
+    const instituteId = primaryInstituteId();
+
+    if (!body || !instituteId || !hasPermission("batch.manage")) return;
+
+    body.innerHTML = '<tr><td colspan="4">Loading batches...</td></tr>';
+
+    try {
+        const snapshot = await getDocs(
+            query(
+                collection(db, "batches"),
+                where("instituteId", "==", instituteId)
+            )
+        );
+
+        if (snapshot.empty) {
+            body.innerHTML = '<tr><td colspan="4">No batches created yet.</td></tr>';
+            return;
+        }
+
+        body.innerHTML = "";
+        snapshot.forEach(item => {
+            const data = item.data();
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${escapeHtml(data.batchName || "—")}</td>
+                <td>${escapeHtml(data.batchCode || "—")}</td>
+                <td>${escapeHtml(data.className || "—")}</td>
+                <td>${escapeHtml(data.status || "ACTIVE")}</td>
+            `;
+            body.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Load batches error:", error);
+        body.innerHTML = '<tr><td colspan="4">Unable to load batches.</td></tr>';
+    }
+}
+
+
+function escapeHtml(value) {
+    const element = document.createElement("div");
+    element.textContent = String(value ?? "");
+    return element.innerHTML;
+}
+
+
+const batchForm = $("batchForm");
+
+if (batchForm) {
+    batchForm.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        if (!requirePermission(
+            "batch.manage",
+            "You do not have permission to manage batches."
+        )) return;
+
+        const batchName = valueOf("batchName");
+        const batchCode = valueOf("batchCode").toUpperCase();
+        const className = valueOf("batchClass");
+
+        if (!batchName || !batchCode) {
+            showBatchMessage("Enter batch name and batch code.", "error");
+            return;
+        }
+
+        try {
+            const duplicate = await getDocs(
+                query(
+                    collection(db, "batches"),
+                    where("instituteId", "==", primaryInstituteId()),
+                    where("batchCode", "==", batchCode)
+                )
+            );
+
+            if (!duplicate.empty) {
+                showBatchMessage("This batch code already exists.", "error");
+                return;
+            }
+
+            await addDoc(collection(db, "batches"), {
+                instituteId: primaryInstituteId(),
+                batchName,
+                batchCode,
+                className,
+                status: "ACTIVE",
+                createdBy: currentAdmin.uid,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            });
+
+            batchForm.reset();
+            showBatchMessage("Batch created successfully.", "success");
+            await loadBatches();
+        } catch (error) {
+            console.error("Create batch error:", error);
+            showBatchMessage("Unable to create batch: " + error.message, "error");
+        }
+    });
+}
+
+
+function showBatchMessage(message, type) {
+    const element = $("batchMessage");
+    if (!element) return;
+    element.textContent = message;
+    element.className = `settings-message ${type}`;
+    element.style.display = "block";
 }
 
 
@@ -1382,14 +1704,9 @@ onAuthStateChanged(
 
             currentAdmin = user;
 
-            if (adminName) {
-                adminName.textContent =
-                    user.email ||
-                    "Administrator";
-            }
-
             showDashboard();
 
+            await loadAdminContext();
             await loadExamSettings();
             await loadDashboardData();
 

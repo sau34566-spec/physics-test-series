@@ -391,6 +391,15 @@
                     Candidates
                 </button>
 
+                <button
+                    class="nav-item"
+                    data-section="batches"
+                    type="button"
+                >
+                    <span>🏷️</span>
+                    Batches
+                </button>
+
 
                 <button
                     class="nav-item"
@@ -549,7 +558,7 @@
                                 Administrator
                             </strong>
 
-                            <span>
+                            <span id="adminInstituteName">
                                 Authorized Admin
                             </span>
 
@@ -1629,20 +1638,98 @@
                 </div>
 
 
-                <div class="coming-soon-panel">
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <div>
+                            <span>ASSIGNED INSTITUTE</span>
+                            <h3>Candidate List</h3>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto">
+                        <table class="admin-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Roll / Registration</th>
+                                    <th>Batch</th>
+                                    <th>Exam</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="candidatesTableBody">
+                                <tr><td colspan="5">Loading candidates...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-                    <span>
-                        👥
-                    </span>
+            </section>
 
-                    <h3>
-                        Candidate Management
-                    </h3>
 
-                    <p>
-                        Candidate information will appear here.
-                    </p>
 
+            <!-- =====================================
+                 BATCHES
+            ====================================== -->
+
+            <section
+                class="admin-section"
+                id="batchesSection"
+            >
+
+                <div class="section-heading">
+                    <div>
+                        <span>INSTITUTE MANAGEMENT</span>
+                        <h2>Batches</h2>
+                        <p>Create and view batches for your assigned institute.</p>
+                    </div>
+                </div>
+
+                <form id="batchForm" class="settings-card">
+                    <h3>Create Batch</h3>
+                    <div class="settings-grid">
+                        <div class="settings-field">
+                            <label for="batchName">Batch Name</label>
+                            <input id="batchName" type="text" required>
+                        </div>
+                        <div class="settings-field">
+                            <label for="batchCode">Batch Code</label>
+                            <input id="batchCode" type="text" required>
+                        </div>
+                        <div class="settings-field full">
+                            <label for="batchClass">Class / Course</label>
+                            <input id="batchClass" type="text">
+                        </div>
+                    </div>
+                    <div class="settings-actions">
+                        <button class="save-settings-btn" type="submit">
+                            Create Batch
+                        </button>
+                    </div>
+                    <div id="batchMessage" style="display:none"></div>
+                </form>
+
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <div>
+                            <span>ASSIGNED INSTITUTE</span>
+                            <h3>Available Batches</h3>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto">
+                        <table class="admin-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Batch Name</th>
+                                    <th>Batch Code</th>
+                                    <th>Class / Course</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batchesTableBody">
+                                <tr><td colspan="4">No batches created yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
             </section>
