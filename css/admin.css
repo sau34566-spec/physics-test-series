@@ -846,6 +846,62 @@ body {
     letter-spacing: .5px;
 }
 
+.exam-status-pill {
+    display: inline-flex;
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #334155;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.status-live {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-scheduled {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.status-paused {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-ended {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.exam-status-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.exam-status-control select {
+    min-width: 105px;
+    padding: 7px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: white;
+    font-size: 10px;
+}
+
+.table-action-btn {
+    padding: 7px 9px;
+    border: 0;
+    border-radius: 7px;
+    background: var(--primary);
+    color: white;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 700;
+}
+
 .panel-header {
     display: flex;
 

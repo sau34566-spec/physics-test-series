@@ -15,7 +15,7 @@
     <!-- ORIGINAL ADMIN CSS -->
     <link
         rel="stylesheet"
-        href="../css/admin.css?v=step4-2"
+        href="../css/admin.css?v=step5-1"
     >
 
     <!-- Small additions only for Exam Settings -->
@@ -359,6 +359,15 @@
                 >
                     <span>📊</span>
                     Dashboard
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-section="exams"
+                    type="button"
+                >
+                    <span>📋</span>
+                    Exams
                 </button>
 
 
@@ -1052,6 +1061,109 @@
 
             </section>
 
+
+
+            <!-- =====================================
+                 EXAM MANAGEMENT
+            ====================================== -->
+
+            <section class="admin-section" id="examsSection">
+
+                <div class="section-heading">
+                    <div>
+                        <span>INSTITUTE EXAMS</span>
+                        <h2>Exam Management</h2>
+                        <p>Create exams, assign batches and control publishing status.</p>
+                    </div>
+                </div>
+
+                <form id="examManagementForm" class="settings-card">
+                    <h3>Create New Exam</h3>
+                    <p class="settings-card-description">
+                        This exam will only belong to your assigned institute.
+                    </p>
+
+                    <div class="settings-grid">
+                        <div class="settings-field full">
+                            <label for="newExamTitle">Exam Title</label>
+                            <input id="newExamTitle" type="text" placeholder="NEET Physics Mock Test" required>
+                        </div>
+                        <div class="settings-field">
+                            <label for="newExamCode">Exam Code</label>
+                            <input id="newExamCode" type="text" placeholder="NEET-PHY-01" required>
+                        </div>
+                        <div class="settings-field">
+                            <label for="examBatchIds">Assign Batches</label>
+                            <select id="examBatchIds" multiple size="4"></select>
+                            <small>Use Ctrl to select multiple batches. No selection means all batches.</small>
+                        </div>
+                        <div class="settings-field">
+                            <label for="newExamDuration">Duration (Minutes)</label>
+                            <input id="newExamDuration" type="number" min="1" value="60" required>
+                        </div>
+                        <div class="settings-field">
+                            <label for="newExamQuestions">Total Questions</label>
+                            <input id="newExamQuestions" type="number" min="1" value="50" required>
+                        </div>
+                        <div class="settings-field">
+                            <label for="newExamMarks">Marks per Question</label>
+                            <input id="newExamMarks" type="number" min="0" step="0.01" value="4" required>
+                        </div>
+                        <div class="settings-field">
+                            <label for="newExamNegativeMarks">Negative Marks</label>
+                            <input id="newExamNegativeMarks" type="number" min="0" step="0.01" value="1">
+                        </div>
+                        <div class="settings-field">
+                            <label for="newExamStartTime">Start Date & Time</label>
+                            <input id="newExamStartTime" type="datetime-local">
+                        </div>
+                        <div class="settings-field">
+                            <label for="newExamEndTime">End Date & Time</label>
+                            <input id="newExamEndTime" type="datetime-local">
+                        </div>
+                        <div class="settings-field full">
+                            <label for="newExamStatus">Initial Status</label>
+                            <select id="newExamStatus">
+                                <option value="DRAFT">Draft</option>
+                                <option value="SCHEDULED">Scheduled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-actions">
+                        <button class="save-settings-btn" type="submit">Create Exam</button>
+                    </div>
+                    <div id="examManagementMessage" style="display:none"></div>
+                </form>
+
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <div>
+                            <span>ASSIGNED INSTITUTE</span>
+                            <h3>Available Exams</h3>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto">
+                        <table class="admin-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Exam</th>
+                                    <th>Batches</th>
+                                    <th>Duration</th>
+                                    <th>Marks / Negative</th>
+                                    <th>Starts</th>
+                                    <th>Status</th>
+                                    <th>Control</th>
+                                </tr>
+                            </thead>
+                            <tbody id="examsTableBody">
+                                <tr><td colspan="7">Loading exams...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </section>
 
 
             <!-- =====================================
@@ -2126,7 +2238,7 @@
 
     <script
         type="module"
-        src="../js/admin.js?v=step4-2"
+        src="../js/admin.js?v=step5-1"
     ></script>
 
 

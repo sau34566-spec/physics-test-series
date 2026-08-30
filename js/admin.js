@@ -77,6 +77,8 @@ let currentAdmin = null;
 let currentAdminProfile = null;
 let currentInstitute = null;
 let currentExamSettings = null;
+let currentBatches = [];
+let currentExams = [];
 let confirmationCallback = null;
 
 
@@ -466,6 +468,7 @@ function openSection(sectionName) {
     const titles = {
 
         dashboard: "Dashboard",
+        exams: "Exam Management",
         examSettings: "Exam Settings",
         batches: "Batches",
         questions: "Question Bank",
@@ -495,6 +498,10 @@ function openSection(sectionName) {
 
     if (sectionName === "examSettings") {
         loadExamSettings();
+    }
+
+    if (sectionName === "exams") {
+        loadExams();
     }
 }
 
@@ -1450,11 +1457,13 @@ async function loadAdminContext() {
 
     applyPermissionVisibility();
     await loadBatches();
+    await loadExams();
 }
 
 
 function applyPermissionVisibility() {
     const permissionMap = {
+        exams: "exam.view",
         examSettings: "exam.view",
         questions: "question.view",
         candidates: "candidate.view",
@@ -1488,9 +1497,15 @@ async function loadBatches() {
     const body = $("batchesTableBody");
     const instituteId = primaryInstituteId();
 
-    if (!body || !instituteId || !hasPermission("batch.manage")) return;
+    if (!instituteId || !(
+        hasPermission("batch.manage") ||
+        hasPermission("exam.create") ||
+        hasPermission("exam.edit")
+    )) return;
 
-    body.innerHTML = '<tr><td colspan="4">Loading batches...</td></tr>';
+    if (body) {
+        body.innerHTML = '<tr><td colspan="4">Loading batches...</td></tr>';
+    }
 
     try {
         const snapshot = await getDocs(
@@ -1499,6 +1514,15 @@ async function loadBatches() {
                 where("instituteId", "==", instituteId)
             )
         );
+
+        currentBatches = snapshot.docs.map(item => ({
+            id: item.id,
+            ...item.data()
+        }));
+
+        populateExamBatchOptions();
+
+        if (!body) return;
 
         if (snapshot.empty) {
             body.innerHTML = '<tr><td colspan="4">No batches created yet.</td></tr>';
@@ -1519,8 +1543,242 @@ async function loadBatches() {
         });
     } catch (error) {
         console.error("Load batches error:", error);
-        body.innerHTML = '<tr><td colspan="4">Unable to load batches.</td></tr>';
+        if (body) {
+            body.innerHTML = '<tr><td colspan="4">Unable to load batches.</td></tr>';
+        }
     }
+}
+
+
+function populateExamBatchOptions() {
+    const select = $("examBatchIds");
+    if (!select) return;
+
+    select.innerHTML = "";
+
+    currentBatches.forEach(batch => {
+        const option = document.createElement("option");
+        option.value = batch.id;
+        option.textContent = `${batch.batchName || "Batch"} (${batch.batchCode || batch.id})`;
+        select.appendChild(option);
+    });
+}
+
+
+async function loadExams() {
+    const body = $("examsTableBody");
+    const instituteId = primaryInstituteId();
+
+    if (!body || !instituteId || !hasPermission("exam.view")) return;
+
+    body.innerHTML = '<tr><td colspan="7">Loading exams...</td></tr>';
+
+    try {
+        const snapshot = await getDocs(
+            query(
+                collection(db, "exams"),
+                where("instituteId", "==", instituteId)
+            )
+        );
+
+        currentExams = snapshot.docs.map(item => ({
+            id: item.id,
+            ...item.data()
+        }));
+
+        currentExams.sort((a, b) =>
+            Number(b.createdAt?.seconds || 0) -
+            Number(a.createdAt?.seconds || 0)
+        );
+
+        renderExams();
+    } catch (error) {
+        console.error("Load exams error:", error);
+        body.innerHTML = '<tr><td colspan="7">Unable to load exams.</td></tr>';
+    }
+}
+
+
+function renderExams() {
+    const body = $("examsTableBody");
+    if (!body) return;
+
+    if (!currentExams.length) {
+        body.innerHTML = '<tr><td colspan="7">No exams created yet.</td></tr>';
+        return;
+    }
+
+    body.innerHTML = "";
+
+    currentExams.forEach(exam => {
+        const row = document.createElement("tr");
+        const status = String(exam.status || exam.examStatus || "DRAFT").toUpperCase();
+        const batchNames = (exam.batchIds || []).map(batchId => {
+            const batch = currentBatches.find(item => item.id === batchId);
+            return batch?.batchName || batchId;
+        }).join(", ") || "All batches";
+
+        const statusOptions = ["DRAFT", "SCHEDULED", "LIVE", "PAUSED", "ENDED"]
+            .map(value => `<option value="${value}" ${value === status ? "selected" : ""}>${value}</option>`)
+            .join("");
+
+        row.innerHTML = `
+            <td><strong>${escapeHtml(exam.examTitle || exam.title || "Untitled Exam")}</strong><br><small>${escapeHtml(exam.examCode || "—")}</small></td>
+            <td>${escapeHtml(batchNames)}</td>
+            <td>${escapeHtml(`${exam.durationMinutes || 0} min`)}</td>
+            <td>${escapeHtml(`${exam.marksPerQuestion ?? 0} / -${exam.negativeMarks ?? 0}`)}</td>
+            <td>${escapeHtml(formatLocalDateTime(exam.examStartTime || exam.startAt))}</td>
+            <td><span class="exam-status-pill status-${status.toLowerCase()}">${escapeHtml(status)}</span></td>
+            <td>
+                ${hasPermission("exam.control") ? `
+                    <div class="exam-status-control">
+                        <select class="exam-row-status" data-exam-id="${escapeHtml(exam.id)}">${statusOptions}</select>
+                        <button type="button" class="table-action-btn" data-update-exam-status="${escapeHtml(exam.id)}">Update</button>
+                    </div>
+                ` : "—"}
+            </td>
+        `;
+        body.appendChild(row);
+    });
+}
+
+
+function formatLocalDateTime(value) {
+    if (!value) return "—";
+
+    const date = value?.toDate ? value.toDate() : new Date(value);
+    if (Number.isNaN(date.getTime())) return "—";
+
+    return new Intl.DateTimeFormat(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short"
+    }).format(date);
+}
+
+
+const examManagementForm = $("examManagementForm");
+
+if (examManagementForm) {
+    examManagementForm.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        if (!requirePermission(
+            "exam.create",
+            "You do not have permission to create exams."
+        )) return;
+
+        const examTitle = valueOf("newExamTitle");
+        const examCode = valueOf("newExamCode").toUpperCase();
+        const durationMinutes = numberOf("newExamDuration", 60);
+        const totalQuestions = numberOf("newExamQuestions", 0);
+        const marksPerQuestion = numberOf("newExamMarks", 1);
+        const negativeMarks = numberOf("newExamNegativeMarks", 0);
+        const examStartTime = valueOf("newExamStartTime");
+        const examEndTime = valueOf("newExamEndTime");
+        const status = valueOf("newExamStatus", "DRAFT").toUpperCase();
+        const batchIds = Array.from($("examBatchIds")?.selectedOptions || [])
+            .map(option => option.value);
+
+        if (!examTitle || !examCode || durationMinutes < 1 || totalQuestions < 1) {
+            showExamMessage("Enter a title, unique code, duration and question count.", "error");
+            return;
+        }
+
+        if (currentExams.some(exam =>
+            String(exam.examCode || "").toUpperCase() === examCode
+        )) {
+            showExamMessage("This exam code already exists in your institute.", "error");
+            return;
+        }
+
+        if (examStartTime && examEndTime && new Date(examEndTime) <= new Date(examStartTime)) {
+            showExamMessage("Exam end time must be after the start time.", "error");
+            return;
+        }
+
+        try {
+            await addDoc(collection(db, "exams"), {
+                instituteId: primaryInstituteId(),
+                examTitle,
+                examCode,
+                batchIds,
+                durationMinutes,
+                totalQuestions,
+                questionsToDisplay: totalQuestions,
+                marksPerQuestion,
+                negativeMarks,
+                examStartTime,
+                examEndTime,
+                status,
+                examStatus: status,
+                createdBy: currentAdmin.uid,
+                createdByEmail: currentAdmin.email || "",
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            });
+
+            examManagementForm.reset();
+            showExamMessage("Exam created successfully.", "success");
+            await loadExams();
+        } catch (error) {
+            console.error("Create exam error:", error);
+            showExamMessage("Unable to create exam: " + error.message, "error");
+        }
+    });
+}
+
+
+const examsTableBody = $("examsTableBody");
+
+if (examsTableBody) {
+    examsTableBody.addEventListener("click", async event => {
+        const button = event.target.closest("[data-update-exam-status]");
+        if (!button) return;
+
+        if (!requirePermission(
+            "exam.control",
+            "You do not have permission to control exams."
+        )) return;
+
+        const examId = button.dataset.updateExamStatus;
+        const select = Array.from(
+            examsTableBody.querySelectorAll(".exam-row-status")
+        ).find(element => element.dataset.examId === examId);
+        const status = select?.value;
+
+        if (!status) return;
+
+        try {
+            button.disabled = true;
+            button.textContent = "Updating...";
+
+            await setDoc(doc(db, "exams", examId), {
+                instituteId: primaryInstituteId(),
+                status,
+                examStatus: status,
+                updatedBy: currentAdmin.uid,
+                updatedAt: serverTimestamp()
+            }, { merge: true });
+
+            showExamMessage(`Exam status changed to ${status}.`, "success");
+            await loadExams();
+        } catch (error) {
+            console.error("Update exam status error:", error);
+            showExamMessage("Unable to update status: " + error.message, "error");
+        } finally {
+            button.disabled = false;
+            button.textContent = "Update";
+        }
+    });
+}
+
+
+function showExamMessage(message, type) {
+    const element = $("examManagementMessage");
+    if (!element) return;
+    element.textContent = message;
+    element.className = `settings-message ${type}`;
+    element.style.display = "block";
 }
 
 
