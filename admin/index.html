@@ -15,7 +15,7 @@
     <!-- ORIGINAL ADMIN CSS -->
     <link
         rel="stylesheet"
-        href="../css/admin.css?v=step5-1"
+        href="../css/admin.css?v=step6-1"
     >
 
     <!-- Small additions only for Exam Settings -->
@@ -67,7 +67,8 @@
         }
 
         .settings-field input,
-        .settings-field select {
+        .settings-field select,
+        .settings-field textarea {
             width: 100%;
             box-sizing: border-box;
             padding: 12px 13px;
@@ -79,7 +80,8 @@
         }
 
         .settings-field input:focus,
-        .settings-field select:focus {
+        .settings-field select:focus,
+        .settings-field textarea:focus {
             border-color: #6366f1;
             box-shadow: 0 0 0 3px rgba(99,102,241,0.10);
         }
@@ -1704,20 +1706,114 @@
                 </div>
 
 
-                <div class="coming-soon-panel">
+                <form id="questionForm" class="settings-card">
+                    <h3>Add MCQ Question</h3>
+                    <p class="settings-card-description">Questions remain isolated inside your assigned institute.</p>
 
-                    <span>
-                        📚
-                    </span>
+                    <div class="settings-grid">
+                        <div class="settings-field full">
+                            <label for="questionExamIds">Assign Exams</label>
+                            <select id="questionExamIds" multiple size="4" required></select>
+                            <small>Use Ctrl to select multiple exams.</small>
+                        </div>
+                        <div class="settings-field">
+                            <label for="questionSubject">Subject</label>
+                            <input id="questionSubject" type="text" required>
+                        </div>
+                        <div class="settings-field">
+                            <label for="questionChapter">Chapter / Topic</label>
+                            <input id="questionChapter" type="text">
+                        </div>
+                        <div class="settings-field full">
+                            <label for="questionText">Question</label>
+                            <textarea id="questionText" rows="4" required></textarea>
+                        </div>
+                        <div class="settings-field">
+                            <label for="questionOptionA">Option A</label>
+                            <input id="questionOptionA" type="text" required>
+                        </div>
+                        <div class="settings-field">
+                            <label for="questionOptionB">Option B</label>
+                            <input id="questionOptionB" type="text" required>
+                        </div>
+                        <div class="settings-field">
+                            <label for="questionOptionC">Option C</label>
+                            <input id="questionOptionC" type="text" required>
+                        </div>
+                        <div class="settings-field">
+                            <label for="questionOptionD">Option D</label>
+                            <input id="questionOptionD" type="text" required>
+                        </div>
+                        <div class="settings-field">
+                            <label for="questionCorrectOption">Correct Option</label>
+                            <select id="questionCorrectOption">
+                                <option value="0">Option A</option>
+                                <option value="1">Option B</option>
+                                <option value="2">Option C</option>
+                                <option value="3">Option D</option>
+                            </select>
+                        </div>
+                        <div class="settings-field">
+                            <label for="questionDifficulty">Difficulty</label>
+                            <select id="questionDifficulty">
+                                <option value="EASY">Easy</option>
+                                <option value="MODERATE" selected>Moderate</option>
+                                <option value="HARD">Hard</option>
+                            </select>
+                        </div>
+                        <div class="settings-field">
+                            <label for="questionMarks">Marks</label>
+                            <input id="questionMarks" type="number" min="0" step="0.01" value="4">
+                        </div>
+                        <div class="settings-field">
+                            <label for="questionNegativeMarks">Negative Marks</label>
+                            <input id="questionNegativeMarks" type="number" min="0" step="0.01" value="1">
+                        </div>
+                        <div class="settings-field">
+                            <label for="questionStatus">Status</label>
+                            <select id="questionStatus">
+                                <option value="ACTIVE">Active</option>
+                                <option value="DRAFT">Draft</option>
+                            </select>
+                        </div>
+                        <div class="settings-field full">
+                            <label for="questionExplanation">Explanation (Optional)</label>
+                            <textarea id="questionExplanation" rows="3"></textarea>
+                        </div>
+                    </div>
 
-                    <h3>
-                        Question Bank
-                    </h3>
+                    <div class="settings-actions">
+                        <button class="save-settings-btn" type="submit">Add Question</button>
+                    </div>
+                    <div id="questionMessage" style="display:none"></div>
+                </form>
 
-                    <p>
-                        Question management will be implemented in the upcoming development step.
-                    </p>
-
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <div>
+                            <span>INSTITUTE QUESTION BANK</span>
+                            <h3>Available Questions</h3>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto">
+                        <table class="admin-data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Question</th>
+                                    <th>Subject</th>
+                                    <th>Exam</th>
+                                    <th>Difficulty</th>
+                                    <th>Answer</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="questionsTableBody">
+                                <tr><td colspan="8">Loading questions...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
             </section>
@@ -2238,7 +2334,7 @@
 
     <script
         type="module"
-        src="../js/admin.js?v=step5-1"
+        src="../js/admin.js?v=step6-1"
     ></script>
 
 

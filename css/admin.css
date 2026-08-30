@@ -902,6 +902,23 @@ body {
     font-weight: 700;
 }
 
+.table-danger-btn {
+    padding: 7px 9px;
+    border: 0;
+    border-radius: 7px;
+    background: #fee2e2;
+    color: #991b1b;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.question-text-cell {
+    min-width: 260px;
+    white-space: normal;
+    line-height: 1.45;
+}
+
 .panel-header {
     display: flex;
 

@@ -15,6 +15,7 @@ import {
     setDoc,
     collection,
     addDoc,
+    deleteDoc,
     getDocs,
     query,
     where,
@@ -79,6 +80,7 @@ let currentInstitute = null;
 let currentExamSettings = null;
 let currentBatches = [];
 let currentExams = [];
+let currentQuestions = [];
 let confirmationCallback = null;
 
 
@@ -502,6 +504,10 @@ function openSection(sectionName) {
 
     if (sectionName === "exams") {
         loadExams();
+    }
+
+    if (sectionName === "questions") {
+        loadQuestions();
     }
 }
 
@@ -1591,6 +1597,7 @@ async function loadExams() {
             Number(a.createdAt?.seconds || 0)
         );
 
+        populateQuestionExamOptions();
         renderExams();
     } catch (error) {
         console.error("Load exams error:", error);
@@ -1775,6 +1782,192 @@ if (examsTableBody) {
 
 function showExamMessage(message, type) {
     const element = $("examManagementMessage");
+    if (!element) return;
+    element.textContent = message;
+    element.className = `settings-message ${type}`;
+    element.style.display = "block";
+}
+
+
+function populateQuestionExamOptions() {
+    const select = $("questionExamIds");
+    if (!select) return;
+
+    select.innerHTML = "";
+    currentExams.forEach(exam => {
+        const option = document.createElement("option");
+        option.value = exam.id;
+        option.textContent = `${exam.examTitle || "Exam"} (${exam.examCode || exam.id})`;
+        select.appendChild(option);
+    });
+}
+
+
+async function loadQuestions() {
+    const body = $("questionsTableBody");
+    const instituteId = primaryInstituteId();
+
+    if (!body || !instituteId || !hasPermission("question.view")) return;
+
+    body.innerHTML = '<tr><td colspan="8">Loading questions...</td></tr>';
+
+    try {
+        const snapshot = await getDocs(
+            query(
+                collection(db, "questions"),
+                where("instituteId", "==", instituteId)
+            )
+        );
+
+        currentQuestions = snapshot.docs.map(item => ({
+            id: item.id,
+            ...item.data()
+        }));
+
+        currentQuestions.sort((a, b) =>
+            Number(b.createdAt?.seconds || 0) -
+            Number(a.createdAt?.seconds || 0)
+        );
+
+        renderQuestions();
+    } catch (error) {
+        console.error("Load questions error:", error);
+        body.innerHTML = '<tr><td colspan="8">Unable to load questions.</td></tr>';
+    }
+}
+
+
+function renderQuestions() {
+    const body = $("questionsTableBody");
+    if (!body) return;
+
+    if (!currentQuestions.length) {
+        body.innerHTML = '<tr><td colspan="8">No questions created yet.</td></tr>';
+        return;
+    }
+
+    body.innerHTML = "";
+
+    currentQuestions.forEach((question, index) => {
+        const examNames = (question.examIds || []).map(examId => {
+            const exam = currentExams.find(item => item.id === examId);
+            return exam?.examTitle || examId;
+        }).join(", ") || "Unassigned";
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td class="question-text-cell">${escapeHtml(question.question || "—")}</td>
+            <td>${escapeHtml(question.subject || "—")}</td>
+            <td>${escapeHtml(examNames)}</td>
+            <td>${escapeHtml(question.difficulty || "MODERATE")}</td>
+            <td>${escapeHtml(question.correctAnswer || "—")}</td>
+            <td>${escapeHtml(question.status || "DRAFT")}</td>
+            <td>
+                ${hasPermission("question.delete") ? `
+                    <button type="button" class="table-danger-btn" data-delete-question="${escapeHtml(question.id)}">Delete</button>
+                ` : "—"}
+            </td>
+        `;
+        body.appendChild(row);
+    });
+}
+
+
+const questionForm = $("questionForm");
+
+if (questionForm) {
+    questionForm.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        if (!requirePermission(
+            "question.create",
+            "You do not have permission to create questions."
+        )) return;
+
+        const question = valueOf("questionText");
+        const options = ["questionOptionA", "questionOptionB", "questionOptionC", "questionOptionD"]
+            .map(id => valueOf(id));
+        const correctOptionIndex = numberOf("questionCorrectOption", 0);
+        const examIds = Array.from($("questionExamIds")?.selectedOptions || [])
+            .map(option => option.value);
+
+        if (!question || options.some(option => !option)) {
+            showQuestionMessage("Enter the question and all four options.", "error");
+            return;
+        }
+
+        if (new Set(options.map(option => option.toLowerCase())).size !== 4) {
+            showQuestionMessage("All four options must be different.", "error");
+            return;
+        }
+
+        if (!examIds.length) {
+            showQuestionMessage("Assign the question to at least one exam.", "error");
+            return;
+        }
+
+        try {
+            await addDoc(collection(db, "questions"), {
+                instituteId: primaryInstituteId(),
+                examIds,
+                subject: valueOf("questionSubject"),
+                chapter: valueOf("questionChapter"),
+                difficulty: valueOf("questionDifficulty", "MODERATE").toUpperCase(),
+                question,
+                options,
+                correctOptionIndex,
+                correctAnswer: options[correctOptionIndex],
+                explanation: valueOf("questionExplanation"),
+                marks: numberOf("questionMarks", 1),
+                negativeMarking: numberOf("questionNegativeMarks", 0),
+                status: valueOf("questionStatus", "ACTIVE").toUpperCase(),
+                createdBy: currentAdmin.uid,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            });
+
+            questionForm.reset();
+            showQuestionMessage("Question created successfully.", "success");
+            await loadQuestions();
+        } catch (error) {
+            console.error("Create question error:", error);
+            showQuestionMessage("Unable to create question: " + error.message, "error");
+        }
+    });
+}
+
+
+const questionsTableBody = $("questionsTableBody");
+
+if (questionsTableBody) {
+    questionsTableBody.addEventListener("click", async event => {
+        const button = event.target.closest("[data-delete-question]");
+        if (!button) return;
+
+        if (!requirePermission(
+            "question.delete",
+            "You do not have permission to delete questions."
+        )) return;
+
+        if (!confirm("Delete this question permanently?")) return;
+
+        try {
+            button.disabled = true;
+            await deleteDoc(doc(db, "questions", button.dataset.deleteQuestion));
+            showQuestionMessage("Question deleted.", "success");
+            await loadQuestions();
+        } catch (error) {
+            console.error("Delete question error:", error);
+            showQuestionMessage("Unable to delete question: " + error.message, "error");
+            button.disabled = false;
+        }
+    });
+}
+
+
+function showQuestionMessage(message, type) {
+    const element = $("questionMessage");
     if (!element) return;
     element.textContent = message;
     element.className = `settings-message ${type}`;
