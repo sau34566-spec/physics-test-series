@@ -46,3 +46,14 @@ The target tenant hierarchy remains:
 
 More specific published configuration will override broader configuration in
 later migration steps.
+
+## Runtime integrity additions
+
+- `exams/{examId}.questionIds` is the authoritative Candidate question list.
+- `attempts/{attemptId}.configurationSnapshot` freezes exam, security policy
+  version and ordered question IDs when an attempt starts.
+- `presence/{candidateUid}` stores a 20-second heartbeat; records older than
+  60 seconds are treated as offline.
+- `securityPolicies/{instituteId}` stores the published policy and
+  `securityPolicyVersions/*` stores append-only history.
+- Violations, feedback and results carry both `instituteId` and `examId`.

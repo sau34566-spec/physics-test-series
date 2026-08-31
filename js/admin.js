@@ -98,6 +98,8 @@ let currentExamSettings = null;
 let currentBatches = [];
 let currentExams = [];
 let currentQuestions = [];
+let currentResults = [];
+let currentFeedback = [];
 let confirmationCallback = null;
 
 
@@ -121,8 +123,35 @@ function hasPermission(permission) {
         return true;
     }
 
+    const examManagerPermissions = [
+        "dashboard.view", "exam.view", "exam.create", "exam.edit",
+        "exam.control", "batch.manage", "question.view", "question.create",
+        "question.edit", "candidate.view", "result.view", "feedback.view"
+    ];
+
     return currentAdminProfile?.permissionMode === "EXAM_MANAGER" &&
-        ["question.create", "question.view"].includes(permission);
+        examManagerPermissions.includes(permission);
+}
+
+
+async function logAdminAction(action, entityType, entityId, newValue = null) {
+    if (!currentAdmin || !primaryInstituteId()) return;
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            adminId: currentAdmin.uid,
+            adminEmail: currentAdmin.email || "",
+            role: currentAdminProfile?.role || "admin",
+            instituteId: primaryInstituteId(),
+            action,
+            entityType,
+            entityId: entityId || "",
+            newValue,
+            timestamp: serverTimestamp(),
+            createdAt: serverTimestamp()
+        });
+    } catch (error) {
+        console.warn("Admin audit log failed:", error);
+    }
 }
 
 
@@ -534,6 +563,13 @@ function openSection(sectionName) {
     if (sectionName === "questions") {
         loadQuestions();
     }
+
+    if (sectionName === "candidates") loadDashboardData();
+    if (sectionName === "monitoring") loadMonitoring();
+    if (sectionName === "violations") loadViolations();
+    if (sectionName === "results") loadResults();
+    if (sectionName === "feedback") loadFeedback();
+    if (sectionName === "analytics") loadAnalytics();
 }
 
 
@@ -758,6 +794,13 @@ async function changeExamStatus(status) {
             {
                 merge: true
             }
+        );
+
+        await logAdminAction(
+            `EXAM_${status.toUpperCase()}`,
+            "exam",
+            examId,
+            { status: status.toUpperCase() }
         );
 
         if (!currentExamSettings) {
@@ -1446,6 +1489,143 @@ function renderCandidates(snapshot) {
 }
 
 
+async function loadMonitoring() {
+    const body = $("monitoringTableBody");
+    const instituteId = primaryInstituteId();
+    if (!body || !instituteId || !hasPermission("candidate.view")) return;
+
+    try {
+        const snapshot = await getDocs(query(
+            collection(db, "presence"),
+            where("instituteId", "==", instituteId)
+        ));
+        const now = Date.now();
+        const rows = snapshot.docs.map(item => item.data()).filter(data => {
+            const last = data.lastActiveAt?.toMillis?.() || 0;
+            return data.status === "active" && now - last < 60000;
+        });
+        body.innerHTML = rows.length ? rows.map(data => `
+            <tr><td>${escapeHtml(data.candidateName || data.candidateEmail || "—")}</td>
+            <td>${escapeHtml(data.examId || "—")}</td><td>${escapeHtml(`${data.progress || 0}%`)}</td>
+            <td>${escapeHtml(data.violations || 0)}</td><td>${escapeHtml(data.riskLevel || "CLEAN")}</td>
+            <td>${escapeHtml(formatLocalDateTime(data.lastActiveAt))}</td></tr>`).join("")
+            : '<tr><td colspan="6">No active candidates in the last 60 seconds.</td></tr>';
+    } catch (error) {
+        console.error("Monitoring error:", error);
+        body.innerHTML = '<tr><td colspan="6">Unable to load live monitoring.</td></tr>';
+    }
+}
+
+
+async function loadViolations() {
+    const body = $("violationsTableBody");
+    const instituteId = primaryInstituteId();
+    if (!body || !instituteId || !hasPermission("security.view")) return;
+    try {
+        const snapshot = await getDocs(query(
+            collection(db, "violations"),
+            where("instituteId", "==", instituteId)
+        ));
+        const rows = snapshot.docs.map(item => item.data()).sort((a, b) =>
+            Number(b.timestamp?.seconds || 0) - Number(a.timestamp?.seconds || 0)
+        ).slice(0, 100);
+        body.innerHTML = rows.length ? rows.map(data => `
+            <tr><td>${escapeHtml(data.candidateName || data.candidateEmail || "—")}</td>
+            <td>${escapeHtml(data.examId || "—")}</td><td>${escapeHtml(data.eventType || data.violationType || "—")}</td>
+            <td>${escapeHtml(data.penaltyApplied || 0)}</td><td>${escapeHtml(data.riskLevel || "—")}</td>
+            <td>${escapeHtml(formatLocalDateTime(data.timestamp))}</td></tr>`).join("")
+            : '<tr><td colspan="6">No security violations recorded.</td></tr>';
+    } catch (error) {
+        console.error("Violation load error:", error);
+        body.innerHTML = '<tr><td colspan="6">Unable to load security events.</td></tr>';
+    }
+}
+
+
+async function loadResults() {
+    const body = $("resultsTableBody");
+    const instituteId = primaryInstituteId();
+    if (!body || !instituteId || !hasPermission("result.view")) return;
+    try {
+        const snapshot = await getDocs(query(
+            collection(db, "results"),
+            where("instituteId", "==", instituteId)
+        ));
+        currentResults = snapshot.docs.map(item => ({ id: item.id, ...item.data() }))
+            .sort((a, b) => Number(b.finalMarks || 0) - Number(a.finalMarks || 0));
+        body.innerHTML = currentResults.length ? currentResults.map((data, index) => `
+            <tr><td>${index + 1}</td><td>${escapeHtml(data.candidateName || data.candidateEmail || "—")}</td>
+            <td>${escapeHtml(data.examTitle || data.examId || "—")}</td>
+            <td>${escapeHtml(`${data.finalMarks ?? 0} / ${data.maxMarks ?? 0}`)}</td>
+            <td>${escapeHtml(data.correct || 0)}</td><td>${escapeHtml(data.wrong || 0)}</td>
+            <td>${escapeHtml(data.securityPenalty || 0)}</td><td>${escapeHtml(formatLocalDateTime(data.submittedAt))}</td></tr>`).join("")
+            : '<tr><td colspan="8">No submitted results found.</td></tr>';
+    } catch (error) {
+        console.error("Results load error:", error);
+        body.innerHTML = '<tr><td colspan="8">Unable to load results.</td></tr>';
+    }
+}
+
+
+async function loadFeedback() {
+    const body = $("feedbackTableBody");
+    const instituteId = primaryInstituteId();
+    if (!body || !instituteId || !hasPermission("feedback.view")) return;
+    try {
+        const snapshot = await getDocs(query(
+            collection(db, "feedback"),
+            where("instituteId", "==", instituteId)
+        ));
+        currentFeedback = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+        body.innerHTML = currentFeedback.length ? currentFeedback.map(data => `
+            <tr><td>${escapeHtml(data.candidateName || data.candidateEmail || "—")}</td>
+            <td>${escapeHtml(data.examTitle || data.examId || "—")}</td><td>${escapeHtml(`${data.rating || 0}/5`)}</td>
+            <td>${escapeHtml(data.feedback || "—")}</td><td>${escapeHtml(data.doubt || "—")}</td>
+            <td>${escapeHtml(formatLocalDateTime(data.submittedAt))}</td></tr>`).join("")
+            : '<tr><td colspan="6">No candidate feedback found.</td></tr>';
+    } catch (error) {
+        console.error("Feedback load error:", error);
+        body.innerHTML = '<tr><td colspan="6">Unable to load feedback.</td></tr>';
+    }
+}
+
+
+async function loadAnalytics() {
+    await Promise.all([loadResults(), loadFeedback(), loadViolations()]);
+    const averageScore = currentResults.length
+        ? currentResults.reduce((sum, item) => sum + Number(item.percentage || 0), 0) / currentResults.length
+        : 0;
+    const averageRating = currentFeedback.length
+        ? currentFeedback.reduce((sum, item) => sum + Number(item.rating || 0), 0) / currentFeedback.length
+        : 0;
+    setText("analyticsSubmissions", currentResults.length);
+    setText("analyticsAverageScore", `${averageScore.toFixed(1)}%`);
+    setText("analyticsAverageRating", `${averageRating.toFixed(1)}/5`);
+    setText("analyticsSecurityFlags", $("totalViolations")?.textContent || "0");
+}
+
+
+function csvCell(value) {
+    return `"${String(value ?? "").replaceAll('"', '""')}"`;
+}
+
+
+$("exportResultsCsvBtn")?.addEventListener("click", () => {
+    if (!hasPermission("result.export")) return;
+    const lines = [["Rank", "Candidate", "Email", "Exam", "Score", "Max Marks", "Correct", "Wrong", "Penalty"]];
+    currentResults.forEach((item, index) => lines.push([
+        index + 1, item.candidateName, item.candidateEmail, item.examTitle || item.examId,
+        item.finalMarks, item.maxMarks, item.correct, item.wrong, item.securityPenalty
+    ]));
+    const blob = new Blob([lines.map(row => row.map(csvCell).join(",")).join("\n")], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `results-${primaryInstituteId()}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+});
+
+
 async function loadAdminContext() {
     const instituteId = primaryInstituteId();
 
@@ -1520,6 +1700,10 @@ function applyPermissionVisibility() {
 
     if (saveExamSettingsBtn) {
         saveExamSettingsBtn.hidden = !hasPermission("exam.edit");
+    }
+
+    if ($("exportResultsCsvBtn")) {
+        $("exportResultsCsvBtn").hidden = !hasPermission("result.export");
     }
 }
 
@@ -1729,7 +1913,7 @@ if (examManagementForm) {
         }
 
         try {
-            await addDoc(collection(db, "exams"), {
+            const createdExam = await addDoc(collection(db, "exams"), {
                 instituteId: primaryInstituteId(),
                 examTitle,
                 examCode,
@@ -1747,6 +1931,12 @@ if (examManagementForm) {
                 createdByEmail: currentAdmin.email || "",
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()
+            });
+
+            await logAdminAction("EXAM_CREATED", "exam", createdExam.id, {
+                examTitle,
+                examCode,
+                status
             });
 
             examManagementForm.reset();
@@ -1791,6 +1981,8 @@ if (examsTableBody) {
                 updatedBy: currentAdmin.uid,
                 updatedAt: serverTimestamp()
             }, { merge: true });
+
+            await logAdminAction(`EXAM_${status}`, "exam", examId, { status });
 
             showExamMessage(`Exam status changed to ${status}.`, "success");
             await loadExams();
@@ -1961,7 +2153,7 @@ if (questionForm) {
         }
 
         try {
-            await addDoc(collection(db, "questions"), {
+            const createdQuestion = await addDoc(collection(db, "questions"), {
                 instituteId: primaryInstituteId(),
                 examIds,
                 subject: valueOf("questionSubject"),
@@ -1978,6 +2170,11 @@ if (questionForm) {
                 createdBy: currentAdmin.uid,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()
+            });
+
+            await logAdminAction("QUESTION_ADDED", "question", createdQuestion.id, {
+                examIds,
+                subject: valueOf("questionSubject")
             });
 
             questionForm.reset();
@@ -2069,7 +2266,7 @@ if (batchForm) {
                 return;
             }
 
-            await addDoc(collection(db, "batches"), {
+            const createdBatch = await addDoc(collection(db, "batches"), {
                 instituteId: primaryInstituteId(),
                 batchName,
                 batchCode,
@@ -2078,6 +2275,11 @@ if (batchForm) {
                 createdBy: currentAdmin.uid,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()
+            });
+
+            await logAdminAction("BATCH_CREATED", "batch", createdBatch.id, {
+                batchName,
+                batchCode
             });
 
             batchForm.reset();

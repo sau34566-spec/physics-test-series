@@ -79,6 +79,7 @@ let currentQuestionIndex = 0;
 let answers = {};
 
 let timerInterval = null;
+let presenceInterval = null;
 let remainingSeconds = 0;
 
 let examStarted = false;
@@ -123,6 +124,58 @@ function getCurrentExamId() {
         examSettings?.examId ||
         "legacy_current"
     );
+}
+
+
+function getRiskLevel(score) {
+    if (score >= 81) return "CRITICAL";
+    if (score >= 61) return "HIGH";
+    if (score >= 31) return "MEDIUM";
+    if (score >= 11) return "LOW";
+    return "CLEAN";
+}
+
+
+async function writePresence(status = "active") {
+    if (!getCandidateUid() || !getActiveInstituteId()) return;
+
+    await setDoc(
+        doc(db, "presence", getCandidateUid()),
+        {
+            ownerUid: getCandidateUid(),
+            instituteId: getActiveInstituteId(),
+            examId: getCurrentExamId(),
+            attemptId: attemptId || "",
+            candidateName: candidate.name,
+            candidateEmail: candidate.email,
+            status,
+            progress: questions.length
+                ? Math.round(((currentQuestionIndex + 1) / questions.length) * 100)
+                : 0,
+            violations: violationCount,
+            riskScore: Math.min(100, violationCount * 10),
+            riskLevel: getRiskLevel(Math.min(100, violationCount * 10)),
+            lastActiveAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+        },
+        { merge: true }
+    );
+}
+
+
+function startPresenceHeartbeat() {
+    clearInterval(presenceInterval);
+    writePresence("active").catch(console.error);
+    presenceInterval = setInterval(() => {
+        writePresence("active").catch(console.error);
+    }, 20000);
+}
+
+
+function stopPresenceHeartbeat(status = "offline") {
+    clearInterval(presenceInterval);
+    presenceInterval = null;
+    writePresence(status).catch(console.error);
 }
 
 
@@ -423,9 +476,36 @@ async function loadInstituteLiveExam() {
             item.id !== `${instituteId}_default`
         ) || liveExams[0];
 
+    let publishedSecurity = {};
+    try {
+        const policySnapshot = await getDoc(
+            doc(db, "securityPolicies", instituteId)
+        );
+        if (
+            policySnapshot.exists() &&
+            policySnapshot.data().status === "PUBLISHED"
+        ) {
+            const policy = policySnapshot.data().settings || {};
+            publishedSecurity = {
+                securityPolicyVersion: policySnapshot.data().version || 1,
+                tabSwitchPenalty: Number(policy.tabSwitch?.penaltyMarks ?? liveExam.tabSwitchPenalty ?? 0),
+                maxTabSwitches: Number(policy.maxViolations ?? liveExam.maxTabSwitches ?? 0),
+                disableCopy: policy.copyPaste?.enabled ?? liveExam.disableCopy,
+                disablePaste: policy.copyPaste?.enabled ?? liveExam.disablePaste,
+                disableRefresh: policy.refresh?.enabled ?? liveExam.disableRefresh,
+                disableFunctionKeys: policy.keyboard?.enabled ?? liveExam.disableFunctionKeys,
+                requireFullscreen: policy.fullscreen?.enabled ?? liveExam.requireFullscreen,
+                securityAction: policy.action || liveExam.securityAction || "warning"
+            };
+        }
+    } catch (error) {
+        console.warn("Published security policy unavailable:", error);
+    }
+
     examSettings = {
         ...DEFAULT_SETTINGS,
         ...liveExam,
+        ...publishedSecurity,
         examId: liveExam.id,
         examStatus: "live"
     };
@@ -1533,6 +1613,29 @@ async function startExam() {
                 answered:
                     0,
 
+                configurationSnapshot: {
+                    exam: {
+                        examId: getCurrentExamId(),
+                        examTitle: examSettings?.examTitle || "Online Examination",
+                        durationMinutes: duration,
+                        marksPerQuestion: Number(examSettings?.marksPerQuestion || 0),
+                        negativeMarks: Number(examSettings?.negativeMarks || 0),
+                        randomQuestions: examSettings?.randomQuestions !== false,
+                        randomOptions: examSettings?.randomOptions !== false
+                    },
+                    security: {
+                        policyVersion: Number(examSettings?.securityPolicyVersion || 0),
+                        tabSwitchPenalty: Number(examSettings?.tabSwitchPenalty || 0),
+                        maxTabSwitches: Number(examSettings?.maxTabSwitches || 0),
+                        disableCopy: examSettings?.disableCopy !== false,
+                        disablePaste: examSettings?.disablePaste !== false,
+                        disableScreenshot: examSettings?.disableScreenshot !== false,
+                        disableRefresh: examSettings?.disableRefresh !== false,
+                        disableFunctionKeys: examSettings?.disableFunctionKeys !== false
+                    },
+                    questionIds: questions.map(question => question.id)
+                },
+
                 answers:
                     {},
 
@@ -1552,6 +1655,7 @@ async function startExam() {
         startTimer();
 
         enableSecurityControls();
+        startPresenceHeartbeat();
 
 
     } catch (error) {
@@ -2419,8 +2523,14 @@ async function registerViolation(type) {
                 attemptId:
                     attemptId,
 
+                examId:
+                    getCurrentExamId(),
+
                 violationType:
                     type,
+
+                eventType:
+                    String(type || "UNKNOWN").toUpperCase(),
 
                 timestamp:
                     serverTimestamp(),
@@ -2429,7 +2539,19 @@ async function registerViolation(type) {
                     currentQuestionIndex + 1,
 
                 penaltyApplied:
-                    penalty
+                    penalty,
+
+                riskWeight:
+                    10,
+
+                riskScore:
+                    Math.min(100, violationCount * 10),
+
+                riskLevel:
+                    getRiskLevel(Math.min(100, violationCount * 10)),
+
+                sequenceNumber:
+                    violationCount
             }
         );
 
@@ -2449,6 +2571,12 @@ async function registerViolation(type) {
 
                     securityPenalty:
                         securityPenalty,
+
+                    riskScore:
+                        Math.min(100, violationCount * 10),
+
+                    riskLevel:
+                        getRiskLevel(Math.min(100, violationCount * 10)),
 
                     updatedAt:
                         serverTimestamp()
@@ -2833,6 +2961,8 @@ async function submitExam(
     clearInterval(
         timerInterval
     );
+
+    stopPresenceHeartbeat("submitted");
 
 
     try {
@@ -3590,6 +3720,9 @@ async function submitFeedback() {
                 attemptId:
                     attemptId,
 
+                examId:
+                    getCurrentExamId(),
+
                 examTitle:
                     examSettings?.examTitle ||
                     "Online Examination",
@@ -3756,6 +3889,10 @@ window.addEventListener(
 
         clearInterval(
             timerInterval
+        );
+
+        stopPresenceHeartbeat(
+            examSubmitted ? "submitted" : "offline"
         );
 
         if (settingsUnsubscribe) {

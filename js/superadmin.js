@@ -84,6 +84,10 @@ const COLLECTIONS = {
 
     securityEvents: "securityEvents",
 
+    securityPolicies: "securityPolicies",
+
+    securityPolicyVersions: "securityPolicyVersions",
+
     auditLogs: "auditLogs",
 
     portalConfigs: "portalConfigs",
@@ -2602,9 +2606,13 @@ async function saveSecuritySettings(
     const reference =
         doc(
             db,
-            COLLECTIONS.globalSettings,
-            `security_${scopeId}`
+            COLLECTIONS.securityPolicies,
+            scopeId
         );
+
+    const existingSnapshot = await getDoc(reference);
+    const existing = existingSnapshot.exists() ? existingSnapshot.data() : {};
+    const version = Number(existing.version || 0) + 1;
 
 
     await setDoc(
@@ -2614,8 +2622,14 @@ async function saveSecuritySettings(
         {
 
             scopeId,
-
-            ...securitySettings,
+            instituteId: scopeId,
+            profile: securitySettings.profile || "CUSTOM",
+            settings: securitySettings,
+            status: "PUBLISHED",
+            version,
+            previousVersion: Number(existing.version || 0) || null,
+            publishedBy: state.user.uid,
+            publishedAt: serverTimestamp(),
 
             updatedBy:
                 state.user.uid,
@@ -2631,6 +2645,19 @@ async function saveSecuritySettings(
         }
 
     );
+
+    await addDoc(collection(db, COLLECTIONS.securityPolicyVersions), {
+        scopeId,
+        instituteId: scopeId,
+        version,
+        previousVersion: Number(existing.version || 0) || null,
+        status: "PUBLISHED",
+        settings: securitySettings,
+        createdBy: state.user.uid,
+        createdAt: serverTimestamp(),
+        publishedBy: state.user.uid,
+        publishedAt: serverTimestamp()
+    });
 
 
     await createAuditLog({
@@ -4918,6 +4945,37 @@ function bindEvents() {
         );
 
     }
+
+    getElement("saveSecurityBtn")?.addEventListener("click", async () => {
+        const scopeId = state.activeInstituteId;
+        if (!scopeId) {
+            toast("Select institute", "Choose an institute before publishing security settings.", "warning");
+            return;
+        }
+        const settings = {
+            profile: "CUSTOM",
+            tabSwitch: {
+                enabled: Boolean(getElement("securityTabSwitch")?.checked),
+                penaltyMarks: Number(getElement("securityTabPenalty")?.value || 0)
+            },
+            copyPaste: {
+                enabled: Boolean(getElement("securityCopyPaste")?.checked),
+                penaltyMarks: Number(getElement("securityCopyPenalty")?.value || 0)
+            },
+            refresh: { enabled: Boolean(getElement("securityRefresh")?.checked) },
+            fullscreen: { enabled: Boolean(getElement("securityFullscreen")?.checked) },
+            keyboard: { enabled: Boolean(getElement("securityKeyboard")?.checked) },
+            maxViolations: Number(getElement("securityMaxViolations")?.value || 0),
+            action: getElement("securityAction")?.value || "warning"
+        };
+        try {
+            await saveSecuritySettings(scopeId, settings);
+            toast("Security published", "The new version will apply to new attempts only.", "success");
+        } catch (error) {
+            console.error(error);
+            toast("Security update failed", error.message || "Unable to publish security settings.", "danger");
+        }
+    });
 
 
     /*

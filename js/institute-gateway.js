@@ -7,7 +7,9 @@ import {
     collection,
     query,
     where,
-    getDocs
+    getDocs,
+    getDoc,
+    doc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 import {
@@ -417,6 +419,42 @@ function saveInstituteSession(institute) {
 }
 
 
+async function applyPublishedPortalConfig(institute) {
+    try {
+        const snapshot = await getDoc(
+            doc(db, "portalConfigs", institute.instituteId)
+        );
+        if (!snapshot.exists() || snapshot.data().status !== "PUBLISHED") return;
+
+        const content = snapshot.data().content || {};
+        const title = content.pageTitle || institute.instituteName || "Online Examination";
+        const subtitle = content.subtitle || "Secure Student Examination Portal";
+
+        document.title = title;
+        document.querySelectorAll(".gateway-brand h1, #loginScreen .brand h1")
+            .forEach(element => { element.textContent = title; });
+        document.querySelectorAll("#loginScreen .brand p")
+            .forEach(element => { element.textContent = subtitle; });
+
+        const loginButton = $("loginBtn");
+        if (loginButton && content.buttonText) loginButton.textContent = content.buttonText;
+
+        if (content.accentColor) {
+            document.documentElement.style.setProperty("--primary-color", content.accentColor);
+            document.documentElement.style.setProperty("--accent-color", content.accentColor);
+        }
+        if (content.backgroundUrl) {
+            document.querySelectorAll(".background-overlay, .gateway-background")
+                .forEach(element => {
+                    element.style.backgroundImage = `url("${String(content.backgroundUrl).replaceAll('"', '')}")`;
+                });
+        }
+    } catch (error) {
+        console.warn("Published portal configuration unavailable:", error);
+    }
+}
+
+
 // ============================================================
 // HANDLE GATEWAY SUBMIT
 // ============================================================
@@ -503,6 +541,28 @@ async function handleGatewaySubmit(event) {
 
     try {
 
+        const emergencySnapshot = await getDoc(
+            doc(db, "globalSettings", "emergency")
+        );
+
+        if (emergencySnapshot.exists()) {
+            const emergency = emergencySnapshot.data();
+            if (emergency.maintenanceMode) {
+                showGatewayError(
+                    emergency.maintenanceReason ||
+                    "The examination portal is temporarily under maintenance."
+                );
+                return;
+            }
+            if (emergency.candidateLoginDisabled) {
+                showGatewayError(
+                    emergency.candidateLoginDisabledReason ||
+                    "Candidate login is temporarily disabled."
+                );
+                return;
+            }
+        }
+
         // ----------------------------------------------------
         // FIRESTORE CHECK
         // ----------------------------------------------------
@@ -561,6 +621,10 @@ async function handleGatewaySubmit(event) {
             result.valid &&
             result.institute
         ) {
+
+            await applyPublishedPortalConfig(
+                result.institute
+            );
 
             saveInstituteSession(
                 result.institute

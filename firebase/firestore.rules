@@ -50,7 +50,12 @@ service cloud.firestore {
             (adminProfile().permissions is list
               && adminProfile().permissions.hasAny([permission]))
             || (adminProfile().permissionMode == "EXAM_MANAGER"
-              && permission in ["question.create", "question.view"])
+              && permission in [
+                "dashboard.view", "exam.view", "exam.create", "exam.edit",
+                "exam.control", "batch.manage", "question.view",
+                "question.create", "question.edit", "candidate.view",
+                "result.view", "feedback.view"
+              ])
           ));
     }
 
@@ -280,18 +285,39 @@ service cloud.firestore {
       allow read, write: if isSuperAdmin();
     }
 
-    match /feedback/{feedbackId} {
-      allow create: if createsOwnedDocument();
-      allow read, update, delete: if isSuperAdmin();
+    match /securityPolicies/{policyId} {
+      allow read: if isSuperAdmin()
+        || (isInstituteAdmin() && managesResourceInstitute())
+        || (signedIn() && resource.data.status == "PUBLISHED");
+      allow create, update, delete: if isSuperAdmin();
     }
 
-    match /auditLogs/{logId} {
+    match /securityPolicyVersions/{versionId} {
       allow read, create: if isSuperAdmin();
       allow update, delete: if false;
     }
 
+    match /feedback/{feedbackId} {
+      allow create: if createsOwnedDocument();
+      allow read: if isSuperAdmin()
+        || (isInstituteAdmin()
+          && hasPermission("feedback.view")
+          && managesResourceInstitute());
+      allow update, delete: if isSuperAdmin();
+    }
+
+    match /auditLogs/{logId} {
+      allow read: if isSuperAdmin();
+      allow create: if isSuperAdmin()
+        || (isInstituteAdmin()
+          && request.resource.data.adminId == request.auth.uid
+          && managesRequestedInstitute());
+      allow update, delete: if false;
+    }
+
     match /globalSettings/{settingId} {
-      allow read, write: if isSuperAdmin();
+      allow read: if isSuperAdmin() || settingId == "emergency";
+      allow create, update, delete: if isSuperAdmin();
     }
 
     match /notifications/{notificationId} {
@@ -299,7 +325,18 @@ service cloud.firestore {
     }
 
     match /presence/{presenceId} {
-      allow read, write: if isSuperAdmin();
+      allow get, list: if isSuperAdmin()
+        || (isInstituteAdmin()
+          && hasPermission("candidate.view")
+          && managesResourceInstitute())
+        || (signedIn() && request.auth.uid == presenceId);
+      allow create: if createsOwnedDocument()
+        && request.auth.uid == presenceId;
+      allow update: if ownsExistingDocument()
+        && request.auth.uid == presenceId
+        && preservesOwnership();
+      allow delete: if isSuperAdmin()
+        || (signedIn() && request.auth.uid == presenceId);
     }
 
     match /authorizedAdmins/{documentId} {
