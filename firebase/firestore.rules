@@ -105,6 +105,19 @@ service cloud.firestore {
         && managesInstitute(request.resource.data.instituteId);
     }
 
+    function candidatePath() {
+      return /databases/$(database)/documents/candidates/$(request.auth.uid);
+    }
+
+    function candidateCanReadQuestion() {
+      return signedIn()
+        && exists(candidatePath())
+        && get(candidatePath()).data.status == "active"
+        && get(candidatePath()).data.examId is string
+        && resource.data.examIds is list
+        && resource.data.examIds.hasAny([get(candidatePath()).data.examId]);
+    }
+
     match /admins/{adminId} {
       allow get: if signedIn()
         && (request.auth.uid == adminId || isSuperAdmin());
@@ -161,7 +174,8 @@ service cloud.firestore {
 
     match /questions/{questionId} {
       allow read: if isSuperAdmin()
-        || (isInstituteAdmin() && managesResourceInstitute());
+        || (isInstituteAdmin() && managesResourceInstitute())
+        || candidateCanReadQuestion();
       allow create: if hasPermission("question.create")
         && managesRequestedInstitute();
       allow update: if hasPermission("question.edit")

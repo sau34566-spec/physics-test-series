@@ -1069,16 +1069,31 @@ if (confirmStartBtn) {
 
 async function loadQuestions() {
 
-    const questionsRef =
-        collection(
-            db,
-            "questionBank"
+    const currentExamId =
+        getCurrentExamId();
+
+    const assignedSnapshot =
+        await getDocs(
+            query(
+                collection(db, "questions"),
+                where(
+                    "examIds",
+                    "array-contains",
+                    currentExamId
+                )
+            )
         );
 
-    const snapshot =
-        await getDocs(
-            questionsRef
+    let snapshot =
+        assignedSnapshot;
+
+    // Temporary compatibility for installations that still use the legacy
+    // global questionBank collection.
+    if (assignedSnapshot.empty) {
+        snapshot = await getDocs(
+            collection(db, "questionBank")
         );
+    }
 
 
     let loadedQuestions =
@@ -1185,6 +1200,7 @@ function normalizeQuestion(question) {
         negativeMarks:
             Number(
                 question.negativeMarks ??
+                question.negativeMarking ??
                 examSettings.negativeMarks
             ),
 
