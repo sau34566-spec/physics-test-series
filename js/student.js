@@ -372,6 +372,56 @@ function listenExamSettings() {
 
 
 // ============================================================
+// INSTITUTE LIVE EXAM
+// ============================================================
+
+async function loadInstituteLiveExam() {
+
+    const instituteId =
+        getActiveInstituteId();
+
+    if (!instituteId) {
+        return false;
+    }
+
+    const liveExamSnapshot =
+        await getDocs(
+            query(
+                collection(db, "exams"),
+                where("instituteId", "==", instituteId),
+                where("status", "==", "LIVE")
+            )
+        );
+
+    if (liveExamSnapshot.empty) {
+        return false;
+    }
+
+    const liveExam =
+        liveExamSnapshot.docs
+            .map(item => ({
+                id: item.id,
+                ...item.data()
+            }))
+            .sort((a, b) =>
+                Number(b.updatedAt?.seconds || b.createdAt?.seconds || 0) -
+                Number(a.updatedAt?.seconds || a.createdAt?.seconds || 0)
+            )[0];
+
+    examSettings = {
+        ...DEFAULT_SETTINGS,
+        ...liveExam,
+        examId: liveExam.id,
+        examStatus: "live"
+    };
+
+    applySettingsToUI();
+
+    return true;
+}
+
+
+// ============================================================
 // APPLY SETTINGS
 // ============================================================
 
@@ -664,6 +714,16 @@ if (loginBtn) {
                 candidateEmailInput?.focus();
 
                 return;
+            }
+
+
+            try {
+                await loadInstituteLiveExam();
+            } catch (error) {
+                console.error(
+                    "Unable to load institute live exam:",
+                    error
+                );
             }
 
 
