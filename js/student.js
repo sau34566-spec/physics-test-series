@@ -118,6 +118,14 @@ function getActiveInstituteId() {
 }
 
 
+function getCurrentExamId() {
+    return String(
+        examSettings?.examId ||
+        "legacy_current"
+    );
+}
+
+
 // ============================================================
 // DEFAULT SETTINGS
 // ============================================================
@@ -575,6 +583,7 @@ async function hasPreviousAttempt(email) {
                 ).toLowerCase();
 
             if (
+                String(data.examId || "") === getCurrentExamId() &&
                 [
                     "completed",
                     "auto_submitted",
@@ -606,11 +615,6 @@ async function hasPreviousAttempt(email) {
                     "ownerUid",
                     "==",
                     getCandidateUid()
-                ),
-                where(
-                    "candidateEmail",
-                    "==",
-                    normalizedEmail
                 )
             );
 
@@ -626,6 +630,15 @@ async function hasPreviousAttempt(email) {
 
             const data =
                 attemptDoc.data();
+
+            if (
+                normalizeEmail(
+                    data.candidateEmail || data.email
+                ) !== normalizedEmail ||
+                String(data.examId || "") !== getCurrentExamId()
+            ) {
+                continue;
+            }
 
             const status =
                 String(
@@ -871,13 +884,17 @@ async function createCandidateRecord() {
 
     if (existing.exists()) {
 
+        const existingData =
+            existing.data();
+
         const status =
             String(
-                existing.data().status || ""
+                existingData.status || ""
             ).toLowerCase();
 
 
         if (
+            String(existingData.examId || "") === getCurrentExamId() &&
             [
                 "active",
                 "completed",
@@ -902,6 +919,9 @@ async function createCandidateRecord() {
 
             instituteId:
                 getActiveInstituteId(),
+
+            examId:
+                getCurrentExamId(),
 
             name:
                 candidate.name,
@@ -1221,6 +1241,7 @@ async function claimCandidateAttempt() {
 
 
                 if (
+                    String(data.examId || "") === getCurrentExamId() &&
                     [
                         "active",
                         "completed",
@@ -1245,6 +1266,9 @@ async function claimCandidateAttempt() {
 
                     instituteId:
                         getActiveInstituteId(),
+
+                    examId:
+                        getCurrentExamId(),
 
 
                     name:
@@ -1454,6 +1478,9 @@ async function startExam() {
 
                 instituteId:
                     getActiveInstituteId(),
+
+                examId:
+                    getCurrentExamId(),
 
                 candidateName:
                     candidate.name,
@@ -2808,6 +2835,9 @@ async function submitExam(
             instituteId:
                 getActiveInstituteId(),
 
+            examId:
+                getCurrentExamId(),
+
             attemptId,
 
             candidateName:
@@ -3640,6 +3670,9 @@ async function updateCandidateStatus(
 
             instituteId:
                 getActiveInstituteId(),
+
+            examId:
+                getCurrentExamId(),
 
             name:
                 candidate.name,
