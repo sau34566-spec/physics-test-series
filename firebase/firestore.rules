@@ -77,6 +77,24 @@ service cloud.firestore {
         && request.resource.data.instituteId == resource.data.instituteId;
     }
 
+    function migratesVerifiedCandidateInstitute() {
+      return signedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.ownerUid == request.auth.uid
+        && resource.data.status == "verified"
+        && request.resource.data.status == "verified"
+        && request.resource.data.instituteId is string
+        && request.resource.data.instituteId.size() > 0
+        && exists(
+          /databases/$(database)/documents/institutes/$(request.resource.data.instituteId)
+        )
+        && activeStatus(
+          get(
+            /databases/$(database)/documents/institutes/$(request.resource.data.instituteId)
+          ).data.status
+        );
+    }
+
     function managesResourceInstitute() {
       return resource.data.instituteId is string
         && managesInstitute(resource.data.instituteId);
@@ -177,7 +195,8 @@ service cloud.firestore {
           && managesResourceInstitute());
       allow create: if createsOwnedDocument()
         && request.auth.uid == candidateId;
-      allow update: if (ownsExistingDocument() && preservesOwnership())
+      allow update: if (ownsExistingDocument()
+          && (preservesOwnership() || migratesVerifiedCandidateInstitute()))
         || isSuperAdmin()
         || (isInstituteAdmin()
           && hasPermission("candidate.manage")
@@ -194,6 +213,7 @@ service cloud.firestore {
         || ownsExistingDocument()
         || (isInstituteAdmin() && managesResourceInstitute());
       allow list: if isSuperAdmin()
+        || (signedIn() && resource.data.ownerUid == request.auth.uid)
         || (isInstituteAdmin()
           && hasPermission("candidate.view")
           && managesResourceInstitute());
