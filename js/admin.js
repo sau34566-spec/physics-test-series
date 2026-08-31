@@ -6,8 +6,15 @@
 import {
     signInWithEmailAndPassword,
     signOut,
-    onAuthStateChanged
+    onAuthStateChanged,
+    getAuth
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import {
+    initializeApp,
+    getApp,
+    getApps
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
 import {
     doc,
@@ -19,13 +26,23 @@ import {
     getDocs,
     query,
     where,
+    getFirestore,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 import {
-    auth,
-    db
+    firebaseConfig
 } from "./firebase-config.js";
+
+
+const ADMIN_APP_NAME = "institute-admin-portal";
+
+const adminApp = getApps().some(app => app.name === ADMIN_APP_NAME)
+    ? getApp(ADMIN_APP_NAME)
+    : initializeApp(firebaseConfig, ADMIN_APP_NAME);
+
+const auth = getAuth(adminApp);
+const db = getFirestore(adminApp);
 
 
 // ============================================================
