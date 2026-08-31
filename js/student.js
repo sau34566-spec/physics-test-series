@@ -1076,42 +1076,37 @@ if (confirmStartBtn) {
 
 async function loadQuestions() {
 
-    const currentExamId =
-        getCurrentExamId();
+    const questionIds =
+        Array.isArray(examSettings?.questionIds)
+            ? examSettings.questionIds
+            : [];
 
-    const assignedSnapshot =
-        await getDocs(
-            query(
-                collection(db, "questions"),
-                where(
-                    "examIds",
-                    "array-contains",
-                    currentExamId
+    let loadedQuestions = [];
+
+    if (questionIds.length) {
+        const questionSnapshots =
+            await Promise.all(
+                questionIds.map(questionId =>
+                    getDoc(doc(db, "questions", questionId))
                 )
-            )
-        );
+            );
 
-    let snapshot =
-        assignedSnapshot;
-
-    // Temporary compatibility for installations that still use the legacy
-    // global questionBank collection.
-    if (assignedSnapshot.empty) {
-        snapshot = await getDocs(
+        loadedQuestions = questionSnapshots
+            .filter(item => item.exists())
+            .map(item => ({
+                id: item.id,
+                ...item.data()
+            }));
+    } else {
+        const legacySnapshot = await getDocs(
             collection(db, "questionBank")
         );
+
+        loadedQuestions = legacySnapshot.docs.map(item => ({
+            id: item.id,
+            ...item.data()
+        }));
     }
-
-
-    let loadedQuestions =
-        snapshot.docs.map(
-            (item) => ({
-                id:
-                    item.id,
-
-                ...item.data()
-            })
-        );
 
 
     if (!loadedQuestions.length) {

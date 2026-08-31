@@ -153,9 +153,17 @@ service cloud.firestore {
         || (signedIn() && resource.data.status in ["LIVE", "SCHEDULED"]);
       allow create: if hasPermission("exam.create")
         && managesRequestedInstitute();
-      allow update: if hasPermission("exam.edit")
-        && managesResourceInstitute()
-        && managesRequestedInstitute();
+      allow update: if (hasPermission("exam.edit")
+          && managesResourceInstitute()
+          && managesRequestedInstitute())
+        || (hasPermission("question.create")
+          && managesResourceInstitute()
+          && managesRequestedInstitute()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            "questionIds",
+            "updatedAt",
+            "updatedBy"
+          ]));
       allow delete: if hasPermission("exam.delete")
         && managesResourceInstitute();
     }
@@ -173,9 +181,11 @@ service cloud.firestore {
     }
 
     match /questions/{questionId} {
-      allow read: if isSuperAdmin()
+      allow get: if isSuperAdmin()
         || (isInstituteAdmin() && managesResourceInstitute())
         || candidateCanReadQuestion();
+      allow list: if isSuperAdmin()
+        || (isInstituteAdmin() && managesResourceInstitute());
       allow create: if hasPermission("question.create")
         && managesRequestedInstitute();
       allow update: if hasPermission("question.edit")

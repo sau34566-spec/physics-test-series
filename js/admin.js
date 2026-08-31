@@ -1854,11 +1854,39 @@ async function loadQuestions() {
             Number(a.createdAt?.seconds || 0)
         );
 
+        await syncExamQuestionIds();
         renderQuestions();
     } catch (error) {
         console.error("Load questions error:", error);
         body.innerHTML = '<tr><td colspan="8">Unable to load questions.</td></tr>';
     }
+}
+
+
+async function syncExamQuestionIds() {
+    if (!hasPermission("question.create")) return;
+
+    await Promise.all(
+        currentExams.map(exam => {
+            const questionIds = currentQuestions
+                .filter(question =>
+                    Array.isArray(question.examIds) &&
+                    question.examIds.includes(exam.id)
+                )
+                .map(question => question.id);
+
+            return setDoc(
+                doc(db, "exams", exam.id),
+                {
+                    instituteId: primaryInstituteId(),
+                    questionIds,
+                    updatedAt: serverTimestamp(),
+                    updatedBy: currentAdmin.uid
+                },
+                { merge: true }
+            );
+        })
+    );
 }
 
 
