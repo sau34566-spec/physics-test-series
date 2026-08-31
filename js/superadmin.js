@@ -2958,6 +2958,32 @@ async function calculateDashboardStats() {
     requireSuperAdmin();
 
 
+    const collectionNames = [
+        COLLECTIONS.institutes,
+        COLLECTIONS.admins,
+        COLLECTIONS.exams,
+        COLLECTIONS.candidates,
+        COLLECTIONS.results,
+        COLLECTIONS.securityEvents,
+        COLLECTIONS.feedback
+    ];
+
+    const settled = await Promise.allSettled(
+        collectionNames.map(name => getCollection(name))
+    );
+
+    const failedCollections = [];
+    const values = settled.map((result, index) => {
+        if (result.status === "fulfilled") return result.value;
+
+        failedCollections.push(collectionNames[index]);
+        console.error(
+            `Dashboard collection failed: ${collectionNames[index]}`,
+            result.reason
+        );
+        return [];
+    });
+
     const [
         institutes,
         admins,
@@ -2966,37 +2992,7 @@ async function calculateDashboardStats() {
         results,
         securityEvents,
         feedback
-    ] = await Promise.all([
-
-        getCollection(
-            COLLECTIONS.institutes
-        ),
-
-        getCollection(
-            COLLECTIONS.admins
-        ),
-
-        getCollection(
-            COLLECTIONS.exams
-        ),
-
-        getCollection(
-            COLLECTIONS.candidates
-        ),
-
-        getCollection(
-            COLLECTIONS.results
-        ),
-
-        getCollection(
-            COLLECTIONS.securityEvents
-        ),
-
-        getCollection(
-            COLLECTIONS.feedback
-        )
-
-    ]);
+    ] = values;
 
 
     const activeAdmins =
@@ -3189,6 +3185,14 @@ async function calculateDashboardStats() {
 
 
     renderDashboardStats();
+
+    if (failedCollections.length) {
+        toast(
+            "Limited dashboard data",
+            `Blocked collections: ${failedCollections.join(", ")}`,
+            "warning"
+        );
+    }
 
 
     return state.dashboardStats;
@@ -5187,7 +5191,16 @@ async function initializeDashboard() {
             auth.profile;
 
 
-        await loadInstitutes();
+        try {
+            await loadInstitutes();
+        } catch (error) {
+            console.error("Institutes initialization failed:", error);
+            toast(
+                "Institutes unavailable",
+                error.message || "Unable to load institutes.",
+                "warning"
+            );
+        }
 
 
         if (
@@ -5213,16 +5226,36 @@ async function initializeDashboard() {
         }
 
 
-        await loadPresence();
+        try {
+            await loadPresence();
+        } catch (error) {
+            console.error("Presence initialization failed:", error);
+            state.presence = [];
+            toast(
+                "Presence unavailable",
+                error.message || "Unable to load presence.",
+                "warning"
+            );
+        }
 
 
         await calculateDashboardStats();
 
 
-        await loadAuditLogs({
-            limit:
-                100
-        });
+        try {
+            await loadAuditLogs({
+                limit:
+                    100
+            });
+        } catch (error) {
+            console.error("Audit log initialization failed:", error);
+            state.auditLogs = [];
+            toast(
+                "Audit logs unavailable",
+                error.message || "Unable to load audit logs.",
+                "warning"
+            );
+        }
 
 
         startRealtimeListeners();
