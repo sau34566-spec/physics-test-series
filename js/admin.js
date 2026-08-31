@@ -113,8 +113,15 @@ function currentExamId() {
 
 
 function hasPermission(permission) {
-    return Array.isArray(currentAdminProfile?.permissions) &&
-        currentAdminProfile.permissions.includes(permission);
+    if (
+        Array.isArray(currentAdminProfile?.permissions) &&
+        currentAdminProfile.permissions.includes(permission)
+    ) {
+        return true;
+    }
+
+    return currentAdminProfile?.permissionMode === "EXAM_MANAGER" &&
+        permission === "question.create";
 }
 
 

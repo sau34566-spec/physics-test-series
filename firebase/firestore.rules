@@ -46,8 +46,12 @@ service cloud.firestore {
     function hasPermission(permission) {
       return isSuperAdmin()
         || (isInstituteAdmin()
-          && adminProfile().permissions is list
-          && adminProfile().permissions.hasAny([permission]));
+          && (
+            (adminProfile().permissions is list
+              && adminProfile().permissions.hasAny([permission]))
+            || (adminProfile().permissionMode == "EXAM_MANAGER"
+              && permission == "question.create")
+          ));
     }
 
     function managesInstitute(instituteId) {
