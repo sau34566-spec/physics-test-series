@@ -19,14 +19,22 @@ service cloud.firestore {
       return get(adminPath()).data;
     }
 
+    function superAdminAccessPath() {
+      return /databases/$(database)/documents/superAdminAccess/$(request.auth.uid);
+    }
+
+    function hasActiveSuperAdminAccess() {
+      return signedIn()
+        && exists(superAdminAccessPath())
+        && get(superAdminAccessPath()).data.active == true;
+    }
+
     function activeStatus(status) {
       return status == "active" || status == "ACTIVE";
     }
 
     function isSuperAdmin() {
-      return signedIn()
-        && activeStatus(adminProfile().status)
-        && adminProfile().role == "super_admin";
+      return hasActiveSuperAdminAccess();
     }
 
     function isInstituteAdmin() {
@@ -76,6 +84,14 @@ service cloud.firestore {
     }
 
     match /admins/{adminId} {
+      allow get: if signedIn()
+        && (request.auth.uid == adminId || isSuperAdmin());
+      allow list, create, update, delete: if isSuperAdmin();
+    }
+
+    // Platform-owner allowlist. Bootstrap entries are created only from the
+    // trusted Firebase Console. An active Super Admin may maintain them later.
+    match /superAdminAccess/{adminId} {
       allow get: if signedIn()
         && (request.auth.uid == adminId || isSuperAdmin());
       allow list, create, update, delete: if isSuperAdmin();
