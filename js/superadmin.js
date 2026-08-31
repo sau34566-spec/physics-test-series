@@ -1117,6 +1117,12 @@ async function suspendAdmin(
 
     requireSuperAdmin();
 
+    if (adminId === state.user?.uid) {
+        throw new Error(
+            "You cannot suspend your own Super Admin account."
+        );
+    }
+
 
     const changes = {
 
@@ -1180,6 +1186,12 @@ async function revokeAdmin(
 ) {
 
     requireSuperAdmin();
+
+    if (adminId === state.user?.uid) {
+        throw new Error(
+            "You cannot revoke your own Super Admin account."
+        );
+    }
 
 
     const changes = {
