@@ -11,6 +11,9 @@ anonymous Firebase Authentication UID in `ownerUid`.
   `batchIds[]`, and `permissions[]`.
 - `candidates/{anonymousAuthUid}`: `ownerUid`, `instituteId`, candidate profile,
   and current attempt status.
+- `candidateLocks/{sha256(institute|exam|email)}`: privacy-preserving,
+  cross-device one-attempt lock. Super Admin can reset a lock after reviewing
+  the corresponding candidate and attempt.
 
 ## Institute-scoped operational data
 
@@ -57,3 +60,12 @@ later migration steps.
 - `securityPolicies/{instituteId}` stores the published policy and
   `securityPolicyVersions/*` stores append-only history.
 - Violations, feedback and results carry both `instituteId` and `examId`.
+
+## Free frontend deployment boundary
+
+This deployment intentionally uses Firebase Authentication, Firestore and
+GitHub Pages only. Force-submit is a realtime cooperative command processed by
+an open candidate browser. A closed/offline browser cannot be forced to submit
+until it reconnects. Question documents and scoring logic also reach the
+browser, so answer-key secrecy and tamper-proof scoring require a trusted
+backend (Cloud Functions/Cloud Run) in a future paid deployment.

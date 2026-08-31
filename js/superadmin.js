@@ -5501,6 +5501,91 @@ function escapeAttr(
 }
 
 
+async function handleEmergencyAction(buttonId) {
+    requireSuperAdmin();
+
+    if (buttonId === "toggleMaintenanceBtn") {
+        const current = await getDocument(COLLECTIONS.globalSettings, "emergency") || {};
+        const enabled = !Boolean(current.maintenanceMode);
+        const reason = enabled ? (window.prompt("Maintenance reason (optional):", "Scheduled maintenance") || "") : "";
+        await setMaintenanceMode(enabled, reason);
+        const status = getElement("maintenanceStatus");
+        if (status) status.textContent = enabled ? "Enabled" : "Disabled";
+        const button = getElement("toggleMaintenanceBtn");
+        if (button) button.textContent = enabled ? "Disable Maintenance" : "Enable Maintenance";
+        toast("Maintenance updated", enabled ? "Candidate portal is paused." : "Candidate portal is available.", "success");
+        return;
+    }
+
+    const examId = window.prompt("Exam document ID enter करें:", state.exams?.[0]?.id || "");
+    if (!examId) return;
+    const reason = window.prompt("Reason (optional):", "Emergency control") || "";
+    if (buttonId === "pauseExamBtn") await pauseExam(examId, reason);
+    if (buttonId === "resumeExamBtn") await resumeExam(examId, reason);
+    if (buttonId === "forceSubmitBtn") await requestForceSubmit(examId, null, reason);
+    toast("Emergency action saved", "The requested action has been recorded.", "success");
+}
+
+
+async function loadNotificationHistory() {
+    const container = getElement("notificationsList");
+    if (!container) return;
+    const snapshot = await getDocs(collection(db, COLLECTIONS.notifications));
+    const rows = snapshot.docs.map(item => ({ id: item.id, ...item.data() }))
+        .filter(item => item.type === "PLATFORM_NOTICE")
+        .sort((a, b) => Number(b.createdAt?.seconds || 0) - Number(a.createdAt?.seconds || 0))
+        .slice(0, 50);
+    container.innerHTML = rows.length ? rows.map(item => `
+        <div class="switch-row"><div class="switch-info"><strong>${escapeHtml(item.title || "Notice")}</strong>
+        <span>${escapeHtml(item.message || "")}</span></div><span class="badge badge-neutral">${escapeHtml(item.priority || "normal")}</span></div>
+    `).join("") : '<div class="empty-state"><h4>No notifications published</h4></div>';
+}
+
+
+function bindOperationalControls() {
+    const notificationButton = getElement("sendNotificationBtn");
+    if (notificationButton && !notificationButton.dataset.bound) {
+        notificationButton.dataset.bound = "true";
+        notificationButton.addEventListener("click", async () => {
+            const title = String(getElement("notificationTitle")?.value || "").trim();
+            const message = String(getElement("notificationMessage")?.value || "").trim();
+            if (!title || !message) return toast("Missing details", "Title and message are required.", "warning");
+            try {
+                await addDoc(collection(db, COLLECTIONS.notifications), {
+                    type: "PLATFORM_NOTICE", title, message,
+                    priority: getElement("notificationPriority")?.value || "normal",
+                    status: "PUBLISHED", createdBy: state.user.uid, createdAt: serverTimestamp()
+                });
+                getElement("notificationTitle").value = "";
+                getElement("notificationMessage").value = "";
+                await loadNotificationHistory();
+                toast("Notification published", "The notice is now in notification history.", "success");
+            } catch (error) { toast("Publish failed", error.message, "danger"); }
+        });
+    }
+
+    const settingsButton = getElement("saveGlobalSettingsBtn");
+    if (settingsButton && !settingsButton.dataset.bound) {
+        settingsButton.dataset.bound = "true";
+        settingsButton.addEventListener("click", async () => {
+            try {
+                await saveGlobalSettings({
+                    examDuration: Number(getElement("globalExamDuration")?.value || 60),
+                    marksPerQuestion: Number(getElement("globalMarksPerQuestion")?.value || 1),
+                    negativeMarks: Number(getElement("globalNegativeMarks")?.value || 0),
+                    questionLimit: Number(getElement("globalQuestionLimit")?.value || 100),
+                    candidatePortalEnabled: Boolean(getElement("globalCandidatePortal")?.checked),
+                    registrationsEnabled: Boolean(getElement("globalRegistrations")?.checked),
+                    securityEnabled: Boolean(getElement("globalSecurity")?.checked),
+                    presenceEnabled: Boolean(getElement("globalPresence")?.checked)
+                });
+                toast("Settings saved", "Global defaults were updated.", "success");
+            } catch (error) { toast("Settings failed", error.message, "danger"); }
+        });
+    }
+}
+
+
 /* =========================================================
    PUBLIC API
    ========================================================= */
@@ -5625,6 +5710,10 @@ window.SuperAdminApp = {
 
     requestForceSubmit,
 
+    handleEmergencyAction,
+
+    loadNotificationHistory,
+
     /* Realtime */
 
     startRealtimeListeners,
@@ -5639,6 +5728,7 @@ window.SuperAdminApp = {
    ========================================================= */
 
 bindAuthEvents();
+bindOperationalControls();
 
 
 /*

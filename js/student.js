@@ -91,6 +91,7 @@ let violationCount = 0;
 let securityPenalty = 0;
 
 let settingsUnsubscribe = null;
+let forceSubmitUnsubscribe = null;
 
 let questionStartTime = null;
 
@@ -124,6 +125,14 @@ function getCurrentExamId() {
         examSettings?.examId ||
         "legacy_current"
     );
+}
+
+
+async function candidateLockId(email = candidate.email) {
+    const source = `${getActiveInstituteId()}|${getCurrentExamId()}|${normalizeEmail(email)}`;
+    const bytes = new TextEncoder().encode(source);
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+    return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
 }
 
 
@@ -644,6 +653,13 @@ async function hasPreviousAttempt(email) {
     }
 
     try {
+
+        const lockSnapshot = await getDoc(doc(db, "candidateLocks", await candidateLockId(email)));
+        if (lockSnapshot.exists()) {
+            const lock = lockSnapshot.data();
+            if (["active", "submitted", "completed", "auto_submitted", "disqualified"]
+                .includes(String(lock.status || "").toLowerCase())) return true;
+        }
 
         // --------------------------------------------
         // CHECK CANDIDATE RECORD
@@ -1316,6 +1332,8 @@ async function claimCandidateAttempt() {
             getCandidateDocumentId()
         );
 
+    const lockRef = doc(db, "candidateLocks", await candidateLockId());
+
 
     await runTransaction(
         db,
@@ -1325,6 +1343,15 @@ async function claimCandidateAttempt() {
                 await transaction.get(
                     candidateRef
                 );
+            const lockSnapshot = await transaction.get(lockRef);
+
+            if (lockSnapshot.exists()) {
+                const lock = lockSnapshot.data();
+                if (lock.ownerUid !== getCandidateUid() || ["active", "submitted", "completed", "auto_submitted", "disqualified"]
+                    .includes(String(lock.status || "").toLowerCase())) {
+                    throw new Error("This email has already used an examination attempt.");
+                }
+            }
 
 
             if (candidateSnapshot.exists()) {
@@ -1389,7 +1416,36 @@ async function claimCandidateAttempt() {
                     merge: true
                 }
             );
+
+            transaction.set(lockRef, {
+                ownerUid: getCandidateUid(),
+                instituteId: getActiveInstituteId(),
+                examId: getCurrentExamId(),
+                status: "active",
+                updatedAt: serverTimestamp()
+            }, { merge: true });
         }
+    );
+}
+
+
+function listenForForceSubmit() {
+    if (forceSubmitUnsubscribe) forceSubmitUnsubscribe();
+    forceSubmitUnsubscribe = onSnapshot(
+        query(
+            collection(db, "notifications"),
+            where("examId", "==", getCurrentExamId()),
+            where("status", "==", "PENDING")
+        ),
+        snapshot => {
+            if (!examStarted || examSubmitted) return;
+            const command = snapshot.docs.map(item => item.data()).find(item =>
+                ["FORCE_SUBMIT_EXAM", "FORCE_SUBMIT_CANDIDATE"].includes(item.type) &&
+                (!item.candidateId || item.candidateId === getCandidateUid())
+            );
+            if (command) submitExam("admin_force_submit");
+        },
+        error => console.warn("Force-submit listener unavailable:", error)
     );
 }
 
@@ -1422,13 +1478,6 @@ async function startExam() {
 
 
         // --------------------------------------------
-        // ATOMIC EMAIL CLAIM
-        // --------------------------------------------
-
-        await claimCandidateAttempt();
-
-
-        // --------------------------------------------
         // LOAD QUESTIONS
         // --------------------------------------------
 
@@ -1448,6 +1497,11 @@ async function startExam() {
                 "No valid questions found."
             );
         }
+
+
+        // Claim only after the question set is known to be usable. This
+        // prevents a failed/empty question load from consuming an attempt.
+        await claimCandidateAttempt();
 
 
         // --------------------------------------------
@@ -1644,6 +1698,8 @@ async function startExam() {
             }
         );
 
+        sessionStorage.setItem("examAttemptId", attemptId);
+
 
         showScreen(
             examScreen
@@ -1656,6 +1712,7 @@ async function startExam() {
 
         enableSecurityControls();
         startPresenceHeartbeat();
+        listenForForceSubmit();
 
 
     } catch (error) {
@@ -3083,6 +3140,11 @@ async function submitExam(
                 }
             );
         }
+
+        await setDoc(doc(db, "candidateLocks", await candidateLockId()), {
+            ownerUid: getCandidateUid(), instituteId: getActiveInstituteId(),
+            examId: getCurrentExamId(), status: "submitted", updatedAt: serverTimestamp()
+        }, { merge: true });
 
 
         // --------------------------------------------

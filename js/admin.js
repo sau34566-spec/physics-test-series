@@ -98,6 +98,8 @@ let currentExamSettings = null;
 let currentBatches = [];
 let currentExams = [];
 let currentQuestions = [];
+let editingQuestionId = null;
+let questionSearchTerm = "";
 let currentResults = [];
 let currentFeedback = [];
 let confirmationCallback = null;
@@ -126,7 +128,8 @@ function hasPermission(permission) {
     const examManagerPermissions = [
         "dashboard.view", "exam.view", "exam.create", "exam.edit",
         "exam.control", "batch.manage", "question.view", "question.create",
-        "question.edit", "candidate.view", "result.view", "feedback.view"
+        "question.edit", "question.delete", "candidate.view", "candidate.manage",
+        "result.view", "result.export", "feedback.view", "security.view"
     ];
 
     return currentAdminProfile?.permissionMode === "EXAM_MANAGER" &&
@@ -2086,14 +2089,20 @@ function renderQuestions() {
     const body = $("questionsTableBody");
     if (!body) return;
 
-    if (!currentQuestions.length) {
+    const visibleQuestions = currentQuestions.filter(question => {
+        if (!questionSearchTerm) return true;
+        return [question.question, question.subject, question.chapter, question.topic]
+            .some(value => String(value || "").toLowerCase().includes(questionSearchTerm));
+    });
+
+    if (!visibleQuestions.length) {
         body.innerHTML = '<tr><td colspan="8">No questions created yet.</td></tr>';
         return;
     }
 
     body.innerHTML = "";
 
-    currentQuestions.forEach((question, index) => {
+    visibleQuestions.forEach((question, index) => {
         const examNames = (question.examIds || []).map(examId => {
             const exam = currentExams.find(item => item.id === examId);
             return exam?.examTitle || examId;
@@ -2109,9 +2118,11 @@ function renderQuestions() {
             <td>${escapeHtml(question.correctAnswer || "—")}</td>
             <td>${escapeHtml(question.status || "DRAFT")}</td>
             <td>
-                ${hasPermission("question.delete") ? `
-                    <button type="button" class="table-danger-btn" data-delete-question="${escapeHtml(question.id)}">Delete</button>
-                ` : "—"}
+                <div class="exam-status-control">
+                    ${hasPermission("question.edit") ? `<button type="button" class="table-action-btn" data-edit-question="${escapeHtml(question.id)}">Edit</button>` : ""}
+                    ${hasPermission("question.create") ? `<button type="button" class="table-action-btn" data-duplicate-question="${escapeHtml(question.id)}">Duplicate</button>` : ""}
+                    ${hasPermission("question.delete") ? `<button type="button" class="table-danger-btn" data-delete-question="${escapeHtml(question.id)}">Delete</button>` : ""}
+                </div>
             </td>
         `;
         body.appendChild(row);
@@ -2152,12 +2163,12 @@ if (questionForm) {
             return;
         }
 
-        try {
-            const createdQuestion = await addDoc(collection(db, "questions"), {
+        const payload = {
                 instituteId: primaryInstituteId(),
                 examIds,
                 subject: valueOf("questionSubject"),
                 chapter: valueOf("questionChapter"),
+                topic: valueOf("questionTopic"),
                 difficulty: valueOf("questionDifficulty", "MODERATE").toUpperCase(),
                 question,
                 options,
@@ -2168,17 +2179,29 @@ if (questionForm) {
                 negativeMarking: numberOf("questionNegativeMarks", 0),
                 status: valueOf("questionStatus", "ACTIVE").toUpperCase(),
                 createdBy: currentAdmin.uid,
-                createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()
-            });
+            };
 
-            await logAdminAction("QUESTION_ADDED", "question", createdQuestion.id, {
-                examIds,
-                subject: valueOf("questionSubject")
-            });
+        try {
+            if (editingQuestionId) {
+                if (!requirePermission("question.edit", "You do not have permission to edit questions.")) return;
+                await setDoc(doc(db, "questions", editingQuestionId), payload, { merge: true });
+                await logAdminAction("QUESTION_EDITED", "question", editingQuestionId, { examIds });
+                editingQuestionId = null;
+            } else {
+                const createdQuestion = await addDoc(collection(db, "questions"), {
+                    ...payload,
+                    createdAt: serverTimestamp()
+                });
+
+                await logAdminAction("QUESTION_ADDED", "question", createdQuestion.id, {
+                    examIds,
+                    subject: valueOf("questionSubject")
+                });
+            }
 
             questionForm.reset();
-            showQuestionMessage("Question created successfully.", "success");
+            showQuestionMessage("Question saved successfully.", "success");
             await loadQuestions();
         } catch (error) {
             console.error("Create question error:", error);
@@ -2192,7 +2215,34 @@ const questionsTableBody = $("questionsTableBody");
 
 if (questionsTableBody) {
     questionsTableBody.addEventListener("click", async event => {
+        const editButton = event.target.closest("[data-edit-question]");
+        const duplicateButton = event.target.closest("[data-duplicate-question]");
         const button = event.target.closest("[data-delete-question]");
+
+        if (editButton || duplicateButton) {
+            const id = editButton?.dataset.editQuestion || duplicateButton?.dataset.duplicateQuestion;
+            const question = currentQuestions.find(item => item.id === id);
+            if (!question) return;
+            setValue("questionText", question.question || "");
+            ["A", "B", "C", "D"].forEach((letter, index) =>
+                setValue(`questionOption${letter}`, question.options?.[index] || "")
+            );
+            setValue("questionCorrectOption", question.correctOptionIndex ?? 0);
+            setValue("questionSubject", question.subject || "");
+            setValue("questionChapter", question.chapter || "");
+            setValue("questionTopic", question.topic || "");
+            setValue("questionDifficulty", question.difficulty || "MODERATE");
+            setValue("questionMarks", question.marks ?? 1);
+            setValue("questionNegativeMarks", question.negativeMarking ?? 0);
+            setValue("questionStatus", question.status || "ACTIVE");
+            document.querySelectorAll("#questionExamIds option").forEach(option => {
+                option.selected = (question.examIds || []).includes(option.value);
+            });
+            editingQuestionId = editButton ? id : null;
+            document.getElementById("questionForm")?.scrollIntoView({ behavior: "smooth" });
+            return;
+        }
+
         if (!button) return;
 
         if (!requirePermission(
@@ -2214,6 +2264,62 @@ if (questionsTableBody) {
         }
     });
 }
+
+
+$("questionSearchInput")?.addEventListener("input", event => {
+    questionSearchTerm = String(event.target.value || "").trim().toLowerCase();
+    renderQuestions();
+});
+
+
+$("exportQuestionsBtn")?.addEventListener("click", () => {
+    if (!hasPermission("question.view")) return;
+    const content = currentQuestions.map(({ id, createdAt, updatedAt, ...question }) => question);
+    const blob = new Blob([JSON.stringify(content, null, 2)], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `questions-${primaryInstituteId()}.json`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+});
+
+
+$("importQuestionsBtn")?.addEventListener("click", () => {
+    if (hasPermission("question.create")) $("questionImportFile")?.click();
+});
+
+
+$("questionImportFile")?.addEventListener("change", async event => {
+    const file = event.target.files?.[0];
+    if (!file || !hasPermission("question.create")) return;
+    try {
+        const parsed = JSON.parse(await file.text());
+        if (!Array.isArray(parsed) || parsed.length > 500) {
+            throw new Error("JSON must contain an array of up to 500 questions.");
+        }
+        for (const item of parsed) {
+            const options = Array.isArray(item.options) ? item.options.slice(0, 4).map(String) : [];
+            if (!item.question || options.length !== 4 || !(item.examIds || []).length) continue;
+            const correctOptionIndex = Number(item.correctOptionIndex ?? 0);
+            await addDoc(collection(db, "questions"), {
+                ...item,
+                instituteId: primaryInstituteId(),
+                options,
+                correctOptionIndex,
+                correctAnswer: options[correctOptionIndex],
+                createdBy: currentAdmin.uid,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            });
+        }
+        showQuestionMessage("Questions imported successfully.", "success");
+        await loadQuestions();
+    } catch (error) {
+        showQuestionMessage(`Import failed: ${error.message}`, "error");
+    } finally {
+        event.target.value = "";
+    }
+});
 
 
 function showQuestionMessage(message, type) {

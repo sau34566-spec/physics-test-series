@@ -38,7 +38,7 @@ service cloud.firestore {
     }
 
     function isInstituteAdmin() {
-      return signedIn()
+      return hasAdminProfile()
         && activeStatus(adminProfile().status)
         && adminProfile().role in ["admin", "ADMIN"];
     }
@@ -53,8 +53,9 @@ service cloud.firestore {
               && permission in [
                 "dashboard.view", "exam.view", "exam.create", "exam.edit",
                 "exam.control", "batch.manage", "question.view",
-                "question.create", "question.edit", "candidate.view",
-                "result.view", "feedback.view"
+                "question.create", "question.edit", "question.delete",
+                "candidate.view", "candidate.manage", "result.view",
+                "result.export", "feedback.view", "security.view"
               ])
           ));
     }
@@ -253,6 +254,17 @@ service cloud.firestore {
       allow delete: if isSuperAdmin();
     }
 
+    match /candidateLocks/{lockId} {
+      allow get: if signedIn() || isSuperAdmin();
+      allow list: if isSuperAdmin()
+        || (isInstituteAdmin() && hasPermission("candidate.view") && managesResourceInstitute());
+      allow create: if createsOwnedDocument()
+        && request.resource.data.examId is string
+        && request.resource.data.status == "active";
+      allow update: if (ownsExistingDocument() && preservesOwnership()) || isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
     match /results/{resultId} {
       allow get: if isSuperAdmin()
         || ownsExistingDocument()
@@ -321,7 +333,15 @@ service cloud.firestore {
     }
 
     match /notifications/{notificationId} {
-      allow read, write: if isSuperAdmin();
+      allow read: if isSuperAdmin()
+        || (signedIn()
+          && exists(candidatePath())
+          && resource.data.status == "PENDING"
+          && resource.data.examId == get(candidatePath()).data.examId
+          && resource.data.type in ["FORCE_SUBMIT_EXAM", "FORCE_SUBMIT_CANDIDATE"]
+          && (resource.data.candidateId == null
+            || resource.data.candidateId == request.auth.uid));
+      allow create, update, delete: if isSuperAdmin();
     }
 
     match /presence/{presenceId} {

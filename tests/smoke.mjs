@@ -13,14 +13,21 @@ const rules = read("firebase/firestore.rules");
 
 required(student.includes("configurationSnapshot"), "Attempt snapshot is missing");
 required(student.includes("startPresenceHeartbeat"), "Candidate heartbeat is missing");
+required(student.includes("listenForForceSubmit"), "Free-mode force submit listener is missing");
+required(student.includes("candidateLockId"), "Cross-device candidate lock is missing");
 required(student.includes("questionIds.map"), "Linked question loading is missing");
+required(student.indexOf("await loadQuestions()") < student.indexOf("await claimCandidateAttempt()"), "Attempt must be claimed after question validation");
 required(admin.includes("syncExamQuestionIds"), "Question-to-exam sync is missing");
+required(admin.includes("questionImportFile"), "Question import/export workflow is missing");
 required(admin.includes("loadMonitoring"), "Admin live monitoring is missing");
 required(admin.includes("loadResults"), "Admin results are missing");
 required(superadmin.includes("securityPolicyVersions"), "Security versioning is missing");
+required(superadmin.includes("handleEmergencyAction"), "Emergency controls are not connected");
+required(superadmin.includes("loadNotificationHistory"), "Notification workflow is missing");
 required(gateway.includes("candidateLoginDisabled"), "Emergency gateway enforcement is missing");
 required(rules.includes("candidateCanReadQuestion"), "Scoped question rule is missing");
 required(rules.includes("match /securityPolicies/{policyId}"), "Security policy rules are missing");
+required(rules.includes("match /candidateLocks/{lockId}"), "Candidate lock rules are missing");
 required(!/password\s*===\s*["']/.test(`${student}${admin}${superadmin}`), "Hard-coded password found");
 
 console.log("Platform smoke checks passed.");
