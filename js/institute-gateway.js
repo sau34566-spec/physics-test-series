@@ -297,8 +297,12 @@ async function findInstitute(instituteCode) {
 
     const institute = {
 
+        ...data,
+
+        // The Firestore document ID is the canonical tenant identifier.
+        // Older records stored the public institute code in data.instituteId,
+        // which prevented Candidate queries from matching Admin-created exams.
         instituteId:
-            data.instituteId ||
             instituteDoc.id,
 
         instituteCode:
@@ -313,9 +317,7 @@ async function findInstitute(instituteCode) {
             String(
                 data.status ||
                 "ACTIVE"
-            ).toUpperCase(),
-
-        ...data
+            ).toUpperCase()
 
     };
 
