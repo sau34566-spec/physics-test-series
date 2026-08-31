@@ -50,7 +50,7 @@ service cloud.firestore {
             (adminProfile().permissions is list
               && adminProfile().permissions.hasAny([permission]))
             || (adminProfile().permissionMode == "EXAM_MANAGER"
-              && permission == "question.create")
+              && permission in ["question.create", "question.view"])
           ));
     }
 

@@ -405,7 +405,7 @@ async function loadInstituteLiveExam() {
         return false;
     }
 
-    const liveExam =
+    const liveExams =
         liveExamSnapshot.docs
             .map(item => ({
                 id: item.id,
@@ -414,7 +414,14 @@ async function loadInstituteLiveExam() {
             .sort((a, b) =>
                 Number(b.updatedAt?.seconds || b.createdAt?.seconds || 0) -
                 Number(a.updatedAt?.seconds || a.createdAt?.seconds || 0)
-            )[0];
+            );
+
+    // Older dashboard controls created a status-only hidden default exam.
+    // Prefer a real Admin-created exam whenever one is LIVE.
+    const liveExam =
+        liveExams.find(item =>
+            item.id !== `${instituteId}_default`
+        ) || liveExams[0];
 
     examSettings = {
         ...DEFAULT_SETTINGS,

@@ -108,7 +108,8 @@ function primaryInstituteId() {
 
 function currentExamId() {
     const instituteId = primaryInstituteId();
-    return instituteId ? `${instituteId}_default` : "";
+    return currentExams[0]?.id ||
+        (instituteId ? `${instituteId}_default` : "");
 }
 
 
@@ -121,7 +122,7 @@ function hasPermission(permission) {
     }
 
     return currentAdminProfile?.permissionMode === "EXAM_MANAGER" &&
-        permission === "question.create";
+        ["question.create", "question.view"].includes(permission);
 }
 
 
