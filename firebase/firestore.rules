@@ -24,18 +24,13 @@ service cloud.firestore {
     }
 
     function isSuperAdmin() {
-      return hasAdminProfile()
+      return signedIn()
         && activeStatus(adminProfile().status)
-        && adminProfile().role in [
-          "super_admin",
-          "superadmin",
-          "super-admin",
-          "SUPER_ADMIN"
-        ];
+        && adminProfile().role == "super_admin";
     }
 
     function isInstituteAdmin() {
-      return hasAdminProfile()
+      return signedIn()
         && activeStatus(adminProfile().status)
         && adminProfile().role in ["admin", "ADMIN"];
     }
