@@ -1,3 +1,6 @@
+import {candidateApp, ensureCandidateSession} from "./candidate-firebase.js";
+import {getFunctions, httpsCallable} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-functions.js";
+import {applyPortalConfig} from "./portal-config.js";
 // ============================================================
 // INSTITUTE CODE GATEWAY
 // STEP 4 - STABLE FIRESTORE VERSION
@@ -219,155 +222,11 @@ function showInstituteSuccess(institute) {
 // ============================================================
 
 async function findInstitute(instituteCode) {
-
-    const institutesRef =
-        collection(
-            db,
-            "institutes"
-        );
-
-
-    /*
-     * IMPORTANT:
-     *
-     * Firestore Rules allow public reads only when:
-     *
-     * resource.data.status == "ACTIVE"
-     *
-     * Therefore the query MUST also request:
-     *
-     * status == "ACTIVE"
-     *
-     * Otherwise Firestore cannot authorize the query
-     * as a whole.
-     */
-
-    const instituteQuery =
-        query(
-
-            institutesRef,
-
-            where(
-                "instituteCode",
-                "==",
-                instituteCode
-            ),
-
-            where(
-                "status",
-                "==",
-                "ACTIVE"
-            )
-
-        );
-
-
-    const snapshot =
-        await getDocs(
-            instituteQuery
-        );
-
-
-    // ========================================================
-    // NO MATCH
-    // ========================================================
-
-    if (snapshot.empty) {
-
-        return {
-
-            valid: false,
-
-            reason:
-                "INVALID_CODE"
-
-        };
-
-    }
-
-
-    // ========================================================
-    // GET FIRST MATCH
-    // ========================================================
-
-    const instituteDoc =
-        snapshot.docs[0];
-
-    const data =
-        instituteDoc.data();
-
-
-    const institute = {
-
-        ...data,
-
-        // The Firestore document ID is the canonical tenant identifier.
-        // Older records stored the public institute code in data.instituteId,
-        // which prevented Candidate queries from matching Admin-created exams.
-        instituteId:
-            instituteDoc.id,
-
-        instituteCode:
-            data.instituteCode ||
-            instituteCode,
-
-        instituteName:
-            data.instituteName ||
-            "Institute",
-
-        status:
-            String(
-                data.status ||
-                "ACTIVE"
-            ).toUpperCase()
-
-    };
-
-
-    // ========================================================
-    // FINAL SAFETY CHECK
-    // ========================================================
-
-    if (
-        institute.status !==
-        "ACTIVE"
-    ) {
-
-        return {
-
-            valid: false,
-
-            reason:
-                "INACTIVE",
-
-            institute
-
-        };
-
-    }
-
-
-    // ========================================================
-    // VALID
-    // ========================================================
-
-    return {
-
-        valid: true,
-
-        reason:
-            "VALID",
-
-        institute
-
-    };
-
+    await ensureCandidateSession();
+    const resolve = httpsCallable(getFunctions(candidateApp, "asia-south1"), "resolveInstitute");
+    const response = await resolve({code: instituteCode});
+    return {valid: true, reason: "VALID", institute: response.data};
 }
-
-
-// ============================================================
-// SAVE ACTIVE INSTITUTE
-// ============================================================
 
 function saveInstituteSession(institute) {
 
@@ -420,6 +279,7 @@ function saveInstituteSession(institute) {
 
 
 async function applyPublishedPortalConfig(institute) {
+    if (institute.config) { applyPortalConfig(institute); return; }
     try {
         const snapshot = await getDoc(
             doc(db, "portalConfigs", institute.instituteId)
@@ -666,7 +526,9 @@ async function handleGatewaySubmit(event) {
          */
 
         showGatewayError(
-            "Unable to verify the Institute Code. Please check your internet connection and try again."
+            error?.code === "functions/permission-denied" ? "Permission denied. Contact institute support." :
+            error?.code === "functions/unavailable" ? "The portal is temporarily unavailable. Please retry." :
+            error?.message || "Unable to verify institute. Please retry."
         );
 
     } finally {

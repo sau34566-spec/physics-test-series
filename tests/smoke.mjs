@@ -21,9 +21,9 @@ required(admin.includes("syncExamQuestionIds"), "Question-to-exam sync is missin
 required(admin.includes("questionImportFile"), "Question import/export workflow is missing");
 required(admin.includes("loadMonitoring"), "Admin live monitoring is missing");
 required(admin.includes("loadResults"), "Admin results are missing");
-required(superadmin.includes("securityPolicyVersions"), "Security versioning is missing");
-required(superadmin.includes("handleEmergencyAction"), "Emergency controls are not connected");
-required(superadmin.includes("loadNotificationHistory"), "Notification workflow is missing");
+required(superadmin.includes('api("history"'), "Platform configuration version history is missing");
+required(superadmin.includes("maintenanceMode"), "Platform maintenance control is missing");
+required(!superadmin.includes('collection(db, "candidates"'), "Super Admin must not subscribe to candidates");
 required(gateway.includes("candidateLoginDisabled"), "Emergency gateway enforcement is missing");
 required(rules.includes("candidateCanReadQuestion"), "Scoped question rule is missing");
 required(rules.includes("match /securityPolicies/{policyId}"), "Security policy rules are missing");

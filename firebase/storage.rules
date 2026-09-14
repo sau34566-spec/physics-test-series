@@ -1,0 +1,24 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function platformOwner() {
+      return request.auth != null
+        && firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data.role in ["super_admin","superadmin","super-admin"]
+        && firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data.status in ["active","ACTIVE"]
+        && firestore.exists(/databases/(default)/documents/superAdminAccess/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/superAdminAccess/$(request.auth.uid)).data.active == true;
+    }
+    match /institutes/{instituteId}/branding/{assetId} {
+      allow read: if platformOwner() || (request.auth != null
+        && firestore.exists(/databases/(default)/documents/instituteSessions/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/instituteSessions/$(request.auth.uid)).data.instituteId == instituteId);
+      allow create: if platformOwner()
+        && firestore.exists(/databases/(default)/documents/institutes/$(instituteId))
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpeg|webp)');
+      allow update, delete: if false;
+    }
+    match /{allPaths=**} { allow read, write: if false; }
+  }
+}

@@ -1,3 +1,4 @@
+import {getFunctions, httpsCallable} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-functions.js";
 // ============================================================
 // EXAMCONTROL ADMIN PORTAL
 // Firebase Auth + Firestore
@@ -7,7 +8,8 @@ import {
     signInWithEmailAndPassword,
     signOut,
     onAuthStateChanged,
-    getAuth
+    getAuth,
+    sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 import {
@@ -118,6 +120,8 @@ function currentExamId() {
 
 
 function hasPermission(permission) {
+    if (permission === "result.export" && currentInstitute?.config?.features?.reports === false) return false;
+    if (permission === "exam.control" && currentInstitute?.config?.features?.advancedExamControls === false) return false;
     if (
         Array.isArray(currentAdminProfile?.permissions) &&
         currentAdminProfile.permissions.includes(permission)
@@ -1669,6 +1673,7 @@ async function loadAdminContext() {
         "Assigned Institute"
     );
 
+    httpsCallable(getFunctions(adminApp, "asia-south1"), "recordAdminActivity")({}).catch(console.warn);
     applyPermissionVisibility();
     await loadBatches();
     await loadExams();
@@ -2552,3 +2557,17 @@ showLogin();
 console.log(
     "ExamControl Admin Portal loaded."
 );
+
+const passwordResetButton = document.createElement("button");
+passwordResetButton.type = "button";
+passwordResetButton.className = "secondary-btn";
+passwordResetButton.textContent = "Set / Reset Password";
+passwordResetButton.onclick = async () => {
+    try {
+        const email = $("adminEmail")?.value?.trim();
+        if (!email) throw new Error("Enter your email first.");
+        await sendPasswordResetEmail(auth, email);
+        showLoginMessage("Password reset requested. Check your inbox.", "success");
+    } catch (error) { showLoginMessage(error.message); }
+};
+loginForm?.append(passwordResetButton);

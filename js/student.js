@@ -1,3 +1,6 @@
+import {candidateApp} from "./candidate-firebase.js";
+import {getFunctions, httpsCallable} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-functions.js";
+import {readPortalFields} from "./portal-config.js";
 // ============================================================
 // STUDENT EXAM PORTAL
 // Firebase + Firestore
@@ -385,6 +388,7 @@ function listenExamSettings() {
             settingsRef,
 
             (snapshot) => {
+                if (getActiveInstituteId() || examStarted) return;
 
                 if (!snapshot.exists()) {
 
@@ -425,6 +429,7 @@ function listenExamSettings() {
             },
 
             (error) => {
+                if (getActiveInstituteId() || examStarted) return;
 
                 console.error(
                     "Exam settings listener error:",
@@ -446,6 +451,8 @@ function listenExamSettings() {
 // ============================================================
 
 async function loadInstituteLiveExam() {
+    if (examStarted) return true;
+    examSettings = null;
 
     const instituteId =
         getActiveInstituteId();
@@ -519,8 +526,24 @@ async function loadInstituteLiveExam() {
         examStatus: "live"
     };
 
+    const platform = window.activePortalConfig;
+    if (platform) {
+        examSettings = {...examSettings,
+            configurationVersion: window.activeInstitute?.configurationVersion || 0,
+            examMode: platform.examMode,
+            tabSwitchEnabled: platform.security.tabSwitch,
+            focusLockEnabled: platform.security.focusLock,
+            disableCopy: platform.security.copyPaste,
+            disablePaste: platform.security.copyPaste,
+            disableRefresh: platform.security.refresh,
+            disableFunctionKeys: platform.security.keyboard,
+            disableScreenshot: platform.security.screenshot,
+            requireFullscreen: platform.security.fullscreen,
+            tabSwitchPenalty: platform.penalty.marks,
+            maxTabSwitches: platform.penalty.maximum
+        };
+    }
     applySettingsToUI();
-
     return true;
 }
 
@@ -948,7 +971,7 @@ if (loginBtn) {
                 );
 
                 showMessage(
-                    "Unable to verify your examination access. Please try again."
+                    error?.message || "Unable to verify your examination access. Please try again."
                 );
 
             } finally {
@@ -969,88 +992,10 @@ if (loginBtn) {
 // ============================================================
 
 async function createCandidateRecord() {
-
     await ensureCandidateSession();
-
-    const candidateRef =
-        doc(
-            db,
-            "candidates",
-            getCandidateDocumentId()
-        );
-
-    const existing =
-        await getDoc(
-            candidateRef
-        );
-
-
-    if (existing.exists()) {
-
-        const existingData =
-            existing.data();
-
-        const status =
-            String(
-                existingData.status || ""
-            ).toLowerCase();
-
-
-        if (
-            String(existingData.examId || "") === getCurrentExamId() &&
-            [
-                "active",
-                "completed",
-                "auto_submitted",
-                "submitted",
-                "disqualified"
-            ].includes(status)
-        ) {
-
-            throw new Error(
-                "Candidate already attempted the examination."
-            );
-        }
-    }
-
-
-    await setDoc(
-        candidateRef,
-        {
-            ownerUid:
-                getCandidateUid(),
-
-            instituteId:
-                getActiveInstituteId(),
-
-            examId:
-                getCurrentExamId(),
-
-            name:
-                candidate.name,
-
-            email:
-                candidate.email,
-
-            status:
-                "verified",
-
-            loginTime:
-                serverTimestamp(),
-
-            updatedAt:
-                serverTimestamp()
-        },
-        {
-            merge: true
-        }
-    );
+    const register = httpsCallable(getFunctions(candidateApp, "asia-south1"), "registerCandidate");
+    await register({name: candidate.name, email: candidate.email, fields: readPortalFields(), examId: getCurrentExamId()});
 }
-
-
-// ============================================================
-// BACK TO LOGIN
-// ============================================================
 
 if (backToLoginBtn) {
 
@@ -1194,6 +1139,7 @@ async function loadQuestions() {
                 ...item.data()
             }));
     } else {
+        if (window.activePortalConfig) throw new Error("No questions are assigned to this institute examination.");
         const legacySnapshot = await getDocs(
             collection(db, "questionBank")
         );
@@ -1302,6 +1248,7 @@ function normalizeQuestion(question) {
                 examSettings.negativeMarks
             ),
 
+        subject: question.subject || question.section || "Questions",
         chapter:
             question.chapter ||
             "",
@@ -1473,6 +1420,10 @@ async function startExam() {
 
     try {
 
+        if (examSettings?.requireFullscreen && !document.fullscreenElement) {
+            if (!document.documentElement.requestFullscreen) throw new Error("Fullscreen is unavailable on this browser. Contact your institute.");
+            await document.documentElement.requestFullscreen();
+        }
         startTestBtn.disabled =
             true;
 
@@ -1668,6 +1619,8 @@ async function startExam() {
                     0,
 
                 configurationSnapshot: {
+                    instituteConfigurationVersion: Number(examSettings?.configurationVersion || 0),
+                    examMode: examSettings?.examMode || 'NORMAL',
                     exam: {
                         examId: getCurrentExamId(),
                         examTitle: examSettings?.examTitle || "Online Examination",
@@ -1711,6 +1664,7 @@ async function startExam() {
         startTimer();
 
         enableSecurityControls();
+        acquireScreenWakeLock();
         startPresenceHeartbeat();
         listenForForceSubmit();
 
@@ -1750,6 +1704,7 @@ async function startExam() {
 // ============================================================
 
 function renderQuestion() {
+    queueMicrotask(renderCBTPalette);
 
     if (!questions.length) {
         return;
@@ -1935,6 +1890,7 @@ optionButtons.forEach(
 // ============================================================
 
 async function saveCurrentAnswers() {
+    renderCBTPalette();
 
     if (!attemptId) {
         return;
@@ -2243,6 +2199,7 @@ function enableSecurityControls() {
 // ============================================================
 
 async function handleVisibilityChange() {
+    if (examSettings?.tabSwitchEnabled === false) return;
 
     if (
         !examStarted ||
@@ -2269,6 +2226,7 @@ async function handleVisibilityChange() {
 // ============================================================
 
 async function handleWindowBlur() {
+    if (examSettings?.focusLockEnabled === false) return;
 
     if (
         !examStarted ||
@@ -2358,6 +2316,7 @@ async function handlePaste(event) {
 // ============================================================
 
 async function handleContextMenu(event) {
+    if (examSettings?.disableCopy === false) return;
 
     if (
         !examStarted ||
@@ -3222,6 +3181,8 @@ async function submitExam(
 // ============================================================
 
 function showResultScreen(result) {
+    screenWakeLock?.release().catch(() => {});
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
 
     if (!resultScreen) {
 
@@ -3995,3 +3956,41 @@ window.addEventListener(
         );
     }
 })();
+
+const markedForReview = new Set();
+let screenWakeLock = null;
+async function acquireScreenWakeLock() {
+    if (navigator.wakeLock && examStarted && !examSubmitted) {
+        try { screenWakeLock = await navigator.wakeLock.request("screen"); } catch {}
+    }
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") acquireScreenWakeLock(); });
+document.addEventListener("fullscreenchange", () => {
+    if (examStarted && !examSubmitted && examSettings?.requireFullscreen && !document.fullscreenElement) registerViolation("fullscreen_exit");
+});
+function renderCBTPalette() {
+    if (!examStarted || examSubmitted || examSettings?.examMode !== "CBT") return;
+    let palette = $("cbtPalette");
+    if (!palette) { palette = document.createElement("div"); palette.id = "cbtPalette"; examScreen.prepend(palette); }
+    palette.replaceChildren();
+    if (window.activePortalConfig?.features.palette) {
+        const sections = new Map();
+        questions.forEach((question, index) => {
+            const subject = question.subject || question.section || "Questions";
+            if (!sections.has(subject)) { const section = document.createElement("div"), heading = document.createElement("strong");heading.textContent = subject;section.append(heading);palette.append(section);sections.set(subject, section); }
+            const button = document.createElement("button");
+            button.textContent = index + 1;
+            const answered = answers[question.id] !== undefined && answers[question.id] !== null;
+            const review = markedForReview.has(question.id);
+            button.className = (answered ? "answered " : "") + (review ? "review " : "") + (index === currentQuestionIndex ? "current" : "");
+            button.setAttribute("aria-label", "Question " + (index+1) + (answered ? ", answered" : ", not answered") + (review ? ", marked for review" : ""));
+            button.onclick = async () => { if (examSubmitted) return;await saveCurrentAnswers();currentQuestionIndex = index;renderQuestion();await updateAttemptProgress(); };
+            sections.get(subject).append(button);
+        });
+    }
+    let review = $("cbtReview");
+    if (!review) { review = document.createElement("button");review.id = "cbtReview";palette.after(review);
+        review.onclick = () => { const id=questions[currentQuestionIndex].id;markedForReview.has(id)?markedForReview.delete(id):markedForReview.add(id);renderCBTPalette(); };
+    }
+    review.textContent = markedForReview.has(questions[currentQuestionIndex]?.id) ? "Remove Review Mark" : "Mark for Review";
+}
