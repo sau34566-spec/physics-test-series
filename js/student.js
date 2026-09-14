@@ -388,6 +388,7 @@ function listenExamSettings() {
             settingsRef,
 
             (snapshot) => {
+                if (getActiveInstituteId() || examStarted) return;
 
                 if (!snapshot.exists()) {
 
@@ -428,6 +429,7 @@ function listenExamSettings() {
             },
 
             (error) => {
+                if (getActiveInstituteId() || examStarted) return;
 
                 console.error(
                     "Exam settings listener error:",
@@ -449,6 +451,8 @@ function listenExamSettings() {
 // ============================================================
 
 async function loadInstituteLiveExam() {
+    if (examStarted) return true;
+    examSettings = null;
 
     const instituteId =
         getActiveInstituteId();
@@ -1135,6 +1139,7 @@ async function loadQuestions() {
                 ...item.data()
             }));
     } else {
+        if (window.activePortalConfig) throw new Error("No questions are assigned to this institute examination.");
         const legacySnapshot = await getDocs(
             collection(db, "questionBank")
         );
