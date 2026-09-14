@@ -34,7 +34,9 @@ service cloud.firestore {
     }
 
     function isSuperAdmin() {
-      return hasActiveSuperAdminAccess();
+      return hasActiveSuperAdminAccess() && hasAdminProfile()
+        && adminProfile().role in ["super_admin", "superadmin", "super-admin"]
+        && activeStatus(adminProfile().status);
     }
 
     function isInstituteAdmin() {
@@ -44,8 +46,7 @@ service cloud.firestore {
     }
 
     function hasPermission(permission) {
-      return isSuperAdmin()
-        || (isInstituteAdmin()
+      return (isInstituteAdmin()
           && (
             (adminProfile().permissions is list
               && adminProfile().permissions.hasAny([permission]))
@@ -61,12 +62,21 @@ service cloud.firestore {
     }
 
     function managesInstitute(instituteId) {
-      return isSuperAdmin()
-        || (isInstituteAdmin()
+      return (isInstituteAdmin()
           && adminProfile().instituteIds is list
-          && adminProfile().instituteIds.hasAny([instituteId]));
+          && adminProfile().instituteIds.hasAny([instituteId])
+          && instituteActive(instituteId));
     }
 
+    function instituteActive(id) {
+      return exists(/databases/$(database)/documents/institutes/$(id))
+        && activeStatus(get(/databases/$(database)/documents/institutes/$(id)).data.status);
+    }
+    function resolvedInstitute(id) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/instituteSessions/$(request.auth.uid))
+        && get(/databases/$(database)/documents/instituteSessions/$(request.auth.uid)).data.instituteId == id;
+    }
     function ownsExistingDocument() {
       return signedIn() && resource.data.ownerUid == request.auth.uid;
     }
@@ -75,7 +85,9 @@ service cloud.firestore {
       return signedIn()
         && request.resource.data.ownerUid == request.auth.uid
         && request.resource.data.instituteId is string
-        && request.resource.data.instituteId.size() > 0;
+        && request.resource.data.instituteId.size() > 0
+        && resolvedInstitute(request.resource.data.instituteId)
+        && instituteActive(request.resource.data.instituteId);
     }
 
     function preservesOwnership() {
@@ -118,8 +130,11 @@ service cloud.firestore {
     function candidateCanReadQuestion() {
       return signedIn()
         && exists(candidatePath())
-        && get(candidatePath()).data.status == "active"
+        && get(candidatePath()).data.status in ["verified", "active"]
         && get(candidatePath()).data.examId is string
+        && resource.data.instituteId == get(candidatePath()).data.instituteId
+        && resolvedInstitute(resource.data.instituteId)
+        && instituteActive(resource.data.instituteId)
         && resource.data.examIds is list
         && resource.data.examIds.hasAny([get(candidatePath()).data.examId]);
     }
@@ -127,36 +142,37 @@ service cloud.firestore {
     match /admins/{adminId} {
       allow get: if signedIn()
         && (request.auth.uid == adminId || isSuperAdmin());
-      allow list, create, update, delete: if isSuperAdmin();
+      allow list: if isSuperAdmin();
+      allow create, update, delete: if false;
     }
 
     // Platform-owner allowlist. Bootstrap entries are created only from the
-    // trusted Firebase Console. An active Super Admin may maintain them later.
+    // trusted Firebase Console. Browser writes are never permitted.
     match /superAdminAccess/{adminId} {
       allow get: if signedIn()
         && (request.auth.uid == adminId || isSuperAdmin());
-      allow list, create, update, delete: if isSuperAdmin();
+      allow list: if isSuperAdmin();
+      allow create, update, delete: if false;
     }
 
     match /institutes/{instituteId} {
       allow read: if isSuperAdmin()
         || (isInstituteAdmin() && managesInstitute(instituteId))
-        || resource.data.status == "ACTIVE";
-      allow create, update, delete: if isSuperAdmin();
+        ;
+      allow create, update, delete: if false;
     }
 
     match /portalConfigs/{configId} {
       allow read: if isSuperAdmin()
         || (isInstituteAdmin() && managesResourceInstitute())
-        || resource.data.status == "PUBLISHED";
-      allow create: if isSuperAdmin();
-      allow update, delete: if isSuperAdmin();
+        || (resource.data.status == "PUBLISHED" && resolvedInstitute(configId) && instituteActive(configId));
+      allow create: if false;
+      allow update, delete: if false;
     }
 
     match /exams/{examId} {
-      allow read: if isSuperAdmin()
-        || (isInstituteAdmin() && managesResourceInstitute())
-        || (signedIn() && resource.data.status in ["LIVE", "SCHEDULED"]);
+      allow read: if (isInstituteAdmin() && managesResourceInstitute())
+        || (resolvedInstitute(resource.data.instituteId) && instituteActive(resource.data.instituteId) && resource.data.status in ["LIVE", "SCHEDULED"]);
       allow create: if hasPermission("exam.create")
         && managesRequestedInstitute();
       allow update: if (hasPermission("exam.edit")
@@ -175,8 +191,7 @@ service cloud.firestore {
     }
 
     match /batches/{batchId} {
-      allow read: if isSuperAdmin()
-        || (isInstituteAdmin() && managesResourceInstitute());
+      allow read: if (isInstituteAdmin() && managesResourceInstitute());
       allow create: if hasPermission("batch.manage")
         && managesRequestedInstitute();
       allow update: if hasPermission("batch.manage")
@@ -187,11 +202,9 @@ service cloud.firestore {
     }
 
     match /questions/{questionId} {
-      allow get: if isSuperAdmin()
-        || (isInstituteAdmin() && managesResourceInstitute())
+      allow get: if (isInstituteAdmin() && managesResourceInstitute())
         || candidateCanReadQuestion();
-      allow list: if isSuperAdmin()
-        || (isInstituteAdmin() && managesResourceInstitute());
+      allow list: if (isInstituteAdmin() && managesResourceInstitute());
       allow create: if hasPermission("question.create")
         && managesRequestedInstitute();
       allow update: if hasPermission("question.edit")
@@ -206,122 +219,110 @@ service cloud.firestore {
     // backend that can withhold correct answers.
     match /questionBank/{questionId} {
       allow read: if signedIn();
-      allow write: if isSuperAdmin();
+      allow write: if false;
     }
 
     match /examSettings/{settingsId} {
       allow read: if signedIn();
-      allow write: if isSuperAdmin();
+      allow write: if false;
     }
 
     match /candidates/{candidateId} {
-      allow get: if isSuperAdmin()
-        || (signedIn() && request.auth.uid == candidateId)
+      allow get: if (signedIn() && request.auth.uid == candidateId)
         || ownsExistingDocument()
         || (isInstituteAdmin() && managesResourceInstitute());
-      allow list: if isSuperAdmin()
-        || (isInstituteAdmin()
+      allow list: if (isInstituteAdmin()
           && hasPermission("candidate.view")
           && managesResourceInstitute());
-      allow create: if createsOwnedDocument()
-        && request.auth.uid == candidateId;
+      allow create: if false;
       allow update: if (ownsExistingDocument()
-          && (preservesOwnership() || migratesVerifiedCandidateInstitute()))
-        || isSuperAdmin()
+          && preservesOwnership()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "testStartTime", "updatedAt", "completedAt", "attemptId", "finalMarks", "submissionType", "submittedAt", "resultId", "feedbackSubmitted", "feedbackSubmittedAt", "submissionTime", "score", "violations"]))
         || (isInstituteAdmin()
           && hasPermission("candidate.manage")
           && managesResourceInstitute()
           && managesRequestedInstitute());
-      allow delete: if isSuperAdmin()
-        || (isInstituteAdmin()
+      allow delete: if (isInstituteAdmin()
           && hasPermission("candidate.manage")
           && managesResourceInstitute());
     }
 
     match /attempts/{attemptId} {
-      allow get: if isSuperAdmin()
-        || ownsExistingDocument()
+      allow get: if ownsExistingDocument()
         || (isInstituteAdmin() && managesResourceInstitute());
-      allow list: if isSuperAdmin()
-        || (signedIn() && resource.data.ownerUid == request.auth.uid)
+      allow list: if (signedIn() && resource.data.ownerUid == request.auth.uid)
         || (isInstituteAdmin()
           && hasPermission("candidate.view")
           && managesResourceInstitute());
       allow create: if createsOwnedDocument()
         && request.resource.data.status == "active";
       allow update: if (ownsExistingDocument() && preservesOwnership())
-        || isSuperAdmin();
-      allow delete: if isSuperAdmin();
+        || false;
+      allow delete: if false;
     }
 
     match /candidateLocks/{lockId} {
-      allow get: if signedIn() || isSuperAdmin();
-      allow list: if isSuperAdmin()
-        || (isInstituteAdmin() && hasPermission("candidate.view") && managesResourceInstitute());
+      allow get: if signedIn();
+      allow list: if (isInstituteAdmin() && hasPermission("candidate.view") && managesResourceInstitute());
       allow create: if createsOwnedDocument()
         && request.resource.data.examId is string
         && request.resource.data.status == "active";
-      allow update: if (ownsExistingDocument() && preservesOwnership()) || isSuperAdmin();
-      allow delete: if isSuperAdmin();
+      allow update: if (ownsExistingDocument() && preservesOwnership()) || false;
+      allow delete: if false;
     }
 
     match /results/{resultId} {
-      allow get: if isSuperAdmin()
-        || ownsExistingDocument()
+      allow get: if ownsExistingDocument()
         || (isInstituteAdmin()
           && hasPermission("result.view")
           && managesResourceInstitute());
-      allow list: if isSuperAdmin()
-        || (isInstituteAdmin()
+      allow list: if (isInstituteAdmin()
           && hasPermission("result.view")
           && managesResourceInstitute());
       allow create: if createsOwnedDocument();
-      allow update, delete: if isSuperAdmin();
+      allow update, delete: if false;
     }
 
     match /violations/{violationId} {
-      allow get: if isSuperAdmin()
-        || ownsExistingDocument()
+      allow get: if ownsExistingDocument()
         || (isInstituteAdmin()
           && hasPermission("security.view")
           && managesResourceInstitute());
-      allow list: if isSuperAdmin()
-        || (isInstituteAdmin()
+      allow list: if (isInstituteAdmin()
           && hasPermission("security.view")
           && managesResourceInstitute());
       allow create: if createsOwnedDocument();
-      allow update, delete: if isSuperAdmin();
+      allow update, delete: if false;
     }
 
     match /securityEvents/{eventId} {
-      allow read, write: if isSuperAdmin();
+      allow read: if isSuperAdmin();
+      allow write: if false;
     }
 
     match /securityPolicies/{policyId} {
-      allow read: if isSuperAdmin()
-        || (isInstituteAdmin() && managesResourceInstitute())
-        || (signedIn() && resource.data.status == "PUBLISHED");
-      allow create, update, delete: if isSuperAdmin();
+      allow read: if (isInstituteAdmin() && managesResourceInstitute())
+        || (resolvedInstitute(policyId) && instituteActive(policyId) && resource.data.status == "PUBLISHED");
+      allow create, update, delete: if false;
     }
 
     match /securityPolicyVersions/{versionId} {
-      allow read, create: if isSuperAdmin();
+      allow read: if isSuperAdmin();
+      allow create: if false;
       allow update, delete: if false;
     }
 
     match /feedback/{feedbackId} {
       allow create: if createsOwnedDocument();
-      allow read: if isSuperAdmin()
-        || (isInstituteAdmin()
+      allow read: if (isInstituteAdmin()
           && hasPermission("feedback.view")
           && managesResourceInstitute());
-      allow update, delete: if isSuperAdmin();
+      allow update, delete: if false;
     }
 
     match /auditLogs/{logId} {
       allow read: if isSuperAdmin();
-      allow create: if isSuperAdmin()
-        || (isInstituteAdmin()
+      allow create: if (isInstituteAdmin()
           && request.resource.data.adminId == request.auth.uid
           && managesRequestedInstitute());
       allow update, delete: if false;
@@ -329,24 +330,22 @@ service cloud.firestore {
 
     match /globalSettings/{settingId} {
       allow read: if isSuperAdmin() || settingId == "emergency";
-      allow create, update, delete: if isSuperAdmin();
+      allow create, update, delete: if false;
     }
 
     match /notifications/{notificationId} {
-      allow read: if isSuperAdmin()
-        || (signedIn()
+      allow read: if (signedIn()
           && exists(candidatePath())
           && resource.data.status == "PENDING"
           && resource.data.examId == get(candidatePath()).data.examId
           && resource.data.type in ["FORCE_SUBMIT_EXAM", "FORCE_SUBMIT_CANDIDATE"]
           && (resource.data.candidateId == null
             || resource.data.candidateId == request.auth.uid));
-      allow create, update, delete: if isSuperAdmin();
+      allow create, update, delete: if false;
     }
 
     match /presence/{presenceId} {
-      allow get, list: if isSuperAdmin()
-        || (isInstituteAdmin()
+      allow get, list: if (isInstituteAdmin()
           && hasPermission("candidate.view")
           && managesResourceInstitute())
         || (signedIn() && request.auth.uid == presenceId);
@@ -355,10 +354,33 @@ service cloud.firestore {
       allow update: if ownsExistingDocument()
         && request.auth.uid == presenceId
         && preservesOwnership();
-      allow delete: if isSuperAdmin()
-        || (signedIn() && request.auth.uid == presenceId);
+      allow delete: if (signedIn() && request.auth.uid == presenceId);
     }
 
+    match /institutes/{instituteId}/drafts/{draftId} {
+      allow read: if isSuperAdmin();
+      allow write: if false;
+    }
+    match /institutes/{instituteId}/versions/{versionId} {
+      allow read: if isSuperAdmin();
+      allow write: if false;
+    }
+    match /publicInstitutes/{instituteId} {
+      allow get: if isSuperAdmin() || (resolvedInstitute(instituteId) && instituteActive(instituteId));
+      allow list, write: if false;
+    }
+    match /platformAudit/{eventId} {
+      allow read: if isSuperAdmin();
+      allow write: if false;
+    }
+    match /platformSettings/{id} {
+      allow read: if isSuperAdmin();
+      allow write: if false;
+    }
+    match /instituteSessions/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list, write: if false;
+    }
     match /authorizedAdmins/{documentId} {
       allow read, write: if false;
     }

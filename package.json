@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "scripts": {
+    "test:platform": "node --test firebase/functions/test/schema.test.js && node tests/run-platform.cjs",
+    "test:smoke": "node tests/smoke.mjs"
+  }
+}

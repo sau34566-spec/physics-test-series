@@ -11,5 +11,14 @@
       "enabled": true,
       "port": 4000
     }
+  },
+  "functions": [
+    {
+      "source": "firebase/functions",
+      "codebase": "platform"
+    }
+  ],
+  "storage": {
+    "rules": "firebase/storage.rules"
   }
 }
