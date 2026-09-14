@@ -1,3 +1,4 @@
+import {getFunctions, httpsCallable} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-functions.js";
 // ============================================================
 // EXAMCONTROL ADMIN PORTAL
 // Firebase Auth + Firestore
@@ -1672,6 +1673,7 @@ async function loadAdminContext() {
         "Assigned Institute"
     );
 
+    httpsCallable(getFunctions(adminApp, "asia-south1"), "recordAdminActivity")({}).catch(console.warn);
     applyPermissionVisibility();
     await loadBatches();
     await loadExams();

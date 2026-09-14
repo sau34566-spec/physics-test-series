@@ -39,8 +39,12 @@ function validate(config, reg) {
   if (report.errors.length) fail("invalid-argument", report.errors.join("\n"));
   return report;
 }
-const READS = new Set(["overview", "listInstitutes", "listAdmins", "getInstitute", "history", "audit", "catalog", "settings", "validate"]);
+const READS = new Set(["overview", "listInstitutes", "listAdmins", "getInstitute", "history", "audit", "catalog", "settings", "validate", "provisioning"]);
 async function readAction(action, p) {
+  if (action === "provisioning") {
+    const docs=(await db.collection("adminProvisioning").where("status","in",["PENDING","RETRY_REQUIRED"]).limit(100).get()).docs;
+    return {items:docs.map(d=>({id:d.id,...d.data()}))};
+  }
   if (action === "catalog") return registry();
   if (action === "settings") return (await ref("platformSettings", "general").get()).data() || {platformName: "Bookesh", maintenanceMode: false, version: 0};
   if (action === "validate") { const r = await registry(); return S.validate(p.config, r.templates, r.types); }
@@ -51,6 +55,7 @@ async function readAction(action, p) {
       counts[status] = (await db.collection("institutes").where("status", "==", status).count().get()).data().count;
     counts.activeAdmins = (await db.collection("admins").where("role", "==", "ADMIN").where("status", "==", "ACTIVE").count().get()).data().count;
     counts.disabledAdmins = (await db.collection("admins").where("role", "==", "ADMIN").where("status", "in", ["DISABLED", "SUSPENDED"]).count().get()).data().count;
+    counts.failedOperations=(await db.collection("platformAudit").where("action","==","OPERATION_FAILED").count().get()).data().count;
     return {counts, checkedAt: new Date().toISOString(), backend: "Available", note: "Counts use canonical uppercase lifecycle states; migrate legacy states before relying on totals."};
   }
   if (action === "getInstitute" || action === "history") {
@@ -78,6 +83,11 @@ async function readAction(action, p) {
     (!p.status || upper(d.status) === p.status) &&
     (!search || [d.instituteName, d.instituteCode, d.name, d.email, ...(d.adminEmails || [])].some(v => String(v || "").toLowerCase().includes(search)))
   );
+  if (!admins) {
+    const reg=await registry();
+    items=items.map(i=>({...i,configurationHealth:i.config?S.validate(i.config,reg.templates,reg.types).status:"INCOMPLETE",
+      templateStatus:i.config?(reg.templates.some(t=>t.templateId===i.config.loginTemplate&&t.version===i.config.loginTemplateVersion&&t.status!=="DISABLED")?"AVAILABLE":"UNAVAILABLE"):"UNCONFIGURED"}));
+  }
   return {items, cursor: docs.length === 200 ? docs.at(-1).id : null, scanned: docs.length};
 }
 async function mutate(uid, action, p, requestId) {
@@ -104,7 +114,8 @@ async function mutate(uid, action, p, requestId) {
       if (p.expectedVersion !== old.version) fail("aborted", "Platform settings version conflict.");
       if (typeof p.platformName !== "string" || p.platformName.length < 2 || p.platformName.length > 100 || typeof p.maintenanceMode !== "boolean")
         fail("invalid-argument", "Invalid platform settings.");
-      const next = {platformName: p.platformName, maintenanceMode: p.maintenanceMode, version: old.version + 1, updatedAt: stamp(), updatedBy: uid};
+      if (p.defaults) validate({...S.defaults(),...p.defaults,instituteName:"Default institute",instituteCode:"DEFAULT"},await registry(tx));
+      const next = {platformName: p.platformName, maintenanceMode: p.maintenanceMode, defaults:p.defaults||{}, version: old.version + 1, updatedAt: stamp(), updatedBy: uid};
       tx.set(r, next); tx.set(ref("globalSettings", "emergency"), {maintenanceMode: p.maintenanceMode}, {merge: true});
       audit(tx, uid, "PLATFORM_SETTINGS_CHANGED", "general", old, next, requestId);
       return finish({version: next.version});
@@ -124,6 +135,14 @@ async function mutate(uid, action, p, requestId) {
       }
       if (old.templates.some(t => !identities.has(t.templateId + ":" + t.version))) fail("failed-precondition", "Historical template versions cannot be removed.");
       if (next.types.length > 30 || next.types.some(t => !/^[A-Z][A-Z0-9_]{1,39}$/.test(t))) fail("invalid-argument", "Invalid institute types.");
+      const presetIds=new Set();
+      for (const preset of next.presets) {
+        const identity=preset.id+":"+preset.version;
+        if(presetIds.has(identity))fail("invalid-argument","Duplicate preset version.");presetIds.add(identity);
+        const historical=old.presets.find(p=>p.id===preset.id&&p.version===preset.version);
+        if(historical&&hash(historical)!==hash(preset))fail("failed-precondition","Publish a new preset version instead of changing an existing one.");
+      }
+      if(old.presets.some(p=>!presetIds.has(p.id+":"+p.version)))fail("failed-precondition","Historical presets cannot be removed.");
       for (const preset of next.presets) if (!key(preset.id) || !Number.isInteger(preset.version) || !object(preset.settings) || Object.entries(preset.settings).some(([k,v]) => !S.SECURITY.includes(k) || typeof v !== "boolean"))
         fail("invalid-argument", "Invalid security preset.");
       if (hash(old) !== p.expectedHash) fail("aborted", "Registry version conflict. Reload first.");
@@ -287,10 +306,19 @@ exports.platformAdmin = onCall({region: "asia-south1", maxInstances: 10, timeout
   await authorize(uid);
   const {action, payload = {}, requestId} = request.data || {};
   if (!object(payload)) fail("invalid-argument", "Invalid payload.");
-  if (READS.has(action)) return readAction(action, payload);
-  if (action === "createAdmin") return provision(uid, payload, requestId);
-  if (action === "adminStatus") return adminStatus(uid, payload, requestId);
-  return mutate(uid, action, payload, requestId);
+  try {
+    if (READS.has(action)) return await readAction(action, payload);
+    if (action === "createAdmin") return await provision(uid, payload, requestId);
+    if (action === "adminStatus") return await adminStatus(uid, payload, requestId);
+    return await mutate(uid, action, payload, requestId);
+  } catch (error) {
+    if (!READS.has(action)) {
+      await db.collection("platformAudit").doc().set({timestamp:stamp(),actorUid:uid,action:"OPERATION_FAILED",
+        attemptedAction:String(action||"unknown").slice(0,100),targetId:key(payload.id)?payload.id:null,errorCode:String(error.code||"internal"),
+        requestId:key(requestId)?requestId:null,scope:"platform"}).catch(()=>{});
+    }
+    throw error;
+  }
 });
 exports.resolveInstitute = onCall({region: "asia-south1", maxInstances: 10}, async request => {
   if (!request.auth) fail("unauthenticated", "Candidate session is required.");
@@ -353,4 +381,17 @@ exports.registerCandidate = onCall({region:"asia-south1",maxInstances:10}, async
       status:"verified",loginTime:stamp(),updatedAt:stamp()});
     return {verified:true};
   });
+});
+
+exports.recordAdminActivity=onCall({region:"asia-south1",maxInstances:5},async request=>{
+  const uid=request.auth?.uid;if(!uid)fail("unauthenticated","Sign in first.");
+  await db.runTransaction(async tx=>{
+    const admin=await tx.get(ref("admins",uid));
+    if(!admin.exists||upper(admin.data().role)!=="ADMIN"||upper(admin.data().status)!=="ACTIVE")fail("permission-denied","Administrator access denied.");
+    const instituteId=admin.data().instituteId||admin.data().instituteIds?.[0];
+    if(!key(instituteId))fail("permission-denied","Institute assignment required.");
+    const institute=await tx.get(ref("institutes",instituteId));
+    if(!institute.exists||upper(institute.data().status)!=="ACTIVE")fail("permission-denied","Institute inactive.");
+    tx.update(admin.ref,{lastActivityAt:stamp()});tx.update(institute.ref,{lastAdminActivityAt:stamp()});
+  });return {recorded:true};
 });
